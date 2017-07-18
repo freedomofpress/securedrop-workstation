@@ -10,3 +10,5 @@ sudo cp /home/user/QubesIncoming/dom0/decrypt/decrypt-sd-submission /usr/local/b
 
 sudo update-mime-database /usr/share/mime
 sudo update-desktop-database /usr/share/applications
+
+touch /home/user/.qubes-dispvm-customized
