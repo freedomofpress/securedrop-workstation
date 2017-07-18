@@ -47,3 +47,9 @@
     - group: user
     - mode: 644
     - makedirs: True
+
+sudo update-mime-database /usr/local/share/mime:
+  cmd.run
+
+sudo update-desktop-database /usr/local/share/applications:
+  cmd.run
