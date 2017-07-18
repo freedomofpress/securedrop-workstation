@@ -5,7 +5,7 @@
 # qvm.work
 # ========
 #
-# Installs 'sd-journlist-pesistent' AppVM, to persistently store SD data
+# Installs 'sd-svs' AppVM, to persistently store SD data
 # This VM has no network configured.
 ##
 

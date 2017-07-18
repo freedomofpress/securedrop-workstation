@@ -10,44 +10,37 @@
 ##
 
 /usr/local/bin/accept-sd-xfer-extracted:
-  require:
-    - sls: sd-svs
   file.managed:
     - source: salt://sd/sd-svs/accept-sd-xfer-extracted
     - user: root
     - group: root
     - mode: 755
 
-/usr/share/mime/packages/application-x-sd-xfer-extracted.xml:
-  require:
-    - sls: sd-svs
+/usr/local/share/mime/packages/application-x-sd-xfer-extracted.xml:
   file.managed:
     - source: salt://sd/sd-svs/application-x-sd-xfer-extracted.xml
     - user: root
     - group: root
     - mode: 644
+    - makedirs: True
 
-/usr/share/applications/accept-sd-xfer-extracted.desktop:
-  require:
-    - sls: sd-svs
+/usr/local/share/applications/accept-sd-xfer-extracted.desktop:
   file.managed:
     - source: salt://sd/sd-svs/accept-sd-xfer-extracted.desktop
     - user: root
     - group: root
     - mode: 644
+    - makedirs: True
 
-/usr/share/applications/open-in-dvm.desktop:
-  require:
-    - sls: sd-svs
+/usr/local/share/applications/open-in-dvm.desktop:
   file.managed:
     - source: salt://sd/sd-svs/open-in-dvm.desktop
     - user: root
     - group: root
     - mode: 644
+    - makedirs: True
 
 /home/user/.config/mimeapps.list:
-  require:
-    - sls: sd-svs
   file.managed:
     - source: salt://sd/sd-svs/mimeapps.list
     - user: user
