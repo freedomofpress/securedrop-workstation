@@ -26,10 +26,12 @@ Many of these dirs have their own README or NOTES files which talk about how the
 
 ### Using this repo
 
-The `run` script handles all provisioning and configuration. It should be run as your unprivileged user in dom0:
-
-  $ ./run.sh
+First, some configuration. Edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK. Replace `sd-journalist.sec` with the GPG private key used to encrypt submissions.
 
 Getting this project to dom0 is a little tricky. Here's one way to do it-- assuming this code is checked out in your `work` VM at `/home/user/projects/qubes-sd`, run the following in `dom0`.
 
     qvm-run --pass-io work 'tar -c -C /home/user/projects qubes-sd' | tar xvf -
+
+Once the configuration is done and this directory is copied to dom0, the `run.sh` can be execute to handle all provisioning and configuration. It should be run as your unprivileged user:
+
+    $ ./run.sh
