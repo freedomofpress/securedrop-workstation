@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Open in Disposable VM
+Comment=Open file in a Disposable VM
+TryExec=/usr/bin/qvm-open-in-dvm
+Exec=/usr/bin/qvm-open-in-dvm %f
+Icon=/usr/share/icons/Qubes/dispvm-gray.png
+Terminal=false
+Categories=Qubes;Utility;

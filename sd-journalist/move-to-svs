@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+
+import glob
+import re
+import tarfile
+import tempfile
+import os.path
+import subprocess
+
+TB_DL_LOC="/home/user/.tb/tor-browser/Browser/Downloads"
+
+zips = glob.glob(TB_DL_LOC + "/*.zip")
+
+matched_sd_pattern = [re.match('[a-z]+\_[a-z]+[\d-]+\.zip', os.path.basename(z)) for z in zips]
+
+probable_sd_downloads = [z.group(0) for z in matched_sd_pattern if z]
+
+# make a tarball of these zips
+fh = tempfile.NamedTemporaryFile(suffix=".sd-xfer", delete=False)
+
+print "fh name " + fh.name
+
+out_tar = tarfile.open(mode='w', fileobj=fh)
+
+for f in probable_sd_downloads:
+  out_tar.add(os.path.join(TB_DL_LOC, f), arcname=f)
+
+fh.close()
+
+# ship this to the next phase
+# this will be the dvm in production, but for now we're doing it on the work vm
+subprocess.call(["qvm-open-in-vm", "work", os.path.join(TB_DL_LOC, fh.name)])

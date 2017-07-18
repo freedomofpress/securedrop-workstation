@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+MimeType=application/x-sd-xfer-extracted
+Name=Decrypt SD Submission
+Exec=/home/user/bin/accept-sd-xfer-extracted

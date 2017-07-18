@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+MimeType=application/x-sd-xfer
+Name=Decrypt SD Submission
+Exec=/home/user/bin/decrypt-sd-submission

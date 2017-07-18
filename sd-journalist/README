@@ -1,0 +1,4 @@
+See also the readme in devel:~/projects/sd/
+
+move-to-svs.py
+  This script should copy any newly downloaded (from SD) content to a fresh dispvm, and arrange for the decrypt-and-move.py script to be run on that content. Unclear if it should leave downloaded content in place, or move it somewhere, or remove it entirely. Probably best to move it?
