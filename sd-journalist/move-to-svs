@@ -28,5 +28,5 @@ for f in probable_sd_downloads:
 fh.close()
 
 # ship this to the next phase
-# this will be the dvm in production, but for now we're doing it on the work vm
-subprocess.call(["qvm-open-in-vm", "work", os.path.join(TB_DL_LOC, fh.name)])
+# subprocess.call(["qvm-open-in-vm", "work", os.path.join(TB_DL_LOC, fh.name)])
+subprocess.call(["qvm-open-in-dvm", os.path.join(TB_DL_LOC, fh.name)])
