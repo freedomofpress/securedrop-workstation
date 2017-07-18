@@ -14,7 +14,7 @@ Presently, submissions are decrypted in the `work` VM, as the decryption process
 
 ### What's in this repo?
 
-Many of these dirs have their own README or NOTES files which talk about how they run.
+Many of these dirs have their own README or NOTES files which talk about how they run. Those were left over from development on the separate VMs. Anythig interesting will be consolidated to this document at some point!
 
 `dom0` contains salt `.top` and `.sls` files used to provision the VMs noted above.
 
@@ -22,8 +22,14 @@ Many of these dirs have their own README or NOTES files which talk about how the
 
 `sd-svs` contains scripts and configuration for the SVS VM.
 
-`decrypt` contains scripts for the VM handing decryption. Soon this will be the systemwide disposable VM, but for the the time being it's the standard Qubes "work" VM. 
+`decrypt` contains scripts for the VM handing decryption. These get used while configuring the systemwide disposable VM.
 
 ### Using this repo
 
-`./run.sh`
+The `run` script handles all provisioning and configuration. It should be run as your unprivileged user in dom0:
+
+  $ ./run.sh
+
+Getting this project to dom0 is a little tricky. Here's one way to do it-- assuming this code is checked out in your `work` VM at `/home/user/projects/qubes-sd`, run the following in `dom0`.
+
+    qvm-run --pass-io work 'tar -c -C /home/user/projects qubes-sd' | tar xvf -
