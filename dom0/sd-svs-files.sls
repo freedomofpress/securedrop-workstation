@@ -53,3 +53,10 @@ sudo update-mime-database /usr/local/share/mime:
 
 sudo update-desktop-database /usr/local/share/applications:
   cmd.run
+
+/home/user/Sources:
+  file.directory:
+    - user: user
+    - group: user
+    - dir_mode: 755
+    - file_mode: 644

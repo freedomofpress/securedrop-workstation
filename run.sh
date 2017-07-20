@@ -1,14 +1,16 @@
 #!/bin/bash
 
 ### configure disp VM (not done through salt)
-qvm-start fedora-23-dvm
-qvm-copy-to-vm fedora-23-dvm decrypt
-qvm-copy-to-vm fedora-23-dvm sd-journalist.sec 
-qvm-run -a fedora-23-dvm -p /home/user/QubesIncoming/dom0/decrypt/config-dvm
-qvm-run -a fedora-23-dvm -p "rm -rf /home/user/QubesIncoming/dom0"
+#qvm-start fedora-23-dvm
+#qvm-copy-to-vm fedora-23-dvm decrypt
+#qvm-copy-to-vm fedora-23-dvm sd-journalist.sec 
+#qvm-run -a fedora-23-dvm -p /home/user/QubesIncoming/dom0/decrypt/config-dvm
+#qvm-run -a fedora-23-dvm -p "rm -rf /home/user/QubesIncoming/dom0"
 
-qvm-shutdown fedora-23-dvm
-qvm-create-default-dvm --default-template
+#qvm-shutdown fedora-23-dvm
+#qvm-create-default-dvm --default-template
+
+qvm-clone fedora-23 fedora-23-sd-dispvm
 
 ### move salt-related things into place
 sudo [ -d /srv/salt/sd/ ] && sudo rm -rf /srv/salt/sd
@@ -28,6 +30,9 @@ sudo qubesctl top.enable sd-svs-files
 sudo qubesctl top.enable sd-journalist
 sudo qubesctl top.enable sd-journalist-files
 sudo qubesctl top.enable sd-whonix-hidserv-key
+sudo qubesctl top.enable sd-dispvm-files
 
 # apply salt state
 sudo qubesctl --all state.highstate
+
+qvm-create-default-dvm fedora-23-sd-dispvm
