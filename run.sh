@@ -1,15 +1,6 @@
 #!/bin/bash
 
-### configure disp VM (not done through salt)
-#qvm-start fedora-23-dvm
-#qvm-copy-to-vm fedora-23-dvm decrypt
-#qvm-copy-to-vm fedora-23-dvm sd-journalist.sec 
-#qvm-run -a fedora-23-dvm -p /home/user/QubesIncoming/dom0/decrypt/config-dvm
-#qvm-run -a fedora-23-dvm -p "rm -rf /home/user/QubesIncoming/dom0"
-
-#qvm-shutdown fedora-23-dvm
-#qvm-create-default-dvm --default-template
-
+### clone fedora-23 template to use as our own dispvm template
 qvm-clone fedora-23 fedora-23-sd-dispvm
 
 ### move salt-related things into place
