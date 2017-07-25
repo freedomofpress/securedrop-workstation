@@ -35,8 +35,9 @@ for z in zips:
 for root, dirnames, filenames in os.walk(tmpdir):
   for fn in fnmatch.filter(filenames, '*.gpg'):
     [fn_no_ext, _] = os.path.splitext(fn)
-    subprocess.call(["qubes-gpg-client", "--out", os.path.join(root, fn_no_ext), "--decrypt" , os.path.join(root, fn)])
-
+    out = open(os.path.join(root, fn_no_ext), 'w')
+    subprocess.call(["qubes-gpg-client", "--decrypt" , os.path.join(root, fn)], stdout=out)
+    out.close()
     os.unlink(os.path.join(root, fn))
 
 # almost done. docs are gzipped. let's ungzip them.
