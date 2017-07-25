@@ -32,20 +32,17 @@
     - mode: 644
     - makedirs: True
 
-/tmp/sd-journalist.sec:
+/etc/profile.d/qubes-gpg.sh:
   file.managed:
-    - source: salt://sd/sd-journalist.sec
-    - user: user
-    - group: user
-    - mode: 644
+    - source: salt://sd/decrypt/qubes-gpg.sh
+    - user: root
+    - group: root
+    - mode: 755
 
 sudo update-mime-database /usr/share/mime:
   cmd.run
 
 sudo update-desktop-database /usr/share/applications:
-  cmd.run
-
-sudo -u user gpg --import /tmp/sd-journalist.sec:
   cmd.run
 
 touch /home/user/.qubes-dispvm-customized:

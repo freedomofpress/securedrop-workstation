@@ -22,6 +22,8 @@ sudo qubesctl top.enable sd-journalist
 sudo qubesctl top.enable sd-journalist-files
 sudo qubesctl top.enable sd-whonix-hidserv-key
 sudo qubesctl top.enable sd-dispvm-files
+sudo qubesctl top.enable sd-gpg
+sudo qubesctl top.enable sd-gpg-files
 
 # apply salt state
 sudo qubesctl --all state.highstate
