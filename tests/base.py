@@ -13,48 +13,6 @@ from qubes.qubes import QubesVmCollection
 
 # base class for per-VM testing
 
-class SD_VM_Tests(unittest.TestCase):
-  def setUp(self):
-    self.qc = QubesVmCollection()
-    self.qc.lock_db_for_reading()
-    self.qc.load()
-
-  def tearDown(self):
-    self.qc.unlock_db()
-
-  def test_expected(self):
-    vms = [v.name for v in self.qc.values()]
-    vm_set = set(vms)
-
-    for test_vm in ["sd-whonix", "sd-journalist", "sd-svs", "sd-gpg", "fedora-23-sd-dispvm"]:
-      self.assertTrue(test_vm in vm_set)
-
-  def test_sd_whonix_net(self):
-    vm = self.qc.get_vm_by_name("sd-whonix")
-    nvm = vm.netvm
-    self.assertTrue(nvm.name == "sys-firewall")
-
-  def test_sd_journalist_net(self):
-    vm = self.qc.get_vm_by_name("sd-journalist")
-    nvm = vm.netvm
-    self.assertTrue(nvm.name == "sd-whonix")
-
-  def test_sd_svs_net(self):
-    vm = self.qc.get_vm_by_name("sd-svs")
-    nvm = vm.netvm
-    self.assertTrue(nvm is None)
-
-  def test_sd_gpg_net(self):
-    vm = self.qc.get_vm_by_name("sd-gpg")
-    nvm = vm.netvm
-    self.assertTrue(nvm is None)
-
-  def test_sd_dispvm_net(self):
-    vm = self.qc.get_vm_by_name("fedora-23-sd-dispvm")
-    nvm = vm.netvm
-    self.assertTrue(nvm.name == "sys-firewall")
-
-
 class SD_VM_Local_Test(unittest.TestCase):
 
   def setUp(self):
@@ -89,6 +47,3 @@ class SD_VM_Local_Test(unittest.TestCase):
     with open(local_path) as f:
       content = f.read()
     self.assertTrue(remote_content == content)
-
-#suite = unittest.TestLoader().loadTestsFromTestCase(SD_VM_Tests)
-#unittest.TextTestRunner(verbosity=2).run(suite)

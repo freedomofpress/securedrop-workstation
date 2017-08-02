@@ -35,3 +35,14 @@ Getting this project to dom0 is a little tricky. Here's one way to do it-- assum
 Once the configuration is done and this directory is copied to dom0, the `run.sh` can be execute to handle all provisioning and configuration. It should be run as your unprivileged user:
 
     $ ./run.sh
+
+### Testing
+
+Tests should cover two broad domains. First, we should assert that all the expected VMs exist and are configured as we expect (with the correct NetVM, with the expected files in the correct place). Second, we should end-to-end test the document handlng scripts, asserting that files present in the sd-journalist VM correctly make their way to the sd-svs AppVM, and are opened correctly in disposable VMs.
+
+Tests can be found in the `tests/` directory. They use Python's `unittest` library, and so can be run from the project's root directory with:
+
+    python -m unittest -v tests`  # will run all tests
+    ptyhon -m unittest -v svs-test # run an individual test (in this case, test the svs AppVM)
+
+Be aware that running tests *will power down running SecureDrop VMs, and may result in data loss*. Only run tests in a development / testing environment.
