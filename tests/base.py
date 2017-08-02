@@ -20,10 +20,10 @@ class SD_VM_Local_Test(unittest.TestCase):
     self.qc.lock_db_for_reading()
     self.qc.load()
     self.vm = self.qc.get_vm_by_name(self.vm_name)
-    #self._reboot()
+    self._reboot()
 
   def tearDown(self):
-    #self.vm.shutdown()
+    self.vm.shutdown()
     self.qc.unlock_db()
 
   def _reboot(self):
