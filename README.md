@@ -45,4 +45,4 @@ Tests can be found in the `tests/` directory. They use Python's `unittest` libra
     python -m unittest -v tests`  # will run all tests
     ptyhon -m unittest -v svs-test # run an individual test (in this case, test the svs AppVM)
 
-Be aware that running tests *will power down running SecureDrop VMs, and may result in data loss*. Only run tests in a development / testing environment.
+Be aware that running tests *will power down running SecureDrop VMs, and may result in data loss*. Only run tests in a development / testing environment. Tests should be run from Dom0.

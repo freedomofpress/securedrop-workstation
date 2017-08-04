@@ -47,3 +47,11 @@ class SD_VM_Local_Test(unittest.TestCase):
     with open(local_path) as f:
       content = f.read()
     self.assertTrue(remote_content == content)
+
+  def assertFileHasLine(self, remote_path, line):
+    remote_content = self._get_file_contents(remote_path)
+    lines = remote_content.splitlines()
+    for l in lines:
+      if l == line:
+       return True
+    raise AssertionError("File {} does not contain expected line {}".format(remote_path, line))

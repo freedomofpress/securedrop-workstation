@@ -21,7 +21,7 @@ class SD_SVS_Tests(SD_VM_Local_Test):
   def test_accept_sd_xfer_extracted_file(self):
     self.assertFilesMatch(
      "/usr/local/bin/accept-sd-xfer-extracted",
-     "sd-svs/accept-sd-xfer-extracted") 
+     "sd-svs/accept-sd-xfer-extracted")
 
   def test_xfer_extracted_mime_type(self):
     self.assertFilesMatch(
