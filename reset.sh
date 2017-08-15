@@ -13,7 +13,7 @@ qvm-shutdown sd-journalist
 qvm-remove sd-journalist
 
 qvm-shutdown fedora-23-sd-dispvm-dvm
-qvm -remove fedora-23-sd-dispvm-dvm
+qvm-remove fedora-23-sd-dispvm-dvm
 
 qvm-shutdown fedora-23-sd-dispvm
 qvm-remove fedora-23-sd-dispvm
