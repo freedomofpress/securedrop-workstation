@@ -10,8 +10,6 @@
 ##
 
 /usr/local/bin/move-to-svs:
-  require:
-    - sls: sd-journalist
   file.managed:
     - source: salt://sd/sd-journalist/move-to-svs
     - user: root

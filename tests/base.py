@@ -27,6 +27,16 @@ class SD_VM_Local_Test(unittest.TestCase):
     self.qc.unlock_db()
 
   def _reboot(self):
+    try:
+      for v in self.vm.connected_vms.values():
+        if v.is_running():
+          print "Need to halt connected VM {} before testing".format(v)
+          v.shutdown()
+          while v.is_running():
+            time.sleep(1)
+    except:
+      pass
+
     if self.vm.is_running():
       self.vm.shutdown()
 
