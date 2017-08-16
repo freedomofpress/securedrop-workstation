@@ -24,7 +24,7 @@ class SD_VM_Tests(unittest.TestCase):
     vms = [v.name for v in self.qc.values()]
     vm_set = set(vms)
 
-    for test_vm in ["sd-whonix", "sd-journalist", "sd-svs", "sd-gpg", "fedora-23-sd-dispvm"]:
+    for test_vm in ["sd-whonix", "sd-journalist", "sd-svs", "fedora-23-sd-dispvm"]:
       self.assertTrue(test_vm in vm_set)
 
   def test_sd_whonix_net(self):
@@ -39,11 +39,6 @@ class SD_VM_Tests(unittest.TestCase):
 
   def test_sd_svs_net(self):
     vm = self.qc.get_vm_by_name("sd-svs")
-    nvm = vm.netvm
-    self.assertTrue(nvm is None)
-
-  def test_sd_gpg_net(self):
-    vm = self.qc.get_vm_by_name("sd-gpg")
     nvm = vm.netvm
     self.assertTrue(nvm is None)
 
