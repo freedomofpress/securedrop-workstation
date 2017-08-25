@@ -37,11 +37,11 @@ The following directories contain files that will be placed in various places in
 
 First, some configuration. Edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK. Replace `sd-journalist.sec` with the GPG private key used to encrypt submissions.
 
-Getting this project to dom0 is a little tricky. Here's one way to do it-- assuming this code is checked out in your `work` VM at `/home/user/projects/qubes-sd`, run the following in `dom0`.
+Getting this project to `dom0` is a little tricky. Here's one way to do it-- assuming this code is checked out in your `work` VM at `/home/user/projects/qubes-sd`, run the following in `dom0`.
 
     qvm-run --pass-io work 'tar -c -C /home/user/projects qubes-sd' | tar xvf -
 
-Once the configuration is done and this directory is copied to dom0, the `run.sh` can be execute to handle all provisioning and configuration. It should be run as your unprivileged user:
+Once the configuration is done and this directory is copied to `dom0`, `run.sh` can be executed to handle all provisioning and configuration. It should be run as your unprivileged user:
 
     $ ./run.sh
 
@@ -49,12 +49,12 @@ Once the configuration is done and this directory is copied to dom0, the `run.sh
 
 Development is a little tricky:
 
-- presumabley you don't want to do much real development in your SD AppVMs
-- you must run these scripts from Dom0, but it's very unergonimic to work there (since it's nearly impossible to commit changes from Dom0)
+- presumably you don't want to do much real development in your SD AppVMs
+- you must run these scripts from `dom0`, but it's very unergonomic to work there (since it's nearly impossible to commit changes from `dom0`)
 
-So, you should develop in a "work" VM, then copy changes to Dom0 for provisioning, then use salt to push changes to the SD AppVMs.
+So, you should develop in a work VM, then copy changes to `dom0` for provisioning, then use salt to push changes to the SD AppVMs.
 
-For example, for developing the scripts which run in `sd-journalist`, I'll edit files in a checkout of this repo in my `work` VM (in, for example, `~/projects/qubes-sd`). Then, in Dom0, I'll run:
+For example, for developing the scripts which run in `sd-journalist`, I'll edit files in a checkout of this repo in my `work` VM (in, for example, `~/projects/qubes-sd`). Then, in `dom0`, I'll run:
 
     $ cd /home/joshua ; qvm-run --pass-io work 'tar -c -C /home/user/projects qubes-sd' | tar xvf - ; cd /home/joshua/qubes-sd
 
@@ -68,7 +68,7 @@ Tests should cover two broad domains. First, we should assert that all the expec
 
 Tests can be found in the `tests/` directory. They use Python's `unittest` library, and so can be run from the project's root directory with:
 
-    python -m unittest -v tests`  # will run all tests
+    python -m unittest -v tests    # will run all tests
     ptyhon -m unittest -v svs-test # run an individual test (in this case, test the svs AppVM)
 
-Be aware that running tests *will power down running SecureDrop VMs, and may result in data loss*. Only run tests in a development / testing environment. Tests should be run from Dom0.
+Be aware that running tests *will power down running SecureDrop VMs, and may result in data loss*. Only run tests in a development / testing environment. Tests should be run from `dom0`.
