@@ -15,3 +15,45 @@
     - user: root
     - group: root
     - mode: 755
+
+/usr/local/bin/sd-process-download:
+  file.managed:
+    - source: salt://sd/sd-journalist/sd-process-download
+    - user: root
+    - group: root
+    - mode: 755
+
+/usr/local/bin/do-not-open:
+  file.managed:
+    - source: salt://sd/sd-journalist/do-not-open
+    - user: root
+    - group: root
+    - mode: 755
+
+/usr/local/share/applications/sd-process-download.desktop:
+  file.managed:
+    - source: salt://sd/sd-journalist/sd-process-download.desktop
+    - user: root
+    - group: root
+    - mode: 644
+    - makedirs: True
+
+/usr/local/share/applications/do-not-open.desktop:
+  file.managed:
+    - source: salt://sd/sd-journalist/do-not-open.desktop
+    - user: root
+    - group: root
+    - mode: 644
+    - makedirs: True
+
+/home/user/.config/mimeapps.list:
+  file.managed:
+    - source: salt://sd/sd-journalist/mimeapps.list
+    - user: user
+    - group: user
+    - mode: 644
+    - makedirs: True
+
+sudo update-desktop-database /usr/local/share/applications:
+  cmd.run
+

@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import tarfile
+import tempfile
+import os.path
+import subprocess
+
+fn = sys.argv[1]
+
+# Later processing expects a tarball of downloaded zip files (to allow
+# processing of multiple zip's at once). In the case of this script, we'll
+# only every have a single zip to process, but we still need to put it in
+# a tarball.
+
+fh = tempfile.NamedTemporaryFile(suffix=".sd-xfer", delete=False)
+out_tar = tarfile.open(mode='w', fileobj=fh)
+out_tar.add(fn, arcname=os.path.basename(fn))
+fh.close()
+
+# ship this to the next phase
+subprocess.call(["qvm-open-in-dvm", fh.name])
+os.remove(fh.name)

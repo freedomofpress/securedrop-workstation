@@ -1,0 +1,11 @@
+#!/usr/bin/python
+
+import sys
+from PyQt4 import Qt
+
+a = Qt.QApplication(sys.argv)
+
+nope = Qt.QLabel("Please do not use this VM to open any files aside from those downloaded from SecureDrop.")
+
+nope.show()
+a.exec_()

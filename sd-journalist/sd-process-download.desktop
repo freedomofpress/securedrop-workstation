@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+MimeType=application/zip
+Name=Process SecureDrop Download
+Exec=/usr/local/bin/sd-process-download
