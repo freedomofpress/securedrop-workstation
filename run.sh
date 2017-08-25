@@ -26,6 +26,8 @@ sudo qubesctl top.enable sd-svs-files
 sudo qubesctl top.enable sd-journalist
 sudo qubesctl top.enable sd-journalist-files
 sudo qubesctl top.enable sd-dispvm-files
+sudo qubesctl top.enable sd-gpg
+sudo qubesctl top.enable sd-gpg-files
 
 echo -e "\e[1;31m Building and configuring Whonix gateway... \e[0m"
 sudo qubesctl --targets sd-whonix state.highstate
