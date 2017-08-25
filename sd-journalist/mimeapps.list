@@ -1,5 +1,5 @@
 [Default Applications]
-application/x-tar=process-download.desktop;
+application/zip=process-download.desktop;
 application/x-dia-diagram=do-not-open.desktop;
 text/x-vcard=do-not-open.desktop;
 text/directory=do-not-open.desktop;
@@ -260,6 +260,7 @@ application/x-ms-wim=do-not-open.desktop;
 application/x-rar=do-not-open.desktop;
 application/x-rar-compressed=do-not-open.desktop;
 application/x-rzip=do-not-open.desktop;
+application/x-tar=do-not-open.desktop;
 application/x-tarz=do-not-open.desktop;
 application/x-stuffit=do-not-open.desktop;
 application/x-war=do-not-open.desktop;
@@ -268,7 +269,6 @@ application/x-xz-compressed-tar=do-not-open.desktop;
 application/x-zip=do-not-open.desktop;
 application/x-zip-compressed=do-not-open.desktop;
 application/x-zoo=do-not-open.desktop;
-application/zip=do-not-open.desktop;
 application/x-archive=do-not-open.desktop;
 application/vnd.ms-cab-compressed=do-not-open.desktop;
 application/x-source-rpm=do-not-open.desktop;
