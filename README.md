@@ -25,7 +25,13 @@ The following directories contain files that will be placed in various places in
 
 `sd-svs` contains scripts and configuration for the viewing station VM. These include a script to handle incoming, decrypted files during the submission handling process, and desktop configuration files to make this VM open all files in a disposable VM.
 
-`decrypt` contains scripts for configuring the system's disposable VM for handling decryption. These get used while configuring the systemwide disposable VM.
+`decrypt` contains scripts for the VMs handing decryption. These get used both while configuring the systemwide disposable VM, and when provisioning the `sd-gpg` split GPG VM. These should probably be separated into two directories- one for `sd-gpg` and one for the disposable VM config.
+
+`config.json.orig` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
+
+`run.sh` is used to provision the entire SecureDrop installation.
+
+`reset.sh` will remove all traces of a SecureDrop installation from your Qubes.
 
 ### Using this repo
 
@@ -38,6 +44,23 @@ Getting this project to dom0 is a little tricky. Here's one way to do it-- assum
 Once the configuration is done and this directory is copied to dom0, the `run.sh` can be execute to handle all provisioning and configuration. It should be run as your unprivileged user:
 
     $ ./run.sh
+
+### Development
+
+Development is a little tricky:
+
+- presumabley you don't want to do much real development in your SD AppVMs
+- you must run these scripts from Dom0, but it's very unergonimic to work there (since it's nearly impossible to commit changes from Dom0)
+
+So, you should develop in a "work" VM, then copy changes to Dom0 for provisioning, then use salt to push changes to the SD AppVMs.
+
+For example, for developing the scripts which run in `sd-journalist`, I'll edit files in a checkout of this repo in my `work` VM (in, for example, `~/projects/qubes-sd`). Then, in Dom0, I'll run:
+
+    $ cd /home/joshua ; qvm-run --pass-io work 'tar -c -C /home/user/projects qubes-sd' | tar xvf - ; cd /home/joshua/qubes-sd
+
+    $ sudo cp -r sd-journalist /srv/salt/sd ; sudo cp -r dom0/* /srv/salt/ ; sudo qubesctl --targets sd-journalist state.highstate
+
+The first command clones the repo into ~/qubes-sd in dom0 and drops you in the root of the repo. The second command copies the appropriate files into place for the salt ecosystem, then uses salt (via `qubesctl`) to apply any changes. If you're making other changes (ie, not to `sd-journalist` or `sd-journalist-files`), you may need to alter which files are copied into the system salt config directories. See `run.sh` for inspiration.
 
 ### Testing
 
