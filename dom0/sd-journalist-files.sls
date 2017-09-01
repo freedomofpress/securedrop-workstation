@@ -23,9 +23,9 @@
     - group: root
     - mode: 755
 
-/usr/local/bin/do-not-open:
+/usr/local/bin/do-not-open-here:
   file.managed:
-    - source: salt://sd/sd-journalist/do-not-open
+    - source: salt://sd/sd-journalist/do-not-open-here
     - user: root
     - group: root
     - mode: 755
