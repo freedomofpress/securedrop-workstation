@@ -25,6 +25,7 @@ out_tar = tarfile.open(mode='w', fileobj=fh)
 for f in probable_sd_downloads:
   out_tar.add(os.path.join(TB_DL_LOC, f), arcname=f)
 
+out_tar.close()
 fh.close()
 
 # ship this to the next phase

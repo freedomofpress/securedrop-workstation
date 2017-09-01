@@ -18,7 +18,7 @@ tmpdir = tempfile.mkdtemp()
 # we get given a tarball of everything the user has downloaded.
 # first step, extract that archive
 with tarfile.open(input) as tar:
-  # potentially unsafe, can create arbitrary files on the filesystem 
+  # potentially unsafe, can create arbitrary files on the filesystem
   # given a malicious tarball
   tar.extractall(tmpdir)
 
@@ -49,9 +49,11 @@ for root, dirnames, filenames in os.walk(tmpdir):
 # ok. we're going to send all the decrypted stuff to the svs vm.
 # let's tar it all up again, so we can `qvm-open-in-vm` it.
 fh = tempfile.NamedTemporaryFile(suffix=".sd-xfer-extracted", delete=False)
-print "extracted fh name " + fh.name
 out_tar = tarfile.open(mode='w', fileobj=fh)
 out_tar.add(os.path.join(tmpdir, "extracted"), arcname="extracted")
+out_tar.close()
+fh.close()
+
 shutil.rmtree(tmpdir)
 
 # finally! ship this off to sd-svs

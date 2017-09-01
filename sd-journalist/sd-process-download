@@ -17,6 +17,7 @@ fn = sys.argv[1]
 fh = tempfile.NamedTemporaryFile(suffix=".sd-xfer", delete=False)
 out_tar = tarfile.open(mode='w', fileobj=fh)
 out_tar.add(fn, arcname=os.path.basename(fn))
+out_tar.close()
 fh.close()
 
 # ship this to the next phase
