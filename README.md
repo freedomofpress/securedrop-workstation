@@ -35,14 +35,17 @@ The following directories contain files that will be placed in various places in
 
 ### Using this repo
 
-First, some configuration. Edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK. Replace `sd-journalist.sec` with the GPG private key used to encrypt submissions.
+First install Qubes 3.2 and accept the default VM configuration during the install process.
+
+Next, some SecureDrop-specific configuration. Edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK. Replace `sd-journalist.sec` with the GPG private key used to encrypt submissions.
 
 Getting this project to `dom0` is a little tricky. Here's one way to do it-- assuming this code is checked out in your `work` VM at `/home/user/projects/qubes-sd`, run the following in `dom0`.
 
     qvm-run --pass-io work 'tar -c -C /home/user/projects qubes-sd' | tar xvf -
 
-Once the configuration is done and this directory is copied to `dom0`, `run.sh` can be executed to handle all provisioning and configuration. It should be run as your unprivileged user:
+Once the configuration is done and this directory is copied to `dom0`, `run.sh` can be executed to handle all provisioning and configuration. It should be run as your unprivileged user in `dom0`:
 
+    $ cd qubes-sd
     $ ./run.sh
 
 ### Development
@@ -60,7 +63,7 @@ For example, for developing the scripts which run in `sd-journalist`, I'll edit 
 
     $ sudo cp -r sd-journalist /srv/salt/sd ; sudo cp -r dom0/* /srv/salt/ ; sudo qubesctl --targets sd-journalist state.highstate
 
-The first command clones the repo into ~/qubes-sd in dom0 and drops you in the root of the repo. The second command copies the appropriate files into place for the salt ecosystem, then uses salt (via `qubesctl`) to apply any changes. If you're making other changes (ie, not to `sd-journalist` or `sd-journalist-files`), you may need to alter which files are copied into the system salt config directories. See `run.sh` for inspiration.
+The first command clones the repo into `~/qubes-sd` in dom0 and drops you in the root of the repo. The second command copies the appropriate files into place for the salt ecosystem, then uses salt (via `qubesctl`) to apply any changes. If you're making other changes (ie, not to `sd-journalist` or `sd-journalist-files`), you may need to alter which files are copied into the system salt config directories. See `run.sh` for inspiration.
 
 ### Testing
 
@@ -69,6 +72,6 @@ Tests should cover two broad domains. First, we should assert that all the expec
 Tests can be found in the `tests/` directory. They use Python's `unittest` library, and so can be run from the project's root directory with:
 
     python -m unittest -v tests    # will run all tests
-    ptyhon -m unittest -v svs-test # run an individual test (in this case, test the svs AppVM)
+    python -m unittest -v svs-test # run an individual test (in this case, test the svs AppVM)
 
 Be aware that running tests *will power down running SecureDrop VMs, and may result in data loss*. Only run tests in a development / testing environment. Tests should be run from `dom0`.
