@@ -2,7 +2,9 @@
 
 ### Architecture
 
-The current VM architecture more-or-less follows the recommended SecureDrop deployment, but replaces physical machines with Qubes virtual machines. See the Google Doc at [] for the initial vision, but note what's here has diverged slightly.
+The current VM architecture more-or-less follows the recommended SecureDrop deployment, but replaces physical machines with Qubes virtual machines. 
+
+![](docs/images/vm-diagram.png)
 
 Currently, the following VMs are provisioned:
 
@@ -10,7 +12,9 @@ Currently, the following VMs are provisioned:
 - `sd-journalist` is used for accessing the journlist Tor hidden service. It uses `sd-whonix` as its network gateway. The submission processing workflow is triggered from this VM as submissions are downloaded.
 - `sd-svs` is a non-networked VM used to store and explore submissions after they're unarchived and decrypted. Any files double-clicked in this VM are opened in a disposable VM.
 - `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys, and do the actual submission crypto.
-- Qubes' `disvm` is configured both to decrypt incoming submissions (utilizing `sd-gpg`) and to open all files for the `sd-svs` VM.
+- Qubes' `dispvm` is configured both to decrypt incoming submissions (utilizing `sd-gpg`) and to open all files for the `sd-svs` VM.
+
+
 
 ### What's in this repo?
 
