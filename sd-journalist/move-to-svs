@@ -9,9 +9,11 @@ import subprocess
 
 TB_DL_LOC="/home/user/.tb/tor-browser/Browser/Downloads"
 
+# Files downloaded from SecureDrop can end in .zip or .gpg
 zips = glob.glob(TB_DL_LOC + "/*.zip")
+gpgs = glob.glob(TB_DL_LOC + "/*.gpg")
 
-matched_sd_pattern = [re.match('[a-z]+\_[a-z]+[\d-]+\.zip', os.path.basename(z)) for z in zips]
+matched_sd_pattern = [re.match('[a-z]+\_[a-z]+[\d-]+\.zip', os.path.basename(z)) for z in zips + gpgs]
 
 probable_sd_downloads = [z.group(0) for z in matched_sd_pattern if z]
 

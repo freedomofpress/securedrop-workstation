@@ -22,8 +22,8 @@ with tarfile.open(input) as tar:
   # given a malicious tarball
   tar.extractall(tmpdir)
 
-# everything in the archive should be zips, as created by SD
-# let's unzip those here
+# some files may be zips, some may be .gpg
+# let's unzip the zip files here to produce .gpg files
 zips = glob.glob(tmpdir + "/*zip")
 for z in zips:
   with zipfile.ZipFile(z) as zf:
