@@ -36,9 +36,16 @@ for root, dirnames, filenames in os.walk(tmpdir):
   for fn in fnmatch.filter(filenames, '*.gpg'):
     [fn_no_ext, _] = os.path.splitext(fn)
     out = open(os.path.join(root, fn_no_ext), 'w')
-    subprocess.call(["qubes-gpg-client", "--decrypt" , os.path.join(root, fn)], stdout=out)
+
+    err = tempfile.NamedTemporaryFile(suffix=".gpg-err")
+    res = subprocess.call(["qubes-gpg-client", "--decrypt" , os.path.join(root, fn)], stdout=out, stderr=err)
     out.close()
     os.unlink(os.path.join(root, fn))
+    if res is not None:
+        with open(err.name) as e:
+            msg = e.read()
+            subprocess.call(["notify-send", "-i", "face-crying", "Decryption error: {}".format(msg)])
+    err.close()
 
 # almost done. docs are gzipped. let's ungzip them.
 for root, dirnames, filenames in os.walk(tmpdir):
