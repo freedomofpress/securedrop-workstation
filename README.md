@@ -1,8 +1,6 @@
 ## Bringing SecureDrop to Qubes
 
-This project aims to make journalists' experience working with SecureDrop less onerous while retaining the current security and privacy features SecureDrop provides. We're doing that by running the set of journalist-facing tools (which currently spans multiple Tails installations and requires physical USB drives to move data) to a single computer running mulitple virtual machines, with data moved as automatically and transparently as possible between otherwise-isolated VMs.
-
-The current VM architecture more-or-less follows the recommended SecureDrop deployment, but replaces physical machines with Qubes virtual machines.
+This project aims to make journalists' experience working with SecureDrop less onerous while retaining the current security and privacy features SecureDrop provides. We're doing that by moving the set of journalist-facing tools, which currently spans multiple Tails installations and requires physical USB drives to move data, to a single computer running mulitple virtual machines, with data moved as automatically and transparently as possible between otherwise-isolated VMs.
 
 ### Architecture
 
@@ -12,17 +10,17 @@ The current architecture replaces the `Journalist Workstation` and `Secure Viewi
 
 Currently, the following VMs are provisioned:
 
-- `sd-journalist` is used for accessing the journlist Tor hidden service. It uses `sd-whonix` as its network gateway. The submission processing workflow is triggered from this VM as submissions are downloaded.
+- `sd-journalist` is used for accessing the journalist Tor hidden service. It uses `sd-whonix` as its network gateway. The submission processing workflow is triggered from this VM as submissions are downloaded.
 - `sd-svs` is a non-networked VM used to store and explore submissions after they're unarchived and decrypted. Any files double-clicked in this VM are opened in a disposable VM.
 - `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the `Journalist Interface`.
-- `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys, and do the actual submission crypto.
+- `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
 - Qubes' `dispvm` is configured both to decrypt incoming submissions (utilizing `sd-gpg`) and to open all files for the `sd-svs` VM.
 
 
 Submissions are processed in the following steps:
 
 1. Journalist uses the Tor Browser in the `sd-journalist` VM to visit the authenticated Tor hidden service Journalist Interface. After logging in, the journalist clicks on any submission they're interested in.
-2. The Tor Browser in the `sd-journalist` VM offers to open the submission with the configured handler (`sd-process-download`), which will trigger the rest of the processing.
+2. The Tor Browser in the `sd-journalist` VM offers to open the submission with the configured handler (`sd-process-download`)
 3. The `sd-process-download` script, run by Tor Browser, moves the submission to a disposable VM
 4. On the disposable VM, the submission is unarchvied and decrypted using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
 5. The decrypted submission is copied to the `sd-svs` Secure Viewing Station VM, where it's placed in the `Sources` directory based on the source name.
@@ -55,9 +53,9 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 
 First install Qubes 3.2 and accept the default VM configuration during the install process.
 
-Next, some SecureDrop-specific configuration. Edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK. Replace `sd-journalist.sec` with the GPG private key used to encrypt submissions.
+Next, some SecureDrop-specific configuration: edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK. Replace `sd-journalist.sec` with the GPG private key used to encrypt submissions.
 
-Getting this project to `dom0` is a little tricky. Here's one way to do it-- assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`.
+Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there. That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`.
 
     qvm-run --pass-io work 'tar -c -C /home/user/projects securedrop-workstation' | tar xvf -
 
@@ -68,7 +66,7 @@ Once the configuration is done and this directory is copied to `dom0`, `run.sh` 
 
 ### Development
 
-Development is a little tricky:
+Development is a little tricky, since:
 
 - presumably you don't want to do much real development in your SD AppVMs
 - you must run these scripts from `dom0`, but it's very unergonomic to work there (since it's nearly impossible to commit changes from `dom0`)
