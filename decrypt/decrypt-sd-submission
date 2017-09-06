@@ -41,7 +41,7 @@ for root, dirnames, filenames in os.walk(tmpdir):
     res = subprocess.call(["qubes-gpg-client", "--decrypt" , os.path.join(root, fn)], stdout=out, stderr=err)
     out.close()
     os.unlink(os.path.join(root, fn))
-    if res is not None:
+    if res != 0:
         with open(err.name) as e:
             msg = e.read()
             subprocess.call(["notify-send", "-i", "face-crying", "Decryption error: {}".format(msg)])
