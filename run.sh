@@ -32,7 +32,7 @@ sudo qubesctl top.enable sd-gpg-files
 echo -e "\e[1;31m Building and configuring Whonix gateway... \e[0m"
 sudo qubesctl --targets sd-whonix state.highstate
 echo -e "\e[1;31m Building and configuring SVS and journalist AppVMs... \e[0m"
-sudo qubesctl --targets sd-svs,sd-journalist,fedora-23-sd-dispvm state.highstate
+sudo qubesctl --targets sd-svs,sd-gpg,sd-journalist,fedora-23-sd-dispvm state.highstate
 
 # apply salt state
 #sudo qubesctl --all state.highstate
