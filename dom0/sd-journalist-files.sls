@@ -56,4 +56,3 @@
 
 sudo update-desktop-database /usr/local/share/applications:
   cmd.run
-
