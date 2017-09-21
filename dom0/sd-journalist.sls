@@ -10,7 +10,6 @@
 ##
 
 include:
-  - qvm.template-whonix-ws
   - sd-whonix
 
 {%- from "qvm/template.jinja" import load -%}
@@ -18,13 +17,13 @@ include:
 {% load_yaml as defaults -%}
 name:         sd-journalist
 present:
-  - template: whonix-ws
+  - template: sd-journalist-whonix-ws
   - label:    blue
 prefs:
   - netvm:    sd-whonix
 require:
-  - pkg:      template-whonix-ws
   - qvm:      sd-whonix
+
 {%- endload %}
 
 {{ load(defaults) }}
