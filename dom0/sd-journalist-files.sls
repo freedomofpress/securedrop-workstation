@@ -56,3 +56,13 @@
 
 sudo update-desktop-database /usr/local/share/applications:
   cmd.run
+
+# Nautilus is the default file manager in all Fedora based
+# VMs so let's use it here too for consistency and since we
+# know that Nautilus respects our mimeapps.list settings.
+nautilus:
+  pkg.installed
+
+# Remove Dolphin in favor of Nautilus.
+dolphin:
+  pkg.removed
