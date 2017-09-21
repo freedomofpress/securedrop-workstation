@@ -10,6 +10,7 @@ clone: proj-tar
 	tar xvf proj.tar --strip-components=1
 
 sd-journalist: prep-salt
+	qvm-clone whonix-ws sd-journalist-whonix-ws
 	sudo qubesctl top.enable sd-journalist
 	sudo qubesctl top.enable sd-journalist-files
 	sudo qubesctl --targets sd-journalist state.highstate
