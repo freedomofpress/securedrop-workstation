@@ -54,6 +54,10 @@ remove-fedora-23-sd-dispvm:
 	-qvm-kill fedora-23-sd-dispvm
 	-qvm-remove fedora-23-sd-dispvm
 
+remove-sd-journalist-sd-whonix-ws:
+	-qvm-kill sd-journalist-whonix-ws
+	-qvm-remove sd-journalist-whonix-ws
+
 remove-fedora-23-sd-dispvm-dvm:
 	-qvm-kill fedora-23-sd-dispvm-dvm
 	-qvm-remove fedora-23-sd-dispvm-dvm
@@ -72,7 +76,7 @@ remove-sd-gpg:
 
 clean: remove-sd-gpg remove-sd-svs remove-sd-journalist \
 	remove-fedora-23-sd-dispvm-dvm remove-fedora-23-sd-dispvm \
-	remove-sd-whonix
+	remove-sd-whonix remove-sd-journalist-sd-whonix-ws
 	@echo "Reset all VMs"
 
 test:
