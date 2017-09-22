@@ -11,6 +11,8 @@ clone: proj-tar
 
 sd-journalist: prep-salt
 	qvm-clone whonix-ws sd-journalist-whonix-ws
+	sudo qubesctl top.enable sd-journalist-template
+	sudo qubesctl --targets sd-journalist-whonix-ws state.highstate
 	sudo qubesctl top.enable sd-journalist
 	sudo qubesctl top.enable sd-journalist-files
 	sudo qubesctl --targets sd-journalist state.highstate
