@@ -1,5 +1,5 @@
 DEVVM=work
-DEVDIR=/home/user/projects/qubes-sd # important: no trailing slash
+DEVDIR=/home/user/securedrop-workstation # important: no trailing slash
 
 all: clean sd-whonix sd-svs sd-gpg sd-journalist disp-vm
 
@@ -36,7 +36,7 @@ disp-vm: prep-salt
 	qvm-create-default-dvm fedora-23-sd-dispvm
 
 prep-salt:
-	sudo [ -d /srv/salt/sd/ ] && sudo rm -rf /srv/salt/sd
+	-sudo rm -rf /srv/salt/sd
 	sudo mkdir /srv/salt/sd
 	sudo cp config.json /srv/salt/sd
 	sudo cp sd-journalist.sec /srv/salt/sd
