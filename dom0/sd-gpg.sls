@@ -16,7 +16,7 @@ name:         sd-gpg
 present:
   - label:    purple
 prefs:
-  - netvm:    none
+  - netvm:    ""
 {%- endload %}
 
 {{ load(defaults) }}

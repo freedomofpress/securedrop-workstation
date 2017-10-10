@@ -2,5 +2,5 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 base:
-  fedora-23-sd-dispvm:
+  fedora-25-sd-dispvm:
     - sd-dispvm-files

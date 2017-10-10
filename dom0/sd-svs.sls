@@ -16,7 +16,7 @@ name:         sd-svs
 present:
   - label:    yellow
 prefs:
-  - netvm:    none
+  - netvm:    ""
 {%- endload %}
 
 {{ load(defaults) }}

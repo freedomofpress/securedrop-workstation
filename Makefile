@@ -30,10 +30,10 @@ sd-whonix: prep-salt
 	sudo qubesctl --targets sd-whonix state.highstate
 
 disp-vm: prep-salt
-	qvm-clone fedora-23 fedora-23-sd-dispvm
+	qvm-clone fedora-25 fedora-25-sd-dispvm
 	sudo qubesctl top.enable sd-dispvm-files
-	sudo qubesctl --targets fedora-23-sd-dispvm state.highstate
-	qvm-create-default-dvm fedora-23-sd-dispvm
+	sudo qubesctl --targets fedora-25-sd-dispvm state.highstate
+	qvm-create-default-dvm fedora-25-sd-dispvm
 
 prep-salt:
 	-sudo rm -rf /srv/salt/sd
@@ -49,13 +49,13 @@ remove-sd-whonix:
 	-qvm-kill sd-whonix
 	-qvm-remove sd-whonix
 
-remove-fedora-23-sd-dispvm:
-	-qvm-kill fedora-23-sd-dispvm
-	-qvm-remove fedora-23-sd-dispvm
+remove-fedora-25-sd-dispvm:
+	-qvm-kill fedora-25-sd-dispvm
+	-qvm-remove fedora-25-sd-dispvm
 
-remove-fedora-23-sd-dispvm-dvm:
-	-qvm-kill fedora-23-sd-dispvm-dvm
-	-qvm-remove fedora-23-sd-dispvm-dvm
+remove-fedora-25-sd-dispvm-dvm:
+	-qvm-kill fedora-25-sd-dispvm-dvm
+	-qvm-remove fedora-25-sd-dispvm-dvm
 
 remove-sd-journalist:
 	-qvm-kill sd-journalist
@@ -70,7 +70,7 @@ remove-sd-gpg:
 	-qvm-remove sd-gpg
 
 clean: remove-sd-gpg remove-sd-svs remove-sd-journalist \
-	remove-fedora-23-sd-dispvm-dvm remove-fedora-23-sd-dispvm \
+	remove-fedora-25-sd-dispvm-dvm remove-fedora-25-sd-dispvm \
 	remove-sd-whonix
 	@echo "Reset all VMs"
 
