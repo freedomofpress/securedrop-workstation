@@ -51,7 +51,7 @@
     - group: root
     - mode: 755
 
-/etc/qubes-rpc/sd-process.Feedback
+/etc/qubes-rpc/sd-process.Feedback:
   file.managed:
     - source: salt://sd/sd-journalist/sd-process.Feedback
     - user: root
