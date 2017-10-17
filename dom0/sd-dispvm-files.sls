@@ -32,7 +32,6 @@
     - mode: 644
     - makedirs: True
 
-# /etc/profile.d/qubes-gpg.sh:
 /home/user/.profile:
   file.managed:
     - source: salt://sd/decrypt/dot-profile
