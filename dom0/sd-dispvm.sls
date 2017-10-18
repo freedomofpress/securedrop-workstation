@@ -22,3 +22,7 @@ prefs:
 {%- endload %}
 
 {{ load(defaults) }}
+
+# tell qubes this VM can be used as a disp VM template
+qvm-prefs sd-dispvm template_for_dispvms True:
+  cmd.run
