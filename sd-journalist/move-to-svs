@@ -29,5 +29,4 @@ out_tar.close()
 fh.close()
 
 # ship this to the next phase
-# subprocess.call(["qvm-open-in-vm", "work", os.path.join(TB_DL_LOC, fh.name)])
-subprocess.call(["qvm-open-in-dvm", os.path.join(TB_DL_LOC, fh.name)])
+subprocess.call(["qvm-open-in-vm", "$dispvm:sd-dispvm", os.path.join(TB_DL_LOC, fh.name)])
