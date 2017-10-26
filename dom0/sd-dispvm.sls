@@ -5,8 +5,8 @@
 # sd-dispvm
 # ========
 #
-# Installs 'sd-disp' AppVM, which will be used as the base dispvm for
-# the securedrop client. Later we should create multiple dispvms for
+# Configures the 'sd-disp' template VM, which will be used as the base dispvm
+# for the securedrop client. Later we should create multiple dispvms for
 # different purposes, but this ports the 3.2 behavior fow now.
 # This VM has no network configured.
 ##
@@ -16,7 +16,7 @@
 {% load_yaml as defaults -%}
 name:         sd-dispvm
 present:
-  - label:    red
+  - label:    green
 prefs:
   - netvm:    ""
 {%- endload %}
