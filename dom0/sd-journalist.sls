@@ -30,6 +30,6 @@ require:
 {{ load(defaults) }}
 
 # Allow dispvms based on this vm to use sd-gpg
-echo 'sd-journalist $dispvm:sd-dispvm allow' > /etc/qubes-rpc/policy/qubes.OpenInVM:
+sed -i '1isd-journalist $dispvm:sd-dispvm allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
   cmd.run:
   - unless: grep -qF 'sd-journalist $dispvm:sd-dispvm allow' /etc/qubes-rpc/policy/qubes.OpenInVM
