@@ -1,5 +1,5 @@
 DEVVM=work
-DEVDIR=/home/user/securedrop-workstation # important: no trailing slash
+DEVDIR=/home/user/projects/securedrop-workstation # important: no trailing slash
 
 all: clean sd-whonix sd-svs sd-gpg sd-journalist sd-dispvm
 
