@@ -24,7 +24,7 @@ class SD_VM_Tests(unittest.TestCase):
     vms = [v.name for v in self.qc.values()]
     vm_set = set(vms)
 
-    for test_vm in ["sd-whonix", "sd-journalist", "sd-svs", "fedora-23-sd-dispvm"]:
+    for test_vm in ["sd-whonix", "sd-journalist", "sd-svs", "fedora-25-sd-dispvm"]:
       self.assertTrue(test_vm in vm_set)
 
   def test_sd_whonix_net(self):
@@ -43,7 +43,7 @@ class SD_VM_Tests(unittest.TestCase):
     self.assertTrue(nvm is None)
 
   def test_sd_dispvm_net(self):
-    vm = self.qc.get_vm_by_name("fedora-23-sd-dispvm")
+    vm = self.qc.get_vm_by_name("fedora-25-sd-dispvm")
     nvm = vm.netvm
     self.assertTrue(nvm.name == "sys-firewall")
 

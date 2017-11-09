@@ -9,14 +9,14 @@
 #
 ##
 
-/usr/bin/decrypt-sd-submission:
+/usr/local/bin/decrypt-sd-submission:
   file.managed:
     - source: salt://sd/decrypt/decrypt-sd-submission
     - user: root
     - group: root
     - mode: 755
 
-/usr/share/mime/packages/application-x-sd-xfer.xml:
+/usr/local/share/mime/packages/application-x-sd-xfer.xml:
   file.managed:
     - source: salt://sd/decrypt/application-x-sd-xfer.xml
     - user: root
@@ -24,7 +24,7 @@
     - mode: 644
     - makedirs: True
 
-/usr/share/applications/decrypt-sd-submission.desktop:
+/usr/local/share/applications/decrypt-sd-submission.desktop:
   file.managed:
     - source: salt://sd/decrypt/decrypt-sd-submission.desktop
     - user: root
@@ -32,18 +32,15 @@
     - mode: 644
     - makedirs: True
 
-/etc/profile.d/qubes-gpg.sh:
+/home/user/.profile:
   file.managed:
-    - source: salt://sd/decrypt/qubes-gpg.sh
+    - source: salt://sd/decrypt/dot-profile
     - user: root
     - group: root
     - mode: 755
 
-sudo update-mime-database /usr/share/mime:
+sudo update-mime-database /usr/local/share/mime:
   cmd.run
 
-sudo update-desktop-database /usr/share/applications:
-  cmd.run
-
-touch /home/user/.qubes-dispvm-customized:
+sudo update-desktop-database /usr/local/share/applications:
   cmd.run

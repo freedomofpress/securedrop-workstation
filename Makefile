@@ -1,7 +1,7 @@
 DEVVM=work
-DEVDIR=/home/user/projects/qubes-sd # important: no trailing slash
+DEVDIR=/home/user/projects/securedrop-workstation # important: no trailing slash
 
-all: clean sd-whonix sd-svs sd-gpg sd-journalist disp-vm
+all: clean sd-whonix sd-svs sd-gpg sd-journalist sd-dispvm
 
 proj-tar:
 	qvm-run --pass-io $(DEVVM) 'tar -c -C $(dir $(DEVDIR)) $(notdir $(DEVDIR))' > ./proj.tar
@@ -29,14 +29,13 @@ sd-whonix: prep-salt
 	sudo qubesctl top.enable sd-whonix-hidserv-key
 	sudo qubesctl --targets sd-whonix state.highstate
 
-disp-vm: prep-salt
-	qvm-clone fedora-23 fedora-23-sd-dispvm
+sd-dispvm: prep-salt
+	sudo qubesctl top.enable sd-dispvm
 	sudo qubesctl top.enable sd-dispvm-files
-	sudo qubesctl --targets fedora-23-sd-dispvm state.highstate
-	qvm-create-default-dvm fedora-23-sd-dispvm
+	sudo qubesctl --targets sd-dispvm state.highstate
 
 prep-salt:
-	sudo [ -d /srv/salt/sd/ ] && sudo rm -rf /srv/salt/sd
+	-sudo rm -rf /srv/salt/sd
 	sudo mkdir /srv/salt/sd
 	sudo cp config.json /srv/salt/sd
 	sudo cp sd-journalist.sec /srv/salt/sd
@@ -49,13 +48,9 @@ remove-sd-whonix:
 	-qvm-kill sd-whonix
 	-qvm-remove sd-whonix
 
-remove-fedora-23-sd-dispvm:
-	-qvm-kill fedora-23-sd-dispvm
-	-qvm-remove fedora-23-sd-dispvm
-
-remove-fedora-23-sd-dispvm-dvm:
-	-qvm-kill fedora-23-sd-dispvm-dvm
-	-qvm-remove fedora-23-sd-dispvm-dvm
+remove-sd-dispvm:
+	-qvm-kill sd-dispvm
+	-qvm-remove sd-dispvm
 
 remove-sd-journalist:
 	-qvm-kill sd-journalist
@@ -70,7 +65,7 @@ remove-sd-gpg:
 	-qvm-remove sd-gpg
 
 clean: remove-sd-gpg remove-sd-svs remove-sd-journalist \
-	remove-fedora-23-sd-dispvm-dvm remove-fedora-23-sd-dispvm \
+	remove-sd-dispvm \
 	remove-sd-whonix
 	@echo "Reset all VMs"
 

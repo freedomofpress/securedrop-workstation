@@ -16,7 +16,12 @@ name:         sd-svs
 present:
   - label:    yellow
 prefs:
-  - netvm:    none
+  - netvm:    ""
 {%- endload %}
 
 {{ load(defaults) }}
+
+# Allow sd-svs to open files in dispvms based on sd-dispvm
+sed -i '1isd-svs $dispvm:sd-dispvm allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
+  cmd.run:
+    - unless: grep -qF 'sd-svs $dispvm:sd-dispvm allow' /etc/qubes-rpc/policy/qubes.OpenInVM

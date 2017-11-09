@@ -66,6 +66,34 @@ Once the configuration is done and this directory is copied to `dom0`, `make` ca
     $ cd securedrop-workstation
     $ make all
 
+### Qubes 4.0
+
+We've decided to target Qubes 4.0 for release, meaning we also should develop on Qubes 4.0. Since that version is not yet stable, this requires some patience and a bit of extra work.
+
+As of this writing, 4.0 RC1 is the most recent available version (though RC2 should be right around the corner). In my experience, RC1 is usable if it's immediately brought up to date with the `testing` repos.
+
+So, as soon as the Qubes installer finishes and you're able to boot into your system, open a `dom0` shell and run:
+
+    sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing
+
+Once that finishes, reboot your machine. Open a shell on your Fedora 25 template and run:
+
+    sudo dnf upgrade --enablerepo=qubes-vm-*-current-testing
+
+and in your Debian template VM, uncomment the `testing` repo in `/etc/apt/sources.list.d/qubes-r4.list`, and run:
+
+    sudo apt-get update ; sudo apt-get dist-upgrade
+
+Qubes 4.0 does not ship with Whonix, so we'll install it manually. In a `dom0` shell, run:
+
+    sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-4.0-templates-community
+
+to import a key that RC1 does not automatically import (this is a known bug that is fixed in RC2). Then:
+
+    sudo qubes-dom0-update --enablerepo=qubes-templates-community qubes-template-whonix-gw qubes-template-whonix-ws
+
+Your "Q" menu should now include `whonix-ws` and `whonix-gw` VMs- these are template VMs for creating whonix proxy and workstation VMs. Liberally follow the instructions at https://www.whonix.org/wiki/Qubes/Install to create the `sys-whonix` ProxyVM and an initial `anon-whonix` AppVM. The instructions there also describe configuring the whonix templates to use the new `sys-whonix` VM as their network VMs, which is important for enabling updates over Tor.
+
 ### Development
 
 My development workflow is different depending on if I'm working on provisioning components or submission-handling scripts.
