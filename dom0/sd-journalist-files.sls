@@ -51,12 +51,20 @@
     - group: root
     - mode: 755
 
-/etc/qubes-rpc/sd-process.Feedback:
+/rw/config/rc.local:
+  file.managed:
+    - source: salt://sd/sd-journalist/rc.local
+    - user: root
+    - group: root
+    - mode: 755
+
+/rw/config/etc/qubes-rpc/sd-process.Feedback:
   file.managed:
     - source: salt://sd/sd-journalist/sd-process.Feedback
     - user: root
     - group: root
     - mode: 755
+    - makedirs: True
 
 /usr/local/share/applications/sd-process-download.desktop:
   file.managed:

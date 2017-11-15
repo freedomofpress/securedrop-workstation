@@ -10,17 +10,32 @@ import glob
 import subprocess
 import shutil
 
+
+def send_progress(msg):
+  p = subprocess.Popen(["qrexec-client-vm","sd-journalist", "sd-process.Feedback"], stdin=subprocess.PIPE)
+  p.communicate(msg)
+
 input = sys.argv[1]
+
+send_progress("DECRYPTION_PROCESS_START")
 
 # a nice place to work...
 tmpdir = tempfile.mkdtemp()
 
 # we get given a tarball of everything the user has downloaded.
 # first step, extract that archive
-with tarfile.open(input) as tar:
+try:
+
+  with tarfile.open(input) as tar:
   # potentially unsafe, can create arbitrary files on the filesystem
   # given a malicious tarball
-  tar.extractall(tmpdir)
+    tar.extractall(tmpdir)
+
+except Exception as e:
+  send_progress("DECRYPTION_BUNDLE_OPEN_FAILURE")
+
+
+send_progress("SUBMISSION_BUNDLE_UNBUNDLED")
 
 # everything in the archive should be zips, as created by SD
 # let's unzip those here
@@ -29,6 +44,8 @@ for z in zips:
   with zipfile.ZipFile(z) as zf:
     zf.extractall(tmpdir + "/extracted/")
   os.unlink(z)
+
+send_progress("SUBMISSION_FILES_EXTRACTED")
 
 # great, we should be left with a directory tree filled with files
 # encrypted to our public key. let's find those and decrypt them
@@ -44,17 +61,21 @@ for root, dirnames, filenames in os.walk(tmpdir):
     if res != 0:
         with open(err.name) as e:
             msg = e.read()
-            subprocess.call(["notify-send", "-i", "face-crying", "Decryption error: {}".format(msg)])
+            send_progress("SUBMISSION_FILE_DECRYPTION_FAILED")
+    else:
+      send_progress("SUBMISSION_FILE_DECRYPTION_SUCCEEDED")
     err.close()
 
 # almost done. docs are gzipped. let's ungzip them.
 for root, dirnames, filenames in os.walk(tmpdir):
   for fn in fnmatch.filter(filenames, '*.gz'):
     # maybe sorta lazy, could do this using python gzip module.
+    # XXX also catch errors here...
     subprocess.call(["gunzip", os.path.join(root, fn)])
 
 # ok. we're going to send all the decrypted stuff to the svs vm.
 # let's tar it all up again, so we can `qvm-open-in-vm` it.
+
 fh = tempfile.NamedTemporaryFile(suffix=".sd-xfer-extracted", delete=False)
 out_tar = tarfile.open(mode='w', fileobj=fh)
 out_tar.add(os.path.join(tmpdir, "extracted"), arcname="extracted")

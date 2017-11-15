@@ -4,10 +4,8 @@ import sys
 import subprocess
 import os
 
-input = sys.argv[1]
+fn = sys.argv[1]
 
-print input
+subprocess.call(["tar", "-xvf", fn, "--strip-components=1", "-C", "/home/user/Sources"])
 
-subprocess.call(["tar", "-xvf", input, "--strip-components=1", "-C", "/home/user/Sources"])
-
-os.unlink(input)
+os.unlink(fn)

@@ -1,8 +1,10 @@
+#!/usr/bin/python
+
 import os
 import select
 import errno
 
-BUFFSIZE = 4096
+BUFFSIZE = 64
 
 class PipeReader():
     def __init__(self, pipe, cb):
@@ -10,18 +12,16 @@ class PipeReader():
         self.pipe = pipe
         self.cb = cb
 
-        try:	
+        try:
             os.mkfifo(pipe)
         except OSError as oe:
             if oe.errno != errno.EEXIST:
                 raise
 
-
     def quit(self):
         self._quit = True
 
     def read(self):
-        print "entering read"
 
         pipe = self.pipe
         cb = self.cb
@@ -30,26 +30,53 @@ class PipeReader():
         poller = select.epoll()
         poller.register(fifo)
 
-        while not self._quit:   
+        while not self._quit:
             events = poller.poll(timeout=1)
-            for fileno, event in events:     
+            for fileno, event in events:
                 if event & select.EPOLLIN:
-                    data = os.read(fifo, BUFFSIZE)
-                    cb(self, data, None)
 
-                if event & select.EPOLLHUP:
+                    # read at most BUFSIZE bytes from the fifo
+                    data = os.read(fifo, BUFFSIZE)
+
+                    print "data: {}".format(data)
+
+                    # in this application, we never want to read more
+                    # than BUFSIZE bytes. writes from our client
+                    # should be atomic up to PIPE_BUF byes, which is
+                    # greater than our BUF_SIZE (see
+                    # https://unix.stackexchange.com/questions/68146/what-are-guarantees-for-concurrent-writes-into-a-named-pipe). So,
+                    # we can immediately close this filehandle
+
                     poller.unregister(fileno)
                     os.close(fileno)
+                    cb(self, data, None)
                     fifo = os.open(pipe, os.O_RDONLY | os.O_NONBLOCK)
                     poller.register(fifo)
 
-                if event & select.EPOLLERR:
+                elif event & select.EPOLLHUP:
+                    # it's not clear to me how we can reach this code
+                    # path, but I've seen it happen...
+                    print "epoll HUP event!"
+                    poller.unregister(fileno)
+                    os.close(fileno)
+
+                    fifo = os.open(pipe, os.O_RDONLY | os.O_NONBLOCK)
+                    poller.register(fifo)
+
+                elif event & select.EPOLLERR:
                     print "Error while polling."
-                    cb(None, "Polling error!")
+                    cb(None, "POLLING_ERROR")
                     poller.unregister(fileno)
                     os.close(fileno)
                     fifo = os.open(pipe, os.O_RDONLY | os.O_NONBLOCK)
                     print("FIFO opened {}".format(fifo))
+                    poller.register(fifo)
+                elif event:
+                    print "Totally unhandled event: {}".format(event)
+                    cb(None, "POLLING_ERROR")
+                    poller.unregister(fileno)
+                    os.close(fileno)
+                    fifo = os.open(pipe, os.O_RDONLY | os.O_NONBLOCK)
                     poller.register(fifo)
 
 def reporter(poller, msg, err):
