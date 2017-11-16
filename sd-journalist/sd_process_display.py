@@ -42,6 +42,11 @@ messages = {
     'SUBMISSION_FILE_DECRYPTION_FAILED': ('error', "Submission file decryption failed."),
     'SUBMISSION_FILE_DECRYPTION_SUCCEEDED': ("success", "Submission file decrypted."),
     'SUBMISSION_DECRYPTED': ("success", "All submission files decrypted"),
+
+    # SVS
+    'DECRYPTED_BUNDLE_ON_SVS': ("success", "Decrypted file bundle arrived on SVS."),
+    'DECRYPTED_FILES_AVAILABLE': ("success", "Submitted files available for use on SVS."),
+    'DECRYPTED_BUNDLE UNBUNDLE_ERROR': ("error", "Bundle of decrypted files could not be unbundle on SVS." )
 }
 
 def display(keyword):

@@ -6,6 +6,22 @@ import os
 
 fn = sys.argv[1]
 
-subprocess.call(["tar", "-xvf", fn, "--strip-components=1", "-C", "/home/user/Sources"])
+## pull this in to a library... XXX
+def send_progress(msg):
+  p = subprocess.Popen(["qrexec-client-vm","sd-journalist", "sd-process.Feedback"], stdin=subprocess.PIPE)
+  p.communicate(msg)
+
+send_progress("DECRYPTED_BUNDLE_ON_SVS")
+
+try:
+    res = subprocess.call(["tar", "-xf", fn, "--strip-components=1", "-C", "/home/user/Sources"])
+    if res != 0:
+        send_progress("DECRYPTED_BUNDLE_UNBUNDLE_ERROR")
+        sys.exit(1)
+except Exception as e:
+    send_progress("DECRYPTED_BUNDLE_UNBUNDLE_ERROR")
+    sys.exit(2)
+
+send_progress("DECRYPTED_FILES_AVAILABLE")
 
 os.unlink(fn)
