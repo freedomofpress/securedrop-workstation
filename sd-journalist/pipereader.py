@@ -38,8 +38,6 @@ class PipeReader():
                     # read at most BUFSIZE bytes from the fifo
                     data = os.read(fifo, BUFFSIZE)
 
-                    print "data: {}".format(data)
-
                     # in this application, we never want to read more
                     # than BUFSIZE bytes. writes from our client
                     # should be atomic up to PIPE_BUF byes, which is
@@ -54,9 +52,6 @@ class PipeReader():
                     poller.register(fifo)
 
                 elif event & select.EPOLLHUP:
-                    # it's not clear to me how we can reach this code
-                    # path, but I've seen it happen...
-                    print "epoll HUP event!"
                     poller.unregister(fileno)
                     os.close(fileno)
 
