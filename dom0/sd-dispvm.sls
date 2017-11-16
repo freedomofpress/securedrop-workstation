@@ -29,7 +29,7 @@ qvm-prefs sd-dispvm template_for_dispvms True:
 
 # tag this vm, since we need to set policies using it as a source
 # (eg, "dispvms created from this VM can use the Gpg facility provided
-.# by sd-gpg"), but the "$dispvm:sd-dispvm" syntax can only be used as an
+# by sd-gpg"), but the "$dispvm:sd-dispvm" syntax can only be used as an
 # RPC policy *target*, not source. Tagged VMs can be used as a source.
 # This feels like a Qubes bug.
 qvm-tags sd-dispvm add sd-decrypt-vm:
