@@ -12,7 +12,10 @@ import shutil
 
 
 def send_progress(msg):
-  p = subprocess.Popen(["qrexec-client-vm","sd-journalist", "sd-process.Feedback"], stdin=subprocess.PIPE)
+  p = subprocess.Popen(["qrexec-client-vm","sd-journalist",
+                        "sd-process.Feedback"],
+                       close_fds=True,
+                       stdin=subprocess.PIPE)
   p.communicate(msg)
 
 input = sys.argv[1]
@@ -34,7 +37,6 @@ try:
 except Exception as e:
   send_progress("DECRYPTION_BUNDLE_OPEN_FAILURE")
 
-
 send_progress("SUBMISSION_BUNDLE_UNBUNDLED")
 
 # everything in the archive should be zips, as created by SD
@@ -52,8 +54,8 @@ send_progress("SUBMISSION_FILES_EXTRACTED")
 for root, dirnames, filenames in os.walk(tmpdir):
   for fn in fnmatch.filter(filenames, '*.gpg'):
     [fn_no_ext, _] = os.path.splitext(fn)
-    out = open(os.path.join(root, fn_no_ext), 'w')
 
+    out = open(os.path.join(root, fn_no_ext), 'w')
     err = tempfile.NamedTemporaryFile(suffix=".gpg-err")
     res = subprocess.call(["qubes-gpg-client", "--decrypt" , os.path.join(root, fn)], stdout=out, stderr=err)
     out.close()

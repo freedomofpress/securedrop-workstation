@@ -82,6 +82,14 @@
     - mode: 644
     - makedirs: True
 
+/usr/local/share/sd/logo-small.png
+  file.managed:
+    - source: salt://sd/sd-journalist/logo-small.png   
+    - user: root
+    - group: root
+    - mode: 644
+    - makedirs: True
+
 /home/user/.config/mimeapps.list:
   file.managed:
     - source: salt://sd/sd-journalist/mimeapps.list

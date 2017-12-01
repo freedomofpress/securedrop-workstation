@@ -1,6 +1,6 @@
 import sys
 import PyQt4.QtCore as QtCore
-from PyQt4.QtGui import QDialog, QDialogButtonBox, QApplication, QLabel, QVBoxLayout
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QApplication, QLabel, QVBoxLayout, QImage, QPixmap
 from PyQt4.QtCore import Qt
 import os
 import errno
@@ -9,12 +9,19 @@ import pipereader
 
 class SDDialog(QDialog):
     def __init__(self, parent = None):
+        fn = r'/usr/local/share/sd/logo-small.png'
+        image = QImage(fn)
+        self.logo = QLabel()
+        self.logo.setPixmap(QPixmap.fromImage(image))
+
         super(SDDialog, self).__init__(parent)
 
         layout = QVBoxLayout(self)
 
         self.display = QLabel()
         self.display.setText("SecureDrop message processing")
+
+        layout.addWidget(self.logo)
         layout.addWidget(self.display)
 
         self.buttons = QDialogButtonBox(
