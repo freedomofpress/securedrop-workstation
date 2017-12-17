@@ -51,7 +51,7 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 
 What follows describes how to configure and use this repo for development and testing. We don't yet have a full story for production deployment- see #17 for discussion about that.
 
-First install Qubes 3.2 and accept the default VM configuration during the install process.
+First install [Qubes 4.0-rc3](https://www.qubes-os.org/downloads/) and accept the default VM configuration during the install process.
 
 Next, some SecureDrop-specific configuration: edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK. Replace `sd-journalist.sec` with the GPG private key used to encrypt submissions. Edit `Makefile` and replace `DEVVM` and `DEVDIR` to reflect the VM and directory to which you've cloned this repo. Note that `DEVDIR` must not include a trailing slash.
 
@@ -70,7 +70,7 @@ Once the configuration is done and this directory is copied to `dom0`, `make` ca
 
 We've decided to target Qubes 4.0 for release, meaning we also should develop on Qubes 4.0. Since that version is not yet stable, this requires some patience and a bit of extra work.
 
-As of this writing, 4.0rc3 is the most recent available version. In my experience, rc3 is usable if it's immediately brought up to date with the `testing` repos.
+As of this writing, 4.0-rc3 is the most recent available version. In my experience, rc3 is usable if it's immediately brought up to date with the `testing` repos.
 
 So, as soon as the Qubes installer finishes and you're able to boot into your system, open a `dom0` shell and run:
 
