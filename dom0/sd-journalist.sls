@@ -34,21 +34,9 @@ sed -i '1isd-journalist $dispvm:sd-dispvm allow' /etc/qubes-rpc/policy/qubes.Ope
   cmd.run:
   - unless: grep -qF 'sd-journalist $dispvm:sd-dispvm allow' /etc/qubes-rpc/policy/qubes.OpenInVM
 
-# Allow our dispvm and sd-svs to send us progress updates
-# Create an empty file if it doesn't already exist
 /etc/qubes-rpc/policy/sd-process.Feedback:
   file.managed:    
-    - source: ~
+    - source: salt://sd/sd-journalist/sd-process.Feedback-dom0
     - user: root
     - group: root
     - mode: 644
-
-# XXX this did not work, did not add lines to the empty file...
-# seems like file.line could work here
-sed -i '1i$tag:sd-decrypt-vm sd-journalist allow' /etc/qubes-rpc/policy/sd-process.Feedback:
-  cmd.run:
-  - unless: grep -qF '$tag:sd-decrypt-vm sd-journalist allow' /etc/qubes-rpc/policy/sd-process.Feedback
-
-sed -i '1isd-svs sd-journalist allow' /etc/qubes-rpc/policy/sd-process.Feedback:
-  cmd.run:
-  - unless: grep -qF 'sd-svs sd-journalist allow' /etc/qubes-rpc/policy/sd-process.Feedback
