@@ -37,6 +37,13 @@
     - group: root
     - mode: 755
 
+/usr/local/bin/sd_process_display:
+  file.managed:
+    - source: salt://sd/sd-journalist/sd_process_display.py
+    - user: root
+    - group: root
+    - mode: 644
+
 /usr/local/bin/mm.py:
   file.managed:
     - source: salt://sd/sd-journalist/mm.py
