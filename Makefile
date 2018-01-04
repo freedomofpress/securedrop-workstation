@@ -1,7 +1,7 @@
 DEVVM=work
 DEVDIR=/home/user/projects/securedrop-workstation # important: no trailing slash
 
-all: clean sd-whonix sd-svs sd-gpg sd-journalist sd-dispvm
+all: validate clean sd-whonix sd-svs sd-gpg sd-journalist sd-dispvm
 
 proj-tar:
 	qvm-run --pass-io $(DEVVM) 'tar -c -C $(dir $(DEVDIR)) $(notdir $(DEVDIR))' > ./proj.tar
@@ -83,3 +83,8 @@ test-whonix:
 
 test-disp:
 	python -m unittest -v tests.test_dispvm
+
+validate:
+	@bash -c "test -e config.json" || \
+		{ echo "ERROR: missing 'config.json'!" && \
+		echo "Create from 'config.json.example'." && exit 1 ; }
