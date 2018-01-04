@@ -4,6 +4,8 @@
 
 This project aims to make journalists' experience working with SecureDrop less onerous while retaining the current security and privacy features SecureDrop provides. We're doing that by moving the set of journalist-facing tools, which currently spans multiple Tails installations and requires physical USB drives to move data, to a single computer running mulitple virtual machines, with data moved as automatically and transparently as possible between otherwise-isolated VMs.
 
+This project is under active development, has known bugs and shortcomings, and is not ready for end users. This README is geared towards interested technical users and developers.
+
 ### Using this repo
 
 Installing this project is involved. It requires an up-to-date Qubes 4.0 installation running on a machine with at least 12GB of RAM. You'll need access to a SecureDrop staging server as well.
@@ -28,7 +30,11 @@ and in your Debian template VM, uncomment the `testing` repo in `/etc/apt/source
 
 Decide on a VM to use for development. Clone this repo in your preferred location.
 
-Next, some SecureDrop-specific configuration: edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK. Replace the `sd-journalist.sec` file in the root directory with the GPG private key used to encrypt submissions. Edit `Makefile` and replace `DEVVM` and `DEVDIR` to reflect the VM and directory to which you've cloned this repo. Note that `DEVDIR` must not include a trailing slash.
+Next, some SecureDrop-specific configuration. Do the following:
+
+- edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK.
+- Replace the `sd-journalist.sec` file in the root directory with the GPG private key used to encrypt submissions.
+- Edit `Makefile` and replace `DEVVM` and `DEVDIR` to reflect the VM and directory to which you've cloned this repo. Note that `DEVDIR` must not include a trailing slash.
 
 Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM. That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`.
 
