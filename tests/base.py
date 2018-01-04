@@ -6,25 +6,24 @@ import subprocess
 import time
 import unittest
 
-import qubes.tests
-import qubes.qubes
-
-from qubes.qubes import QubesVmCollection
+from qubesadmin import Qubes
 
 # base class for per-VM testing
 
 class SD_VM_Local_Test(unittest.TestCase):
 
   def setUp(self):
-    self.qc = QubesVmCollection()
-    self.qc.lock_db_for_reading()
-    self.qc.load()
-    self.vm = self.qc.get_vm_by_name(self.vm_name)
+    app = Qubes()
+    self.vm = app.domains[self.vm_name]
+    #self.qc = QubesVmCollection()
+    #self.qc.lock_db_for_reading()
+    #self.qc.load()
+    #self.vm = self.qc.get_vm_by_name(self.vm_name)
     self._reboot()
 
   def tearDown(self):
     self.vm.shutdown()
-    self.qc.unlock_db()
+    #self.qc.unlock_db()
 
   def _reboot(self):
     try:

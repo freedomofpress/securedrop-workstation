@@ -6,34 +6,38 @@ import subprocess
 import time
 import unittest
 
-import qubes.tests
-import qubes.qubes
+from base import SD_VM_Local_Test
 
-from qubes.qubes import QubesVmCollection
 
-# We want to start a dispvm, then assert various files are there.
+#class Dispvm_Tests(unittest.TestCase):
 
-class Dispvm_Tests(unittest.TestCase):
-  def _get_file_contents(self, path):
-    p = subprocess.Popen(["/usr/lib/qubes/qfile-daemon-dvm",
-                                 "qubes.VMShell",
-                                 "dom0",
-                                 "DEFAULT"],
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=open(os.devnull, 'w'),
-                                universal_newlines=True)
+  # def _get_file_contents(self, path):
+  #   p = subprocess.Popen(["/usr/lib/qubes/qfile-daemon-dvm",
+  #                                "qubes.VMShell",
+  #                                "dom0",
+  #                                "DEFAULT"],
+  #                               stdin=subprocess.PIPE,
+  #                               stdout=subprocess.PIPE,
+  #                               stderr=open(os.devnull, 'w'),
+  #                               universal_newlines=True)
 
-    (res, err) = p.communicate("cat {}".format(path))
-    self.assertEquals(p.returncode, 0)
-    return res
+  #   (res, err) = p.communicate("cat {}".format(path))
+  #   self.assertEquals(p.returncode, 0)
+  #   return res
 
-  def assertFilesMatch(self, remote_path, local_path):
-    remote_content = self._get_file_contents(remote_path)
-    content = False
-    with open(local_path) as f:
-      content = f.read()
-    self.assertTrue(remote_content == content)
+  # def assertFilesMatch(self, remote_path, local_path):
+  #   remote_content = self._get_file_contents(remote_path)
+  #   content = False
+  #   with open(local_path) as f:
+  #     content = f.read()
+  #   self.assertTrue(remote_content == content)
+
+class SD_Dispvm_Tests(SD_VM_Local_Test):
+
+  def setUp(self):
+    self.vm_name = "sd-dispvm"
+    super(SD_Journalist_Tests, self).setUp()
+
 
   def test_decrypt_sd_submission(self):
     self.assertFilesMatch(

@@ -6,7 +6,7 @@ import subprocess
 import time
 import unittest
 
-import qubes.tests
+# import qubes.tests
 import qubes.qubes
 
 from qubes.qubes import QubesVmCollection
