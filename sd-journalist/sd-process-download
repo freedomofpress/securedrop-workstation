@@ -21,5 +21,6 @@ out_tar.close()
 fh.close()
 
 # ship this to the next phase
-subprocess.call(["qvm-open-in-vm", "$dispvm:sd-dispvm", fh.name])
+#subprocess.call(["qvm-open-in-vm", "$dispvm:sd-decrypt", fh.name])
+subprocess.call(["qvm-open-in-vm", "sd-decrypt", fh.name])
 os.remove(fh.name)
