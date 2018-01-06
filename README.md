@@ -1,6 +1,69 @@
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/freedomofpress/securedrop?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 ## Bringing SecureDrop to Qubes
 
 This project aims to make journalists' experience working with SecureDrop less onerous while retaining the current security and privacy features SecureDrop provides. We're doing that by moving the set of journalist-facing tools, which currently spans multiple Tails installations and requires physical USB drives to move data, to a single computer running mulitple virtual machines, with data moved as automatically and transparently as possible between otherwise-isolated VMs.
+
+This project is under active development, has known bugs and shortcomings, and is not ready for end users. This README is geared towards interested technical users and developers.
+
+### Using this repo
+
+Installing this project is involved. It requires an up-to-date Qubes 4.0 installation running on a machine with at least 12GB of RAM. You'll need access to a SecureDrop staging server as well.
+
+#### Qubes 4.0
+
+Before trying to use this project, install [Qubes 4.0-rc3](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
+
+Qubes 4.0 is still in prerelease, so using it requires some patience and a bit of extra work. In particular, you'll want to update your system to the latest testing code immediately. As soon as the Qubes installer finishes and you're able to boot into your system, open a `dom0` shell and run:
+
+    sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing
+
+Once that finishes, reboot your machine. Open a shell on your Fedora 25 template and run:
+
+    sudo dnf upgrade --enablerepo=qubes-vm-*-current-testing
+
+and in your Debian template VM, uncomment the `testing` repo in `/etc/apt/sources.list.d/qubes-r4.list`, and run:
+
+    sudo apt-get update ; sudo apt-get dist-upgrade
+
+#### Download, configure, copy to dom0
+
+Decide on a VM to use for development. Clone this repo in your preferred location.
+
+Next, some SecureDrop-specific configuration. Do the following:
+
+- edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK.
+- Replace the `sd-journalist.sec` file in the root directory with the GPG private key used to encrypt submissions.
+- Edit `Makefile` and replace `DEVVM` and `DEVDIR` to reflect the VM and directory to which you've cloned this repo. Note that `DEVDIR` must not include a trailing slash.
+
+Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM. That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`.
+
+    qvm-run --pass-io work 'tar -c -C /home/user/projects securedrop-workstation' | tar xvf -
+
+After that initial manual step, the code in your development VM may be copied into place on `dom0` by running `make clone` on from the root of the project on `dom0`.
+
+#### Building
+
+Once the configuration is done and this directory is copied to `dom0`, `make` can be used to handle all provisioning and configuration by your unprivledged user:
+
+    $ cd securedrop-workstation
+    $ make all
+
+The build process takes quite a while. You be presented with a dialogue asking how to connect to Tor: you should be able to select the default option and continue.
+
+When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
+
+*note* If you've previously installed sd-workstation before January 2018, you may need to run this in dom0 once, by hand, in order to install cleanly:
+
+    sudo qubesctl top.disable sd-dispvm
+
+#### Initial use
+
+From the "Q" menu, open Tor Browser in the `sd-journalist` machine. Visit the journalist interface of your development SecureDrop instance.
+
+Once you've logged in, select a number of submissions to download (a bug causes processing single-submission downloads to fail). Tor Browser will present a dialogue to save the download, or open with `sd-process-download`. Accept that later option.
+
+That download kicks off a series of steps (described below) which will eventually leave decrypted files in the `~/Sources` directory in `sd-svs`. Double-clicking any of those files will open the file in a disposable VM. Part of the processing involves using GPG to decrypt the submissions- Qubes will present a dialog asking if that's OK. Click "Allow".
 
 ### Architecture
 
@@ -13,9 +76,9 @@ Currently, the following VMs are provisioned:
 - `sd-journalist` is used for accessing the journalist Tor hidden service. It uses `sd-whonix` as its network gateway. The submission processing workflow is triggered from this VM as submissions are downloaded.
 - `sd-svs` is a non-networked VM used to store and explore submissions after they're unarchived and decrypted. Any files double-clicked in this VM are opened in a disposable VM.
 - `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the `Journalist Interface`.
-- `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
-- Qubes' `dispvm` is configured both to decrypt incoming submissions (utilizing `sd-gpg`) and to open all files for the `sd-svs` VM.
-
+- `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys
+and do the actual submission crypto.
+- `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files
 
 Submissions are processed in the following steps:
 
@@ -41,68 +104,23 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 
 `sd-svs` contains scripts and configuration for the viewing station VM. These include a script to handle incoming, decrypted files during the submission handling process, and desktop configuration files to make this VM open all files in a disposable VM.
 
-`decrypt` contains scripts for the VMs handing decryption. These get used both while configuring the systemwide disposable VM, and when provisioning the `sd-gpg` split GPG VM. These should probably be separated into two directories- one for `sd-gpg` and one for the disposable VM config.
+`decrypt` contains scripts for the VMs handing decryption. These get used both while configuring the disposable VM, and when provisioning the `sd-gpg` split GPG VM. These should probably be separated into two directories- one for `sd-gpg` and one for the disposable VM config.
 
 `config.json.orig` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
 
 `Makefile` is used with the `make` command on dom0 to build the Qubes/SecureDrop installation, and also contains some development and testing features
 
-### Using this repo
-
-What follows describes how to configure and use this repo for development and testing. We don't yet have a full story for production deployment- see #17 for discussion about that.
-
-First install Qubes 3.2 and accept the default VM configuration during the install process.
-
-Next, some SecureDrop-specific configuration: edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK. Replace `sd-journalist.sec` with the GPG private key used to encrypt submissions. Edit `Makefile` and replace `DEVVM` and `DEVDIR` to reflect the VM and directory to which you've cloned this repo. Note that `DEVDIR` must not include a trailing slash.
-
-Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM. That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`.
-
-    qvm-run --pass-io work 'tar -c -C /home/user/projects securedrop-workstation' | tar xvf -
-
-After that initial manual step, the code in your development VM may be copied into place on `dom0` by running `make clone` on from the root of the project on `dom0`.
-
-Once the configuration is done and this directory is copied to `dom0`, `make` can be used to handle all provisioning and configuration by your unprivledged user:
-
-    $ cd securedrop-workstation
-    $ make all
-
-### Qubes 4.0
-
-We've decided to target Qubes 4.0 for release, meaning we also should develop on Qubes 4.0. Since that version is not yet stable, this requires some patience and a bit of extra work.
-
-As of this writing, 4.0 RC1 is the most recent available version (though RC2 should be right around the corner). In my experience, RC1 is usable if it's immediately brought up to date with the `testing` repos.
-
-So, as soon as the Qubes installer finishes and you're able to boot into your system, open a `dom0` shell and run:
-
-    sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing
-
-Once that finishes, reboot your machine. Open a shell on your Fedora 25 template and run:
-
-    sudo dnf upgrade --enablerepo=qubes-vm-*-current-testing
-
-and in your Debian template VM, uncomment the `testing` repo in `/etc/apt/sources.list.d/qubes-r4.list`, and run:
-
-    sudo apt-get update ; sudo apt-get dist-upgrade
-
-Qubes 4.0 does not ship with Whonix, so we'll install it manually. In a `dom0` shell, run:
-
-    sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-4.0-templates-community
-
-to import a key that RC1 does not automatically import (this is a known bug that is fixed in RC2). Then:
-
-    sudo qubes-dom0-update --enablerepo=qubes-templates-community qubes-template-whonix-gw qubes-template-whonix-ws
-
-Your "Q" menu should now include `whonix-ws` and `whonix-gw` VMs- these are template VMs for creating whonix proxy and workstation VMs. Liberally follow the instructions at https://www.whonix.org/wiki/Qubes/Install to create the `sys-whonix` ProxyVM and an initial `anon-whonix` AppVM. The instructions there also describe configuring the whonix templates to use the new `sys-whonix` VM as their network VMs, which is important for enabling updates over Tor.
-
 ### Development
 
 My development workflow is different depending on if I'm working on provisioning components or submission-handling scripts.
 
-For developing salt states and other provisioning component, I work in a development VM and make changes to individual state and top files there. Then, in the `dom0` copy of this project, I'll `make clone` to copy over the updated files, then use `make <vm-name>` to rebuilt an individual VM, or `make all` to rebuild the full installation. Current valid target VM names are `sd-journalist`, `sd-gpg`, `sd-whonix`, `disp-vm`.
+For developing salt states and other provisioning components, I work in a development VM and make changes to individual state and top files there. Then, in the `dom0` copy of this project, I'll `make clone` to copy over the updated files, then use `make <vm-name>` to rebuilt an individual VM, or `make all` to rebuild the full installation. Current valid target VM names are `sd-journalist`, `sd-gpg`, `sd-whonix`, `disp-vm`.
 
 For developing submission processing scripts I often work directly in the virtual machine running the component I'm working on. When I'm at a good checkpoint, I'll copy the updated files to my work VM with `qvm-copy-to-vm ...`, move the copied files into place in the repo, and commit the changes there. This process is a little awkward, and it would be nice to make it better.
 
 ### Testing
+
+_Please note, tests are failing after our migration from Qubes 3.2 to Qubes 4.0, since Qubes' internal libraries are still in flux._
 
 Tests should cover two broad domains. First, we should assert that all the expected VMs exist and are configured as we expect (with the correct NetVM, with the expected files in the correct place). Second, we should end-to-end test the document handlng scripts, asserting that files present in the sd-journalist VM correctly make their way to the sd-svs AppVM, and are opened correctly in disposable VMs.
 
