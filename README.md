@@ -53,13 +53,17 @@ The build process takes quite a while. You be presented with a dialogue asking h
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
 
+*note* If you've previously installed sd-workstation before January 2018, you may need to run this in dom0 once, by hand, in order to install cleanly:
+
+    sudo qubesctl top.disable sd-dispvm
+
 #### Initial use
 
 From the "Q" menu, open Tor Browser in the `sd-journalist` machine. Visit the journalist interface of your development SecureDrop instance.
 
 Once you've logged in, select a number of submissions to download (a bug causes processing single-submission downloads to fail). Tor Browser will present a dialogue to save the download, or open with `sd-process-download`. Accept that later option.
 
-That download kicks off a series of steps (described below) which will eventually leave decrypted files in the `~/Sources` directory in `sd-svs`. Double-clicking any of those files will open the file in a disposable VM.
+That download kicks off a series of steps (described below) which will eventually leave decrypted files in the `~/Sources` directory in `sd-svs`. Double-clicking any of those files will open the file in a disposable VM. Part of the processing involves using GPG to decrypt the submissions- Qubes will present a dialog asking if that's OK. Click "Allow".
 
 ### Architecture
 
