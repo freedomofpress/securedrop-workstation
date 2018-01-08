@@ -16,6 +16,6 @@ def poller_cb(poller, msg, err):
 
     print "[{}] {}: {}".format(datetime.datetime.now(), msg, longer)
 
-reader = pipereader.PipeReader("myfifo", poller_cb)
+reader = pipereader.PipeReader("sdfifo", poller_cb)
 
 reader.read()

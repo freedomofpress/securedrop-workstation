@@ -29,6 +29,8 @@ class SDDialog(QDialog):
             Qt.Horizontal, self)
         layout.addWidget(self.buttons)
 
+        self.layout = layout
+
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
 
@@ -56,6 +58,10 @@ messages = {
     'DECRYPTED_BUNDLE UNBUNDLE_ERROR': ("error", "Bundle of decrypted files could not be unbundle on SVS." )
 }
 
+def finish():
+    d.buttons.hide()
+    d.layout.removeWidget(d.buttons)
+
 def display(keyword):
 
     if keyword in messages:
@@ -68,7 +74,12 @@ def poller_cb(poller, msg, err):
     # we're called with a keyword in `msg`. We look up that keyword
     # for the user-facing message to display.
     print("in poller_cb: {}".format(msg))
-    display(msg.rstrip())
+    m = msg.rstrip()
+
+    if m == "DECRYPTED_FILES_AVAILABLE":
+        finish()
+
+    display(m)
 
 
 def create_sigfile(sigfile):
@@ -93,8 +104,9 @@ if __name__ == '__main__':
     app = QApplication([])
     d = SDDialog()
 
-    reader = pipereader.PipeReader("myfifo", poller_cb)
+    reader = pipereader.PipeReader("sdfifo", poller_cb)
     t = threading.Thread(target=reader.read)
+
     t.start()
     d.show()
 

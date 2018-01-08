@@ -4,4 +4,4 @@
 read arg
 
 # our process on the other end will read at most BUFSIZE bytes
-echo $arg > /home/user/myfifo
+echo $arg > /home/user/sdfifo

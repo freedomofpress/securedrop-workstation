@@ -9,6 +9,12 @@
 #
 ##
 
+mkfifo /home/user/sdfifo:
+  cmd.run
+
+chmod 666 /home/user/sdfifo:
+  cmd.run
+
 /usr/local/bin/move-to-svs:
   file.managed:
     - source: salt://sd/sd-journalist/move-to-svs
@@ -37,20 +43,13 @@
     - group: root
     - mode: 755
 
-/usr/local/bin/sd_process_display:
+/usr/local/bin/sd-process-display:
   file.managed:
-    - source: salt://sd/sd-journalist/sd_process_display.py
+    - source: salt://sd/sd-journalist/sd-process-display
     - user: root
     - group: root
     - mode: 644
-
-/usr/local/bin/mm.py:
-  file.managed:
-    - source: salt://sd/sd-journalist/mm.py
-    - user: root
-    - group: root
-    - mode: 755
-
+    
 /usr/local/bin/pipereader.py:
   file.managed:
     - source: salt://sd/sd-journalist/pipereader.py

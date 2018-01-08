@@ -29,6 +29,13 @@ require:
 
 {{ load(defaults) }}
 
+/etc/qubes-rpc/policy/sd-process.Feedback:
+  file.managed:    
+    - source: salt://sd/sd-journalist/sd-process.Feedback-dom0
+    - user: root
+    - group: root
+    - mode: 644
+
 # Allow sd-journslist to open files in sd-decrypt
 sed -i '1isd-journalist sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
   cmd.run:
@@ -40,9 +47,3 @@ sed -i '1isd-journalist $dispvm:sd-decrypt allow' /etc/qubes-rpc/policy/qubes.Op
   cmd.run:
   - unless: grep -qF 'sd-journalist $dispvm:sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM
 
-/etc/qubes-rpc/policy/sd-process.Feedback:
-  file.managed:    
-    - source: salt://sd/sd-journalist/sd-process.Feedback-dom0
-    - user: root
-    - group: root
-    - mode: 644

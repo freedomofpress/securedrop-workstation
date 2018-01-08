@@ -7,7 +7,6 @@ import tarfile
 import tempfile
 import os.path
 import subprocess
-import sd_process_display
 
 fn = sys.argv[1]
 
@@ -34,7 +33,7 @@ def spawn_monitor_process(sigfile):
         print >>sys.stderr, "fork #2 failed: %d (%s)" % (e.errno, e.strerror)
         sys.exit(1)
 
-    subprocess.Popen(["python", "/usr/local/bin/sd_process_display.py", sigfile])
+    subprocess.Popen(["python", "/usr/local/bin/sd-process-display", sigfile])
     sys.exit(0)
 
 
@@ -49,7 +48,6 @@ def wait_for_sigfile(sigfile):
         time.sleep(0.5)
         print "{} is still not a file".format(sigfile)
 
-    print "OK FOUND {}".format(sigfile)
     os.remove(sigfile)
 
 # spawn the GUI monitoring process, then wait for it to be available...
