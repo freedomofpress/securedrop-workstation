@@ -81,10 +81,13 @@ clean: remove-sd-gpg remove-sd-svs remove-sd-journalist \
 	@echo "Reset all VMs"
 
 test:
-	python -m unittest -v tests    # will run all tests
+	python -m unittest discover    # will run all tests
+
+test-base:
+	python -m unittest -v tests.test_vms_exist.SD_VM_Tests
 
 test-svs:
-	python -m unittest -v tests.svs-test
+	python -m unittest -v tests.test_svs.SD_SVS_Tests
 
 test-journalist:
 	python -m unittest -v tests.test_journalist_vm
