@@ -81,7 +81,7 @@ clean: remove-sd-gpg remove-sd-svs remove-sd-journalist \
 	@echo "Reset all VMs"
 
 test:
-	python -m unittest discover    # will run all tests
+	python -m unittest discover tests
 
 test-base:
 	python -m unittest -v tests.test_vms_exist.SD_VM_Tests
@@ -97,10 +97,6 @@ test-whonix:
 
 test-gpg:
 	python -m unittest -v tests.test_gpg
-
-
-# test-disp:
-# 	python -m unittest -v tests.test_dispvm
 
 validate:
 	@bash -c "test -e config.json" || \
