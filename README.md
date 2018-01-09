@@ -120,8 +120,6 @@ For developing submission processing scripts I often work directly in the virtua
 
 ### Testing
 
-_Please note, tests are failing after our migration from Qubes 3.2 to Qubes 4.0, since Qubes' internal libraries are still in flux._
-
 Tests should cover two broad domains. First, we should assert that all the expected VMs exist and are configured as we expect (with the correct NetVM, with the expected files in the correct place). Second, we should end-to-end test the document handlng scripts, asserting that files present in the sd-journalist VM correctly make their way to the sd-svs AppVM, and are opened correctly in disposable VMs.
 
 Tests can be found in the `tests/` directory. They can be run from the project's root directory on `dom0` with:
