@@ -5,14 +5,10 @@ import re
 import subprocess
 import time
 import unittest
-
-#import qubes.tests
-#import qubes.qubes
-
 import json
 from jinja2 import Template
 
-from qubes.qubes import QubesVmCollection
+from qubesadmin import Qubes
 
 from base import SD_VM_Local_Test
 
@@ -26,7 +22,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
       config = json.load(c)
       t = Template("HidServAuth {{ d.hidserv.hostname }} {{ d.hidserv.key }}")
       line = t.render(d=config)
-      print line
+
       self.assertFileHasLine(
         "/etc/tor/torrc",
         line)
