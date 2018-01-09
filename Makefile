@@ -95,6 +95,10 @@ test-journalist:
 test-whonix:
 	python -m unittest -v tests.test_sd_whonix
 
+test-gpg:
+	python -m unittest -v tests.test_gpg
+
+
 # test-disp:
 # 	python -m unittest -v tests.test_dispvm
 
