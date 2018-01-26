@@ -28,12 +28,12 @@ and in your Debian template VM, uncomment the `testing` repo in `/etc/apt/source
 
 #### Download, configure, copy to dom0
 
-Decide on a VM to use for development. Clone this repo in your preferred location.
+Decide on a VM to use for development. Clone this repo to your preferred location on that VM.
 
-Next, some SecureDrop-specific configuration. Do the following:
+Next we need to do some SecureDrop-specific configuration:
 
 - edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK.
-- Replace the `sd-journalist.sec` file in the root directory with the GPG private key used to encrypt submissions.
+- Replace the `sd-journalist.sec` file in the root directory with the GPG private key used to encrypt submissions in your test SecureDrop instance. The included key is the one used by default in the SecureDrop staging instance.
 - Edit `Makefile` and replace `DEVVM` and `DEVDIR` to reflect the VM and directory to which you've cloned this repo. Note that `DEVDIR` must not include a trailing slash.
 
 Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM. That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`.
@@ -78,14 +78,14 @@ Currently, the following VMs are provisioned:
 - `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the `Journalist Interface`.
 - `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys
 and do the actual submission crypto.
-- `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files
+- `sd-dispvm` is an AppVM used as the template for the disposable[1] VMs used for processing and opening files.
 
 Submissions are processed in the following steps:
 
 1. Journalist uses the Tor Browser in the `sd-journalist` VM to visit the authenticated Tor hidden service Journalist Interface. After logging in, the journalist clicks on any submission they're interested in.
 2. The Tor Browser in the `sd-journalist` VM offers to open the submission with the configured handler (`sd-process-download`)
-3. The `sd-process-download` script, run by Tor Browser, moves the submission to a disposable VM
-4. On the disposable VM, the submission is unarchvied and decrypted using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
+3. The `sd-process-download` script, run by Tor Browser, moves the submission to a disposable[1] VM
+4. On the disposable VM[1], the submission is unarchvied and decrypted using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
 5. The decrypted submission is copied to the `sd-svs` Secure Viewing Station VM, where it's placed in the `Sources` directory based on the source name.
 6. Any file viewed in the Secure Viewing Station is opened in a Disposable VM, largely mitigating attacks from malicious content.
 
@@ -122,7 +122,9 @@ For developing submission processing scripts I often work directly in the virtua
 
 Tests should cover two broad domains. First, we should assert that all the expected VMs exist and are configured as we expect (with the correct NetVM, with the expected files in the correct place). Second, we should end-to-end test the document handlng scripts, asserting that files present in the sd-journalist VM correctly make their way to the sd-svs AppVM, and are opened correctly in disposable VMs.
 
-Tests can be found in the `tests/` directory. They can be run from the project's root directory on `dom0` with:
+#### Configuration tests
+
+These tests assert that expected scripts and configuration files are in the correct places across the VMs. These tests can be found in the `tests/` directory. They can be run from the project's root directory on `dom0` with:
 
     make test
 
@@ -131,3 +133,27 @@ Note that since tests assert confirm the state of provisioned VMs, tests should 
 Individual tests can be run with `make <test-name>`, where `test-name` is one of `test-svs`, `test-journalist`, `test-whonix`, or `test-disp`.
 
 Be aware that running tests *will power down running SecureDrop VMs, and may result in data loss*. Only run tests in a development / testing environment.
+
+#### Integration tests
+
+These tests exercise the full submission handling process. These are unique in that they require communication and coordination across multiple VMs, which is challenging in the Qubes world (where, by design, communication among VMs is restricted). This is particularly true concerning `dom0`. We've developed a process for communicating back to `sd-journalist` to enable feedback to the user and can leverage that framework for running tests which cross VMs. But, that requires we run tests from `sd-journalist`.
+
+To run the integration tests, copy the `tests/integration` directory to `sd-journalist` from the root of the checked-out project:
+
+    $ qvm-copy integration
+
+...and type `sd-journalist` in the Qubes dialog.
+
+Open a shell on `sd-journalist`, and copy the directory out of QubesIncoming:
+
+    $ mv QubesIncoming/work/integration ~
+
+and run tests with
+
+    $ cd integration
+    $ ./test-integration
+
+get some info on running tests with `test-integration --help`
+
+
+[1] Due to a [Qubes bug](https://github.com/freedomofpress/securedrop-workstation/issues/46), we're using a non-disposable instance of this VM for decryption currently. When the Qubes bug is fixed, we can easily migrate to a disposable instance.
