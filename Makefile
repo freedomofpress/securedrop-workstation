@@ -53,27 +53,27 @@ prep-salt:
 
 remove-sd-whonix:
 	-qvm-kill sd-whonix
-	-qvm-remove sd-whonix
+	-qvm-remove -f sd-whonix
 
 remove-sd-svs-disp:
 	-qvm-kill sd-svs-disp
-	-qvm-remove sd-svs-disp
+	-qvm-remove -f sd-svs-disp
 
 remove-sd-decrypt:
 	-qvm-kill sd-decrypt
-	-qvm-remove sd-decrypt
+	-qvm-remove -f sd-decrypt
 
 remove-sd-journalist:
 	-qvm-kill sd-journalist
-	-qvm-remove sd-journalist
+	-qvm-remove -f sd-journalist
 
 remove-sd-svs:
 	-qvm-kill sd-svs
-	-qvm-remove sd-svs
+	-qvm-remove -f sd-svs
 
 remove-sd-gpg:
 	-qvm-kill sd-gpg
-	-qvm-remove sd-gpg
+	-qvm-remove -f sd-gpg
 
 clean: remove-sd-gpg remove-sd-svs remove-sd-journalist \
 	remove-sd-svs-disp remove-sd-decrypt \
