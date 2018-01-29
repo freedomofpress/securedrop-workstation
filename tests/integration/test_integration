@@ -126,7 +126,4 @@ if run_q("bad-gpg-key"):
     receiver.test_name = "bad encryption key"
     receiver.test()
 
-while threading.active_count() > 0:
-    time.sleep(0.1)
-
 reader.quit()
