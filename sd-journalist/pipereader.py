@@ -47,7 +47,7 @@ class PipeReader():
 
                     poller.unregister(fileno)
                     os.close(fileno)
-                    cb(self, data, None)
+                    cb(self, data.rstrip(), None)
                     fifo = os.open(pipe, os.O_RDONLY | os.O_NONBLOCK)
                     poller.register(fifo)
 

@@ -36,6 +36,9 @@ try:
 
 except Exception as e:
   send_progress("DECRYPTION_BUNDLE_OPEN_FAILURE")
+  sys.exit(0) # although we're exiting with failure, we return a
+              # 0 exit code so xdg does not try to re-open this file with
+              # another application
 
 send_progress("SUBMISSION_BUNDLE_UNBUNDLED")
 
@@ -61,19 +64,26 @@ for root, dirnames, filenames in os.walk(tmpdir):
     out.close()
     os.unlink(os.path.join(root, fn))
     if res != 0:
-        with open(err.name) as e:
-            msg = e.read()
-            send_progress("SUBMISSION_FILE_DECRYPTION_FAILED")
+      os.unlink(os.path.join(root, fn_no_ext))
+      with open(err.name) as e:
+        msg = e.read()
+        send_progress("SUBMISSION_FILE_DECRYPTION_FAILED")
     else:
       send_progress("SUBMISSION_FILE_DECRYPTION_SUCCEEDED")
     err.close()
 
 # almost done. docs are gzipped. let's ungzip them.
+any_files = False
 for root, dirnames, filenames in os.walk(tmpdir):
   for fn in fnmatch.filter(filenames, '*.gz'):
+    any_files = True
     # maybe sorta lazy, could do this using python gzip module.
     # XXX also catch errors here...
     subprocess.call(["gunzip", os.path.join(root, fn)])
+
+if not any_files:
+  send_progress("SUBMISSION_FILE_NO_FILES_FOUND")
+  sys.exit(0)
 
 # ok. we're going to send all the decrypted stuff to the svs vm.
 # let's tar it all up again, so we can `qvm-open-in-vm` it.
