@@ -51,8 +51,12 @@ sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 	sudo qubesctl top.enable sd-svs-disp
 	sudo qubesctl --targets sd-svs-disp state.highstate
 
+clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
+	sudo rm -rf /srv/salt/sd
+	sudo find /srv/salt -maxdepth 1 -type f -iname 'sd*' -delete
+	sudo find /srv/salt/_tops -type l -delete
+
 prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
-	-sudo rm -rf /srv/salt/sd
 	sudo mkdir /srv/salt/sd
 	sudo cp config.json /srv/salt/sd
 	sudo cp sd-journalist.sec /srv/salt/sd
@@ -87,7 +91,7 @@ remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
 	-qvm-remove -f sd-gpg
 
 clean: assert-dom0 remove-sd-gpg remove-sd-svs remove-sd-journalist \
-	remove-sd-svs-disp remove-sd-decrypt remove-sd-whonix ## Destroys all SD VMs
+	remove-sd-svs-disp remove-sd-decrypt remove-sd-whonix clean-salt ## Destroys all SD VMs
 	@echo "Reset all VMs"
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
