@@ -90,7 +90,7 @@ clean: assert-dom0 remove-sd-gpg remove-sd-svs remove-sd-journalist \
 	remove-sd-svs-disp remove-sd-decrypt remove-sd-whonix ## Destroys all SD VMs
 	@echo "Reset all VMs"
 
-test: assert-dom0 ## Runs all application and integration tests
+test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python -m unittest discover tests
 
 test-base: assert-dom0 ## Runs tests for VMs layout
