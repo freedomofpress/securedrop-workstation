@@ -113,6 +113,11 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 		{ echo "ERROR: missing 'config.json'!" && \
 		echo "Create from 'config.json.example'." && exit 1 ; }
 
+flake8: ## Lints all Python files with flake8
+# Not requiring dom0 since linting requires extra packages,
+# available only in the developer environment, i.e. Work VM.
+	@flake8 .
+
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
 # 2. Check for second field matching, skip otherwise.
