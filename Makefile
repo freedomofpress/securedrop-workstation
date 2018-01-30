@@ -1,14 +1,26 @@
 DEVVM=work
 DEVDIR=/home/user/projects/securedrop-workstation # important: no trailing slash
+HOST=$(shell hostname)
 
-all: validate clean sd-whonix sd-svs sd-gpg sd-journalist sd-decrypt \
+assert-dom0:
+ifneq ($(HOST),dom0)
+	@echo "     ------ securedrop-workstation's makefile must be used only on dom0! ------"
+	exit 1
+endif
+
+all: assert-dom0 validate clean sd-whonix sd-svs sd-gpg sd-journalist sd-decrypt \
      sd-svs-disp
 
-proj-tar:
-	qvm-run --pass-io $(DEVVM) 'tar -c -C $(dir $(DEVDIR)) $(notdir $(DEVDIR))' > ./proj.tar
+proj-tar: assert-dom0
+	qvm-run --pass-io $(DEVVM) 'tar -c -C $(dir $(DEVDIR)) $(notdir $(DEVDIR))' > ./sd-proj.tar
 
-clone: proj-tar
-	tar xvf proj.tar --strip-components=1
+clone: assert-dom0 proj-tar
+	mv sd-proj.tar /tmp
+	rm -rf $(HOME)/securedrop-workstation/*
+	mv /tmp/sd-proj.tar $(HOME)/securedrop-workstation/
+	tar xvf sd-proj.tar --strip-components=1
+	rm -rf .gitignore .git/
+	rm sd-proj.tar
 
 sd-journalist: prep-salt
 	sudo qubesctl top.enable sd-journalist
@@ -40,7 +52,7 @@ sd-svs-disp: prep-salt
 	sudo qubesctl --targets sd-svs-disp state.highstate
 
 
-prep-salt:
+prep-salt: assert-dom0
 	-sudo rm -rf /srv/salt/sd
 	sudo mkdir /srv/salt/sd
 	sudo cp config.json /srv/salt/sd
@@ -51,54 +63,53 @@ prep-salt:
 	sudo cp dom0/* /srv/salt/
 	#sudo cp -r sd-svs-disp /srv/salt/sd  # nothing there yet...
 
-remove-sd-whonix:
+remove-sd-whonix: assert-dom0
 	-qvm-kill sd-whonix
 	-qvm-remove -f sd-whonix
 
-remove-sd-svs-disp:
+remove-sd-svs-disp: assert-dom0
 	-qvm-kill sd-svs-disp
 	-qvm-remove -f sd-svs-disp
 
-remove-sd-decrypt:
+remove-sd-decrypt: assert-dom0
 	-qvm-kill sd-decrypt
 	-qvm-remove -f sd-decrypt
 
-remove-sd-journalist:
+remove-sd-journalist: assert-dom0
 	-qvm-kill sd-journalist
 	-qvm-remove -f sd-journalist
 
-remove-sd-svs:
+remove-sd-svs: assert-dom0
 	-qvm-kill sd-svs
 	-qvm-remove -f sd-svs
 
-remove-sd-gpg:
+remove-sd-gpg: assert-dom0
 	-qvm-kill sd-gpg
 	-qvm-remove -f sd-gpg
 
-clean: remove-sd-gpg remove-sd-svs remove-sd-journalist \
-	remove-sd-svs-disp remove-sd-decrypt \
-	remove-sd-whonix
+clean: assert-dom0 remove-sd-gpg remove-sd-svs remove-sd-journalist \
+	remove-sd-svs-disp remove-sd-decrypt remove-sd-whonix
 	@echo "Reset all VMs"
 
-test:
+test: assert-dom0
 	python -m unittest discover tests
 
-test-base:
+test-base: assert-dom0
 	python -m unittest -v tests.test_vms_exist.SD_VM_Tests
 
-test-svs:
+test-svs: assert-dom0
 	python -m unittest -v tests.test_svs.SD_SVS_Tests
 
-test-journalist:
+test-journalist: assert-dom0
 	python -m unittest -v tests.test_journalist_vm
 
-test-whonix:
+test-whonix: assert-dom0
 	python -m unittest -v tests.test_sd_whonix
 
-test-gpg:
+test-gpg: assert-dom0
 	python -m unittest -v tests.test_gpg
 
-validate:
+validate: assert-dom0
 	@bash -c "test -e config.json" || \
 		{ echo "ERROR: missing 'config.json'!" && \
 		echo "Create from 'config.json.example'." && exit 1 ; }
