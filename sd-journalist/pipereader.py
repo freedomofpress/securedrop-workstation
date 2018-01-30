@@ -6,6 +6,7 @@ import errno
 
 BUFFSIZE = 64
 
+
 class PipeReader():
     def __init__(self, pipe, cb):
         self._quit = False
@@ -42,7 +43,7 @@ class PipeReader():
                     # than BUFSIZE bytes. writes from our client
                     # should be atomic up to PIPE_BUF byes, which is
                     # greater than our BUF_SIZE (see
-                    # https://unix.stackexchange.com/questions/68146/what-are-guarantees-for-concurrent-writes-into-a-named-pipe). So,
+                    # https://unix.stackexchange.com/questions/68146/what-are-guarantees-for-concurrent-writes-into-a-named-pipe). So,  # noqa: E501
                     # we can immediately close this filehandle
 
                     poller.unregister(fileno)
@@ -74,10 +75,12 @@ class PipeReader():
                     fifo = os.open(pipe, os.O_RDONLY | os.O_NONBLOCK)
                     poller.register(fifo)
 
+
 def reporter(poller, msg, err):
     print "Got a message: {} (error: {})".format(msg.rstrip(), err)
     if msg.rstrip() == "quit":
         poller.quit()
+
 
 if __name__ == '__main__':
     reader = PipeReader("mypipe", reporter)
