@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# `read` reads exactly one line from stdin as a literal string.
+read arg
+
+# our process on the other end will read at most BUFSIZE bytes
+echo $arg > /home/user/sdfifo

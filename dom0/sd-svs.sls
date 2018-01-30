@@ -21,7 +21,7 @@ prefs:
 
 {{ load(defaults) }}
 
-# Allow sd-svs to open files in dispvms based on sd-dispvm
-sed -i '1isd-svs $dispvm:sd-dispvm allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
+# Allow sd-svs to open files in dispvms based on sd-svs-disp
+sed -i '1isd-svs $dispvm:sd-svs-disp allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
   cmd.run:
-    - unless: grep -qF 'sd-svs $dispvm:sd-dispvm allow' /etc/qubes-rpc/policy/qubes.OpenInVM
+    - unless: grep -qF 'sd-svs $dispvm:sd-svs-disp allow' /etc/qubes-rpc/policy/qubes.OpenInVM

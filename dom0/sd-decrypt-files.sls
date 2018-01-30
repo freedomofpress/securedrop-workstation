@@ -2,23 +2,23 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 ##
-# sd-dispvm-files
+# sd-decrypt-files
 # ========
 #
-# Moves files into place on sd-dispvm
+# Moves files into place on sd-decrypt
 #
 ##
 
 /usr/local/bin/decrypt-sd-submission:
   file.managed:
-    - source: salt://sd/decrypt/decrypt-sd-submission
+    - source: salt://sd/sd-decrypt/decrypt-sd-submission
     - user: root
     - group: root
     - mode: 755
 
 /usr/local/share/mime/packages/application-x-sd-xfer.xml:
   file.managed:
-    - source: salt://sd/decrypt/application-x-sd-xfer.xml
+    - source: salt://sd/sd-decrypt/application-x-sd-xfer.xml
     - user: root
     - group: root
     - mode: 644
@@ -26,7 +26,7 @@
 
 /usr/local/share/applications/decrypt-sd-submission.desktop:
   file.managed:
-    - source: salt://sd/decrypt/decrypt-sd-submission.desktop
+    - source: salt://sd/sd-decrypt/decrypt-sd-submission.desktop
     - user: root
     - group: root
     - mode: 644
@@ -34,7 +34,7 @@
 
 /home/user/.profile:
   file.managed:
-    - source: salt://sd/decrypt/dot-profile
+    - source: salt://sd/sd-decrypt/dot-profile
     - user: root
     - group: root
     - mode: 755

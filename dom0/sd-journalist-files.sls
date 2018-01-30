@@ -9,6 +9,12 @@
 #
 ##
 
+mkfifo /home/user/sdfifo:
+  cmd.run
+
+chmod 666 /home/user/sdfifo:
+  cmd.run
+
 /usr/local/bin/move-to-svs:
   file.managed:
     - source: salt://sd/sd-journalist/move-to-svs
@@ -30,6 +36,42 @@
     - group: root
     - mode: 755
 
+/usr/local/bin/sd-process-feedback:
+  file.managed:
+    - source: salt://sd/sd-journalist/sd-process-feedback
+    - user: root
+    - group: root
+    - mode: 755
+
+/usr/local/bin/sd-process-display:
+  file.managed:
+    - source: salt://sd/sd-journalist/sd-process-display
+    - user: root
+    - group: root
+    - mode: 644
+    
+/usr/local/bin/pipereader.py:
+  file.managed:
+    - source: salt://sd/sd-journalist/pipereader.py
+    - user: root
+    - group: root
+    - mode: 755
+
+/rw/config/rc.local:
+  file.managed:
+    - source: salt://sd/sd-journalist/rc.local
+    - user: root
+    - group: root
+    - mode: 755
+
+/rw/config/etc/qubes-rpc/sd-process.Feedback:
+  file.managed:
+    - source: salt://sd/sd-journalist/sd-process.Feedback
+    - user: root
+    - group: root
+    - mode: 755
+    - makedirs: True
+
 /usr/local/share/applications/sd-process-download.desktop:
   file.managed:
     - source: salt://sd/sd-journalist/sd-process-download.desktop
@@ -41,6 +83,14 @@
 /usr/local/share/applications/do-not-open.desktop:
   file.managed:
     - source: salt://sd/sd-journalist/do-not-open.desktop
+    - user: root
+    - group: root
+    - mode: 644
+    - makedirs: True
+
+/usr/local/share/sd/logo-small.png:
+  file.managed:
+    - source: salt://sd/sd-journalist/logo-small.png   
     - user: root
     - group: root
     - mode: 644

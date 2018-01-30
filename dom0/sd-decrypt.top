@@ -3,4 +3,4 @@
 
 base:
   dom0:
-    - sd-dispvm
+    - sd-decrypt

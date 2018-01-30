@@ -6,12 +6,9 @@ import subprocess
 import time
 import unittest
 
-import qubes.tests
-import qubes.qubes
-
-from qubes.qubes import QubesVmCollection
-
 from base import SD_VM_Local_Test
+
+from qubesadmin import Qubes
 
 class SD_SVS_Tests(SD_VM_Local_Test):
   def setUp(self):

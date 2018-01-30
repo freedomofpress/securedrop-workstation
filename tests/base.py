@@ -6,25 +6,23 @@ import subprocess
 import time
 import unittest
 
-import qubes.tests
-import qubes.qubes
-
-from qubes.qubes import QubesVmCollection
+from qubesadmin import Qubes
 
 # base class for per-VM testing
 
 class SD_VM_Local_Test(unittest.TestCase):
 
   def setUp(self):
-    self.qc = QubesVmCollection()
-    self.qc.lock_db_for_reading()
-    self.qc.load()
-    self.vm = self.qc.get_vm_by_name(self.vm_name)
-    self._reboot()
+    self.app = Qubes()
+    self.vm = self.app.domains[self.vm_name]
+    #self._reboot()
+    if self.vm.is_running():
+      pass
+    else:
+      self.vm.start()
 
-  def tearDown(self):
-    self.vm.shutdown()
-    self.qc.unlock_db()
+  # def tearDown(self):
+  #   self.vm.shutdown()
 
   def _reboot(self):
     try:
@@ -46,16 +44,18 @@ class SD_VM_Local_Test(unittest.TestCase):
     self.vm.start()
 
   def _get_file_contents(self, path):
-    p = self.vm.run("cat {}".format(path), passio_popen=True)
-    if p.wait() != 0:
-      return None
-    return p.stdout.read()
+    contents = subprocess.check_output(["qvm-run", "-p", self.vm_name,
+                                        "/bin/cat {}".format(path)])
+    return contents
 
   def assertFilesMatch(self, remote_path, local_path):
     remote_content = self._get_file_contents(remote_path)
+
     content = False
     with open(local_path) as f:
       content = f.read()
+    import difflib
+    print "".join(difflib.unified_diff(remote_content, content))
     self.assertTrue(remote_content == content)
 
   def assertFileHasLine(self, remote_path, line):
