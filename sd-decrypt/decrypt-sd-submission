@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import sys
 import tarfile
 import tempfile
@@ -12,11 +11,11 @@ import shutil
 
 
 def send_progress(msg):
-  p = subprocess.Popen(["qrexec-client-vm","sd-journalist",
-                        "sd-process.Feedback"],
-                       close_fds=True,
-                       stdin=subprocess.PIPE)
-  p.communicate(msg)
+    p = subprocess.Popen(["qrexec-client-vm", "sd-journalist",
+                         "sd-process.Feedback"],
+                         close_fds=True,
+                         stdin=subprocess.PIPE)
+    p.communicate(msg)
 
 input = sys.argv[1]
 
@@ -29,16 +28,17 @@ tmpdir = tempfile.mkdtemp()
 # first step, extract that archive
 try:
 
-  with tarfile.open(input) as tar:
-  # potentially unsafe, can create arbitrary files on the filesystem
-  # given a malicious tarball
-    tar.extractall(tmpdir)
+    with tarfile.open(input) as tar:
+        # potentially unsafe, can create arbitrary files on the filesystem
+        # given a malicious tarball
+        tar.extractall(tmpdir)
 
 except Exception as e:
-  send_progress("DECRYPTION_BUNDLE_OPEN_FAILURE")
-  sys.exit(0) # although we're exiting with failure, we return a
-              # 0 exit code so xdg does not try to re-open this file with
-              # another application
+    send_progress("DECRYPTION_BUNDLE_OPEN_FAILURE")
+    # although we're exiting with failure, we return a
+    # 0 exit code so xdg does not try to re-open this file with
+    # another application
+    sys.exit(0)
 
 send_progress("SUBMISSION_BUNDLE_UNBUNDLED")
 
@@ -46,44 +46,45 @@ send_progress("SUBMISSION_BUNDLE_UNBUNDLED")
 # let's unzip those here
 zips = glob.glob(tmpdir + "/*zip")
 for z in zips:
-  with zipfile.ZipFile(z) as zf:
-    zf.extractall(tmpdir + "/extracted/")
-  os.unlink(z)
+    with zipfile.ZipFile(z) as zf:
+        zf.extractall(tmpdir + "/extracted/")
+    os.unlink(z)
 
 send_progress("SUBMISSION_FILES_EXTRACTED")
 
 # great, we should be left with a directory tree filled with files
 # encrypted to our public key. let's find those and decrypt them
 for root, dirnames, filenames in os.walk(tmpdir):
-  for fn in fnmatch.filter(filenames, '*.gpg'):
-    [fn_no_ext, _] = os.path.splitext(fn)
+    for fn in fnmatch.filter(filenames, '*.gpg'):
+        [fn_no_ext, _] = os.path.splitext(fn)
 
-    out = open(os.path.join(root, fn_no_ext), 'w')
-    err = tempfile.NamedTemporaryFile(suffix=".gpg-err")
-    res = subprocess.call(["qubes-gpg-client", "--decrypt" , os.path.join(root, fn)], stdout=out, stderr=err)
-    out.close()
-    os.unlink(os.path.join(root, fn))
-    if res != 0:
-      os.unlink(os.path.join(root, fn_no_ext))
-      with open(err.name) as e:
-        msg = e.read()
-        send_progress("SUBMISSION_FILE_DECRYPTION_FAILED")
-    else:
-      send_progress("SUBMISSION_FILE_DECRYPTION_SUCCEEDED")
-    err.close()
+        out = open(os.path.join(root, fn_no_ext), 'w')
+        err = tempfile.NamedTemporaryFile(suffix=".gpg-err")
+        cmd = ["qubes-gpg-client", "--decrypt", os.path.join(root, fn)]
+        res = subprocess.call(cmd, stdout=out, stderr=err)
+        out.close()
+        os.unlink(os.path.join(root, fn))
+        if res != 0:
+            os.unlink(os.path.join(root, fn_no_ext))
+            with open(err.name) as e:
+                msg = e.read()
+                send_progress("SUBMISSION_FILE_DECRYPTION_FAILED")
+        else:
+            send_progress("SUBMISSION_FILE_DECRYPTION_SUCCEEDED")
+        err.close()
 
 # almost done. docs are gzipped. let's ungzip them.
 any_files = False
 for root, dirnames, filenames in os.walk(tmpdir):
-  for fn in fnmatch.filter(filenames, '*.gz'):
-    any_files = True
-    # maybe sorta lazy, could do this using python gzip module.
-    # XXX also catch errors here...
-    subprocess.call(["gunzip", os.path.join(root, fn)])
+    for fn in fnmatch.filter(filenames, '*.gz'):
+        any_files = True
+        # maybe sorta lazy, could do this using python gzip module.
+        # XXX also catch errors here...
+        subprocess.call(["gunzip", os.path.join(root, fn)])
 
 if not any_files:
-  send_progress("SUBMISSION_FILE_NO_FILES_FOUND")
-  sys.exit(0)
+    send_progress("SUBMISSION_FILE_NO_FILES_FOUND")
+    sys.exit(0)
 
 # ok. we're going to send all the decrypted stuff to the svs vm.
 # let's tar it all up again, so we can `qvm-open-in-vm` it.
