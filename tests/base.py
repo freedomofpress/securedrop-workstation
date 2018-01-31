@@ -57,12 +57,12 @@ class SD_VM_Local_Test(unittest.TestCase):
         print "".join(difflib.unified_diff(remote_content, content))
         self.assertTrue(remote_content == content)
 
-    def assertFileHasLine(self, remote_path, line):
+    def assertFileHasLine(self, remote_path, wanted_line):
         remote_content = self._get_file_contents(remote_path)
         lines = remote_content.splitlines()
-        for l in lines:
-            if l == line:
+        for line in lines:
+            if line == wanted_line:
                 return True
         msg = "File {} does not contain expected line {}".format(remote_path,
-                                                                 line)
+                                                                 wanted_line)
         raise AssertionError(msg)
