@@ -4,8 +4,8 @@ from qubesadmin import Qubes
 
 
 SUPPORTED_PLATFORMS = [
-        "Fedora 25 (Twenty Five)",
-        "Debian GNU/Linux 8 (jessie)",
+    "Fedora 25 (Twenty Five)",
+    "Debian GNU/Linux 8 (jessie)",
 ]
 
 
@@ -17,7 +17,9 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         pass
 
     def _get_platform_info(self, vm):
-        platform = vm.run("perl -nE '/\"(.*)\"$/ and say $1'")
+        cmd = "perl -nE '/^PRETTY_NAME=\"(.*)\"$/ and say $1' /etc/os-release"
+        stdout, stderr = vm.run(cmd)
+        platform = stdout.rstrip("\n")
         return platform
 
     def test_sd_journalist_template(self):
