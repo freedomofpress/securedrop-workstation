@@ -8,6 +8,15 @@ SUPPORTED_PLATFORMS = [
     "Debian GNU/Linux 8 (jessie)",
 ]
 
+WANTED_VMS = [
+    "sd-decrypt",
+    "sd-gpg",
+    "sd-journalist",
+    "sd-svs",
+    "sd-svs-disp",
+    "sd-whonix",
+]
+
 
 class SD_VM_Platform_Tests(unittest.TestCase):
     def setUp(self):
@@ -22,10 +31,23 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         platform = stdout.rstrip("\n")
         return platform
 
+    def _validate_vm_platform(self, vm):
+        platform = self._get_platform_info(vm)
+        self.assertIn(platform, SUPPORTED_PLATFORMS)
+
     def test_sd_journalist_template(self):
         vm = self.app.domains["sd-journalist"]
-        platform = self._get_platform_info(vm)
-        self.assertTrue(platform in SUPPORTED_PLATFORMS)
+        self._validate_vm_platform(vm)
+
+    def test_all_sd_vm_platforms(self):
+        """
+        Test all VM platforms iteratively.
+        """
+        # Would prefer to use a feature like pytest.mark.parametrize
+        # for better error output here, but not available in dom0.
+        for vm_name in WANTED_VMS:
+            vm = self.app.domains[vm_name]
+            self._validate_vm_platform(vm)
 
 
 def load_tests(loader, tests, pattern):
