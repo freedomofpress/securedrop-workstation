@@ -1,14 +1,15 @@
 import sys
 import PyQt4.QtCore as QtCore
-from PyQt4.QtGui import QDialog, QDialogButtonBox, QApplication, QLabel, QVBoxLayout, QImage, QPixmap
+from PyQt4.QtGui import QDialog, QDialogButtonBox, QApplication, \
+         QLabel, QVBoxLayout, QImage, QPixmap
 from PyQt4.QtCore import Qt
 import os
-import errno
 import threading
 import pipereader
 
+
 class SDDialog(QDialog):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         fn = r'/usr/local/share/sd/logo-small.png'
         image = QImage(fn)
         self.logo = QLabel()
@@ -36,31 +37,46 @@ class SDDialog(QDialog):
 
 messages = {
     # bootstrapping
-    'EXISTING_SIGFILE': ("error", "Internal error: signal file given by caller already exists"),
-    'POLLING_ERROR': {"error": "An internal error occurred while listening for events from VMs."},
+    'EXISTING_SIGFILE': (
+        "error", "Internal error: signal file given by caller already exists"),
+    'POLLING_ERROR': {
+        "error": ("An internal error occurred while listening"
+                  " for events from VMs.")},
 
     # sd-journalist
-    'DOWNLOAD_FILE_MISSING': ("error", "The file downloaded from SecureDrop wasn't found."),
+    'DOWNLOAD_FILE_MISSING': (
+        "error", "The file downloaded from SecureDrop wasn't found."),
     'DOWNLOAD_BUNDLE_CREATED': ("success", "Initial download bundle created."),
 
     # decrypt
     'DECRYPTION_PROCESS_START': ("success", "Decryption process started."),
-    'DECRYPTION_BUNDLE_OPEN_FAILURE': ("error", "Decryption bundle could not be opened."),
-    'SUBMISSION_BUNDLE_UNBUNDLED': ("success", "Submission bundle looks valid."),
-    'SUBMISSION_FILES_EXTRACTED': ("success", "Submission bundle files extracted."),
-    'SUBMISSION_FILE_DECRYPTION_FAILED': ('error', "Submission file decryption failed."),
-    'SUBMISSION_FILE_DECRYPTION_SUCCEEDED': ("success", "Submission file decrypted."),
-    'SUBMISSION_DECRYPTED': ("success", "All submission files decrypted"),
+    'DECRYPTION_BUNDLE_OPEN_FAILURE':
+        ("error", "Decryption bundle could not be opened."),
+    'SUBMISSION_BUNDLE_UNBUNDLED':
+        ("success", "Submission bundle looks valid."),
+    'SUBMISSION_FILES_EXTRACTED':
+        ("success", "Submission bundle files extracted."),
+    'SUBMISSION_FILE_DECRYPTION_FAILED':
+        ('error', "Submission file decryption failed."),
+    'SUBMISSION_FILE_DECRYPTION_SUCCEEDED':
+        ("success", "Submission file decrypted."),
+    'SUBMISSION_DECRYPTED':
+        ("success", "All submission files decrypted"),
 
     # SVS
-    'DECRYPTED_BUNDLE_ON_SVS': ("success", "Decrypted file bundle arrived on SVS."),
-    'DECRYPTED_FILES_AVAILABLE': ("success", "Submitted files available for use on SVS."),
-    'DECRYPTED_BUNDLE UNBUNDLE_ERROR': ("error", "Bundle of decrypted files could not be unbundle on SVS." )
+    'DECRYPTED_BUNDLE_ON_SVS':
+        ("success", "Decrypted file bundle arrived on SVS."),
+    'DECRYPTED_FILES_AVAILABLE':
+        ("success", "Submitted files available for use on SVS."),
+    'DECRYPTED_BUNDLE UNBUNDLE_ERROR':
+        ("error", "Bundle of decrypted files could not be unbundle on SVS.")
 }
+
 
 def finish():
     d.buttons.hide()
     d.layout.removeWidget(d.buttons)
+
 
 def display(keyword):
 
@@ -69,6 +85,7 @@ def display(keyword):
     else:
         # XXX dev only, remove before deploying!
         d.display.setText("bad keyword: {}".format(keyword))
+
 
 def poller_cb(poller, msg, err):
     # we're called with a keyword in `msg`. We look up that keyword
@@ -90,9 +107,9 @@ def create_sigfile(sigfile):
         display('EXISTING_SIGFILE')
     else:
         try:
-            with open(sigfile,'a'):
+            with open(sigfile, 'a'):
                 pass
-        except Exception as e:
+        except Exception:
             display('BAD_SIGFILE')
 
 
@@ -111,7 +128,7 @@ if __name__ == '__main__':
     d.show()
 
     if sigfile != "":
-        # tyvm https://stackoverflow.com/questions/6215690/how-to-execute-a-method-automatically-after-entering-qt-event-loop
+        # tyvm https://stackoverflow.com/questions/6215690/how-to-execute-a-method-automatically-after-entering-qt-event-loop  # noqa: E501
         def on_start():
             create_sigfile(sigfile)
 
