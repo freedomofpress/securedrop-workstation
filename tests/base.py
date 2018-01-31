@@ -22,17 +22,21 @@ class SD_VM_Local_Test(unittest.TestCase):
     #     self.vm.shutdown()
 
     def _reboot(self):
-        try:
-            for v in self.vm.connected_vms.values():
-                if v.is_running():
-                    msg = ("Need to halt connected VM {}"
-                           " before testing".format(v))
-                    print(msg)
-                    v.shutdown()
-                    while v.is_running():
-                        time.sleep(1)
-        except:
-            pass
+        # The for-loop below should be couched in a try/except block.
+        # Further testing required to determine which specific exceptions
+        # to catch; a few ideas:
+        #
+        #   * CalledProcessorError
+        #   * QubesVMError (from qubesadmin.base)
+        #   * QubesVMNotStartedError (from qubesadmin.base)
+        for v in self.vm.connected_vms.values():
+            if v.is_running():
+                msg = ("Need to halt connected VM {}"
+                       " before testing".format(v))
+                print(msg)
+                v.shutdown()
+                while v.is_running():
+                    time.sleep(1)
 
         if self.vm.is_running():
             self.vm.shutdown()
