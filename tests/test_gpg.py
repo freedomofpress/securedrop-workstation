@@ -1,45 +1,48 @@
-from distutils import spawn
-
-import os
 import re
 import subprocess
-import time
 import unittest
 
 from base import SD_VM_Local_Test
 
+
 def find_fp_from_gpg_output(gpg):
 
-  lines = gpg.split("\n")
+    lines = gpg.split("\n")
 
-  for line in lines:
-    m = re.match('\s*Key fingerprint = (.*)$', line)
-    if m is not None:
-      fp = m.groups()[0]
-      return fp
+    for line in lines:
+        m = re.match('\s*Key fingerprint = (.*)$', line)
+        if m is not None:
+            fp = m.groups()[0]
+            return fp
 
 
 def get_local_fp():
 
-  p = subprocess.check_output(["gpg", "--with-fingerprint", "sd-journalist.sec"])
+    cmd = ["gpg", "--with-fingerprint", "sd-journalist.sec"]
+    p = subprocess.check_output(cmd)
 
-  return find_fp_from_gpg_output(p)
+    return find_fp_from_gpg_output(p)
+
 
 def get_remote_fp():
-  p = subprocess.check_output(["qvm-run", "-p", "sd-gpg", "/usr/bin/gpg --list-secret-keys --fingerprint"])
+    cmd = ["qvm-run", "-p", "sd-gpg",
+           "/usr/bin/gpg --list-secret-keys --fingerprint"]
 
-  return find_fp_from_gpg_output(p)
+    p = subprocess.check_output(cmd)
+
+    return find_fp_from_gpg_output(p)
 
 
 class SD_GPG_Tests(SD_VM_Local_Test):
 
-  def setUp(self):
-    self.vm_name = "sd-gpg"
-    super(SD_GPG_Tests, self).setUp()
+    def setUp(self):
+        self.vm_name = "sd-gpg"
+        super(SD_GPG_Tests, self).setUp()
 
-  def test_we_have_the_key(self):
-    self.assertEqual(get_local_fp(), get_remote_fp())
+    def test_we_have_the_key(self):
+        self.assertEqual(get_local_fp(), get_remote_fp())
+
 
 def load_tests(loader, tests, pattern):
-  suite = unittest.TestLoader().loadTestsFromTestCase(SD_GPG_Tests)
-  return suite
+    suite = unittest.TestLoader().loadTestsFromTestCase(SD_GPG_Tests)
+    return suite
