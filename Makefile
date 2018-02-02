@@ -54,7 +54,7 @@ sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
 	sudo rm -rf /srv/salt/sd
 	sudo find /srv/salt -maxdepth 1 -type f -iname 'sd*' -delete
-	sudo find /srv/salt/_tops -type l -delete
+	sudo find /srv/salt/_tops -lname '/srv/salt/sd-*' -delete
 
 prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	sudo mkdir /srv/salt/sd
