@@ -15,6 +15,7 @@ def send_progress(msg):
                          stdin=subprocess.PIPE)
     p.communicate(msg)
 
+
 send_progress("DECRYPTED_BUNDLE_ON_SVS")
 
 try:

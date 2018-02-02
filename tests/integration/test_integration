@@ -62,6 +62,7 @@ def usage(err=None):
     print(tests)
     sys.exit(1)
 
+
 if arg == "all":
     prLightGray("Running all integration tests")
 elif arg in tests:
@@ -122,6 +123,7 @@ class StatefulListener():
         #     prYellow("  ...next expected state: {}".format(
         #         self.expected_states[self.on_state]))
 
+
 receiver = StatefulListener()
 reader = pipereader.PipeReader("/home/user/sdfifo", receiver.poller_cb)
 t = threading.Thread(target=reader.read)
@@ -136,6 +138,7 @@ def run_q(n):
     if arg == n:
         return True
     return False
+
 
 if run_q("full-success"):
     receiver.expected_states = [

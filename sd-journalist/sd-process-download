@@ -51,6 +51,7 @@ def wait_for_sigfile(sigfile):
 
     os.remove(sigfile)
 
+
 # spawn the GUI monitoring process, then wait for it to be available...
 sigfile = tempfile.mktemp()
 spawn_monitor_process(sigfile)
