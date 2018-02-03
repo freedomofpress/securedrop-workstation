@@ -104,7 +104,7 @@ if __name__ == '__main__':
     app = QApplication([])
     d = SDDialog()
 
-    reader = pipereader.PipeReader("sdfifo", poller_cb)
+    reader = pipereader.PipeReader("/home/user/sdfifo", poller_cb)
     t = threading.Thread(target=reader.read)
 
     t.start()
