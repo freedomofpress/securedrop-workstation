@@ -118,6 +118,11 @@ flake8: ## Lints all Python files with flake8
 # available only in the developer environment, i.e. Work VM.
 	@flake8 .
 
+update-fedora-templates: assert-dom0 ## Upgrade Fedora 25 to Fedora 26 templates
+	sudo qubes-dom0-update
+	sudo qubesctl state.sls qvm.default-dispvm
+	qubes-prefs default_dispvm fedora-26-dvm
+
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
 # 2. Check for second field matching, skip otherwise.
