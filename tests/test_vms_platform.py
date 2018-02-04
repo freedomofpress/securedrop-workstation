@@ -1,4 +1,5 @@
 import unittest
+import subprocess
 
 from qubesadmin import Qubes
 
@@ -48,6 +49,16 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         for vm_name in WANTED_VMS:
             vm = self.app.domains[vm_name]
             self._validate_vm_platform(vm)
+
+    def test_dispvm_default_platform(self):
+        """
+        Query dom0 Qubes preferences and confirm that new DispVMs
+        will be created under a supported OS. Requires a separate
+        test because DispVMs may not be running at present.
+        """
+        cmd = ["qubes-prefs", "default_dispvm"]
+        result = subprocess.check_output(cmd).rstrip("\n")
+        self.assertEqual(result, "fedora-26-dvm")
 
 
 def load_tests(loader, tests, pattern):
