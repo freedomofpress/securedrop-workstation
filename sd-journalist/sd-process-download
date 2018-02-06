@@ -10,13 +10,14 @@ import subprocess
 
 fn = sys.argv[1]
 
+
 # remember your Stevens and do a double fork
 def spawn_monitor_process(sigfile):
 
     try:
         pid = os.fork()
         if pid > 0:
-        # congrats, new parent!
+            # congrats, new parent!
             return
     except OSError as e:
         print >>sys.stderr, "fork #1 failed: %d (%s)" % (e.errno, e.strerror)
@@ -50,6 +51,7 @@ def wait_for_sigfile(sigfile):
 
     os.remove(sigfile)
 
+
 # spawn the GUI monitoring process, then wait for it to be available...
 sigfile = tempfile.mktemp()
 spawn_monitor_process(sigfile)
@@ -75,7 +77,8 @@ fh.close()
 
 # this is sort of a one-off... how shall we send messages to the GUI
 # from the same machine? This can only happen on sd-journalist.
-c = subprocess.Popen(["/usr/local/bin/sd-process-feedback"], stdin=subprocess.PIPE)
+c = subprocess.Popen(["/usr/local/bin/sd-process-feedback"],
+                     stdin=subprocess.PIPE)
 c.communicate(input="DOWNLOAD_BUNDLE_CREATED\n")
 
 # ship this to the next phase

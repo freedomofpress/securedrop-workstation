@@ -117,6 +117,9 @@ flake8: ## Lints all Python files with flake8
 # Not requiring dom0 since linting requires extra packages,
 # available only in the developer environment, i.e. Work VM.
 	@flake8 .
+	@find -type f -exec file -i {} + \
+		| perl -F':\s+' -nE '$$F[1] =~ m/text\/x-python/ and say $$F[0]' \
+		| xargs flake8
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
