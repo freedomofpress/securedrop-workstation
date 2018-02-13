@@ -120,6 +120,7 @@ flake8: ## Lints all Python files with flake8
 
 update-fedora-templates: assert-dom0 ## Upgrade Fedora 25 to Fedora 26 templates
 	sudo qubes-dom0-update qubes-template-fedora-26
+	sudo qubes-prefs default_template fedora-26
 	sudo qubesctl state.sls qvm.default-dispvm
 	qubes-prefs default_dispvm fedora-26-dvm
 
