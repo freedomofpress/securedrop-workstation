@@ -1,4 +1,5 @@
 [Default Applications]
+application/pgp-encrypted=process-download.desktop;
 application/zip=process-download.desktop;
 application/x-dia-diagram=do-not-open.desktop;
 text/x-vcard=do-not-open.desktop;
