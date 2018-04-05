@@ -8,7 +8,7 @@ This project is under active development, has known bugs and shortcomings, and i
 
 ### Detailed rationale
 
-SecureDrop's security model is proven, but it has major drawbacks:
+SecureDrop's [architecture](https://docs.securedrop.org/en/latest/overview.html#infrastructure) and [threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html) are proven, but the current approach also has major drawbacks:
 
 - Journalists must access a separate, airgapped device to even validate that a submission is relevant. This is very onerous, and may reduce the reliance on SecureDrop overall.
 
