@@ -36,19 +36,7 @@ Installing this project is involved. It requires an up-to-date Qubes 4.0 install
 
 #### Qubes 4.0
 
-Before trying to use this project, install [Qubes 4.0-rc3](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
-
-Qubes 4.0 is still in prerelease, so using it requires some patience and a bit of extra work. In particular, you'll want to update your system to the latest testing code immediately. As soon as the Qubes installer finishes and you're able to boot into your system, open a `dom0` shell and run:
-
-    sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing
-
-Once that finishes, reboot your machine. Open a shell on your Fedora 25 template and run:
-
-    sudo dnf upgrade --enablerepo=qubes-vm-*-current-testing
-
-and in your Debian template VM, uncomment the `testing` repo in `/etc/apt/sources.list.d/qubes-r4.list`, and run:
-
-    sudo apt-get update ; sudo apt-get dist-upgrade
+Before trying to use this project, install [Qubes 4.0](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
 
 #### Download, configure, copy to dom0
 
@@ -164,9 +152,7 @@ These tests exercise the full submission handling process. These are unique in t
 
 To run the integration tests, copy the `tests/integration` directory to `sd-journalist` from the root of the checked-out project:
 
-    $ qvm-copy integration
-
-then type `sd-journalist` in the Qubes dialog.
+    $ qvm-copy-to-vm sd-journalist tests/integration
 
 Open a shell on `sd-journalist`, and copy the directory out of QubesIncoming:
 
@@ -175,9 +161,9 @@ Open a shell on `sd-journalist`, and copy the directory out of QubesIncoming:
 and run tests with
 
     $ cd integration
-    $ ./test-integration
+    $ ./test_integration
 
-For more information on the integration tests, run `test-integration --help`.
+For more information on the integration tests, run `test_integration --help`.
 
 
 [1] Due to a [Qubes bug](https://github.com/freedomofpress/securedrop-workstation/issues/46), we're currently using a non-disposable instance of this VM for decryption. When the Qubes bug is fixed, we can easily migrate to a disposable instance.
