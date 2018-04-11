@@ -1,7 +1,15 @@
-#!/bin/sh
+#!/usr/bin/python
 
-# `read` reads exactly one line from stdin as a literal string.
-read arg
+import errno
+import posix
+import sys
+import os
 
-# our process on the other end will read at most BUFSIZE bytes
-echo $arg > /home/user/sdfifo
+arg = sys.stdin.readline()
+
+try:
+    fifo = os.open('/home/user/sdfifo', posix.O_WRONLY | posix.O_NONBLOCK)
+    os.write(fifo, arg)
+except OSError as ex:
+    if ex.errno == errno.ENXIO:
+        pass
