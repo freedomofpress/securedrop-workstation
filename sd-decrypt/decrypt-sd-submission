@@ -52,7 +52,7 @@ for z in zips:
         zf.extractall(tmpdir + "/extracted/")
     os.unlink(z)
 
-gpgs = glob.glob(tmpdir + "/*gpg")
+gpgs = glob.glob(os.path.join(tmpdir, "*gpg"))
 for g in gpgs:
     match = re.search('\d-(.*)-(msg|doc).*$', g)
     source = match.group(1)
@@ -61,7 +61,7 @@ for g in gpgs:
     if not os.path.exists(target):
         os.makedirs(target)
 
-    os.rename(g, "{}/{}".format(target, os.path.basename(g)))
+    os.rename(g, os.path.join(target, os.path.basename(g)))
 
 send_progress("SUBMISSION_FILES_EXTRACTED")
 
