@@ -14,9 +14,15 @@
 {% load_yaml as defaults -%}
 name:         sd-svs
 present:
+  - template: fedora-26
   - label:    yellow
 prefs:
-  - netvm:    none
+  - netvm:    ""
 {%- endload %}
 
 {{ load(defaults) }}
+
+# Allow sd-svs to open files in dispvms based on sd-svs-disp
+sed -i '1isd-svs $dispvm:sd-svs-disp allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
+  cmd.run:
+    - unless: grep -qF 'sd-svs $dispvm:sd-svs-disp allow' /etc/qubes-rpc/policy/qubes.OpenInVM

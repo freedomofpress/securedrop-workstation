@@ -1,0 +1,15 @@
+#!/usr/bin/python
+
+import errno
+import posix
+import sys
+import os
+
+arg = sys.stdin.readline()
+
+try:
+    fifo = os.open('/home/user/sdfifo', posix.O_WRONLY | posix.O_NONBLOCK)
+    os.write(fifo, arg)
+except OSError as ex:
+    if ex.errno == errno.ENXIO:
+        pass

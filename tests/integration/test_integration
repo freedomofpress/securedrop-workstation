@@ -1,0 +1,179 @@
+#!/usr/bin/python
+
+import sys
+import pipereader
+import threading
+
+# Adding /usr/local/bin allows shorthand command references,
+# e.g. "qvm-open-in-vm" rather than "/usr/local/bin/qvm-open-in-vm".
+# TODO: remove sys.path insert and switch to hardcoding fullpaths to binaries.
+sys.path.insert(0, "/usr/local/bin")
+
+arg = "all"
+if len(sys.argv) > 1:
+    arg = sys.argv[1]
+
+
+def prRed(skk):
+    print("\033[91m {}\033[00m" .format(skk))
+
+
+def prGreen(skk):
+    print("\033[92m {}\033[00m" .format(skk))
+
+
+def prYellow(skk):
+    print("\033[93m {}\033[00m" .format(skk))
+
+
+def prLightPurple(skk):
+    print("\033[94m {}\033[00m" .format(skk))
+
+
+def prPurple(skk):
+    print("\033[95m {}\033[00m" .format(skk))
+
+
+def prCyan(skk):
+    print("\033[96m {}\033[00m" .format(skk))
+
+
+def prLightGray(skk):
+    print("\033[97m {}\033[00m" .format(skk))
+
+
+def prBlack(skk):
+    print("\033[98m {}\033[00m" .format(skk))
+
+
+tests = ["all", "full-success", "empty-download"]
+
+
+def usage(err=None):
+    if err:
+        prRed(err)
+    else:
+        print("{}: Run SecureDrop journalist workstation"
+              " integration tests".format(sys.argv[0]))
+        print("\nThese tests must be run from sd-journalist.")
+    print("Usage: {} test-name ".format(sys.argv[0]))
+    print("    test-name should one of the following,"
+          " or leave it blank to run all tests.")
+    print(tests)
+    sys.exit(1)
+
+
+if arg == "all":
+    prLightGray("Running all integration tests")
+elif arg in tests:
+    prLightGray("Running test {}".format(arg))
+elif arg in ["help", "--help", "-h"]:
+    usage()
+else:
+    usage("Bad test name!")
+
+
+class StatefulListener():
+    def __init__(self):
+        self.expected_states = []
+        self.on_state = 0
+        self.cmd = []
+        self.test_name = ""
+        self._in_test = False
+        self._errors = False
+
+    def test(self):
+        prYellow("Running test: {}".format(self.test_name))
+        self._in_test = True
+        # Result of command not needed at present...
+        # result = subprocess.call(self.cmd)
+        if self._errors:
+            prRed("-------- test \"{}\""
+                  " completed with errors".format(self.test_name))
+        else:
+            prGreen("-------- test \"{}\""
+                    " completed without errors".format(self.test_name))
+
+        self._in_test = False
+        self._errors = False
+        self.expected_states = []
+        self.on_state = 0
+        self.cmd = []
+        self.test_name = ""
+
+    def poller_cb(self, poller, msg, err):
+
+        if not self._in_test:
+            prRed("Error: got a message outside a test."
+                  " Message: {}".format(msg))
+        elif self.on_state >= len(self.expected_states):
+            prRed("Error: got too many messages from my VMs."
+                  " Message: {}".format(msg))
+            self._errors = True
+        elif msg == self.expected_states[self.on_state]:
+            prGreen("Got expected state {}".format(msg))
+        else:
+            prRed("Error: got state {} but expected {}".format(msg,
+                  self.expected_states[self.on_state]))
+            self._errors = True
+
+        self.on_state += 1
+
+        # if self.on_state < len(self.expected_states):
+        #     prYellow("  ...next expected state: {}".format(
+        #         self.expected_states[self.on_state]))
+
+
+receiver = StatefulListener()
+reader = pipereader.PipeReader("/home/user/sdfifo", receiver.poller_cb)
+t = threading.Thread(target=reader.read)
+
+t.daemon = True
+t.start()
+
+
+def run_q(n):
+    if arg == "all":
+        return True
+    if arg == n:
+        return True
+    return False
+
+
+if run_q("full-success"):
+    receiver.expected_states = [
+            "DECRYPTION_PROCESS_START",
+            "SUBMISSION_BUNDLE_UNBUNDLED",
+            "SUBMISSION_FILES_EXTRACTED",
+            "SUBMISSION_FILE_DECRYPTION_SUCCEEDED",
+            "SUBMISSION_FILE_DECRYPTION_SUCCEEDED",
+            "DECRYPTED_BUNDLE_ON_SVS",
+            "DECRYPTED_FILES_AVAILABLE",
+    ]
+    receiver.cmd = ["qvm-open-in-vm", "sd-decrypt", "./all.sd-xfer"]
+    receiver.test_name = "full successful open"
+    receiver.test()
+
+if run_q("empty-download"):
+    receiver.expected_states = [
+            "DECRYPTION_PROCESS_START",
+            "DECRYPTION_BUNDLE_OPEN_FAILURE",
+    ]
+    receiver.cmd = ["qvm-open-in-vm", "sd-decrypt", "./empty.sd-xfer"]
+    receiver.test_name = "empty sd-xfer"
+    receiver.test()
+
+if run_q("bad-gpg-key"):
+    receiver.expected_states = [
+            "DECRYPTION_PROCESS_START",
+            "SUBMISSION_BUNDLE_UNBUNDLED",
+            "SUBMISSION_FILES_EXTRACTED",
+            "SUBMISSION_FILE_DECRYPTION_FAILED",
+            "SUBMISSION_FILE_DECRYPTION_FAILED",
+            "SUBMISSION_FILE_NO_FILES_FOUND",
+    ]
+    receiver.cmd = ["qvm-open-in-vm", "sd-decrypt", "./bad-key.sd-xfer"]
+    receiver.test_name = "bad encryption key"
+    receiver.test()
+
+reader.quit()

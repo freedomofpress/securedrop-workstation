@@ -21,9 +21,8 @@ present:
   - template: whonix-gw
   - label: purple
   - mem: 500
-  - flags:
-    - proxy
 prefs:
+  - provides-network: true
   - netvm: sys-firewall
   - autostart: true
 require:
