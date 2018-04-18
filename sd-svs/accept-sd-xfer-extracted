@@ -17,7 +17,7 @@ def send_progress(msg):
 send_progress("DECRYPTED_BUNDLE_ON_SVS")
 
 try:
-    cmd = ["tar", "-xvf", fn,
+    cmd = ["tar", "-xf", fn,
            "--strip-components=2", "-C", "/home/user/Sources"]
     res = subprocess.call(cmd)
     if res != 0:
