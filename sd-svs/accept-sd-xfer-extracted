@@ -6,6 +6,7 @@ import os
 
 fn = sys.argv[1]
 
+
 # TODO: pull this in to a library... XXX
 def send_progress(msg):
     p = subprocess.Popen(["qrexec-client-vm", "sd-journalist",
@@ -13,6 +14,7 @@ def send_progress(msg):
                          close_fds=True,
                          stdin=subprocess.PIPE)
     p.communicate(msg)
+
 
 send_progress("DECRYPTED_BUNDLE_ON_SVS")
 
