@@ -1,5 +1,7 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/freedomofpress/securedrop?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
+![Example of viewing a submitted document inside Qubes](docs/images/step6-view-cropped.png)
+
 ## Bringing SecureDrop to Qubes
 
 This project aims to make journalists' experience working with SecureDrop less onerous while retaining the current security and privacy features SecureDrop provides. We're doing that by moving the set of journalist-facing tools, which currently spans multiple Tails installations and requires physical USB drives to move data, to a single computer running multiple virtual machines, with data moved as automatically and transparently as possible between otherwise isolated VMs.
@@ -101,7 +103,7 @@ on any submission of interest.
 5. The decrypted submission is copied to the `sd-svs` Secure Viewing Station VM, where it's placed in the `Sources` directory based on the source name.
 6. Any file viewed in the Secure Viewing Station is opened in a Disposable VM, largely mitigating attacks from malicious content.
 
-See below for a closer examination of this process.
+See below for a closer examination of this process, and see `docs/images` for screenshots related to the steps above.
 
 ### What's in this repo?
 
