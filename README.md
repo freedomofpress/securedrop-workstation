@@ -1,10 +1,36 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/freedomofpress/securedrop?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
+![Example of viewing a submitted document inside Qubes](docs/images/step6-view-cropped.png)
+
 ## Bringing SecureDrop to Qubes
 
 This project aims to make journalists' experience working with SecureDrop less onerous while retaining the current security and privacy features SecureDrop provides. We're doing that by moving the set of journalist-facing tools, which currently spans multiple Tails installations and requires physical USB drives to move data, to a single computer running multiple virtual machines, with data moved as automatically and transparently as possible between otherwise isolated VMs.
 
 This project is under active development, has known bugs and shortcomings, and is not ready for end users. This README is geared towards interested technical users and developers.
+
+### Detailed rationale
+
+SecureDrop's [architecture](https://docs.securedrop.org/en/latest/overview.html#infrastructure) and [threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html) are proven, but the current approach also has major drawbacks:
+
+- Journalists must access a separate, airgapped device to even validate that a submission is relevant. This is very onerous, and may reduce the reliance on SecureDrop overall.
+
+- The complexity of the setup and the usage procedures create operational security risks. For example, journalists may accidentally boot up the wrong device using the _Secure Viewing Station_ (SVS) USB drive, breaking the airgap, or they may attempt "workarounds" to shortcut the onerous process of checking for submissions.
+
+- Applying security updates to the SVS is difficult, which may cause administrators to wait a long time before doing so. While the SVS is airgapped, an insecure SVS still exposes additional vectors of attack, especially since the journalist is by design opening unknown files on the workstation.
+
+- Once a document has been decrypted on the SVS, a journalist is more or less on their own right now. Work on the submission and the collaboration with other journalists are "not our department". Yet, security failures are likely during this stage. It's difficult to address this fundamental issue with the current workflow, since the SVS is essentially a dead end as far as SecureDrop is concerned.
+
+The Qubes OS approach addresses this at multiple levels:
+
+- By disabling Internet access and [mitigating against other exfiltration risks](https://en.wikipedia.org/wiki/Air_gap_malware) on a per-VM basis, we can combine multiple functions into a single device. Checking SecureDrop submissions is as simple as booting up your workstation, downloading recent submissions, and inspecting them. This has the potential to greatly reduce time and effort spent by SecureDrop journalists, administators and trainers, and to increase day-to-day SecureDrop use.
+
+- Qubes OS' security model lets us add specific software features (such as redaction of documents) with careful consideration in each case what level of system or network access an application requires. This lets us gradually extend the functionality we can offer to journalists beyond the mere download of submissions.
+
+- We can potentially add VMs that enable end-to-end encrypted communication with other SecureDrop journalists, intermediated by the SecureDrop server. This enables us to add software features that, for example, let journalists collaborate in categorizing submissions, assigning work, versioning changes to documents, and so on.
+
+However, the Qubes OS approach is not without downsides. It stands and falls with the security of Qubes OS itself, which in turn may be impacted by Spectre/Meltdown type CPU level vulnerabilities, hypervisor vulnerabilities, and so on. These risks must be compared against the operational security risks of the current architecture, including the work that journalists do after downloading a submission. The Qubes OS website provides a useful [comparison of its security model with that of using a separate machine](https://www.qubes-os.org/intro/#how-does-qubes-os-compare-to-using-a-separate-physical-machine).
+
+While we are strongly committed to piloting the use of Qubes OS for SecureDrop, no final decision has been made to move to this new architecture. This decision will require a full audit of this new approach, consideration of alternatives, and extensive validation with SecureDrop's current user community.
 
 ### Using this repo
 
@@ -12,19 +38,7 @@ Installing this project is involved. It requires an up-to-date Qubes 4.0 install
 
 #### Qubes 4.0
 
-Before trying to use this project, install [Qubes 4.0-rc3](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
-
-Qubes 4.0 is still in prerelease, so using it requires some patience and a bit of extra work. In particular, you'll want to update your system to the latest testing code immediately. As soon as the Qubes installer finishes and you're able to boot into your system, open a `dom0` shell and run:
-
-    sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing
-
-Once that finishes, reboot your machine. Open a shell on your Fedora 25 template and run:
-
-    sudo dnf upgrade --enablerepo=qubes-vm-*-current-testing
-
-and in your Debian template VM, uncomment the `testing` repo in `/etc/apt/sources.list.d/qubes-r4.list`, and run:
-
-    sudo apt-get update ; sudo apt-get dist-upgrade
+Before trying to use this project, install [Qubes 4.0](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
 
 #### Download, configure, copy to dom0
 
@@ -89,7 +103,7 @@ on any submission of interest.
 5. The decrypted submission is copied to the `sd-svs` Secure Viewing Station VM, where it's placed in the `Sources` directory based on the source name.
 6. Any file viewed in the Secure Viewing Station is opened in a Disposable VM, largely mitigating attacks from malicious content.
 
-See below for a closer examination of this process.
+See below for a closer examination of this process, and see `docs/images` for screenshots related to the steps above.
 
 ### What's in this repo?
 
@@ -140,9 +154,7 @@ These tests exercise the full submission handling process. These are unique in t
 
 To run the integration tests, copy the `tests/integration` directory to `sd-journalist` from the root of the checked-out project:
 
-    $ qvm-copy integration
-
-then type `sd-journalist` in the Qubes dialog.
+    $ qvm-copy-to-vm sd-journalist tests/integration
 
 Open a shell on `sd-journalist`, and copy the directory out of QubesIncoming:
 
@@ -151,9 +163,9 @@ Open a shell on `sd-journalist`, and copy the directory out of QubesIncoming:
 and run tests with
 
     $ cd integration
-    $ ./test-integration
+    $ ./test_integration
 
-For more information on the integration tests, run `test-integration --help`.
+For more information on the integration tests, run `test_integration --help`.
 
 
 [1] Due to a [Qubes bug](https://github.com/freedomofpress/securedrop-workstation/issues/46), we're currently using a non-disposable instance of this VM for decryption. When the Qubes bug is fixed, we can easily migrate to a disposable instance.

@@ -8,6 +8,8 @@ import zipfile
 import glob
 import subprocess
 import shutil
+import re
+import gzip
 
 
 def send_progress(msg):
@@ -51,6 +53,17 @@ for z in zips:
         zf.extractall(tmpdir + "/extracted/")
     os.unlink(z)
 
+gpgs = glob.glob(os.path.join(tmpdir, "*gpg"))
+for g in gpgs:
+    match = re.search('\d-(.*)-(msg|doc).*$', g)
+    source = match.group(1)
+    target = "{}/extracted/{}".format(tmpdir, source)
+
+    if not os.path.exists(target):
+        os.makedirs(target)
+
+    os.rename(g, os.path.join(target, os.path.basename(g)))
+
 send_progress("SUBMISSION_FILES_EXTRACTED")
 
 # great, we should be left with a directory tree filled with files
@@ -74,14 +87,40 @@ for root, dirnames, filenames in os.walk(tmpdir):
             send_progress("SUBMISSION_FILE_DECRYPTION_SUCCEEDED")
         err.close()
 
-# almost done. docs are gzipped. let's ungzip them.
+# almost done. some docs are gzipped, so let's ungzip them. also,
+# torbrowser (?) seems to add numeric suffixes to files if they've
+# been previously downloaded, even if those files are not in the
+# download directory? so we need to deal with stripping those numbers
+# off the end of filenames. This happens with single-file downloads,
+# not tar files (since those tar files have a different name every
+# time they're downloaded)
+
 any_files = False
 for root, dirnames, filenames in os.walk(tmpdir):
-    for fn in fnmatch.filter(filenames, '*.gz'):
+
+    # first let's find "msg" files
+    for fn in fnmatch.filter(filenames, '*-msg*'):
+        orig_path = os.path.join(root, fn)
         any_files = True
-        # maybe sorta lazy, could do this using python gzip module.
-        # XXX also catch errors here...
-        subprocess.call(["gunzip", os.path.join(root, fn)])
+
+        match = re.search('(.*-msg)(-\d)?$', orig_path)
+        path_removed_number = match.group(1)
+        os.rename(orig_path, path_removed_number)
+
+    # and now find gzipped file submissions
+    for fn in fnmatch.filter(filenames, '*.gz*'):
+        orig_path = os.path.join(root, fn)
+        any_files = True
+
+        with gzip.open(orig_path, 'rb') as f:
+            file_content = f.read()
+
+        [ungz_path, _ext] = os.path.splitext(orig_path)
+
+        with open(ungz_path, 'w') as f:
+            f.write(file_content)
+
+        os.unlink(orig_path)
 
 if not any_files:
     send_progress("SUBMISSION_FILE_NO_FILES_FOUND")

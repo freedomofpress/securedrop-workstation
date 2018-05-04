@@ -1,5 +1,5 @@
 [Desktop Entry]
 Type=Application
-MimeType=application/zip
+MimeType=application/zip;application/pgp-encrypted
 Name=Process SecureDrop Download
 Exec=/usr/local/bin/sd-process-download
