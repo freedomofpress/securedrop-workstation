@@ -39,3 +39,8 @@ qvm-tags sd-decrypt add sd-decrypt-vm:
 sed -i '1i$tag:sd-decrypt-vm sd-gpg allow' /etc/qubes-rpc/policy/qubes.Gpg:
   cmd.run:
   - unless: grep -qF '$tag:sd-decrypt-vm sd-gpg allow' /etc/qubes-rpc/policy/qubes.Gpg
+
+# Allow sd-decrypt to open files in sd-svs
+sed -i '1isd-decrypt sd-svs allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
+  cmd.run:
+  - unless: grep -qF 'sd-decrypt sd-svs allow' /etc/qubes-rpc/policy/qubes.OpenInVM
