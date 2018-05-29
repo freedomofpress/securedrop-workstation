@@ -70,7 +70,7 @@ send_progress("SUBMISSION_FILES_EXTRACTED")
 # encrypted to our public key. let's find those and decrypt them
 for root, dirnames, filenames in os.walk(tmpdir):
     for fn in fnmatch.filter(filenames, '*.gpg'):
-        [fn_no_ext, _] = os.path.splitext(fn)
+        fn_no_ext, _ = os.path.splitext(fn)
 
         out = open(os.path.join(root, fn_no_ext), 'w')
         err = tempfile.NamedTemporaryFile(suffix=".gpg-err")
@@ -115,7 +115,7 @@ for root, dirnames, filenames in os.walk(tmpdir):
         with gzip.open(orig_path, 'rb') as f:
             file_content = f.read()
 
-        [ungz_path, _ext] = os.path.splitext(orig_path)
+        ungz_path, _ext = os.path.splitext(orig_path)
 
         with open(ungz_path, 'w') as f:
             f.write(file_content)
