@@ -167,5 +167,8 @@ and run tests with
 
 For more information on the integration tests, run `test_integration --help`.
 
+### Data Flow Diagram
+
+![(Data Flow Diagram for the SecureDrop Workstation)](docs/images/data-flow-diagram.png)
 
 [1] Due to a [Qubes bug](https://github.com/freedomofpress/securedrop-workstation/issues/46), we're currently using a non-disposable instance of this VM for decryption. When the Qubes bug is fixed, we can easily migrate to a disposable instance.
