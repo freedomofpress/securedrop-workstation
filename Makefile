@@ -57,7 +57,7 @@ clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
 	sudo find /srv/salt/_tops -lname '/srv/salt/sd-*' -delete
 
 prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
-	-sudo mkdir /srv/salt/sd
+	sudo mkdir -p /srv/salt/sd
 	sudo cp config.json /srv/salt/sd
 	sudo cp sd-journalist.sec /srv/salt/sd
 	sudo cp -r sd-decrypt /srv/salt/sd

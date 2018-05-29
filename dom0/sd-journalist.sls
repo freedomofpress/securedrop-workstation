@@ -37,6 +37,7 @@ require:
     - mode: 644
 
 # Allow sd-journslist to open files in sd-decrypt
+# When our Qubes bug is fixed, this will *not* be used
 sed -i '1isd-journalist sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
   cmd.run:
     - unless: grep -qF 'sd-journalist sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM
