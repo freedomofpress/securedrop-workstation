@@ -179,7 +179,7 @@ This section outlines the threat model for the SecureDrop workstation, and shoul
 
 #### Assumptions about the SecureDrop servers
 
-* The SecureDrop *application* and *monitor* servers are properly installed and configured.
+* The SecureDrop *Application* and *Monitor* servers are properly installed and configured.
 * Operational security, administration and usage of the SecureDrop instance follows the guidance provided by the SecureDrop documentation.
 
 #### Assumptions about the SecureDrop Workstation install
