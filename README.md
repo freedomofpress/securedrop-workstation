@@ -167,5 +167,78 @@ and run tests with
 
 For more information on the integration tests, run `test_integration --help`.
 
+## Threat model
+
+This section outlines the threat model for the SecureDrop workstation, and should complement [SecureDrop's threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html). This document is always a work in progress, if you have any questions or comments, please open an issue on [GitHub](https://github.com/freedomofpress/securedrop-workstation) or send an email to [securedrop@freedom.press](mailto:securedrop@freedom.press).
+
+### Data Flow Diagram
+
+![(Data Flow Diagram for the SecureDrop Workstation)](docs/images/data-flow-diagram.png)
+
+### Assumptions
+
+#### Assumptions about the SecureDrop servers
+
+* The SecureDrop *Application* and *Monitor* servers are properly installed and configured.
+* Operational security, administration and usage of the SecureDrop instance follows the guidance provided by the SecureDrop documentation.
+
+#### Assumptions about the SecureDrop Workstation install
+
+* SecureDrop workstation was installed correctly
+* Updates are applied to SecureDrop Workstation provisioning code, VM templates and dom0 as they are available.
+
+#### Assumptions about the world
+
+* The security assumptions of dm-crypt and LUKS are valid.
+* The security assumptions of Tor, the Hidden Service protocol and Hidden Service authentication are valid.
+* The security assumptions of RSA are valid.
+* The security assumptions of the Qubes operating system are valid.
+* The security assumptions of the Xen hypervisor are valid.
+
+### Attack scenarios
+
+As the SecureDrop workstation is not Internet-reachable, an attacker must first obtain code execution on a virtual machine. This can be achieved through a malicious SecureDrop submission, websites visited by a journalist or a vulnerability in the provisioning code and its dependencies. The Virtual Machine in which the adversary obtains code execution will dictate what information is potentially compromised, as well as the attack surface exposed for lateral movement or escalation of privilege.
+
+#### What compromise of the *Display VM* can achieve
+
+The *Display VM* is disposable, does not have network access, and is used to display only one submission before being destroyed.
+
+* An adversary can read the decrypted submission.
+* An adversary can attempt to elevate their privileges and escape the VM.
+* An adversary can attempt to communicate through a side channel to another VM or device in the SecureDrop Workstation's environment.
+
+#### What compromise of the *Journalist VM* can achieve
+* An adversary can initiate arbitrary decryption of messages and submissions, but cannot access the decrypted contents.
+* An adversary can intercept and modify any and all communication between the Tor Browser and the SecureDrop Journalist interface, including but not limited to:
+  * Send messages to (but not view messages from) sources.
+  * Delete messages and submissions.
+  * Access encrypted messages and submissions.
+  * Access plaintext passwords to the Journalist interface.
+* An adversary can attempt to elevate their privileges and escape the VM.
+
+#### What compromise of the *Whonix Gateway VM* can achieve
+
+* An adversary can obtain the Journalist Interface's ATHS cookie.
+* An adversary can intercept and modify any and all communication between the Journalist VM and the SecureDrop Journalist interface, including but not limited to:
+  * Send messages to sources (but not view messages from a source).
+  * Delete messages and submissions.
+  * Access encrypted messages and submissions.
+  * Access plaintext passwords to the Journalist interface.
+* An adversary can attempt to elevate their privileges and escape the VM.
+
+#### What compromise of the *Decryption VM* can achieve
+The *Decryption VM* is disposable, does not have network access, and is used to decrypt only one submission before being destroyed.
+* An adversary can initiate arbitrary decryption of messages and submissions, but cannot access the decrypted contents.
+* An adversary can attempt to elevate their privileges and escape the VM.
+
+#### What compromise of the *GPG VM* can achieve
+The *GPG VM* does not have network access, and the Qubes split-gpg mechanism restricts access to this VM per the Qubes GPG RPC policy.
+* An adversary can decrypt and encrypted message or submission.
+* An adversary can store and view any message that is being decrypted by the SecureDrop Workstation.
+* An adversary can attempt to elevate their privileges and escape the VM.
+
+#### What compromise of *dom0* can achieve
+*Dom0* can do all of the above: spawn arbitrary virtual machines, access all data, modify all SecureDrop Workstation provisioning code, as well as introduce mechanisms to establish persistence and exfiltrate data.
+
 
 [1] Due to a [Qubes bug](https://github.com/freedomofpress/securedrop-workstation/issues/46), we're currently using a non-disposable instance of this VM for decryption. When the Qubes bug is fixed, we can easily migrate to a disposable instance.
