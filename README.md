@@ -118,9 +118,9 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 
 `sd-svs` contains scripts and configuration for the viewing station VM. These include a script to handle incoming, decrypted files during the submission handling process, and desktop configuration files to make this VM open all files in a disposable VM.
 
-`decrypt` contains scripts for the VMs handing decryption. These get used both while configuring the disposable VM, and when provisioning the `sd-gpg` split GPG VM. These should probably be separated into two directories- one for `sd-gpg` and one for the disposable VM config.
+`decrypt` contains scripts for the VMs handling decryption. These get used both while configuring the disposable VM, and when provisioning the `sd-gpg` split GPG VM. These should probably be separated into two directories- one for `sd-gpg` and one for the disposable VM config.
 
-`config.json.orig` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
+`config.json.sample` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
 
 `Makefile` is used with the `make` command on dom0 to build the Qubes/SecureDrop installation, and also contains some development and testing features
 
