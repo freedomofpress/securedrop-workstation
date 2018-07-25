@@ -14,7 +14,7 @@
 {% load_yaml as defaults -%}
 name:         sd-svs
 present:
-  - template: fedora-26
+  - template: fedora-28
   - label:    yellow
 prefs:
   - netvm:    ""
