@@ -167,6 +167,19 @@ and run tests with
 
 For more information on the integration tests, run `test_integration --help`.
 
+## Building the templates
+
+1. Create a fedora-28 AppVM for building
+2. Increase the disk size to at least 15GB (as the build uses over 10GB)
+3. Import the QubesOS master key and the GPG key used to sign tags (see https://www.qubes-os.org/security/verifying-signatures/)
+4. Run `make template` in the top-level of this repository.
+5. Copy the rpm generated in `/home/user/src/securedrop-workstation/builder/qubes-builder/qubes-src/linux-template-builder/rpm/` to `dom0`
+6. Install the template in `dom0` : `sudo rpm -i <file>.rpm` (this takes a few minutes)
+7. Create a new VM based on this template:
+```
+qvm-create --template grsec-workstation test-grsec-kernels --class AppVM --property virt_mode=hvm --property kernel='' --label green
+```
+
 ## Threat model
 
 This section outlines the threat model for the SecureDrop workstation, and should complement [SecureDrop's threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html). This document is always a work in progress, if you have any questions or comments, please open an issue on [GitHub](https://github.com/freedomofpress/securedrop-workstation) or send an email to [securedrop@freedom.press](mailto:securedrop@freedom.press).
