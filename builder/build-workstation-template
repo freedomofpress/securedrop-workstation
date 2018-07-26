@@ -10,6 +10,7 @@ repo_root="$(git rev-parse --show-toplevel)"
 build_dir="${repo_root}/builder"
 qubes_builder_dir="${build_dir}/qubes-builder"
 sd_template_dir="${build_dir}/qubes-template-securedrop-workstation"
+gpg_homedir="${repo_root}/builder/qubes-builder/keyrings/git"
 
 # Chroot may exist due to previous failed build; let's clean up responsibly.
 if [[ -d "${qubes_builder_dir}" ]]
@@ -32,6 +33,15 @@ cp ${sd_template_dir}/securedrop-workstation.conf builder.conf
 
 # Install dependencies from Qubes builder logic.
 make install-deps
+
+# Get sources for only the builder component, which will get Qubes dev keys and initialize the keyring
+make COMPONENTS="builder" get-sources
+
+# Add signing key to the keyring
+gpg --homedir ${gpg_homedir} --keyserver pool.sks-keyservers.net --recv-key AF775782949D263DAABB3387AAFB3575FAC82745 || exit 1;
+echo 'AF775782949D263DAABB3387AAFB3575FAC82745:6:' | gpg --homedir ${gpg_homedir} --import-ownertrust;
+
+# Get all sources
 make get-sources
 
 # Build it!
