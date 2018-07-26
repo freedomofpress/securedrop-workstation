@@ -172,7 +172,7 @@ For more information on the integration tests, run `test_integration --help`.
 1. Create a fedora-28 AppVM for building
 2. Increase the disk size to at least 15GB (as the build uses over 10GB)
 3. Import the QubesOS master key and the GPG key used to sign tags (see https://www.qubes-os.org/security/verifying-signatures/)
-4. Run `build-workstation-template` in the `builder` directory
+4. Run `make template` in the top-level of this repository.
 5. Copy the rpm generated in `/home/user/src/securedrop-workstation/builder/qubes-builder/qubes-src/linux-template-builder/rpm/` to `dom0`
 6. Install the template in `dom0` : `sudo rpm -i <file>.rpm` (this takes a few minutes)
 7. Create a new VM based on this template:

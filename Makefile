@@ -131,6 +131,9 @@ update-fedora-templates: assert-dom0 ## Upgrade Fedora 25 to Fedora 26 templates
 	sudo qubesctl state.sls qvm.default-dispvm
 	qubes-prefs default_dispvm fedora-26-dvm
 
+template: ## Builds securedrop-workstation Qube template RPM
+	./builder/build-workstation-template
+
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
 # 2. Check for second field matching, skip otherwise.
