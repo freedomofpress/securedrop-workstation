@@ -1,0 +1,28 @@
+#!/bin/bash
+# Utility to update the default Fedora templates used by Qubes
+# when creating other VMs.
+set -e
+set -u
+set -o pipefail
+
+
+# Install the Qubes-maintained Fedora template if absent.
+# We must use conditional logic, since the update command
+# will fail if the package is already installed.
+if ! rpm -qa | grep -q ^qubes-template-fedora-28 ; then
+    sudo qubes-dom0-update qubes-template-fedora-28
+fi
+
+# Check whether a suitable DispVM exists.
+if ! qvm-ls --quiet fedora-28-dvm 2>&1 > /dev/null ; then
+    qvm-create --template fedora-28 --label red fedora-28-dvm
+    qvm-features fedora-28-dvm appmenus-dispvm 1
+fi
+
+# Set latest Fedora as the default DispVM throughout.
+qubes-prefs default_template fedora-28
+qubes-prefs default_dispvm fedora-28-dvm
+
+# The Qubes Salt config must override the fedora-26-dvm setting.
+# We aren't managing that explicitly yet.
+# sudo qubesctl state.sls qvm.default-dispvm

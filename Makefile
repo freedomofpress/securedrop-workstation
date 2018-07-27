@@ -126,10 +126,7 @@ flake8: ## Lints all Python files with flake8
 		| xargs flake8
 
 update-fedora-templates: assert-dom0 ## Upgrade to Fedora 28 templates
-	sudo qubes-dom0-update qubes-template-fedora-28
-	sudo qubes-prefs default_template fedora-28
-	sudo qubesctl state.sls qvm.default-dispvm
-	qubes-prefs default_dispvm fedora-28-dvm
+	@./scripts/update-fedora-templates
 
 template: ## Builds securedrop-workstation Qube template RPM
 	./builder/build-workstation-template
