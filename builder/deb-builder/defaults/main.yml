@@ -1,0 +1,7 @@
+---
+build_path: /tmp/builder
+package_name: "securedrop-workstation-grsec"
+build_dir: "{{ build_path }}/{{ package_name }}"
+local_build_path: ../../build
+kernel_version: 4.14.53
+kernel_dependencies: "linux-image-{{ kernel_version }}-grsec,linux-headers-{{ kernel_version }}-grsec,libelf-dev"

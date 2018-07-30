@@ -1,0 +1,20 @@
+---
+- name: Create build directory
+  file:
+    state: directory
+    path: "{{ build_dir }}/debian/"
+    recurse: yes
+
+- name: Copy control and postinst files
+  template: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - { src: 'control.j2', dest: '{{ build_dir}}/debian/control' }
+    - { src: 'postinst.j2', dest: '{{ build_dir}}/debian/postinst' }
+
+- name: Copy files to build directory
+  copy: src={{ item.src }} dest={{ build_dir }}/debian
+  with_items:
+    - { src: 'changelog'}
+    - { src: 'compat'}
+    - { src: 'copyright'}
+    - { src: 'rules'}
