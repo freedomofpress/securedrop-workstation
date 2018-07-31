@@ -15,7 +15,7 @@
 {% load_yaml as defaults -%}
 name:         sd-decrypt
 present:
-  - template: fedora-26
+  - template: fedora-28
   - label:    green
 prefs:
   - netvm:    ""

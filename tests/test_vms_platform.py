@@ -5,7 +5,7 @@ from qubesadmin import Qubes
 
 
 SUPPORTED_PLATFORMS = [
-    "Fedora 26 (Twenty Six)",
+    "Fedora 28 (Twenty Eight)",
     "Debian GNU/Linux 8 (jessie)",
 ]
 
@@ -79,7 +79,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         cmd = ["qubes-prefs", "default_dispvm"]
         result = subprocess.check_output(cmd).rstrip("\n")
-        self.assertEqual(result, "fedora-26-dvm")
+        self.assertEqual(result, "fedora-28-dvm")
 
 
 def load_tests(loader, tests, pattern):

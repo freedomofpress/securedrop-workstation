@@ -14,7 +14,7 @@
 {% load_yaml as defaults -%}
 name:         sd-gpg
 present:
-  - template: fedora-26
+  - template: fedora-28
   - label:    purple
 prefs:
   - netvm:    ""

@@ -125,11 +125,8 @@ flake8: ## Lints all Python files with flake8
 		| perl -F':\s+' -nE '$$F[1] =~ m/text\/x-python/ and say $$F[0]' \
 		| xargs flake8
 
-update-fedora-templates: assert-dom0 ## Upgrade Fedora 25 to Fedora 26 templates
-	sudo qubes-dom0-update qubes-template-fedora-26
-	sudo qubes-prefs default_template fedora-26
-	sudo qubesctl state.sls qvm.default-dispvm
-	qubes-prefs default_dispvm fedora-26-dvm
+update-fedora-templates: assert-dom0 ## Upgrade to Fedora 28 templates
+	@./scripts/update-fedora-templates
 
 template: ## Builds securedrop-workstation Qube template RPM
 	./builder/build-workstation-template
