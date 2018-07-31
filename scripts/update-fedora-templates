@@ -19,6 +19,9 @@ if ! qvm-ls --quiet fedora-28-dvm 2>&1 > /dev/null ; then
     qvm-features fedora-28-dvm appmenus-dispvm 1
 fi
 
+# The DispVM template must explicitly allow creation of DispVMs
+qvm-prefs fedora-28-dvm template_for_dispvms True
+
 # Set latest Fedora as the default DispVM throughout.
 qubes-prefs default_template fedora-28
 qubes-prefs default_dispvm fedora-28-dvm
