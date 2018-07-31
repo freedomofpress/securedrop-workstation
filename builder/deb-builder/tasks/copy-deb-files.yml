@@ -16,6 +16,6 @@
 - name: Fetch package to local build folder
   fetch:
     src: "{{ item.path }}"
-    dest: "{{ local_build_path }}/"
+    dest: "{{ local_build_path }}/{{ package_name }}_{{ kernel_version }}_amd64.deb"
     flat: yes
   with_items: "{{ list_deb_pkg_results.files }}"
