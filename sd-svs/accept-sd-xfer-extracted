@@ -20,7 +20,7 @@ send_progress("DECRYPTED_BUNDLE_ON_SVS")
 
 try:
     cmd = ["tar", "-xf", fn,
-           "--strip-components=1", "-C", "/home/user/Sources"]
+           "--strip-components=2", "-C", "/home/user/Sources"]
     res = subprocess.call(cmd)
     if res != 0:
         send_progress("DECRYPTED_BUNDLE_UNBUNDLE_ERROR")
