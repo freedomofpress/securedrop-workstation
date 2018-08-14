@@ -1,0 +1,11 @@
+[dev-packages]
+
+ansible = ">=2.4<2.5"
+docker-py = "*"
+molecule = "*"
+
+[packages]
+
+[requires]
+
+python_version = "2.7"

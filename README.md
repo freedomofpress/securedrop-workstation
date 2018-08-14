@@ -188,8 +188,9 @@ Kernel versions are updated in the metapackage in order to allow automatic kerne
 cd builder/
 # create a virtualenv and install requirements:
 mkvirtualenv workstation-builder && workon workstation-builder
-# install the requirements:
-pip install --require-hashes -r requirements.txt
+# install the requirements and enter the virtualenv:
+pipenv install -d
+pipenv shell
 # build the metapackage
 make build-kernel-metapackage
 # upon completion of the build, the metapackage is found in builder/deb-builder/build/
