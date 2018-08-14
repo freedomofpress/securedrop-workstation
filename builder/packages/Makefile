@@ -12,7 +12,15 @@ securedrop-workstation-grsec: ## Builds metapackage for grsecurity-patched works
 	@mv -f securedrop-workstation-grsec/securedrop-workstation-grsec_* ./
 
 .PHONY: all
-all: securedrop-workstation-grsec ## Builds all Debian packages for SecureDrop Workstation
+all: securedrop-workstation-grsec ## Builds and tests all Debian packages for SecureDrop Workstation
+
+.PHONY: test
+test: ## Runs tests for built packages
+	@python -m pytest tests/
+
+.PHONY: clean
+clean: ## Cleans up built packages
+	@rm -f securedrop-workstation-grsec_*
 
 .PHONY: help
 help: ## Print this message and exit.
