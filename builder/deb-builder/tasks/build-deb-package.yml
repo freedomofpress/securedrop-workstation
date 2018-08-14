@@ -1,5 +1,0 @@
----
-- name: Build deb package
-  shell: dpkg-buildpackage
-  args:
-    chdir: "{{ build_dir }}"

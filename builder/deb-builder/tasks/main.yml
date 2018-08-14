@@ -1,5 +1,0 @@
----
-- include: update-packages.yml
-- include: copy-files-to-container.yml
-- include: build-deb-package.yml
-- include: copy-deb-files.yml

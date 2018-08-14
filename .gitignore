@@ -1,6 +1,6 @@
 config.json
 *.swp
-builder/deb-builder/build/*
+builder/build/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -101,3 +101,10 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# deb package build artifacts
+builder/packages/securedrop-workstation-grsec_*
+builder/packages/securedrop-workstation-grsec/debian/debhelper-build-stamp
+builder/packages/securedrop-workstation-grsec/debian/securedrop-workstation-grsec.substvars
+builder/packages/securedrop-workstation-grsec/debian/securedrop-workstation-grsec
+builder/packages/securedrop-workstation-grsec/debian/files
