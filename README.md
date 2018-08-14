@@ -180,6 +180,34 @@ For more information on the integration tests, run `test_integration --help`.
 qvm-create --template grsec-workstation test-grsec-kernels --class AppVM --property virt_mode=hvm --property kernel='' --label green
 ```
 
+## Building the kernel metapackages
+
+Kernel versions are updated in the metapackage in order to allow automatic kernel updates without creating a new template image. To build the metapackage, follow these steps:
+```
+# go to the builder/ directory:
+cd builder/
+# create a virtualenv and install requirements:
+mkvirtualenv workstation-builder && workon workstation-builder
+# install the requirements and enter the virtualenv:
+pipenv install -d
+pipenv shell
+# build the metapackage
+make build-kernel-metapackage
+# upon completion of the build, the metapackage is found in builder/deb-builder/build/
+```
+
+## Updating the builder image
+
+Building images are hosted on quay.io (). `image_hash` contains the hash of the image on the container registry.
+
+In the `builder/` directory:
+```
+# rebuild the container (this will install all the dependencies needed to build the metapackage in the container)
+make build-container
+# push the container (and store its hash in image_hash)
+make push-container
+# commit the updated image_hash file to version control
+```
 ## Threat model
 
 This section outlines the threat model for the SecureDrop workstation, and should complement [SecureDrop's threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html). This document is always a work in progress, if you have any questions or comments, please open an issue on [GitHub](https://github.com/freedomofpress/securedrop-workstation) or send an email to [securedrop@freedom.press](mailto:securedrop@freedom.press).
