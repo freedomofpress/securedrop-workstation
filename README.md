@@ -8,7 +8,7 @@ This project aims to make journalists' experience working with SecureDrop less o
 
 This project is under active development, has known bugs and shortcomings, and is not ready for end users. This README is geared towards interested technical users and developers.
 
-### Detailed rationale
+### Detailed Rationale
 
 SecureDrop's [architecture](https://docs.securedrop.org/en/latest/overview.html#infrastructure) and [threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html) are proven, but the current approach also has major drawbacks:
 
@@ -32,7 +32,7 @@ However, the Qubes OS approach is not without downsides. It stands and falls wit
 
 While we are strongly committed to piloting the use of Qubes OS for SecureDrop, no final decision has been made to move to this new architecture. This decision will require a full audit of this new approach, consideration of alternatives, and extensive validation with SecureDrop's current user community.
 
-### Using this repo
+### Using This Repo
 
 Installing this project is involved. It requires an up-to-date Qubes 4.0 installation running on a machine with at least 12GB of RAM. You'll need access to a SecureDrop staging server as well.
 
@@ -40,7 +40,7 @@ Installing this project is involved. It requires an up-to-date Qubes 4.0 install
 
 Before trying to use this project, install [Qubes 4.0](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
 
-#### Download, configure, copy to dom0
+#### Download, Configure, Copy to dom0
 
 Decide on a VM to use for development. Clone this repo to your preferred location on that VM.
 
@@ -71,7 +71,7 @@ When the installation process completes, a number of new VMs will be available o
 
     sudo qubesctl top.disable sd-dispvm
 
-#### Initial use
+#### Initial Use
 
 From the "Q" menu, open Tor Browser in the `sd-journalist` machine. Visit the journalist interface of your development SecureDrop instance.
 
@@ -105,7 +105,7 @@ on any submission of interest.
 
 See below for a closer examination of this process, and see `docs/images` for screenshots related to the steps above.
 
-### What's in this repo?
+### What's In This Repo?
 
 This project can be broken neatly into two parts: 1) a set of salt states and `top` files which configure the various VMs, and 2) scripts and system configuration files which set up the document handling process.
 
@@ -118,7 +118,7 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 
 `sd-svs` contains scripts and configuration for the viewing station VM. These include a script to handle incoming, decrypted files during the submission handling process, and desktop configuration files to make this VM open all files in a disposable VM.
 
-`decrypt` contains scripts for the VMs handling decryption. These get used both while configuring the disposable VM, and when provisioning the `sd-gpg` split GPG VM. These should probably be separated into two directories- one for `sd-gpg` and one for the disposable VM config.
+`decrypt` contains scripts for the VMs handling decryption. These get used both while configuring the disposable VM, and when provisioning the split GPG VM (`sd-gpg`). These should probably be separated into two directories: one for `sd-gpg` and one for the disposable VM config.
 
 `config.json.sample` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
 
@@ -136,7 +136,7 @@ For developing submission processing scripts, work is done directly in the virtu
 
 Tests should cover two broad domains. First, we should assert that all the expected VMs exist and are configured as we expect (with the correct NetVM, with the expected files in the correct place). Second, we should end-to-end test the document handling scripts, asserting that files present in the `sd-journalist` VM correctly make their way to the `sd-svs` AppVM, and are opened correctly in disposable VMs.
 
-#### Configuration tests
+#### Configuration Tests
 
 These tests assert that expected scripts and configuration files are in the correct places across the VMs. These tests can be found in the `tests/` directory. They can be run from the project's root directory on `dom0` with:
 
@@ -148,7 +148,7 @@ Individual tests can be run with `make <test-name>`, where `test-name` is one of
 
 Be aware that running tests *will* power down running SecureDrop VMs, and may result in *data loss*. Only run tests in a development / testing environment.
 
-#### Integration tests
+#### Integration Tests
 
 These tests exercise the full submission handling process. These are unique in that they require communication and coordination across multiple VMs, which is challenging in the Qubes world (where, by design, communication among VMs is restricted). This is particularly true concerning `dom0`. We've developed a process for communicating back to `sd-journalist` to enable feedback to the user and can leverage that framework for running tests which cross VMs. But, that requires we run tests from `sd-journalist`.
 
@@ -167,7 +167,7 @@ and run tests with
 
 For more information on the integration tests, run `test_integration --help`.
 
-## Building the templates
+## Building the Templates
 
 1. Create a fedora-28 AppVM for building
 2. Increase the disk size to at least 15GB (as the build uses over 10GB)
@@ -180,7 +180,7 @@ For more information on the integration tests, run `test_integration --help`.
 qvm-create --template grsec-workstation test-grsec-kernels --class AppVM --property virt_mode=hvm --property kernel='' --label green
 ```
 
-## Threat model
+## Threat Model
 
 This section outlines the threat model for the SecureDrop workstation, and should complement [SecureDrop's threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html). This document is always a work in progress, if you have any questions or comments, please open an issue on [GitHub](https://github.com/freedomofpress/securedrop-workstation) or send an email to [securedrop@freedom.press](mailto:securedrop@freedom.press).
 
@@ -190,17 +190,17 @@ This section outlines the threat model for the SecureDrop workstation, and shoul
 
 ### Assumptions
 
-#### Assumptions about the SecureDrop servers
+#### Assumptions About the SecureDrop Servers
 
 * The SecureDrop *Application* and *Monitor* servers are properly installed and configured.
 * Operational security, administration and usage of the SecureDrop instance follows the guidance provided by the SecureDrop documentation.
 
-#### Assumptions about the SecureDrop Workstation install
+#### Assumptions About the Securedrop Workstation Install
 
 * SecureDrop workstation was installed correctly
 * Updates are applied to SecureDrop Workstation provisioning code, VM templates and dom0 as they are available.
 
-#### Assumptions about the world
+#### Assumptions About the World
 
 * The security assumptions of dm-crypt and LUKS are valid.
 * The security assumptions of Tor, the Hidden Service protocol and Hidden Service authentication are valid.
@@ -208,11 +208,11 @@ This section outlines the threat model for the SecureDrop workstation, and shoul
 * The security assumptions of the Qubes operating system are valid.
 * The security assumptions of the Xen hypervisor are valid.
 
-### Attack scenarios
+### Attack Scenarios
 
 As the SecureDrop workstation is not Internet-reachable, an attacker must first obtain code execution on a virtual machine. This can be achieved through a malicious SecureDrop submission, websites visited by a journalist or a vulnerability in the provisioning code and its dependencies. The Virtual Machine in which the adversary obtains code execution will dictate what information is potentially compromised, as well as the attack surface exposed for lateral movement or escalation of privilege.
 
-#### What compromise of the *Display VM* can achieve
+#### What Compromise of the *Display VM* Can Achieve
 
 The *Display VM* is disposable, does not have network access, and is used to display only one submission before being destroyed.
 
@@ -220,7 +220,8 @@ The *Display VM* is disposable, does not have network access, and is used to dis
 * An adversary can attempt to elevate their privileges and escape the VM.
 * An adversary can attempt to communicate through a side channel to another VM or device in the SecureDrop Workstation's environment.
 
-#### What compromise of the *Journalist VM* can achieve
+#### What Compromise of the *Journalist VM* Can Achieve
+
 * An adversary can initiate arbitrary decryption of messages and submissions, but cannot access the decrypted contents.
 * An adversary can intercept and modify any and all communication between the Tor Browser and the SecureDrop Journalist interface, including but not limited to:
   * Send messages to (but not view messages from) sources.
@@ -229,7 +230,7 @@ The *Display VM* is disposable, does not have network access, and is used to dis
   * Access plaintext passwords to the Journalist interface.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What compromise of the *Whonix Gateway VM* can achieve
+#### What Compromise of the *Whonix Gateway VM* Can Achieve
 
 * An adversary can obtain the Journalist Interface's ATHS cookie.
 * An adversary can intercept and modify any and all communication between the Journalist VM and the SecureDrop Journalist interface, including but not limited to:
@@ -239,18 +240,23 @@ The *Display VM* is disposable, does not have network access, and is used to dis
   * Access plaintext passwords to the Journalist interface.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What compromise of the *Decryption VM* can achieve
+#### What Compromise of the *Decryption VM* Can Achieve
+
 The *Decryption VM* is disposable, does not have network access, and is used to decrypt only one submission before being destroyed.
+
 * An adversary can initiate arbitrary decryption of messages and submissions, but cannot access the decrypted contents.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What compromise of the *GPG VM* can achieve
+#### What Compromise of the *GPG VM* Can Achieve
+
 The *GPG VM* does not have network access, and the Qubes split-gpg mechanism restricts access to this VM per the Qubes GPG RPC policy.
+
 * An adversary can decrypt and encrypted message or submission.
 * An adversary can store and view any message that is being decrypted by the SecureDrop Workstation.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What compromise of *dom0* can achieve
+#### What Compromise of *dom0* Can Achieve
+
 *Dom0* can do all of the above: spawn arbitrary virtual machines, access all data, modify all SecureDrop Workstation provisioning code, as well as introduce mechanisms to establish persistence and exfiltrate data.
 
 
