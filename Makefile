@@ -129,12 +129,15 @@ flake8: ## Lints all Python files with flake8
 update-fedora-templates: assert-dom0 ## Upgrade to Fedora 28 templates
 	@./scripts/update-fedora-templates
 
+update-whonix-templates: assert-dom0 ## Upgrade to Whonix 14 templates
+	@./scripts/update-whonix-templates
+
 template: ## Builds securedrop-workstation Qube template RPM
 	./builder/build-workstation-template
 
-prep-whonix: ## enables apparmor on whonix-ws and whonix-gw
-	qvm-prefs -s whonix-gw kernelopts "nopat apparmor=1 security=apparmor"
-	qvm-prefs -s whonix-ws kernelopts "nopat apparmor=1 security=apparmor"
+prep-whonix: ## enables apparmor on whonix-ws-14 and whonix-gw-14
+	qvm-prefs -s whonix-gw-14 kernelopts "nopat apparmor=1 security=apparmor"
+	qvm-prefs -s whonix-ws-14 kernelopts "nopat apparmor=1 security=apparmor"
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
