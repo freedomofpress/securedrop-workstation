@@ -27,6 +27,5 @@ def test_control_fields(host, field, value):
 
 
 def test_lintian(host):
-    if host.file("/usr/bin/lintian").exists:
-        cmd = host.run("lintian {}".format(DEB_FILE))
-        assert cmd.rc == 0
+    cmd = host.run("lintian {}".format(DEB_FILE))
+    assert cmd.rc == 0

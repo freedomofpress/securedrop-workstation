@@ -16,7 +16,7 @@ all: securedrop-workstation-grsec ## Builds and tests all Debian packages for Se
 
 .PHONY: test
 test: ## Runs tests for built packages
-	@python -m pytest tests/
+	@python -m pytest --verbose tests/
 
 .PHONY: clean
 clean: ## Cleans up built packages

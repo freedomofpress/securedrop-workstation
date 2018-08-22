@@ -194,6 +194,8 @@ make all
 # run the tests
 pipenv install -d
 pipenv shell
+# install test requirements and run the test
+apt install lintian
 make test
 ```
 
