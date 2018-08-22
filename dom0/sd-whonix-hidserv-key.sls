@@ -9,5 +9,5 @@ sd-whonix-hidserv-key:
   require:
     - sls: sd-whonix
   file.append:
-    - name: /etc/tor/torrc
+    - name: /usr/local/etc/torrc.d/50_user.conf
     - text: HidServAuth {{ d.hidserv.hostname }} {{ d.hidserv.key }}
