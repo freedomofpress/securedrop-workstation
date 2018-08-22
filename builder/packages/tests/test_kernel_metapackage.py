@@ -1,6 +1,6 @@
 import pytest
 
-KERNEL_VERSION = "4.14.53"
+KERNEL_VERSION = "4.14.58"
 PACKAGE_NAME = "securedrop-workstation-grsec"
 PACKAGE_VERSION = "{}-1".format(KERNEL_VERSION)
 PACKAGE_ARCH = "amd64"
