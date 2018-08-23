@@ -28,6 +28,18 @@ class SD_Journalist_Tests(SD_VM_Local_Test):
         self.assertFilesMatch("/usr/local/bin/sd-process-display",
                               "sd-journalist/sd-process-display")
 
+    def test_pyqt_installed(self):
+        """
+        The python-qt4 package is required to populate the PyQt libs
+        in the system Python packages. Rather than check for presence
+        of the apt package, let's confirm we can actually import the library
+        as it's used in the journalist feedback code.
+        """
+        cmd = "python -c 'import PyQt4.QtCore as QtCore'"
+        stdout, stderr = self.vm.run(cmd)
+        self.assertEqual(stdout, "")
+        self.assertEqual(stderr, "")
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Journalist_Tests)

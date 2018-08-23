@@ -106,3 +106,7 @@ chmod 666 /home/user/sdfifo:
 
 sudo update-desktop-database /usr/local/share/applications:
   cmd.run
+
+# Required for sd-process-feedback GUI integration
+python-qt4:
+  pkg.installed
