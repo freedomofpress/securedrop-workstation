@@ -1,4 +1,4 @@
-DEVVM=work
+DEVVM=securedrop-dev
 DEVDIR=/home/user/projects/securedrop-workstation # important: no trailing slash
 HOST=$(shell hostname)
 
@@ -8,9 +8,10 @@ ifneq ($(HOST),dom0)
 	exit 1
 endif
 
-all: assert-dom0 validate clean prep-whonix sd-whonix sd-svs sd-gpg \
+## Builds and provisions all VMs required for testing workstation
+all: assert-dom0 validate clean update-fedora-templates			\
+	update-whonix-templates prep-whonix sd-whonix sd-svs sd-gpg	\
 	sd-journalist sd-decrypt sd-svs-disp
-	## Builds and provisions all VMs required for testing workstation
 
 proj-tar: assert-dom0 ## Create tarball from "work" VM for export to dom0
 	qvm-run --pass-io $(DEVVM) 'tar -c -C $(dir $(DEVDIR)) $(notdir $(DEVDIR))' > ./sd-proj.tar
