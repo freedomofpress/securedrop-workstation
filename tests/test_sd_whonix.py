@@ -17,7 +17,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
                          " {{ d.hidserv.key }}")
             line = t.render(d=config)
 
-            self.assertFileHasLine("/etc/tor/torrc", line)
+            self.assertFileHasLine("/usr/local/etc/torrc.d/50_user.conf", line)
 
 
 def load_tests(loader, tests, pattern):

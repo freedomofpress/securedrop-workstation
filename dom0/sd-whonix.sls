@@ -18,7 +18,7 @@ include:
 {% load_yaml as defaults -%}
 name: sd-whonix
 present:
-  - template: whonix-gw
+  - template: whonix-gw-14
   - label: purple
   - mem: 500
 prefs:
@@ -26,7 +26,7 @@ prefs:
   - netvm: sys-firewall
   - autostart: true
 require:
-  - pkg: template-whonix-gw
+  - pkg: qubes-template-whonix-gw-14
   - qvm: sys-firewall
 {%- endload %}
 

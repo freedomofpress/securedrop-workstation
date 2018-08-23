@@ -8,8 +8,9 @@ ifneq ($(HOST),dom0)
 	exit 1
 endif
 
-all: assert-dom0 validate clean sd-whonix sd-svs sd-gpg sd-journalist sd-decrypt \
-     sd-svs-disp ## Builds and provisions all VMs required for testing workstation
+all: assert-dom0 validate clean prep-whonix sd-whonix sd-svs sd-gpg \
+	sd-journalist sd-decrypt sd-svs-disp
+	## Builds and provisions all VMs required for testing workstation
 
 proj-tar: assert-dom0 ## Create tarball from "work" VM for export to dom0
 	qvm-run --pass-io $(DEVVM) 'tar -c -C $(dir $(DEVDIR)) $(notdir $(DEVDIR))' > ./sd-proj.tar
@@ -128,8 +129,15 @@ flake8: ## Lints all Python files with flake8
 update-fedora-templates: assert-dom0 ## Upgrade to Fedora 28 templates
 	@./scripts/update-fedora-templates
 
+update-whonix-templates: assert-dom0 ## Upgrade to Whonix 14 templates
+	@./scripts/update-whonix-templates
+
 template: ## Builds securedrop-workstation Qube template RPM
 	./builder/build-workstation-template
+
+prep-whonix: ## enables apparmor on whonix-ws-14 and whonix-gw-14
+	qvm-prefs -s whonix-gw-14 kernelopts "nopat apparmor=1 security=apparmor"
+	qvm-prefs -s whonix-ws-14 kernelopts "nopat apparmor=1 security=apparmor"
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.

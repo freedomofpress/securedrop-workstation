@@ -18,19 +18,19 @@ include:
 {% load_yaml as defaults -%}
 name:         sd-journalist
 present:
-  - template: whonix-ws
+  - template: whonix-ws-14
   - label:    blue
 prefs:
   - netvm:    sd-whonix
 require:
-  - pkg:      template-whonix-ws
+  - pkg:      qubes-template-whonix-ws-14
   - qvm:      sd-whonix
 {%- endload %}
 
 {{ load(defaults) }}
 
 /etc/qubes-rpc/policy/sd-process.Feedback:
-  file.managed:    
+  file.managed:
     - source: salt://sd/sd-journalist/sd-process.Feedback-dom0
     - user: root
     - group: root
@@ -47,4 +47,3 @@ sed -i '1isd-journalist sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
 sed -i '1isd-journalist $dispvm:sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
   cmd.run:
   - unless: grep -qF 'sd-journalist $dispvm:sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM
-

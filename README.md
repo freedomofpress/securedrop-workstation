@@ -58,8 +58,10 @@ After that initial manual step, the code in your development VM may be copied in
 
 #### Building
 
-Once the configuration is done and this directory is copied to `dom0`, `make` can be used to handle all provisioning and configuration by your unpriviledged user:
+Once the configuration is done and this directory is copied to `dom0`, you must update existing Qubes templates and use `make` to handle all provisioning and configuration by your unprivileged user:
 
+    $ make update-fedora-templates
+    $ make update-whonix-templates
     $ cd securedrop-workstation
     $ make all
 
