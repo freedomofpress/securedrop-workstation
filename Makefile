@@ -33,6 +33,7 @@ sd-svs: prep-salt ## Provisions SD SVS VM
 sd-whonix: prep-salt ## Provisions SD Whonix VM
 	sudo qubesctl top.enable sd-whonix
 	sudo qubesctl top.enable sd-whonix-hidserv-key
+	sudo qubesctl --targets sd-whonix-template state.highstate
 	sudo qubesctl --targets sd-whonix state.highstate
 
 sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
