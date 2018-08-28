@@ -11,19 +11,20 @@
 
 include:
   - qvm.template-whonix-ws
-#  - sd-whonix
+  - sd-journalist-template
 
 sd-journalist:
   qvm.vm:
     - name: sd-journalist
     - present:
-      - template: whonix-ws-14
+      - template: sd-journalist-template
       - label: blue
     - prefs:
       - netvm: sd-whonix
     - require:
       - pkg: qubes-template-whonix-ws-14
       - qvm: sd-whonix
+      - qvm: sd-journalist-template
 
 /etc/qubes-rpc/policy/sd-process.Feedback:
   file.managed:

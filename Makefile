@@ -18,6 +18,7 @@ clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 sd-journalist: prep-salt ## Provisions SD Journalist VM
 	sudo qubesctl top.enable sd-journalist
 	sudo qubesctl top.enable sd-journalist-files
+	sudo qubesctl --targets sd-journalist-template state.highstate
 	sudo qubesctl --targets sd-journalist state.highstate
 
 sd-gpg: prep-salt ## Provisions SD GPG keystore VM

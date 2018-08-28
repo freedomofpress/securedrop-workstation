@@ -1,4 +1,4 @@
 [Desktop Entry]
 Type=Application
 Name=Do Not Open On This VM
-Exec=/usr/local/bin/do-not-open-here
+Exec=/usr/bin/do-not-open-here
