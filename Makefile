@@ -45,19 +45,21 @@ sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 	sudo qubesctl --targets sd-svs-disp state.highstate
 
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
-	sudo rm -rf /srv/salt/sd
-	sudo find /srv/salt -maxdepth 1 -type f -iname 'sd*' -delete
-	sudo find /srv/salt/_tops -lname '/srv/salt/sd-*' -delete
+	@echo "Purging Salt config..."
+	@sudo rm -rf /srv/salt/sd
+	@sudo find /srv/salt -maxdepth 1 -type f -iname 'sd*' -delete
+	@sudo find /srv/salt/_tops -lname '/srv/salt/sd-*' -delete
 
 prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
-	sudo mkdir -p /srv/salt/sd
-	sudo cp config.json /srv/salt/sd
-	sudo cp sd-journalist.sec /srv/salt/sd
-	sudo cp -r sd-decrypt /srv/salt/sd
-	sudo cp -r sd-journalist /srv/salt/sd
-	sudo cp -r sd-svs /srv/salt/sd
-	sudo cp dom0/* /srv/salt/
-	#sudo cp -r sd-svs-disp /srv/salt/sd  # nothing there yet...
+	@echo "Deploying Salt config..."
+	@sudo mkdir -p /srv/salt/sd
+	@sudo cp config.json /srv/salt/sd
+	@sudo cp sd-journalist.sec /srv/salt/sd
+	@sudo cp -r sd-decrypt /srv/salt/sd
+	@sudo cp -r sd-journalist /srv/salt/sd
+	@sudo cp -r sd-svs /srv/salt/sd
+	@sudo cp dom0/* /srv/salt/
+#sudo cp -r sd-svs-disp /srv/salt/sd  # nothing there yet...
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
 	-qvm-kill sd-whonix
