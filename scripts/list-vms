@@ -1,0 +1,14 @@
+#!/bin/bash
+# Prints names of all Salt-managed Workstation VMs.
+# Intended for use with other actions, e.g. destroy-all.
+set -e
+set -u
+set -o pipefail
+
+# Search all top files for vm names declared as attributes
+# assigned to dom0, strip out formatting.
+grep dom0: dom0/*.top -A1 \
+    | grep -v dom0: \
+    | grep -v '^\-\-' \
+    | perl -lanE 'print $F[-1]' \
+    | sort
