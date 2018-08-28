@@ -1,5 +1,3 @@
-DEVVM=work
-DEVDIR=/home/user/projects/securedrop-workstation # important: no trailing slash
 HOST=$(shell hostname)
 
 assert-dom0: ## Confirms command is being run under dom0
@@ -13,16 +11,9 @@ all: assert-dom0 validate clean update-fedora-templates			\
 	update-whonix-templates prep-whonix sd-whonix sd-svs sd-gpg	\
 	sd-journalist sd-decrypt sd-svs-disp
 
-proj-tar: assert-dom0 ## Create tarball from "work" VM for export to dom0
-	qvm-run --pass-io $(DEVVM) 'tar -c -C $(dir $(DEVDIR)) $(notdir $(DEVDIR))' > ./sd-proj.tar
+clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
+	@./scripts/clone-to-dom0
 
-clone: assert-dom0 proj-tar ## Pulls the latest repo from work VM to dom0
-	mv sd-proj.tar /tmp
-	rm -rf $(HOME)/securedrop-workstation/*
-	mv /tmp/sd-proj.tar $(HOME)/securedrop-workstation/
-	tar xvf sd-proj.tar --strip-components=1
-	rm -rf .gitignore .git/
-	rm sd-proj.tar
 
 sd-journalist: prep-salt ## Provisions SD Journalist VM
 	sudo qubesctl top.enable sd-journalist
