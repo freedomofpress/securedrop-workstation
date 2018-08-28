@@ -4,6 +4,17 @@ import unittest
 
 from qubesadmin import Qubes
 
+
+# Reusable constant for DRY import across tests
+WANTED_VMS = [
+    "sd-gpg",
+    "sd-journalist",
+    "sd-svs",
+    "sd-svs-disp",
+    "sd-whonix",
+]
+
+
 # base class for per-VM testing
 
 

@@ -2,18 +2,11 @@ import unittest
 import subprocess
 
 from qubesadmin import Qubes
+from base import WANTED_VMS
 
 
 SUPPORTED_PLATFORMS = [
     "Debian GNU/Linux 9 (stretch)",
-]
-
-WANTED_VMS = [
-    "sd-gpg",
-    "sd-journalist",
-    "sd-svs",
-    "sd-svs-disp",
-    "sd-whonix",
 ]
 
 

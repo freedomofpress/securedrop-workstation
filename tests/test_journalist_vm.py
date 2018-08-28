@@ -9,23 +9,23 @@ class SD_Journalist_Tests(SD_VM_Local_Test):
         super(SD_Journalist_Tests, self).setUp()
 
     def test_move_to_svs(self):
-        self.assertFilesMatch("/usr/local/bin/move-to-svs",
+        self.assertFilesMatch("/usr/bin/move-to-svs",
                               "sd-journalist/move-to-svs")
 
     def test_sd_process_download(self):
-        self.assertFilesMatch("/usr/local/bin/sd-process-download",
+        self.assertFilesMatch("/usr/bin/sd-process-download",
                               "sd-journalist/sd-process-download")
 
     def test_do_not_open_here(self):
-        self.assertFilesMatch("/usr/local/bin/do-not-open-here",
+        self.assertFilesMatch("/usr/bin/do-not-open-here",
                               "sd-journalist/do-not-open-here")
 
     def test_sd_process_feedback(self):
-        self.assertFilesMatch("/usr/local/bin/sd-process-feedback",
+        self.assertFilesMatch("/usr/bin/sd-process-feedback",
                               "sd-journalist/sd-process-feedback")
 
     def test_sd_process_display(self):
-        self.assertFilesMatch("/usr/local/bin/sd-process-display",
+        self.assertFilesMatch("/usr/bin/sd-process-display",
                               "sd-journalist/sd-process-display")
 
 
