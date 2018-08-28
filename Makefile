@@ -28,6 +28,7 @@ sd-gpg: prep-salt ## Provisions SD GPG keystore VM
 sd-svs: prep-salt ## Provisions SD SVS VM
 	sudo qubesctl top.enable sd-svs
 	sudo qubesctl top.enable sd-svs-files
+	sudo qubesctl --targets sd-svs-template state.highstate
 	sudo qubesctl --targets sd-svs state.highstate
 
 sd-whonix: prep-salt ## Provisions SD Whonix VM

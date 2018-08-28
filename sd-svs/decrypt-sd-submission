@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import tarfile
 import tempfile
@@ -118,7 +118,7 @@ for root, dirnames, filenames in os.walk(tmpdir):
 
         ungz_path, _ext = os.path.splitext(orig_path)
 
-        with open(ungz_path, 'w') as f:
+        with open(ungz_path, 'wb') as f:
             f.write(file_content)
 
         os.unlink(orig_path)
@@ -128,6 +128,10 @@ if not any_files:
     sys.exit(0)
 
 send_progress("DECRYPTED_BUNDLE_ON_SVS")
+
+# Ensure Sources folder exists
+if not os.path.exists("/home/user/Sources"):
+    os.mkdir("/home/user/Sources", mode=0o755)
 
 # Copy decrypted files to the Sources folder
 os.path.join(tmpdir, "extracted")

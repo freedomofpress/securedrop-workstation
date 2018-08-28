@@ -16,12 +16,12 @@
     - group: root
     - mode: 755
 
-/home/user/.profile:
+/etc/profile.d/sd-svs-qubes-gpg-domain.sh:
   file.managed:
     - source: salt://sd/sd-svs/dot-profile
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
 
 /usr/local/share/mime/packages/application-x-sd-xfer.xml:
   file.managed:
@@ -47,7 +47,7 @@
     - mode: 644
     - makedirs: True
 
-/home/user/.config/mimeapps.list:
+/usr/share/applications/mimeapps.list:
   file.managed:
     - source: salt://sd/sd-svs/mimeapps.list
     - user: user
@@ -61,9 +61,9 @@ sudo update-mime-database /usr/local/share/mime:
 sudo update-desktop-database /usr/local/share/applications:
   cmd.run
 
-/home/user/Sources:
-  file.directory:
-    - user: user
-    - group: user
-    - dir_mode: 755
-    - file_mode: 644
+install nautilus in sd-svs:
+  pkg.installed:
+    - pkgs:
+      # Nautilus necessary for manual file browsing, remove when
+      # the securedrop-client code package is installed
+      - nautilus
