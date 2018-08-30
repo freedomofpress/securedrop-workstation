@@ -182,7 +182,24 @@ For more information on the integration tests, run `test_integration --help`.
 qvm-create --template grsec-workstation test-grsec-kernels --class AppVM --property virt_mode=hvm --property kernel='' --label green
 ```
 
-## Threat Model
+## Building workstation deb packages
+
+```
+# go to the builder/ directory:
+cd builder/packages
+# build a specific package (e.g, grsecurity metapackage)
+make securedrop-workstation-grsec
+# OR build all the packages
+make all
+# run the tests
+pipenv install -d
+pipenv shell
+# install test requirements and run the test
+apt install lintian
+make test
+```
+
+## Threat model
 
 This section outlines the threat model for the SecureDrop workstation, and should complement [SecureDrop's threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html). This document is always a work in progress, if you have any questions or comments, please open an issue on [GitHub](https://github.com/freedomofpress/securedrop-workstation) or send an email to [securedrop@freedom.press](mailto:securedrop@freedom.press).
 

@@ -1,0 +1,13 @@
+securedrop-workstation-grsec (4.14.58-1) unstable; urgency=medium
+
+  [ Freedom of the Press Foundation ]
+  * Update to 4.14.58
+
+ -- SecureDrop Team <securedrop@freedom.press>  Wed, 22 Aug 2018 14:22:39 +0100
+
+securedrop-workstation-grsec (4.14.53-1) unstable; urgency=medium
+
+  [ Freedom of the Press Foundation ]
+  * First Release
+
+ -- SecureDrop Team <securedrop@freedom.press>  Mon, 30 Jul 2018 11:07:23 +0100
