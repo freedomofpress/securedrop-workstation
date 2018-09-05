@@ -38,12 +38,16 @@ require:
 
 # Allow sd-journslist to open files in sd-decrypt
 # When our Qubes bug is fixed, this will *not* be used
-sed -i '1isd-journalist sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
-  cmd.run:
-    - unless: grep -qF 'sd-journalist sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM
+/etc/qubes-rpc/policy/qubes.OpenInVM:
+  file.line:
+    - content: sd-journalist sd-decrypt allow
+    - mode: insert
+    - location: start
 
 # Allow sd-journalist to open files in sd-decrypt-bsed dispVM's
 # When our Qubes bug is fixed, this will be used.
-sed -i '1isd-journalist $dispvm:sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
-  cmd.run:
-  - unless: grep -qF 'sd-journalist $dispvm:sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM
+/etc/qubes-rpc/policy/qubes.OpenInVM:
+  file.line:
+    - content: sd-journalist $dispvm:sd-decrypt allow
+    - mode: insert
+    - location: start
