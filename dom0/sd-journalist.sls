@@ -13,21 +13,17 @@ include:
   - qvm.template-whonix-ws
 #  - sd-whonix
 
-{%- from "qvm/template.jinja" import load -%}
-
-{% load_yaml as defaults -%}
-name:         sd-journalist
-present:
-  - template: whonix-ws-14
-  - label:    blue
-prefs:
-  - netvm:    sd-whonix
-require:
-  - pkg:      qubes-template-whonix-ws-14
-  - qvm:      sd-whonix
-{%- endload %}
-
-{{ load(defaults) }}
+sd-journalist:
+  qvm.vm:
+    - name: sd-journalist
+    - present:
+      - template: whonix-ws-14
+      - label: blue
+    - prefs:
+      - netvm: sd-whonix
+    - require:
+      - pkg: qubes-template-whonix-ws-14
+      - qvm: sd-whonix
 
 /etc/qubes-rpc/policy/sd-process.Feedback:
   file.managed:
@@ -38,12 +34,16 @@ require:
 
 # Allow sd-journslist to open files in sd-decrypt
 # When our Qubes bug is fixed, this will *not* be used
-sed -i '1isd-journalist sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
-  cmd.run:
-    - unless: grep -qF 'sd-journalist sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM
+/etc/qubes-rpc/policy/qubes.OpenInVM:
+  file.line:
+    - content: sd-journalist sd-decrypt allow
+    - mode: insert
+    - location: start
 
 # Allow sd-journalist to open files in sd-decrypt-bsed dispVM's
 # When our Qubes bug is fixed, this will be used.
-sed -i '1isd-journalist $dispvm:sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
-  cmd.run:
-  - unless: grep -qF 'sd-journalist $dispvm:sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM
+/etc/qubes-rpc/policy/qubes.OpenInVM:
+  file.line:
+    - content: sd-journalist $dispvm:sd-decrypt allow
+    - mode: insert
+    - location: start

@@ -10,18 +10,14 @@
 # non-disposable VM for the time being.
 ##
 
-{%- from "qvm/template.jinja" import load -%}
-
-{% load_yaml as defaults -%}
-name:         sd-decrypt
-present:
-  - template: fedora-28
-  - label:    green
-prefs:
-  - netvm:    ""
-{%- endload %}
-
-{{ load(defaults) }}
+sd-decrypt:
+  qvm.vm:
+    - name: sd-decrypt
+    - present:
+      - template: fedora-28
+      - label: green
+    - prefs:
+      - netvm: ""
 
 # tell qubes this VM can be used as a disp VM template
 qvm-prefs sd-decrypt template_for_dispvms True:
@@ -36,11 +32,15 @@ qvm-tags sd-decrypt add sd-decrypt-vm:
   cmd.run
 
 # Allow dispvms based on this vm to use sd-gpg
-sed -i '1i$tag:sd-decrypt-vm sd-gpg allow' /etc/qubes-rpc/policy/qubes.Gpg:
-  cmd.run:
-  - unless: grep -qF '$tag:sd-decrypt-vm sd-gpg allow' /etc/qubes-rpc/policy/qubes.Gpg
+/etc/qubes-rpc/policy/qubes.Gpg:
+  file.line:
+    - content: $tag:sd-decrypt-vm sd-gpg allow
+    - mode: insert
+    - location: start
 
 # Allow sd-decrypt to open files in sd-svs
-sed -i '1isd-decrypt sd-svs allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
-  cmd.run:
-  - unless: grep -qF 'sd-decrypt sd-svs allow' /etc/qubes-rpc/policy/qubes.OpenInVM
+/etc/qubes-rpc/policy/qubes.OpenInVM:
+  file.line:
+    - content: sd-decrypt sd-svs allow
+    - mode: insert
+    - location: start

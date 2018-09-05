@@ -11,18 +11,14 @@
 # This VM has no network configured.
 ##
 
-{%- from "qvm/template.jinja" import load -%}
-
-{% load_yaml as defaults -%}
-name:         sd-svs-disp
-present:
-  - template: fedora-28
-  - label:    green
-prefs:
-  - netvm:    ""
-{%- endload %}
-
-{{ load(defaults) }}
+sd-svs-disp:
+  qvm.vm:
+    - name: sd-svs-disp
+    - present:
+      - template: fedora-28
+      - label: green
+    - prefs:
+      - netvm: ""
 
 # tell qubes this VM can be used as a disp VM template
 qvm-prefs sd-svs-disp template_for_dispvms True:
@@ -33,6 +29,8 @@ qvm-prefs sd-svs-disp template_for_dispvms True:
 qvm-tags sd-svs-disp add sd-svs-disp-vm:
   cmd.run
 
-sed -i '1i$tag:sd-svs-disp-vm sd-svs allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
-  cmd.run:
-  - unless: grep -qF '1i$tag:sd-svs-disp-vm sd-svs allow' /etc/qubes-rpc/policy/qubes.OpenInVM
+/etc/qubes-rpc/policy/qubes.OpenInVM:
+  file.line:
+    - content: $tag:sd-svs-disp-vm sd-svs allow
+    - mode: insert
+    - location: start

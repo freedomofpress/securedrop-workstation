@@ -9,15 +9,11 @@
 # This VM has no network configured.
 ##
 
-{%- from "qvm/template.jinja" import load -%}
-
-{% load_yaml as defaults -%}
-name:         sd-gpg
-present:
-  - template: fedora-28
-  - label:    purple
-prefs:
-  - netvm:    ""
-{%- endload %}
-
-{{ load(defaults) }}
+sd-gpg:
+  qvm.vm:
+    - name: sd-gpg
+    - present:
+      - template: fedora-28
+      - label: purple
+    - prefs:
+      - netvm: ""
