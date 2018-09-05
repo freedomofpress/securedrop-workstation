@@ -18,7 +18,7 @@ sd-svs-disp:
       - template: fedora-28
       - label: green
     - prefs:
-        - netvm: ""
+      - netvm: ""
 
 # tell qubes this VM can be used as a disp VM template
 qvm-prefs sd-svs-disp template_for_dispvms True:
