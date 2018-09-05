@@ -13,25 +13,21 @@ include:
   - qvm.template-whonix-gw
   - qvm.sys-firewall
 
-{%- from "qvm/template.jinja" import load -%}
-
-{% load_yaml as defaults -%}
-name: sd-whonix
-present:
-  - template: whonix-gw-14
-  - label: purple
-  - mem: 500
-prefs:
-  - provides-network: true
-  - netvm: sys-firewall
-  - autostart: true
-require:
-  - pkg: qubes-template-whonix-gw-14
-  - qvm: sys-firewall
-{%- endload %}
-
-{{ load(defaults) }}
-
 # Temporary workaround to bootstrap Salt support on target.
 qvm-run -a whonix-gw-14 "sudo apt-get install -qq python-futures":
   cmd.run
+
+sd-whonix:
+  qvm.vm:
+    - name: sd-whonix
+    - present:
+      - template: whonix-gw-14
+      - label: purple
+      - mem: 500
+    - prefs:
+      - provides-network: true
+      - netvm: ""
+      - autostart: true
+    - require:
+      - pkg: qubes-template-whonix-gw-14
+      - qvm: sys-firewall
