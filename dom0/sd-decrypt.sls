@@ -38,7 +38,7 @@ qvm-tags sd-decrypt add sd-decrypt-vm:
 # Allow dispvms based on this vm to use sd-gpg
 /etc/qubes-rpc/policy/qubes.Gpg:
   file.line:
-    - content: sd-decrypt-vm sd-gpg allow
+    - content: $tag:sd-decrypt-vm sd-gpg allow
     - mode: insert
     - location: start
 
