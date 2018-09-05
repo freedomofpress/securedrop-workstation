@@ -45,6 +45,6 @@ qvm-tags sd-decrypt add sd-decrypt-vm:
 # Allow sd-decrypt to open files in sd-svs
 /etc/qubes-rpc/policy/qubes.OpenInVM:
   file.line:
-    -content: sd-decrypt sd-svs allow
+    - content: sd-decrypt sd-svs allow
     - mode: insert
     - location: start
