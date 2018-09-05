@@ -11,18 +11,14 @@
 # This VM has no network configured.
 ##
 
-{%- from "qvm/template.jinja" import load -%}
-
-{% load_yaml as defaults -%}
-name:         sd-svs-disp
-present:
-  - template: fedora-28
-  - label:    green
-prefs:
-  - netvm:    ""
-{%- endload %}
-
-{{ load(defaults) }}
+sd-svs-disp:
+  qvm.vm:
+    - name: sd-svs-disp
+    - present:
+      - template: fedora-28
+      - label: green
+    - prefs:
+        - netvm: ""
 
 # tell qubes this VM can be used as a disp VM template
 qvm-prefs sd-svs-disp template_for_dispvms True:
