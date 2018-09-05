@@ -13,21 +13,17 @@ include:
   - qvm.template-whonix-ws
 #  - sd-whonix
 
-{%- from "qvm/template.jinja" import load -%}
-
-{% load_yaml as defaults -%}
-name:         sd-journalist
-present:
-  - template: whonix-ws-14
-  - label:    blue
-prefs:
-  - netvm:    sd-whonix
-require:
-  - pkg:      qubes-template-whonix-ws-14
-  - qvm:      sd-whonix
-{%- endload %}
-
-{{ load(defaults) }}
+sd-journalist:
+  qvm.vm:
+    - name: sd-journalist
+    - present:
+      - template: whonix-ws-14
+      - label: blue
+    - prefs:
+      - netvm: sd-whonix
+    - require:
+      - pkg: qubes-template-whonix-ws-14
+      - qvm: sd-whonix
 
 /etc/qubes-rpc/policy/sd-process.Feedback:
   file.managed:
