@@ -9,18 +9,14 @@
 # This VM has no network configured.
 ##
 
-{%- from "qvm/template.jinja" import load -%}
-
-{% load_yaml as defaults -%}
-name:         sd-svs
-present:
-  - template: fedora-28
-  - label:    yellow
-prefs:
-  - netvm:    ""
-{%- endload %}
-
-{{ load(defaults) }}
+sd-svs:
+  qvm.vm:
+    - name: sd-svs
+    - present:
+      - template: fedora-28
+      - label: yellow
+    - prefs:
+      - netvm: ""
 
 /etc/qubes-rpc/policy/qubes.OpenInVM:
   file.line:
