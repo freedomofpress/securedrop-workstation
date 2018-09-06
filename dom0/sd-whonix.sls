@@ -31,3 +31,7 @@ require:
 {%- endload %}
 
 {{ load(defaults) }}
+
+# Temporary workaround to bootstrap Salt support on target.
+qvm-run -a whonix-gw-14 "sudo apt-get install -qq python-futures":
+  cmd.run
