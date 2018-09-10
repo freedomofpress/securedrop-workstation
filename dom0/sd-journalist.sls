@@ -36,6 +36,10 @@ require:
     - group: root
     - mode: 644
 
+# Temporary workaround to bootstrap Salt support on target.
+qvm-run -a whonix-ws-14 "sudo apt-get install -qq python-futures":
+  cmd.run
+
 # Allow sd-journslist to open files in sd-decrypt
 # When our Qubes bug is fixed, this will *not* be used
 sed -i '1isd-journalist sd-decrypt allow' /etc/qubes-rpc/policy/qubes.OpenInVM:
