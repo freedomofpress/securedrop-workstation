@@ -20,7 +20,8 @@ def spawn_monitor_process(sigfile):
             # congrats, new parent!
             return
     except OSError as e:
-        print("fork #1 failed: %d (%s)" % (e.errno, e.strerror), file=sys.stderr)
+        print("fork #1 failed: %d (%s)" % (e.errno, e.strerror),
+              file=sys.stderr)
         sys.exit(1)
 
     os.setsid()
@@ -31,7 +32,8 @@ def spawn_monitor_process(sigfile):
             # exit from second parent. init process inherits child
             sys.exit(0)
     except OSError as e:
-        print("fork #2 failed: %d (%s)" % (e.errno, e.strerror), file=sys.stderr)
+        print("fork #2 failed: %d (%s)" % (e.errno, e.strerror),
+              file=sys.stderr)
         sys.exit(1)
 
     subprocess.Popen(["python", "/usr/local/bin/sd-process-display", sigfile])

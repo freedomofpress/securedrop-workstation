@@ -19,7 +19,7 @@ probable_sd_downloads = [z.group(0) for z in matched_sd_pattern if z]
 # make a tarball of these zips
 fh = tempfile.NamedTemporaryFile(suffix=".sd-xfer", delete=False)
 
-print "fh name " + fh.name
+print("fh name " + fh.name)
 
 out_tar = tarfile.open(mode='w', fileobj=fh)
 

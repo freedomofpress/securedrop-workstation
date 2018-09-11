@@ -1,4 +1,4 @@
-DEVVM=work
+DEVVM=securedrop-dev
 DEVDIR=/home/user/projects/securedrop-workstation # important: no trailing slash
 HOST=$(shell hostname)
 
