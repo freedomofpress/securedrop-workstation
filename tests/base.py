@@ -29,7 +29,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         #   * CalledProcessorError
         #   * QubesVMError (from qubesadmin.base)
         #   * QubesVMNotStartedError (from qubesadmin.base)
-        for v in self.vm.connected_vms.values():
+        for v in list(self.vm.connected_vms.values()):
             if v.is_running():
                 msg = ("Need to halt connected VM {}"
                        " before testing".format(v))
@@ -58,7 +58,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         with open(local_path) as f:
             content = f.read()
         import difflib
-        print "".join(difflib.unified_diff(remote_content, content))
+        print("".join(difflib.unified_diff(remote_content, content)))
         self.assertTrue(remote_content == content)
 
     def assertFileHasLine(self, remote_path, wanted_line):
