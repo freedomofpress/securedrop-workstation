@@ -119,13 +119,13 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 		{ echo "ERROR: missing 'config.json'!" && \
 		echo "Create from 'config.json.example'." && exit 1 ; }
 
+.PHONY: flake8
 flake8: ## Lints all Python files with flake8
 # Not requiring dom0 since linting requires extra packages,
 # available only in the developer environment, i.e. Work VM.
-	@flake8 .
-	@find -type f -exec file -i {} + \
-		| perl -F':\s+' -nE '$$F[1] =~ m/text\/x-python/ and say $$F[0]' \
-		| xargs flake8
+	@docker run -v $(PWD):/code -w /code --name sdw_flake8 --rm \
+		--entrypoint /code/scripts/flake8-linting \
+		quay.io/freedomofpress/ci-python \
 
 update-fedora-templates: assert-dom0 ## Upgrade to Fedora 28 templates
 	@./scripts/update-fedora-templates
