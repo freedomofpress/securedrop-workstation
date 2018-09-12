@@ -35,6 +35,7 @@ class SDDialog(QDialog):
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
 
+
 messages = {
     # bootstrapping
     'EXISTING_SIGFILE': (

@@ -2,17 +2,11 @@
 version: 2
 jobs:
   lint:
-    docker:
-      - image: debian:stretch
+    machine: true
     steps:
       - checkout
-      - setup_remote_docker
-      # Check version output for debugging
-      - run: apt-get update
-      - run: apt-get install -y python-pip make
-      - run: pip install flake8
-      - run: python --version
-      - run: flake8 --version
+      - run: sudo apt-get update
+      - run: sudo apt-get install -qq make
       - run: make flake8
 
 workflows:

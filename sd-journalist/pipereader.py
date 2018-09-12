@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import select
@@ -60,7 +60,7 @@ class PipeReader():
                     poller.register(fifo)
 
                 elif event & select.EPOLLERR:
-                    print "Error while polling."
+                    print("Error while polling.")
                     cb(None, "POLLING_ERROR")
                     poller.unregister(fileno)
                     os.close(fileno)
@@ -68,7 +68,7 @@ class PipeReader():
                     print("FIFO opened {}".format(fifo))
                     poller.register(fifo)
                 elif event:
-                    print "Totally unhandled event: {}".format(event)
+                    print("Totally unhandled event: {}".format(event))
                     cb(None, "POLLING_ERROR")
                     poller.unregister(fileno)
                     os.close(fileno)
@@ -77,7 +77,7 @@ class PipeReader():
 
 
 def reporter(poller, msg, err):
-    print "Got a message: {} (error: {})".format(msg.rstrip(), err)
+    print("Got a message: {} (error: {})".format(msg.rstrip(), err))
     if msg.rstrip() == "quit":
         poller.quit()
 

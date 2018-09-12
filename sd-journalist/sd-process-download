@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import time
@@ -20,7 +20,8 @@ def spawn_monitor_process(sigfile):
             # congrats, new parent!
             return
     except OSError as e:
-        print >>sys.stderr, "fork #1 failed: %d (%s)" % (e.errno, e.strerror)
+        print("fork #1 failed: %d (%s)" % (e.errno, e.strerror),
+              file=sys.stderr)
         sys.exit(1)
 
     os.setsid()
@@ -30,8 +31,9 @@ def spawn_monitor_process(sigfile):
         if pid > 0:
             # exit from second parent. init process inherits child
             sys.exit(0)
-    except OSError, e:
-        print >>sys.stderr, "fork #2 failed: %d (%s)" % (e.errno, e.strerror)
+    except OSError as e:
+        print("fork #2 failed: %d (%s)" % (e.errno, e.strerror),
+              file=sys.stderr)
         sys.exit(1)
 
     subprocess.Popen(["python", "/usr/local/bin/sd-process-display", sigfile])
@@ -43,11 +45,11 @@ def wait_for_sigfile(sigfile):
 
     while os.path.isfile(sigfile) is False:
         if int(time.time() - started > 30):
-            print "Waited too long for monitoring process!"
+            print("Waited too long for monitoring process!")
             sys.exit(1)
 
         time.sleep(0.5)
-        print "{} is still not a file".format(sigfile)
+        print("{} is still not a file".format(sigfile))
 
     os.remove(sigfile)
 

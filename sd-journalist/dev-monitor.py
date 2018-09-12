@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import datetime
 import pipereader
@@ -12,7 +12,7 @@ def poller_cb(poller, msg, err):
     if msg in sd_process_display.messages:
         longer = sd_process_display.messages[msg]
 
-    print "[{}] {}: {}".format(datetime.datetime.now(), msg, longer)
+    print("[{}] {}: {}".format(datetime.datetime.now(), msg, longer))
 
 
 reader = pipereader.PipeReader("sdfifo", poller_cb)
