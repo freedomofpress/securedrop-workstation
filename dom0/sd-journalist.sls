@@ -40,18 +40,15 @@ require:
 qvm-run -a whonix-ws-14 "sudo apt-get install -qq python-futures":
   cmd.run
 
-# Allow sd-journslist to open files in sd-decrypt
 # When our Qubes bug is fixed, this will *not* be used
-/etc/qubes-rpc/policy/qubes.OpenInVM:
-  file.line:
-    - content: sd-journalist sd-decrypt allow
-    - mode: insert
-    - location: start
+sd-journalist-dom0-qubes.OpenInVM:
+  file.prepend:
+    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
+    - text: "sd-journalist sd-decrypt allow\n"
 
 # Allow sd-journalist to open files in sd-decrypt-bsed dispVM's
 # When our Qubes bug is fixed, this will be used.
-/etc/qubes-rpc/policy/qubes.OpenInVM:
-  file.line:
-    - content: sd-journalist $dispvm:sd-decrypt allow
-    - mode: insert
-    - location: start
+sd-journalist-dom0-qubes.OpenInVM-disp:
+  file.prepend:
+    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
+    - text: "sd-journalist $dispvm:sd-decrypt allow\n"

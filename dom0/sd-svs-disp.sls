@@ -33,8 +33,7 @@ qvm-prefs sd-svs-disp template_for_dispvms True:
 qvm-tags sd-svs-disp add sd-svs-disp-vm:
   cmd.run
 
-/etc/qubes-rpc/policy/qubes.OpenInVM:
-  file.line:
-    - content: $tag:sd-svs-disp-vm sd-svs allow
-    - mode: insert
-    - location: start
+sd-svs-disp-dom0-qubes.OpenInVM:
+  file.prepend:
+    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
+    - text: "$tag:sd-svs-disp-vm sd-svs allow\n"

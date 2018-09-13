@@ -22,8 +22,7 @@ prefs:
 
 {{ load(defaults) }}
 
-/etc/qubes-rpc/policy/qubes.OpenInVM:
-  file.line:
-    - content: sd-svs $dispvm:sd-svs-disp allow
-    - mode: insert
-    - location: start
+sd-svs-dom0-qubes.OpenInVM:
+  file.prepend:
+    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
+    - text: "sd-svs $dispvm:sd-svs-disp allow\n"
