@@ -26,7 +26,7 @@ sd-whonix:
       - mem: 500
     - prefs:
       - provides-network: true
-      - netvm: ""
+      - netvm: "sys-firewall"
       - autostart: true
     - require:
       - pkg: qubes-template-whonix-gw-14
