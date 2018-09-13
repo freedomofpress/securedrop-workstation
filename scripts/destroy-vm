@@ -1,0 +1,37 @@
+#!/bin/bash
+# Utility to quickly destroy a Qubes VM managed by the Workstation
+# salt config, for use in repeated builds during development.
+#
+# There are a few "sleep"s sprinkled around because the qubes tooling
+# returns very quickly, often before the underlying operation has
+# completed.
+set -e
+set -u
+
+
+if [[ $# -lt 1 ]]; then
+    printf "Usage: %s <vm_name> [vm_name ...]\n" "$0"
+    exit 1
+fi
+
+function destroy-qubes-vm() {
+    local vm_name="$1"
+    printf "Destroying VM '%s'... " "$vm_name"
+    if qvm-check "$vm_name" > /dev/null 2>&1 ; then
+        # Wait a sec, otherwise qubesd may return empty
+        sleep 1
+        if qvm-check --running "$vm_name" > /dev/null 2>&1 ; then
+            sleep 1
+            qvm-kill "$vm_name" > /dev/null 2>&1
+            sleep 1
+        fi
+        qvm-remove -f "$vm_name" > /dev/null 2>&1
+        printf "OK\n"
+    else
+        printf "(absent)\n"
+    fi
+}
+
+for vm_name in $@; do
+    destroy-qubes-vm "$vm_name"
+done

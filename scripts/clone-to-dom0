@@ -1,0 +1,38 @@
+#!/bin/bash
+# Utility to copy workstation config files from target AppVM
+# to dom0, for use in testing the salt logic for VM configuration.
+# Should only be run in dom0!
+set -e
+set -u
+set -o pipefail
+
+# Ensure we're running in dom0, otherwise clone action could destroy
+# active work in AppVM.
+if [[ "$(hostname)" != "dom0" ]]; then
+    echo 'Clone action must be run from dom0!'
+    exit 1
+fi
+
+# Support environment variable overrides, but provide sane defaults.
+dev_vm="${SECUREDROP_DEV_VM:-work}"
+dev_dir="${SECUREDROP_DEV_DIR:-/home/user/securedrop-workstation}"
+
+# The dest directory in dom0 is not customizable.
+dom0_dev_dir="$HOME/securedrop-workstation"
+
+# Call out to target AppVM to create a tarball in dom0
+function create-tarball() {
+    printf "Cloning code from %s:%s ...\n" "${dev_vm}" "${dev_dir}"
+    qvm-run --pass-io "$dev_vm" \
+        "tar -c --exclude-vcs \
+        -C '$(dirname "$dev_dir")' \
+        '$(basename "$dev_dir")'" > /tmp/sd-proj.tar
+}
+
+function unpack-tarball() {
+    rm -rf "${dom0_dev_dir}/"*
+    tar xf /tmp/sd-proj.tar -C "${dom0_dev_dir}" --strip-components=1
+}
+
+create-tarball
+unpack-tarball

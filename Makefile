@@ -1,5 +1,3 @@
-DEVVM=work
-DEVDIR=/home/user/projects/securedrop-workstation # important: no trailing slash
 HOST=$(shell hostname)
 
 assert-dom0: ## Confirms command is being run under dom0
@@ -13,16 +11,9 @@ all: assert-dom0 validate clean update-fedora-templates			\
 	update-whonix-templates prep-whonix sd-whonix sd-svs sd-gpg	\
 	sd-journalist sd-decrypt sd-svs-disp
 
-proj-tar: assert-dom0 ## Create tarball from "work" VM for export to dom0
-	qvm-run --pass-io $(DEVVM) 'tar -c -C $(dir $(DEVDIR)) $(notdir $(DEVDIR))' > ./sd-proj.tar
+clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
+	@./scripts/clone-to-dom0
 
-clone: assert-dom0 proj-tar ## Pulls the latest repo from work VM to dom0
-	mv sd-proj.tar /tmp
-	rm -rf $(HOME)/securedrop-workstation/*
-	mv /tmp/sd-proj.tar $(HOME)/securedrop-workstation/
-	tar xvf sd-proj.tar --strip-components=1
-	rm -rf .gitignore .git/
-	rm sd-proj.tar
 
 sd-journalist: prep-salt ## Provisions SD Journalist VM
 	sudo qubesctl top.enable sd-journalist
@@ -54,47 +45,42 @@ sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 	sudo qubesctl --targets sd-svs-disp state.highstate
 
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
-	sudo rm -rf /srv/salt/sd
-	sudo find /srv/salt -maxdepth 1 -type f -iname 'sd*' -delete
-	sudo find /srv/salt/_tops -lname '/srv/salt/sd-*' -delete
+	@echo "Purging Salt config..."
+	@sudo rm -rf /srv/salt/sd
+	@sudo find /srv/salt -maxdepth 1 -type f -iname 'sd*' -delete
+	@sudo find /srv/salt/_tops -lname '/srv/salt/sd-*' -delete
 
 prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
-	sudo mkdir -p /srv/salt/sd
-	sudo cp config.json /srv/salt/sd
-	sudo cp sd-journalist.sec /srv/salt/sd
-	sudo cp -r sd-decrypt /srv/salt/sd
-	sudo cp -r sd-journalist /srv/salt/sd
-	sudo cp -r sd-svs /srv/salt/sd
-	sudo cp dom0/* /srv/salt/
-	#sudo cp -r sd-svs-disp /srv/salt/sd  # nothing there yet...
+	@echo "Deploying Salt config..."
+	@sudo mkdir -p /srv/salt/sd
+	@sudo cp config.json /srv/salt/sd
+	@sudo cp sd-journalist.sec /srv/salt/sd
+	@sudo cp -r sd-decrypt /srv/salt/sd
+	@sudo cp -r sd-journalist /srv/salt/sd
+	@sudo cp -r sd-svs /srv/salt/sd
+	@sudo cp dom0/* /srv/salt/
+#sudo cp -r sd-svs-disp /srv/salt/sd  # nothing there yet...
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
-	-qvm-kill sd-whonix
-	-qvm-remove -f sd-whonix
+	@./scripts/destroy-vm sd-whonix
 
 remove-sd-svs-disp: assert-dom0 ## Destroys SD Submission reading VM
-	-qvm-kill sd-svs-disp
-	-qvm-remove -f sd-svs-disp
+	@./scripts/destroy-vm sd-svs-disp
 
 remove-sd-decrypt: assert-dom0 ## Destroys SD GPG decryption VM
-	-qvm-kill sd-decrypt
-	-qvm-remove -f sd-decrypt
+	@./scripts/destroy-vm sd-decrypt
 
 remove-sd-journalist: assert-dom0 ## Destroys SD Journalist VM
-	-qvm-kill sd-journalist
-	-qvm-remove -f sd-journalist
+	@./scripts/destroy-vm sd-journalist
 
 remove-sd-svs: assert-dom0 ## Destroys SD SVS VM
-	-qvm-kill sd-svs
-	-qvm-remove -f sd-svs
+	@./scripts/destroy-vm sd-svs
 
 remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
-	-qvm-kill sd-gpg
-	-qvm-remove -f sd-gpg
+	@./scripts/destroy-vm sd-gpg
 
 clean: assert-dom0 remove-sd-gpg remove-sd-svs remove-sd-journalist \
 	remove-sd-svs-disp remove-sd-decrypt remove-sd-whonix clean-salt ## Destroys all SD VMs
-	@echo "Reset all VMs"
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python -m unittest discover tests
@@ -139,6 +125,12 @@ template: ## Builds securedrop-workstation Qube template RPM
 prep-whonix: ## enables apparmor on whonix-ws-14 and whonix-gw-14
 	qvm-prefs -s whonix-gw-14 kernelopts "nopat apparmor=1 security=apparmor"
 	qvm-prefs -s whonix-ws-14 kernelopts "nopat apparmor=1 security=apparmor"
+
+list-vms: ## Prints all Qubes VMs managed by Workstation salt config
+	@./scripts/list-vms
+
+destroy-all: ## Destroys all VMs managed by Workstation salt config
+	@./scripts/list-vms | xargs ./scripts/destroy-vm
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
