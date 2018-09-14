@@ -41,8 +41,9 @@ require:
 #   * python-futures required bootstrap Salt support
 #   * python-qt4 required for sd-process-feedback GUI integration
 #
-qvm-run -a whonix-ws-14 "sudo apt-get install -qq python-futures python-qt4":
-  cmd.run
+install python-qt4 and python-futures:
+  cmd.run:
+    - name: qvm-run -a whonix-ws-14 'sudo apt-get update && sudo apt-get install -qq python-futures python-qt4'
 
 # When our Qubes bug is fixed, this will *not* be used
 sd-journalist-dom0-qubes.OpenInVM:
