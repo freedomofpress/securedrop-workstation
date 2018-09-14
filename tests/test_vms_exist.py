@@ -14,8 +14,8 @@ class SD_VM_Tests(unittest.TestCase):
         vm_set = set(self.app.domains)
 
         wanted_vms = ["sd-whonix", "sd-journalist",
-                      "sd-svs", "sd-decrypt",
-                      "sd-svs-disp", "sd-gpg"]
+                      "sd-svs", "sd-svs-disp",
+                      "sd-gpg"]
         for test_vm in wanted_vms:
             self.assertTrue(test_vm in vm_set)
 
@@ -31,11 +31,6 @@ class SD_VM_Tests(unittest.TestCase):
 
     def test_sd_svs_net(self):
         vm = self.app.domains["sd-svs"]
-        nvm = vm.netvm
-        self.assertTrue(nvm is None)
-
-    def test_sd_decrypt_net(self):
-        vm = self.app.domains["sd-decrypt"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
 

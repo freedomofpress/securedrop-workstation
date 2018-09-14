@@ -137,11 +137,5 @@ fh.close()
 
 shutil.rmtree(tmpdir)
 
-# finally! ship this off to sd-svs
-subprocess.call(["qvm-open-in-vm", "sd-svs", fh.name])
-os.unlink(fh.name)
-
-# work around a qubes open-in-vm bug
-# (https://groups.google.com/forum/#!topic/qubes-users/dxFa4ZXmPYc)
-# shouldn't be an issue for disp vm's
-os.unlink(input)
+# finally! ship this off to the next stage to store in SVS
+subprocess.call(["python3", "/usr/local/bin/accept-sd-xfer-extracted", fh.name])  # noqa:E501

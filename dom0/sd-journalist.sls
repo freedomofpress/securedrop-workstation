@@ -52,4 +52,4 @@ sd-journalist-dom0-qubes.OpenInVM:
 sd-journalist-dom0-qubes.OpenInVM-disp:
   file.prepend:
     - name: /etc/qubes-rpc/policy/qubes.OpenInVM
-    - text: "sd-journalist $dispvm:sd-decrypt allow\n"
+    - text: "sd-journalist sd-svs allow\n"

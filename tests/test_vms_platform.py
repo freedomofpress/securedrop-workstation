@@ -10,7 +10,6 @@ SUPPORTED_PLATFORMS = [
 ]
 
 WANTED_VMS = [
-    "sd-decrypt",
     "sd-gpg",
     "sd-journalist",
     "sd-svs",

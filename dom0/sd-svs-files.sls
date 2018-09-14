@@ -9,6 +9,20 @@
 #
 ##
 
+/usr/local/bin/decrypt-sd-submission:
+  file.managed:
+    - source: salt://sd/sd-svs/decrypt-sd-submission
+    - user: root
+    - group: root
+    - mode: 755
+
+/home/user/.profile:
+  file.managed:
+    - source: salt://sd/sd-svs/dot-profile
+    - user: root
+    - group: root
+    - mode: 755
+
 /usr/local/bin/accept-sd-xfer-extracted:
   file.managed:
     - source: salt://sd/sd-svs/accept-sd-xfer-extracted
@@ -16,17 +30,17 @@
     - group: root
     - mode: 755
 
-/usr/local/share/mime/packages/application-x-sd-xfer-extracted.xml:
+/usr/local/share/mime/packages/application-x-sd-xfer.xml:
   file.managed:
-    - source: salt://sd/sd-svs/application-x-sd-xfer-extracted.xml
+    - source: salt://sd/sd-svs/application-x-sd-xfer.xml
     - user: root
     - group: root
     - mode: 644
     - makedirs: True
 
-/usr/local/share/applications/accept-sd-xfer-extracted.desktop:
+/usr/local/share/applications/decrypt-sd-submission.desktop:
   file.managed:
-    - source: salt://sd/sd-svs/accept-sd-xfer-extracted.desktop
+    - source: salt://sd/sd-svs/decrypt-sd-submission.desktop
     - user: root
     - group: root
     - mode: 644

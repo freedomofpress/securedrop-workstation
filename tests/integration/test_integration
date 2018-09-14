@@ -150,7 +150,7 @@ if run_q("full-success"):
             "DECRYPTED_BUNDLE_ON_SVS",
             "DECRYPTED_FILES_AVAILABLE",
     ]
-    receiver.cmd = ["qvm-open-in-vm", "sd-decrypt", "./all.sd-xfer"]
+    receiver.cmd = ["qvm-open-in-vm", "sd-svs", "./all.sd-xfer"]
     receiver.test_name = "full successful open"
     receiver.test()
 
@@ -159,7 +159,7 @@ if run_q("empty-download"):
             "DECRYPTION_PROCESS_START",
             "DECRYPTION_BUNDLE_OPEN_FAILURE",
     ]
-    receiver.cmd = ["qvm-open-in-vm", "sd-decrypt", "./empty.sd-xfer"]
+    receiver.cmd = ["qvm-open-in-vm", "sd-svs", "./empty.sd-xfer"]
     receiver.test_name = "empty sd-xfer"
     receiver.test()
 
@@ -172,7 +172,7 @@ if run_q("bad-gpg-key"):
             "SUBMISSION_FILE_DECRYPTION_FAILED",
             "SUBMISSION_FILE_NO_FILES_FOUND",
     ]
-    receiver.cmd = ["qvm-open-in-vm", "sd-decrypt", "./bad-key.sd-xfer"]
+    receiver.cmd = ["qvm-open-in-vm", "sd-svs", "./bad-key.sd-xfer"]
     receiver.test_name = "bad encryption key"
     receiver.test()
 
