@@ -68,7 +68,7 @@ wait_for_sigfile(sigfile)
 if os.path.isfile(fn) is False:
     c = subprocess.Popen(["/usr/local/bin/sd-process-feedback"],
                          stdin=subprocess.PIPE)
-    c.communicate('DOWNLOAD_FILE_MISSING\n')
+    c.communicate(bytes("DOWNLOAD_FILE_MISSING\n".encode('utf-8')))
     sys.exit()
 
 fh = tempfile.NamedTemporaryFile(suffix=".sd-xfer", delete=False)
@@ -81,7 +81,7 @@ fh.close()
 # from the same machine? This can only happen on sd-journalist.
 c = subprocess.Popen(["/usr/local/bin/sd-process-feedback"],
                      stdin=subprocess.PIPE)
-c.communicate(input="DOWNLOAD_BUNDLE_CREATED\n")
+c.communicate(bytes("DOWNLOAD_BUNDLE_CREATED\n".encode('utf-8')))
 
 # ship this to the next phase
 subprocess.call(["qvm-open-in-vm", "sd-decrypt", fh.name])

@@ -5,7 +5,7 @@ import posix
 import sys
 import os
 
-arg = sys.stdin.readline()
+arg = sys.stdin.readline().encode('utf-8')
 
 try:
     fifo = os.open('/home/user/sdfifo', posix.O_WRONLY | posix.O_NONBLOCK)

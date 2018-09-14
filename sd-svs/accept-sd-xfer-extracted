@@ -13,7 +13,7 @@ def send_progress(msg):
                          "sd-process.Feedback"],
                          close_fds=True,
                          stdin=subprocess.PIPE)
-    p.communicate(msg)
+    p.communicate(bytes(msg.encode('utf-8')))
 
 
 send_progress("DECRYPTED_BUNDLE_ON_SVS")
