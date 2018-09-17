@@ -23,13 +23,6 @@
     - group: root
     - mode: 755
 
-/usr/local/bin/accept-sd-xfer-extracted:
-  file.managed:
-    - source: salt://sd/sd-svs/accept-sd-xfer-extracted
-    - user: root
-    - group: root
-    - mode: 755
-
 /usr/local/share/mime/packages/application-x-sd-xfer.xml:
   file.managed:
     - source: salt://sd/sd-svs/application-x-sd-xfer.xml

@@ -49,7 +49,7 @@ messages = {
         "error", "The file downloaded from SecureDrop wasn't found."),
     'DOWNLOAD_BUNDLE_CREATED': ("success", "Initial download bundle created."),
 
-    # decrypt
+    # SVS / decryption
     'DECRYPTION_PROCESS_START': ("success", "Decryption process started."),
     'DECRYPTION_BUNDLE_OPEN_FAILURE':
         ("error", "Decryption bundle could not be opened."),
@@ -63,14 +63,12 @@ messages = {
         ("success", "Submission file decrypted."),
     'SUBMISSION_DECRYPTED':
         ("success", "All submission files decrypted"),
-
-    # SVS
     'DECRYPTED_BUNDLE_ON_SVS':
         ("success", "Decrypted file bundle arrived on SVS."),
     'DECRYPTED_FILES_AVAILABLE':
         ("success", "Submitted files available for use on SVS."),
-    'DECRYPTED_BUNDLE UNBUNDLE_ERROR':
-        ("error", "Bundle of decrypted files could not be unbundle on SVS.")
+    'DECRYPTED_BUNDLE_COPY_FAILURE':
+        ("error", "Could not copy decrypted files on SVS.")
 }
 
 

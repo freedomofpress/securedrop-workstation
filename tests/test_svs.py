@@ -23,11 +23,6 @@ class SD_SVS_Tests(SD_VM_Local_Test):
           "/home/user/.profile",
           "sd-svs/dot-profile")
 
-    def test_accept_sd_xfer_extracted_file(self):
-        self.assertFilesMatch(
-            "/usr/local/bin/accept-sd-xfer-extracted",
-            "sd-svs/accept-sd-xfer-extracted")
-
     def test_open_in_dvm_desktop(self):
         self.assertFilesMatch(
           "/usr/local/share/applications/open-in-dvm.desktop",
