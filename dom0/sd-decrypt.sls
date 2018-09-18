@@ -10,18 +10,14 @@
 # non-disposable VM for the time being.
 ##
 
-{%- from "qvm/template.jinja" import load -%}
-
-{% load_yaml as defaults -%}
-name:         sd-decrypt
-present:
-  - template: fedora-28
-  - label:    green
-prefs:
-  - netvm:    ""
-{%- endload %}
-
-{{ load(defaults) }}
+sd-decrypt:
+  qvm.vm:
+    - name: sd-decrypt
+    - present:
+      - template: fedora-28
+      - label: green
+    - prefs:
+      - netvm: ""
 
 # tell qubes this VM can be used as a disp VM template
 qvm-prefs sd-decrypt template_for_dispvms True:
