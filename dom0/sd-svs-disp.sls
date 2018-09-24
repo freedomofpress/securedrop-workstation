@@ -15,7 +15,7 @@ sd-svs-disp:
   qvm.vm:
     - name: sd-svs-disp
     - present:
-      - template: fedora-28
+      - template: debian-9
       - label: green
     - prefs:
       - netvm: ""

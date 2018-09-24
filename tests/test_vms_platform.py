@@ -5,7 +5,6 @@ from qubesadmin import Qubes
 
 
 SUPPORTED_PLATFORMS = [
-    "Fedora 28 (Twenty Eight)",
     "Debian GNU/Linux 9 (stretch)",
 ]
 
