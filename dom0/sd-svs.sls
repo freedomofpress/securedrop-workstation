@@ -13,7 +13,7 @@ sd-svs:
   qvm.vm:
     - name: sd-svs
     - present:
-      - template: fedora-28
+      - template: debian-9
       - label: yellow
     - prefs:
       - netvm: ""
