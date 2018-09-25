@@ -25,7 +25,10 @@ qvm-prefs sd-svs-disp template_for_dispvms True:
   cmd.run
 
 # Allow dispvms based on this vm to open files in sd-svs.
-# See note in sd-decrypt.sls about why we tag here.
+# (eg, "dispvms created from this VM can use the OpenInVM facility provided
+# by sd-svs"), but the "$dispvm:sd-svs" syntax can only be used as an
+# RPC policy *target*, not source. Tagged VMs can be used as a source.
+# This feels like a Qubes bug.
 qvm-tags sd-svs-disp add sd-svs-disp-vm:
   cmd.run
 

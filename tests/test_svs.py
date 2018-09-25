@@ -8,20 +8,20 @@ class SD_SVS_Tests(SD_VM_Local_Test):
         self.vm_name = "sd-svs"
         super(SD_SVS_Tests, self).setUp()
 
-    def test_accept_sd_xfer_extracted_file(self):
+    def test_decrypt_sd_submission(self):
         self.assertFilesMatch(
-            "/usr/local/bin/accept-sd-xfer-extracted",
-            "sd-svs/accept-sd-xfer-extracted")
+          "/usr/local/bin/decrypt-sd-submission",
+          "sd-svs/decrypt-sd-submission")
 
-    def test_xfer_extracted_mime_type(self):
+    def test_decrypt_sd_submission_desktop(self):
         self.assertFilesMatch(
-            "/usr/local/share/mime/packages/application-x-sd-xfer-extracted.xml",  # noqa: E501
-            "sd-svs/application-x-sd-xfer-extracted.xml")
+          "/usr/local/share/applications/decrypt-sd-submission.desktop",
+          "sd-svs/decrypt-sd-submission.desktop")
 
-    def test_xfer_extracted_desktop(self):
+    def test_decrypt_sd_user_profile(self):
         self.assertFilesMatch(
-           "/usr/local/share/applications/accept-sd-xfer-extracted.desktop",
-           "sd-svs/accept-sd-xfer-extracted.desktop")
+          "/home/user/.profile",
+          "sd-svs/dot-profile")
 
     def test_open_in_dvm_desktop(self):
         self.assertFilesMatch(

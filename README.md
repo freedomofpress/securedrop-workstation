@@ -100,9 +100,9 @@ Submissions are processed in the following steps:
 1. Journalist uses the Tor Browser in the `sd-journalist` VM to visit the authenticated Tor hidden service Journalist Interface. After logging in, the journalist clicks
 on any submission of interest.
 2. The Tor Browser in the `sd-journalist` VM offers to open the submission with the configured handler (`sd-process-download`).
-3. The `sd-process-download` script, run by Tor Browser, moves the submission to a disposable VM.[1]
-4. In the disposable VM, the submission is unarchived and decrypted using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
-5. The decrypted submission is copied to the `sd-svs` Secure Viewing Station VM, where it's placed in the `Sources` directory based on the source name.
+3. The `sd-process-download` script, run by Tor Browser, moves the submission to the svs for decryption.
+4. In the SVS VM, the submission is unarchived and decrypted using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
+5. The decrypted submission is stored on the `sd-svs` Secure Viewing Station VM, where it's placed in the `Sources` directory based on the source name.
 6. Any file viewed in the Secure Viewing Station is opened in a Disposable VM, largely mitigating attacks from malicious content.
 
 See below for a closer examination of this process, and see `docs/images` for screenshots related to the steps above.
@@ -118,9 +118,7 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 - `move-to-svs` will explore all files in Tor Browser's Downloads directory, and attempt to process them all. This script is run by hand, and shouldn't be necessary in day-to-day use.
 - `sd-process-download` is configured as the VM's `application/zip` mime type handler, so Tor Browser will by default open SD submissions with this script.
 
-`sd-svs` contains scripts and configuration for the viewing station VM. These include a script to handle incoming, decrypted files during the submission handling process, and desktop configuration files to make this VM open all files in a disposable VM.
-
-`decrypt` contains scripts for the VMs handling decryption. These get used both while configuring the disposable VM, and when provisioning the split GPG VM (`sd-gpg`). These should probably be separated into two directories: one for `sd-gpg` and one for the disposable VM config.
+`sd-svs` contains scripts and configuration for the viewing station VM. These include a script to handle incoming, encrypted files during the submission handling process, and desktop configuration files to make this VM decrypt the files using `sd-gpg` and open all files in a disposable VM.
 
 `config.json.sample` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
 
@@ -259,11 +257,10 @@ The *Display VM* is disposable, does not have network access, and is used to dis
   * Access plaintext passwords to the Journalist interface.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What Compromise of the *Decryption VM* Can Achieve
-
-The *Decryption VM* is disposable, does not have network access, and is used to decrypt only one submission before being destroyed.
-
-* An adversary can initiate arbitrary decryption of messages and submissions, but cannot access the decrypted contents.
+#### What compromise of the *SVS VM* can achieve
+The *SVS VM* does not have network access, and the Qubes split-gpg mechanism permits access to GPG keys from this VM.
+* An adversary can view all decrypted submissions.
+* An adversary can decrypt arbitrary submission.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
 #### What Compromise of the *GPG VM* Can Achieve

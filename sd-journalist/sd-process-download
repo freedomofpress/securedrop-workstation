@@ -84,5 +84,5 @@ c = subprocess.Popen(["/usr/local/bin/sd-process-feedback"],
 c.communicate(bytes("DOWNLOAD_BUNDLE_CREATED\n".encode('utf-8')))
 
 # ship this to the next phase
-subprocess.call(["qvm-open-in-vm", "sd-decrypt", fh.name])
+subprocess.call(["qvm-open-in-vm", "sd-svs", fh.name])
 os.remove(fh.name)

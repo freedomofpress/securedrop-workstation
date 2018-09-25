@@ -9,7 +9,7 @@ endif
 ## Builds and provisions all VMs required for testing workstation
 all: assert-dom0 validate clean update-fedora-templates			\
 	update-whonix-templates prep-whonix sd-whonix sd-svs sd-gpg	\
-	sd-journalist sd-decrypt sd-svs-disp
+	sd-journalist sd-svs-disp
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
@@ -35,11 +35,6 @@ sd-whonix: prep-salt ## Provisions SD Whonix VM
 	sudo qubesctl top.enable sd-whonix-hidserv-key
 	sudo qubesctl --targets sd-whonix state.highstate
 
-sd-decrypt: prep-salt ## Provisions SD Submission Decryption VM
-	sudo qubesctl top.enable sd-decrypt
-	sudo qubesctl top.enable sd-decrypt-files
-	sudo qubesctl --targets sd-decrypt state.highstate
-
 sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 	sudo qubesctl top.enable sd-svs-disp
 	sudo qubesctl --targets sd-svs-disp state.highstate
@@ -55,7 +50,6 @@ prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@sudo mkdir -p /srv/salt/sd
 	@sudo cp config.json /srv/salt/sd
 	@sudo cp sd-journalist.sec /srv/salt/sd
-	@sudo cp -r sd-decrypt /srv/salt/sd
 	@sudo cp -r sd-journalist /srv/salt/sd
 	@sudo cp -r sd-svs /srv/salt/sd
 	@sudo cp dom0/* /srv/salt/
@@ -67,9 +61,6 @@ remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
 remove-sd-svs-disp: assert-dom0 ## Destroys SD Submission reading VM
 	@./scripts/destroy-vm sd-svs-disp
 
-remove-sd-decrypt: assert-dom0 ## Destroys SD GPG decryption VM
-	@./scripts/destroy-vm sd-decrypt
-
 remove-sd-journalist: assert-dom0 ## Destroys SD Journalist VM
 	@./scripts/destroy-vm sd-journalist
 
@@ -80,7 +71,7 @@ remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
 	@./scripts/destroy-vm sd-gpg
 
 clean: assert-dom0 remove-sd-gpg remove-sd-svs remove-sd-journalist \
-	remove-sd-svs-disp remove-sd-decrypt remove-sd-whonix clean-salt ## Destroys all SD VMs
+	remove-sd-svs-disp remove-sd-whonix clean-salt ## Destroys all SD VMs
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python -m unittest discover tests

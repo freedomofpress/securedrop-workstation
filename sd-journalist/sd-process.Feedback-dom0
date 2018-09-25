@@ -1,3 +1,2 @@
-$tag:sd-decrypt-vm sd-journalist allow
 sd-svs sd-journalist allow
 $anyvm sd-journalist ask
