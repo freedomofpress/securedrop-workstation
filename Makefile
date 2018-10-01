@@ -39,6 +39,8 @@ sd-whonix: prep-salt ## Provisions SD Whonix VM
 
 sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 	sudo qubesctl top.enable sd-svs-disp
+	sudo qubesctl top.enable sd-svs-disp-files
+	sudo qubesctl --targets sd-svs-disp-template state.highstate
 	sudo qubesctl --targets sd-svs-disp state.highstate
 
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0

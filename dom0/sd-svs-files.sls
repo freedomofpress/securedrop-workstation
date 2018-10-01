@@ -9,7 +9,7 @@
 #
 ##
 
-/usr/local/bin/decrypt-sd-submission:
+/usr/bin/decrypt-sd-submission:
   file.managed:
     - source: salt://sd/sd-svs/decrypt-sd-submission
     - user: root
@@ -23,7 +23,7 @@
     - group: root
     - mode: 644
 
-/usr/local/share/mime/packages/application-x-sd-xfer.xml:
+/usr/share/mime/packages/application-x-sd-xfer.xml:
   file.managed:
     - source: salt://sd/sd-svs/application-x-sd-xfer.xml
     - user: root
@@ -31,7 +31,7 @@
     - mode: 644
     - makedirs: True
 
-/usr/local/share/applications/decrypt-sd-submission.desktop:
+/usr/share/applications/decrypt-sd-submission.desktop:
   file.managed:
     - source: salt://sd/sd-svs/decrypt-sd-submission.desktop
     - user: root
@@ -39,7 +39,7 @@
     - mode: 644
     - makedirs: True
 
-/usr/local/share/applications/open-in-dvm.desktop:
+/usr/share/applications/open-in-dvm.desktop:
   file.managed:
     - source: salt://sd/sd-svs/open-in-dvm.desktop
     - user: root
@@ -55,10 +55,10 @@
     - mode: 644
     - makedirs: True
 
-sudo update-mime-database /usr/local/share/mime:
+sudo update-mime-database /usr/share/mime:
   cmd.run
 
-sudo update-desktop-database /usr/local/share/applications:
+sudo update-desktop-database /usr/share/applications:
   cmd.run
 
 install nautilus in sd-svs:
