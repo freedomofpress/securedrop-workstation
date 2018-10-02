@@ -2,5 +2,6 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 base:
-  sd-svs-disp:
+  # Target Debian-9, since changes to sd-svs-disp won't persist
+  debian-9:
     - sd-svs-disp-files
