@@ -39,7 +39,7 @@ sd-journalist:
 #
 install python-qt4 and python-futures:
   cmd.run:
-    - name: qvm-run -a whonix-ws-14 'sudo apt-get update && sudo apt-get install -qq python-futures python-qt4'
+    - name: qvm-run -a whonix-ws-14 'sudo apt-get update && sudo apt-get install -qq python-futures python3-pyqt4 gvfs-bin libgnomevfs2-bin'
 
 # When our Qubes bug is fixed, this will *not* be used
 sd-journalist-dom0-qubes.OpenInVM:
