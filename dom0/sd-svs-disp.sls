@@ -15,7 +15,7 @@ sd-svs-disp-template:
   qvm.vm:
     - name: sd-svs-disp-template
     - clone:
-      - source: debian-9
+      - source: sd-workstation-template
       - label: green
 
 sd-svs-disp:

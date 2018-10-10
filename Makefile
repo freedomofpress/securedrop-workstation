@@ -8,12 +8,18 @@ endif
 
 ## Builds and provisions all VMs required for testing workstation
 all: assert-dom0 validate clean update-fedora-templates			\
-	update-whonix-templates prep-whonix sd-whonix sd-svs sd-gpg	\
+	update-whonix-templates prep-whonix sd-workstation-template \
+	sd-whonix sd-svs sd-gpg	\
 	sd-journalist sd-svs-disp
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
 
+
+sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
+	sudo qubesctl top.enable sd-workstation-template
+	sudo qubesctl top.enable sd-workstation-template-files
+	sudo qubesctl --targets sd-workstation-template state.highstate
 
 sd-journalist: prep-salt ## Provisions SD Journalist VM
 	sudo qubesctl top.enable sd-journalist

@@ -13,7 +13,7 @@ sd-svs-template:
   qvm.vm:
     - name: sd-svs-template
     - clone:
-      - source: debian-9
+      - source: sd-workstation-template
       - label: yellow
 
 sd-svs:
