@@ -81,8 +81,7 @@ remove-sd-svs: assert-dom0 ## Destroys SD SVS VM
 remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
 	@./scripts/destroy-vm sd-gpg
 
-clean: assert-dom0 remove-sd-gpg remove-sd-svs remove-sd-journalist \
-	remove-sd-svs-disp remove-sd-whonix clean-salt ## Destroys all SD VMs
+clean: assert-dom0 destroy-all clean-salt ## Destroys all SD VMs
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python -m unittest discover tests

@@ -5,10 +5,19 @@ set -e
 set -u
 set -o pipefail
 
-# Search all top files for vm names declared as attributes
-# assigned to dom0, strip out formatting.
-grep dom0: dom0/*.top -A1 \
-    | grep -v dom0: \
-    | grep -v '^\-\-' \
-    | perl -lanE 'print $F[-1]' \
-    | sort
+declare -a sd_workstation_vm_names=(
+  sd-gpg
+  sd-journalist
+  sd-journalist-template
+  sd-svs
+  sd-svs-template
+  sd-workstation-template
+  sd-whonix
+  sd-whonix-template
+  sd-svs-disp
+  sd-svs-disp-template
+)
+
+for vm in "${sd_workstation_vm_names[@]}" ; do
+    echo "$vm"
+done
