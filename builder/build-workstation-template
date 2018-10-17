@@ -31,9 +31,6 @@ cd "${qubes_builder_dir}"
 # Provision securedrop-workstation config so that we get the correct sources via `make get-sources`.
 cp ${sd_template_dir}/securedrop-workstation.conf builder.conf
 
-# Install dependencies from Qubes builder logic.
-make install-deps
-
 # Get sources for only the builder component, which will get Qubes dev keys and initialize the keyring
 make COMPONENTS="builder" get-sources
 
@@ -43,6 +40,9 @@ echo 'AF775782949D263DAABB3387AAFB3575FAC82745:6:' | gpg --homedir ${gpg_homedir
 
 # Get all sources
 make get-sources
+
+# Install dependencies from Qubes builder logic.
+make install-deps
 
 # Build it!
 make qubes-vm
