@@ -63,6 +63,7 @@ prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@sudo cp sd-journalist.sec /srv/salt/sd
 	@sudo cp -r sd-journalist /srv/salt/sd
 	@sudo cp -r sd-svs /srv/salt/sd
+	@sudo cp -r sd-workstation /srv/salt/sd
 	@sudo cp dom0/* /srv/salt/
 #sudo cp -r sd-svs-disp /srv/salt/sd  # nothing there yet...
 

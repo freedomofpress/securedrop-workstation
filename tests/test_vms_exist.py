@@ -57,6 +57,13 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
 
+    def test_sd_workstation_template(self):
+        vm = self.app.domains["sd-workstation-template"]
+        nvm = vm.netvm
+        self.assertTrue(nvm is None)
+        self.assertTrue(vm.virt_mode == "hvm")
+        self.assertTrue(vm.kernel == "")
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_VM_Tests)
