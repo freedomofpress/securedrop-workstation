@@ -13,7 +13,7 @@ sd-gpg:
   qvm.vm:
     - name: sd-gpg
     - present:
-      - template: fedora-28
+      - template: sd-workstation-template
       - label: purple
     - prefs:
       - netvm: ""

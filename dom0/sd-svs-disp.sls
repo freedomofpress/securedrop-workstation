@@ -11,11 +11,18 @@
 # This VM has no network configured.
 ##
 
+sd-svs-disp-template:
+  qvm.vm:
+    - name: sd-svs-disp-template
+    - clone:
+      - source: sd-workstation-template
+      - label: green
+
 sd-svs-disp:
   qvm.vm:
     - name: sd-svs-disp
     - present:
-      - template: fedora-28
+      - template: sd-svs-disp-template
       - label: green
     - prefs:
       - netvm: ""

@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# Things to do at VM startup.
-
-# Copy our sd-process.Feedback RPC handler in to place
-cp /rw/config/etc/qubes-rpc/sd-process.Feedback /etc/qubes-rpc/sd-process.Feedback

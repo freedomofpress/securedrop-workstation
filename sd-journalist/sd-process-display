@@ -10,7 +10,7 @@ import pipereader
 
 class SDDialog(QDialog):
     def __init__(self, parent=None):
-        fn = r'/usr/local/share/sd/logo-small.png'
+        fn = r'/usr/share/sd/logo-small.png'
         image = QImage(fn)
         self.logo = QLabel()
         self.logo.setPixmap(QPixmap.fromImage(image))

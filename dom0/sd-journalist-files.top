@@ -4,3 +4,5 @@
 base:
   sd-journalist:
     - sd-journalist-files
+  sd-journalist-template:
+    - sd-journalist-template-files

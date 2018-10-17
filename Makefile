@@ -8,16 +8,23 @@ endif
 
 ## Builds and provisions all VMs required for testing workstation
 all: assert-dom0 validate clean update-fedora-templates			\
-	update-whonix-templates prep-whonix sd-whonix sd-svs sd-gpg	\
+	update-whonix-templates prep-whonix sd-workstation-template \
+	sd-whonix sd-svs sd-gpg	\
 	sd-journalist sd-svs-disp
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
 
 
+sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
+	sudo qubesctl top.enable sd-workstation-template
+	sudo qubesctl top.enable sd-workstation-template-files
+	sudo qubesctl --targets sd-workstation-template state.highstate
+
 sd-journalist: prep-salt ## Provisions SD Journalist VM
 	sudo qubesctl top.enable sd-journalist
 	sudo qubesctl top.enable sd-journalist-files
+	sudo qubesctl --targets sd-journalist-template state.highstate
 	sudo qubesctl --targets sd-journalist state.highstate
 
 sd-gpg: prep-salt ## Provisions SD GPG keystore VM
@@ -28,15 +35,19 @@ sd-gpg: prep-salt ## Provisions SD GPG keystore VM
 sd-svs: prep-salt ## Provisions SD SVS VM
 	sudo qubesctl top.enable sd-svs
 	sudo qubesctl top.enable sd-svs-files
+	sudo qubesctl --targets sd-svs-template state.highstate
 	sudo qubesctl --targets sd-svs state.highstate
 
 sd-whonix: prep-salt ## Provisions SD Whonix VM
 	sudo qubesctl top.enable sd-whonix
 	sudo qubesctl top.enable sd-whonix-hidserv-key
+	sudo qubesctl --targets sd-whonix-template state.highstate
 	sudo qubesctl --targets sd-whonix state.highstate
 
 sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 	sudo qubesctl top.enable sd-svs-disp
+	sudo qubesctl top.enable sd-svs-disp-files
+	sudo qubesctl --targets sd-svs-disp-template state.highstate
 	sudo qubesctl --targets sd-svs-disp state.highstate
 
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
@@ -70,8 +81,7 @@ remove-sd-svs: assert-dom0 ## Destroys SD SVS VM
 remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
 	@./scripts/destroy-vm sd-gpg
 
-clean: assert-dom0 remove-sd-gpg remove-sd-svs remove-sd-journalist \
-	remove-sd-svs-disp remove-sd-whonix clean-salt ## Destroys all SD VMs
+clean: assert-dom0 destroy-all clean-salt ## Destroys all SD VMs
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python -m unittest discover tests

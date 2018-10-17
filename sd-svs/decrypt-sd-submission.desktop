@@ -2,4 +2,4 @@
 Type=Application
 MimeType=application/x-sd-xfer
 Name=Decrypt SD Submission
-Exec=/usr/local/bin/decrypt-sd-submission
+Exec=/usr/bin/decrypt-sd-submission

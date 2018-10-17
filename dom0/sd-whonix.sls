@@ -17,11 +17,21 @@ include:
 qvm-run -a whonix-gw-14 "sudo apt-get install -qq python-futures":
   cmd.run
 
+sd-whonix-template:
+  qvm.vm:
+    - name: sd-whonix-template
+    - clone:
+      - source: whonix-gw-14
+      - label: purple
+    - require:
+      - pkg: qubes-template-whonix-gw-14
+      - qvm: sys-firewall
+
 sd-whonix:
   qvm.vm:
     - name: sd-whonix
     - present:
-      - template: whonix-gw-14
+      - template: sd-whonix-template
       - label: purple
       - mem: 500
     - prefs:

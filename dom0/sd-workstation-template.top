@@ -3,5 +3,4 @@
 
 base:
   dom0:
-    - sd-journalist-template
-    - sd-journalist
+    - sd-workstation-template
