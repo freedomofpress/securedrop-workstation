@@ -86,3 +86,15 @@ install-securedrop-proxy-package:
       - securedrop-proxy
   require:
     - sls: fpf-apt-test-repo
+
+{% import_json "sd/config.json" as d %}
+
+install-securedrop-proxy-yaml-config:
+  file.append:
+    - name: /etc/sd-proxy.yaml
+    - text: |
+        host: {{ d.hidserv.hostname }}
+        scheme: http
+        port: 80
+        target_vm: sd-svs
+        dev: False
