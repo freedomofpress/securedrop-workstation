@@ -47,3 +47,8 @@ make install-deps
 # Build it!
 make qubes-vm
 make template
+
+# Report location of RPM package
+rpm_location="$(sudo find -type f -name 'qubes-template-securedrop-workstation*.rpm')"
+echo "Build finished. RPM package available at:"
+echo "$rpm_location"
