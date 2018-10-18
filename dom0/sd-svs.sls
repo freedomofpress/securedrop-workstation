@@ -43,6 +43,6 @@ sd-svs-dom0-qubes.qubesGpg:
 sd-svs-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start sd-svs-template &&
+        qvm-start --skip-if-running sd-svs-template &&
         qvm-sync-appmenus sd-svs-template &&
         qvm-shutdown sd-svs-template

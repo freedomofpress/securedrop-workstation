@@ -29,6 +29,6 @@ sd-journalist-template:
 sd-journalist-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start sd-journalist-template &&
+        qvm-start --skip-if-running sd-journalist-template &&
         qvm-sync-appmenus sd-journalist-template &&
         qvm-shutdown sd-journalist-template
