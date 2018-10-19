@@ -62,6 +62,16 @@ class SD_VM_Local_Test(unittest.TestCase):
                                             "/bin/cat {}".format(path)])
         return contents
 
+    def _package_is_installed(self, pkg):
+        """
+        Confirms that a given package is installed inside the VM.
+        """
+        # dpkg --verify will exit non-zero for a non-installed pkg,
+        # and dom0 will percolate that error code
+        subprocess.check_call(["qvm-run", "-a", "-q", self.vm_name,
+                               "dpkg --verify {}".format(pkg)])
+        return True
+
     def assertFilesMatch(self, remote_path, local_path):
         remote_content = self._get_file_contents(remote_path)
 

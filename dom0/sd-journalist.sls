@@ -54,3 +54,17 @@ sd-journalist-dom0-qubes.OpenInVM-disp:
   file.prepend:
     - name: /etc/qubes-rpc/policy/qubes.OpenInVM
     - text: "sd-journalist sd-svs allow\n"
+
+# Permit the SecureDrop Proxy to manage Client connections
+sd-journalist-dom0-securedrop.Proxy:
+  file.prepend:
+    - name: /etc/qubes-rpc/policy/securedrop.Proxy
+    - text: |
+        sd-svs sd-journalist allow
+        $anyvm $anyvm deny
+
+# Permit the SecureDrop Proxy to copy files to Client.
+sd-journalist-dom0-qubes.Filecopy:
+  file.prepend:
+    - name: /etc/qubes-rpc/policy/qubes.Filecopy
+    - text: "sd-journalist sd-svs allow\n"

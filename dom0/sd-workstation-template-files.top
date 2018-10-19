@@ -3,4 +3,5 @@
 
 base:
   sd-workstation-template:
+    - fpf-apt-test-repo
     - sd-workstation-template-files

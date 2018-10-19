@@ -5,4 +5,5 @@ base:
   sd-journalist:
     - sd-journalist-files
   sd-journalist-template:
+    - fpf-apt-test-repo
     - sd-journalist-template-files
