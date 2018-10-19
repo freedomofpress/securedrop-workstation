@@ -16,5 +16,6 @@ sd-workstation-template:
     - clone:
       - source: debian-9
       - label: yellow
-
-
+    - prefs:
+      - virt-mode: hvm
+      - kernel: ''
