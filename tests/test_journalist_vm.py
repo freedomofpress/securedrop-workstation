@@ -28,6 +28,9 @@ class SD_Journalist_Tests(SD_VM_Local_Test):
         self.assertFilesMatch("/usr/bin/sd-process-display",
                               "sd-journalist/sd-process-display")
 
+    def test_sd_proxy_package_installed(self):
+        self.assertTrue(self._package_is_installed("securedrop-proxy"))
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Journalist_Tests)

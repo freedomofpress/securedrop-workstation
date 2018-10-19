@@ -77,3 +77,12 @@
 
 sudo update-desktop-database /usr/share/applications:
   cmd.run
+
+# Depends on FPF-controlled apt repo, already present
+# in underlying "securedrop-workstation" base template.
+install-securedrop-proxy-package:
+  pkg.installed:
+    - pkgs:
+      - securedrop-proxy
+  require:
+    - sls: fpf-apt-test-repo
