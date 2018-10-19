@@ -1,0 +1,39 @@
+#!/bin/bash
+# Utility for dom- to ensure all updates are regularly installed
+set -e
+set -u
+
+# Number of VMs to update in parallel. Default is 4,
+# which can be memory-intensive.
+SECUREDROP_MAX_CONCURRENCY=2
+
+
+# Ensure elevated privileges
+if [[ "$EUID" -ne 0 ]]; then
+    echo "Script must be run as root! Exiting..."
+    exit 1
+fi
+
+# Display GUI feedback about update process
+function securedrop-update-feedback() {
+    # Unpack msg as arg1
+    local msg="$1"
+    shift
+
+    # Running `notify-send` as root doesn't work, must be normal user.
+    # Setting 30s expire time (in ms) since it's a long-running cmd.
+    su user -c "notify-send \
+        --icon /usr/share/securedrop/icons/sd-logo.png \
+        --expire-time 30000 \
+        '$msg'"
+}
+
+securedrop-update-feedback "SecureDrop: Updating dom0 configuration..."
+sudo qubes-dom0-update -y
+
+securedrop-update-feedback "SecureDrop: Updating application..."
+qubesctl --templates \
+    --max-concurrency "$SECUREDROP_MAX_CONCURRENCY" \
+    pkg.upgrade refresh=true
+
+securedrop-update-feedback "SecureDrop: All updates complete!"
