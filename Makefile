@@ -8,13 +8,12 @@ endif
 
 ## Builds and provisions all VMs required for testing workstation
 all: assert-dom0 validate clean update-fedora-templates			\
-	update-whonix-templates prep-whonix sd-workstation-template \
+	update-whonix-templates prep-whonix prep-dom0 sd-workstation-template \
 	sd-whonix sd-svs sd-gpg	\
 	sd-journalist sd-svs-disp
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
-
 
 sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
 	sudo qubesctl top.enable sd-workstation-template
@@ -127,6 +126,11 @@ template: ## Builds securedrop-workstation Qube template RPM
 prep-whonix: ## enables apparmor on whonix-ws-14 and whonix-gw-14
 	qvm-prefs -s whonix-gw-14 kernelopts "nopat apparmor=1 security=apparmor"
 	qvm-prefs -s whonix-ws-14 kernelopts "nopat apparmor=1 security=apparmor"
+
+prep-dom0: prep-salt # Copies dom0 config files for VM updates
+	sudo qubesctl top.enable sd-vm-updates
+	sudo qubesctl top.enable sd-dom0-files
+	sudo qubesctl --targets dom0 state.highstate
 
 list-vms: ## Prints all Qubes VMs managed by Workstation salt config
 	@./scripts/list-vms
