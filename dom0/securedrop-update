@@ -21,26 +21,34 @@ function securedrop-update-feedback() {
     shift
 
     # Running `notify-send` as root doesn't work, must be normal user.
-    # Setting 30s expire time (in ms) since it's a long-running cmd.
-    su user -c "notify-send \
+    # Setting 60s expire time (in ms) since it's a long-running cmd.
+    local qubes_user
+    qubes_user="$(id -nu 1000)"
+    su "$qubes_user" -c "notify-send \
+        --app-name 'SecureDrop Workstation' \
         --icon /usr/share/securedrop/icons/sd-logo.png \
-        --expire-time 30000 \
-        '$msg'"
+        --expire-time 60000 \
+        'SecureDrop: $msg'"
 }
 
 # `qubesctl pkg.upgrade` will automatically update dom0 packages, as well,
 # but we *first* want the freshest RPMs from dom0, *then* we'll want to
 # update the VMs themselves.
-securedrop-update-feedback "SecureDrop: Updating dom0 configuration..."
-sudo qubes-dom0-update -y
 
-securedrop-update-feedback "SecureDrop: Updating application..."
-qubesctl --templates \
+securedrop-update-feedback "Updating application..."
+qubesctl \
     --max-concurrency "$SECUREDROP_MAX_CONCURRENCY" \
     pkg.upgrade refresh=true
+
+securedrop-update-feedback "Updating VM configuration..."
+qubesctl \
+    --max-concurrency "$SECUREDROP_MAX_CONCURRENCY" \
+    state.highstate
 
 # Here would be a good place for state.highstate, to re-apply the VM configs.
 # Let's first make sure the package upgrade logic is stable, we can circle
 # back to enforce the Salt configs regularly.
 
-securedrop-update-feedback "SecureDrop: All updates complete!"
+securedrop-update-feedback \
+    "Updates installed. Please reboot the workstation \
+to ensure the latest security fixes are applied."
