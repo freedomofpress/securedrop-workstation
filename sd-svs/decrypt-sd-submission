@@ -37,7 +37,7 @@ try:
         # given a malicious tarball
         tar.extractall(tmpdir)
 
-except Exception as e:
+except Exception:
     send_progress("DECRYPTION_BUNDLE_OPEN_FAILURE")
     # although we're exiting with failure, we return a
     # 0 exit code so xdg does not try to re-open this file with
@@ -139,7 +139,7 @@ try:
     print(os.path.join(tmpdir, "extracted"))
     distutils.dir_util.copy_tree(os.path.join(tmpdir, "extracted"),
                                  "/home/user/Sources/", update=1)
-except Exception as e:
+except Exception:
     send_progress("DECRYPTED_BUNDLE_COPY_FAILURE")
     shutil.rmtree(tmpdir)
     sys.exit(0)

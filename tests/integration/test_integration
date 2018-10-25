@@ -142,13 +142,13 @@ def run_q(n):
 
 if run_q("full-success"):
     receiver.expected_states = [
-            "DECRYPTION_PROCESS_START",
-            "SUBMISSION_BUNDLE_UNBUNDLED",
-            "SUBMISSION_FILES_EXTRACTED",
-            "SUBMISSION_FILE_DECRYPTION_SUCCEEDED",
-            "SUBMISSION_FILE_DECRYPTION_SUCCEEDED",
-            "DECRYPTED_BUNDLE_ON_SVS",
-            "DECRYPTED_FILES_AVAILABLE",
+        "DECRYPTION_PROCESS_START",
+        "SUBMISSION_BUNDLE_UNBUNDLED",
+        "SUBMISSION_FILES_EXTRACTED",
+        "SUBMISSION_FILE_DECRYPTION_SUCCEEDED",
+        "SUBMISSION_FILE_DECRYPTION_SUCCEEDED",
+        "DECRYPTED_BUNDLE_ON_SVS",
+        "DECRYPTED_FILES_AVAILABLE",
     ]
     receiver.cmd = ["qvm-open-in-vm", "sd-svs", "./all.sd-xfer"]
     receiver.test_name = "full successful open"
@@ -156,8 +156,8 @@ if run_q("full-success"):
 
 if run_q("empty-download"):
     receiver.expected_states = [
-            "DECRYPTION_PROCESS_START",
-            "DECRYPTION_BUNDLE_OPEN_FAILURE",
+        "DECRYPTION_PROCESS_START",
+        "DECRYPTION_BUNDLE_OPEN_FAILURE",
     ]
     receiver.cmd = ["qvm-open-in-vm", "sd-svs", "./empty.sd-xfer"]
     receiver.test_name = "empty sd-xfer"
@@ -165,12 +165,12 @@ if run_q("empty-download"):
 
 if run_q("bad-gpg-key"):
     receiver.expected_states = [
-            "DECRYPTION_PROCESS_START",
-            "SUBMISSION_BUNDLE_UNBUNDLED",
-            "SUBMISSION_FILES_EXTRACTED",
-            "SUBMISSION_FILE_DECRYPTION_FAILED",
-            "SUBMISSION_FILE_DECRYPTION_FAILED",
-            "SUBMISSION_FILE_NO_FILES_FOUND",
+        "DECRYPTION_PROCESS_START",
+        "SUBMISSION_BUNDLE_UNBUNDLED",
+        "SUBMISSION_FILES_EXTRACTED",
+        "SUBMISSION_FILE_DECRYPTION_FAILED",
+        "SUBMISSION_FILE_DECRYPTION_FAILED",
+        "SUBMISSION_FILE_NO_FILES_FOUND",
     ]
     receiver.cmd = ["qvm-open-in-vm", "sd-svs", "./bad-key.sd-xfer"]
     receiver.test_name = "bad encryption key"

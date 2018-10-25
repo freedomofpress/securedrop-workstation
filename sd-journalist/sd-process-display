@@ -1,7 +1,7 @@
 import sys
 import PyQt4.QtCore as QtCore
 from PyQt4.QtGui import QDialog, QDialogButtonBox, QApplication, \
-         QLabel, QVBoxLayout, QImage, QPixmap
+    QLabel, QVBoxLayout, QImage, QPixmap
 from PyQt4.QtCore import Qt
 import os
 import threading
