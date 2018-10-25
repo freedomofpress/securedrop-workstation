@@ -34,9 +34,11 @@ function securedrop-update-feedback() {
 # `qubesctl pkg.upgrade` will automatically update dom0 packages, as well,
 # but we *first* want the freshest RPMs from dom0, *then* we'll want to
 # update the VMs themselves.
+securedrop-update-feedback "SecureDrop: Updating dom0 configuration..."
+sudo qubes-dom0-update -y
 
 securedrop-update-feedback "Updating application..."
-qubesctl \
+qubesctl --templates \
     --max-concurrency "$SECUREDROP_MAX_CONCURRENCY" \
     pkg.upgrade refresh=true
 
@@ -44,10 +46,6 @@ securedrop-update-feedback "Updating VM configuration..."
 qubesctl \
     --max-concurrency "$SECUREDROP_MAX_CONCURRENCY" \
     state.highstate
-
-# Here would be a good place for state.highstate, to re-apply the VM configs.
-# Let's first make sure the package upgrade logic is stable, we can circle
-# back to enforce the Salt configs regularly.
 
 securedrop-update-feedback \
     "Updates installed. Please reboot the workstation \
