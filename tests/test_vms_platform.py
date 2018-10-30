@@ -38,6 +38,27 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         platform = self._get_platform_info(vm)
         self.assertIn(platform, SUPPORTED_PLATFORMS)
 
+    def _ensure_packages_up_to_date(self, vm):
+        """
+        Asserts that all available apt packages are installed; no pending
+        updates.
+        """
+        cmd = "apt list --upgradable"
+        stdout, stderr = vm.run(cmd)
+        results = stdout.rstrip()
+        # `apt list` will always print "Listing..." to stdout,
+        # so expect only that string.
+        self.assertEqual(results, "Listing...")
+
+    def test_all_sd_vms_uptodate(self):
+        """
+        Asserts that all VMs have all available apt packages at the latest
+        versions, with no updates pending.
+        """
+        for vm_name in WANTED_VMS:
+            vm = self.app.domains[vm_name]
+            self._ensure_packages_up_to_date(vm)
+
     def test_sd_journalist_template(self):
         """
         Asserts that the 'sd-journalist' VM is using a supported base OS.
