@@ -34,7 +34,7 @@ function securedrop-update-feedback() {
 # `qubesctl pkg.upgrade` will automatically update dom0 packages, as well,
 # but we *first* want the freshest RPMs from dom0, *then* we'll want to
 # update the VMs themselves.
-securedrop-update-feedback "SecureDrop: Updating dom0 configuration..."
+securedrop-update-feedback "Updating dom0 configuration..."
 sudo qubes-dom0-update -y
 
 securedrop-update-feedback "Updating application..."
