@@ -38,9 +38,9 @@ securedrop-update-feedback "Updating dom0 configuration..."
 sudo qubes-dom0-update -y
 
 securedrop-update-feedback "Updating application..."
-qubesctl --templates \
+qubesctl --skip-dom0 --templates \
     --max-concurrency "$SECUREDROP_MAX_CONCURRENCY" \
-    pkg.upgrade refresh=true
+    pkg.upgrade refresh=true dist_upgrade=true
 
 securedrop-update-feedback "Updating VM configuration..."
 qubesctl \
