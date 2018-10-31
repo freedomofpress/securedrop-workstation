@@ -10,28 +10,28 @@ class SD_SVS_Tests(SD_VM_Local_Test):
 
     def test_decrypt_sd_submission(self):
         self.assertFilesMatch(
-          "/usr/bin/decrypt-sd-submission",
-          "sd-svs/decrypt-sd-submission")
+            "/usr/bin/decrypt-sd-submission",
+            "sd-svs/decrypt-sd-submission")
 
     def test_decrypt_sd_submission_desktop(self):
         self.assertFilesMatch(
-          "/usr/share/applications/decrypt-sd-submission.desktop",
-          "sd-svs/decrypt-sd-submission.desktop")
+            "/usr/share/applications/decrypt-sd-submission.desktop",
+            "sd-svs/decrypt-sd-submission.desktop")
 
     def test_decrypt_sd_user_profile(self):
         self.assertFilesMatch(
-          "/etc/profile.d/sd-svs-qubes-gpg-domain.sh",
-          "sd-svs/dot-profile")
+            "/etc/profile.d/sd-svs-qubes-gpg-domain.sh",
+            "sd-svs/dot-profile")
 
     def test_open_in_dvm_desktop(self):
         self.assertFilesMatch(
-          "/usr/share/applications/open-in-dvm.desktop",
-          "sd-svs/open-in-dvm.desktop")
+            "/usr/share/applications/open-in-dvm.desktop",
+            "sd-svs/open-in-dvm.desktop")
 
     def test_mimeapps(self):
         self.assertFilesMatch(
-          "/usr/share/applications/mimeapps.list",
-          "sd-svs/mimeapps.list")
+            "/usr/share/applications/mimeapps.list",
+            "sd-svs/mimeapps.list")
 
 
 def load_tests(loader, tests, pattern):
