@@ -48,22 +48,26 @@ Next we need to do some SecureDrop-specific configuration:
 
 - edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK.
 - Replace the `sd-journalist.sec` file in the root directory with the GPG private key used to encrypt submissions in your test SecureDrop instance. The included key is the one used by default in the SecureDrop staging instance.
-- Edit `Makefile` and replace `DEVVM` and `DEVDIR` to reflect the VM and directory to which you've cloned this repo. Note that `DEVDIR` must not include a trailing slash.
 
 Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM. That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`:
 
     qvm-run --pass-io work 'tar -c -C /home/user/projects securedrop-workstation' | tar xvf -
 
-After that initial manual step, the code in your development VM may be copied into place on `dom0` by running `make clone` from the root of the project on `dom0`.
+After that initial manual step, the code in your development VM may be copied into place on `dom0` by setting the `SECUREDROP_DEV_VM` and `SECUREDROP_DEV_DIR` environmental variables to reflect the VM and directory to which you've cloned this repo, and running `make clone` from the root of the project on `dom0`:
+
+```
+export SECUREDROP_DEV_DIR=sd-dev    # set to your dev VM
+export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory 
+make clone
+```
 
 #### Building
 
 Once the configuration is done and this directory is copied to `dom0`, you must update existing Qubes templates and use `make` to handle all provisioning and configuration by your unprivileged user:
 
-    $ make update-fedora-templates
-    $ make update-whonix-templates
-    $ cd securedrop-workstation
-    $ make all
+```
+make all
+```
 
 The build process takes quite a while. You will be presented with a dialogue asking how to connect to Tor: you should be able to select the default option and continue.
 
@@ -77,7 +81,7 @@ When the installation process completes, a number of new VMs will be available o
 
 From the "Q" menu, open Tor Browser in the `sd-journalist` machine. Visit the journalist interface of your development SecureDrop instance.
 
-Once you've logged in, select a number of submissions to download (a bug causes processing single-submission downloads to fail). Tor Browser will present a dialogue to save the download or open with `sd-process-download`. Select the latter option.
+Once you've logged in, select submissions to download. Tor Browser will present a dialogue to save the download or open with `sd-process-download`. Select the latter option.
 
 That download kicks off a series of steps (described below) which will eventually leave decrypted files in the `~/Sources` directory in `sd-svs`. Double-clicking any of those files will open the file in a disposable VM. Part of the processing involves using GPG to decrypt the submissions. Qubes will present a dialog asking if that's OK. Click "Allow".
 
