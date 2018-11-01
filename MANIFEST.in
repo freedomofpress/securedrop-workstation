@@ -1,8 +1,11 @@
 include dom0/*.sls
 include dom0/*.top
+include dom0/securedrop-update
 include config.json.sample
 include README.md
 include LICENSE
+include Makefile
 include sd-svs/*
 include sd-journalist/*
 include sd-workstation/*
+include scripts/*
