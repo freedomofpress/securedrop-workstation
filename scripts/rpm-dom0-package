@@ -1,0 +1,48 @@
+#!/bin/bash
+#
+#
+# Builds RPM for dom0 bootstrap logic
+# $1 - Version of base docker container to use
+
+set -u
+set -e
+
+export TAG="${1}"
+export LOCAL_IMG="fpf.local/rpmbuilder:${1}"
+export ROOT_DIR="$(git rev-parse --show-toplevel)"
+export USER_RPMDIR="/home/user/rpmbuild"
+
+
+function build_local_base {
+    # Build a local revision of quay.io/freedomofpress/rpmbuilder. Needed to pass UIDs without
+    # doing privilege escalation hoops at run-time
+    docker build --build-arg="RPM_VER=${TAG}" \
+                 --build-arg=USERID="$(id -u)" \
+                 -t "${LOCAL_IMG}" \
+                 -f scripts/rpmbuilder.Dockerfile scripts/ 2>&1 1> /dev/null
+}
+
+function docker_cmd_wrapper() {
+    mkdir -p "${ROOT_DIR}/dist" || true
+
+    docker run -it --rm \
+               -v "${ROOT_DIR}:/sd" \
+               -v "${ROOT_DIR}/rpm_spec:${USER_RPMDIR}/SPECS" \
+               -v "${ROOT_DIR}/dist:${USER_RPMDIR}/SOURCES" \
+               -v "${ROOT_DIR}/artifacts/RPMBUILD:${USER_RPMDIR}/BUILD" \
+               -v "${ROOT_DIR}/artifacts/RPMBUILDROOT:${USER_RPMDIR}/BUILDROOT" \
+               -v "${ROOT_DIR}/artifacts/SRPMS:${USER_RPMDIR}/SRPMS" \
+               -v "${ROOT_DIR}/artifacts/RPMS:${USER_RPMDIR}/RPMS" \
+               -it "${LOCAL_IMG}" \
+               $@
+}
+
+
+
+build_local_base
+
+docker_cmd_wrapper /usr/bin/python3 setup.py sdist
+
+docker_cmd_wrapper rpmbuild -ba "${USER_RPMDIR}/SPECS/securedrop-workstation.spec"
+
+printf "\n\nRPM Artifacts available in ./artifacts RPMS and SRPMS sub-directories\n"

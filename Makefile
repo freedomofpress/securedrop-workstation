@@ -1,4 +1,5 @@
 HOST=$(shell hostname)
+RPM_BUILD_VER=0.6.0.1-1.fc25
 
 assert-dom0: ## Confirms command is being run under dom0
 ifneq ($(HOST),dom0)
@@ -11,6 +12,9 @@ all: assert-dom0 validate clean update-fedora-templates			\
 	update-whonix-templates prep-whonix prep-dom0 sd-workstation-template \
 	sd-whonix sd-svs sd-gpg	\
 	sd-journalist sd-svs-disp
+
+build-dom0-rpm: ## Builds rpm package to be installed on dom0
+	@./scripts/rpm-dom0-package "${RPM_BUILD_VER}"
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0

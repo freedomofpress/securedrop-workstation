@@ -197,6 +197,17 @@ apt install lintian
 make test
 ```
 
+## Building workstation rpm packages
+
+```
+make build-dom0-rpm
+```
+
+This uses a base docker image as defined in https://github.com/freedomofpress/containers/.
+If you need to bump versions of the rpmbuild tooling, make an update to that
+repo's metadata, and increment the version as defined in the `Makefile`. See the
+`RPM_BUILD_VER` variable.
+
 ## Threat model
 
 This section outlines the threat model for the SecureDrop workstation, and should complement [SecureDrop's threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html). This document is always a work in progress, if you have any questions or comments, please open an issue on [GitHub](https://github.com/freedomofpress/securedrop-workstation) or send an email to [securedrop@freedom.press](mailto:securedrop@freedom.press).
