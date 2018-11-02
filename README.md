@@ -338,6 +338,18 @@ pipenv shell
 apt install lintian
 make test
 ```
+
+## Building workstation rpm packages
+
+```
+make build-dom0-rpm
+```
+
+This uses a base docker image as defined in https://github.com/freedomofpress/containers/.
+If you need to bump versions of the rpmbuild tooling, make an update to that
+repo's metadata, and increment the version as defined in the `Makefile`. See the
+`RPM_BUILD_VER` variable.
+
 ## Signing sources
 
 SecureDrop Workstation code spans across the following repositories:

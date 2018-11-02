@@ -114,3 +114,4 @@ builder/packages/securedrop-workstation-grsec/debian/files
 # rpm package build artifacts
 *.rpm
 rpm-repo/
+artifacts/RPM*
