@@ -8,9 +8,15 @@ jobs:
       - run: sudo apt-get update
       - run: sudo apt-get install -qq make
       - run: make flake8
+  buildrpm:
+    machine: true
+    steps:
+      - checkout
+      - run: make build-dom0-rpm
 
 workflows:
   version: 2
   securedrop_workstation_ci:
     jobs:
       - lint
+      - buildrpm
