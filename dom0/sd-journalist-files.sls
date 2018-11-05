@@ -9,11 +9,15 @@
 #
 ##
 
-mkfifo /home/user/sdfifo:
-  cmd.run
-
-chmod 666 /home/user/sdfifo:
-  cmd.run
+sd-journalist-create-feedback-pipe:
+  file.mknod:
+    - name: /home/user/sdfifo
+    - ntype: p
+    - user: user
+    - group: user
+    - mode: 666
+  require:
+    - cmd: sd-journalist-install-python-futures
 
 /home/user/.config/mimeapps.list:
   file.managed:
@@ -22,3 +26,12 @@ chmod 666 /home/user/sdfifo:
     - group: user
     - mode: 644
     - makedirs: True
+  require:
+    - cmd: sd-journalist-install-python-futures
+
+sd-journalist-install-python-qt4:
+  pkg.installed:
+    - pkgs:
+        - python-qt4
+  require:
+    - cmd: sd-journalist-install-python-futures

@@ -25,6 +25,7 @@ sd-journalist:
       - pkg: qubes-template-whonix-ws-14
       - qvm: sd-whonix
       - qvm: sd-journalist-template
+      - cmd: sd-journalist-install-python-futures
 
 /etc/qubes-rpc/policy/sd-process.Feedback:
   file.managed:
@@ -38,9 +39,13 @@ sd-journalist:
 #   * python-futures required bootstrap Salt support
 #   * python-qt4 required for sd-process-feedback GUI integration
 #
-install python-qt4 and python-futures:
+sd-journalist-install-python-futures:
   cmd.run:
-    - name: qvm-run -a whonix-ws-14 'sudo apt-get update && sudo apt-get install -qq python-futures python-qt4'
+    - name: >
+        qvm-run -a whonix-ws-14
+        "python -c 'import concurrent.futures' ||
+        { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
+        qvm-shutdown --wait whonix-ws-14
 
 # When our Qubes bug is fixed, this will *not* be used
 sd-journalist-dom0-qubes.OpenInVM:
