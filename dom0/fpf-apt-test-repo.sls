@@ -15,4 +15,4 @@ configure apt-test apt repo:
     - file: /etc/apt/sources.list.d/fpf-apt-test.list
     - key_url: "salt://sd/sd-workstation/apt-test-pubkey.asc"
   require:
-    - install-python-apt-for-repo-config
+    - pkg: install-python-apt-for-repo-config
