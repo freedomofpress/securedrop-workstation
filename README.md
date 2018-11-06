@@ -335,16 +335,16 @@ make test
 
 SecureDrop Workstation code spans across the following repositories:
 
-https://github.com/freedomofpress/securedrop-client
-https://github.com/freedomofpress/securedrop-debian-packaging
-https://github.com/freedomofpress/securedrop-proxy
-https://github.com/freedomofpress/securedrop-sdk
-https://github.com/freedomofpress/securedrop-workstation
-https://github.com/freedomofpress/qubes-template-securedrop-workstation
+* https://github.com/freedomofpress/securedrop-client
+* https://github.com/freedomofpress/securedrop-debian-packaging
+* https://github.com/freedomofpress/securedrop-proxy
+* https://github.com/freedomofpress/securedrop-sdk
+* https://github.com/freedomofpress/securedrop-workstation
+* https://github.com/freedomofpress/qubes-template-securedrop-workstation
 
 
 ### Release
-1. For each release, a tag will be signed in all the above repos.
+1. For each release, a tag for each release will be signed and pushed to each of the above repos.
 
 2. Create a Makefile target in securedrop-debian-packaging repo that contains release tags / commit hashes for each repository used for the release. To verify the tag signature and check out the packaging logic:
 ```
@@ -360,19 +360,19 @@ git checkout <tag>
 Apt repository Release file will be signed, containing checksum of the debs.
 
 #### Rpms
-The entire RPM must be signed. This process also requires a Fedora machine/VM on which the GPG signing key (either in GPG keyring or in qubes-split-gpg) is setup.
+The entire RPM must be signed. This process also requires a Fedora machine/VM on which the GPG signing key (either in GPG keyring or in qubes-split-gpg) is setup. You will need to add the public key to RPM for verification (see below).
 
 `rpm -Kv` indicates if digests and sigs are OK. Before signature it should not return signature, and `rpm -qi <file>.rpm` will indicate an empty Signature field.
 
 Set up environment:
-`sudo dnf install rpm-build /usr/bin/rpmsign`
+`sudo dnf install rpm-build rpm-sign`
 Set your vault vm in /rw/config/gpg-split-domain
 Edit ~/.rpmmacros with the following contents:
 ```
 %_signature gpg
 %_gpg_name <gpg_key_id>
 %__gpg /usr/bin/qubes-gpg-client-wrapper
-%__gpg_sign_cmd %{__gpg} qubes-gpg-client-wrapper --no-verbose --detach-sign %{__plaintext_filename} --output %{__signature_filename}
+%__gpg_sign_cmd %{__gpg} --no-verbose --detach-sign %{__plaintext_filename} --output %{__signature_filename}
 ```
 
 Sign the rpm:
@@ -380,7 +380,7 @@ Sign the rpm:
 Verify that the rpm is signed:
 `rpm -qi<file.rpm>` should now show that the file is signed
 `rpm -Kv` will complain that signature is not ok (`Digests SIGNATURES NOT OK`)
-This is because the rpm key needs to be added locally:
+This is because the the (public) key of the RPM signing key is not present and must be added to the RPM client config to verify the signature:
 `sudo rpm --import <publicKey>.asc`
 `rpm -Kv` will now say signatures are ok (`Digests signatures OK`)
 
