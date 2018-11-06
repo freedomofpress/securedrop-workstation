@@ -2,7 +2,7 @@
 #
 #
 # Builds RPM for dom0 bootstrap logic
-# $1 - Version of base docker container to use
+# $1 - Digest Hash of base docker container to use
 
 set -u
 set -e
@@ -16,7 +16,7 @@ export USER_RPMDIR="/home/user/rpmbuild"
 function build_local_base {
     # Build a local revision of quay.io/freedomofpress/rpmbuilder. Needed to pass UIDs without
     # doing privilege escalation hoops at run-time
-    docker build --build-arg="RPM_VER=${TAG}" \
+    docker build --build-arg="RPM_HASH=${TAG}" \
                  --build-arg=USERID="$(id -u)" \
                  -t "${LOCAL_IMG}" \
                  -f scripts/rpmbuilder.Dockerfile scripts/ 2>&1 1> /dev/null

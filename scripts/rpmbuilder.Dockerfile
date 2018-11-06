@@ -1,5 +1,5 @@
-ARG RPM_VER
-FROM quay.io/freedomofpress/rpmbuilder:${RPM_VER}
+ARG RPM_HASH
+FROM quay.io/freedomofpress/rpmbuilder@sha256:${RPM_HASH}
 
 LABEL MAINTAINER="Freedom of the Press Foundation"
 LABEL APP="Localized RPM builder"

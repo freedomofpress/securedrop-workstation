@@ -1,5 +1,6 @@
 HOST=$(shell hostname)
-RPM_BUILD_VER=0.6.0.1-1.fc25
+# maps to label 0.6.0.1-1.fc25
+RPM_BUILD_VER=957d2953870c72aec6d5faf3ce5a0666def3667de5dee0b94294905e2f065f38
 
 assert-dom0: ## Confirms command is being run under dom0
 ifneq ($(HOST),dom0)
