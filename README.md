@@ -69,7 +69,7 @@ Once the configuration is done and this directory is copied to `dom0`, you must 
 make all
 ```
 
-The build process takes quite a while. You will be presented with a dialogue asking how to connect to Tor: you should be able to select the default option and continue.
+The build process takes quite a while. You will be presented with a dialogue asking how to connect to Tor: you should be able to select the default option and continue. You may wish to increase the scrollback in the dom0 terminal from 1000 (the default) to 100000, to ensure you can review any errors in the verbose output.
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
 

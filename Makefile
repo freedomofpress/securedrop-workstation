@@ -23,36 +23,36 @@ clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
 	sudo qubesctl top.enable sd-workstation-template
 	sudo qubesctl top.enable sd-workstation-template-files
-	sudo qubesctl --targets sd-workstation-template state.highstate
+	sudo qubesctl --show-output --targets sd-workstation-template state.highstate
 
 sd-journalist: prep-salt ## Provisions SD Journalist VM
 	sudo qubesctl top.enable sd-journalist
 	sudo qubesctl top.enable sd-journalist-files
-	sudo qubesctl --targets sd-journalist-template state.highstate
-	sudo qubesctl --targets sd-journalist state.highstate
+	sudo qubesctl --show-output --targets sd-journalist-template state.highstate
+	sudo qubesctl --show-output --targets sd-journalist state.highstate
 
 sd-gpg: prep-salt ## Provisions SD GPG keystore VM
 	sudo qubesctl top.enable sd-gpg
 	sudo qubesctl top.enable sd-gpg-files
-	sudo qubesctl --targets sd-gpg state.highstate
+	sudo qubesctl --show-output --targets sd-gpg state.highstate
 
 sd-svs: prep-salt ## Provisions SD SVS VM
 	sudo qubesctl top.enable sd-svs
 	sudo qubesctl top.enable sd-svs-files
-	sudo qubesctl --targets sd-svs-template state.highstate
-	sudo qubesctl --targets sd-svs state.highstate
+	sudo qubesctl --show-output --targets sd-svs-template state.highstate
+	sudo qubesctl --show-output --targets sd-svs state.highstate
 
 sd-whonix: prep-salt ## Provisions SD Whonix VM
 	sudo qubesctl top.enable sd-whonix
 	sudo qubesctl top.enable sd-whonix-hidserv-key
-	sudo qubesctl --targets sd-whonix-template state.highstate
-	sudo qubesctl --targets sd-whonix state.highstate
+	sudo qubesctl --show-output --targets sd-whonix-template state.highstate
+	sudo qubesctl --show-output --targets sd-whonix state.highstate
 
 sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 	sudo qubesctl top.enable sd-svs-disp
 	sudo qubesctl top.enable sd-svs-disp-files
-	sudo qubesctl --targets sd-svs-disp-template state.highstate
-	sudo qubesctl --targets sd-svs-disp state.highstate
+	sudo qubesctl --show-output --targets sd-svs-disp-template state.highstate
+	sudo qubesctl --show-output --targets sd-svs-disp state.highstate
 
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
 	@echo "Purging Salt config..."
@@ -135,7 +135,7 @@ prep-whonix: ## enables apparmor on whonix-ws-14 and whonix-gw-14
 prep-dom0: prep-salt # Copies dom0 config files for VM updates
 	sudo qubesctl top.enable sd-vm-updates
 	sudo qubesctl top.enable sd-dom0-files
-	sudo qubesctl --targets dom0 state.highstate
+	sudo qubesctl --show-output --targets dom0 state.highstate
 
 list-vms: ## Prints all Qubes VMs managed by Workstation salt config
 	@./scripts/list-vms
