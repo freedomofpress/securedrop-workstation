@@ -11,12 +11,8 @@
 # This VM has no network configured.
 ##
 
-sd-svs-disp-template:
-  qvm.vm:
-    - name: sd-svs-disp-template
-    - clone:
-      - source: sd-workstation-template
-      - label: green
+include:
+  - sd-svs-disp-template
 
 sd-svs-disp:
   qvm.vm:
@@ -43,3 +39,11 @@ sd-svs-disp-dom0-qubes.OpenInVM:
   file.prepend:
     - name: /etc/qubes-rpc/policy/qubes.OpenInVM
     - text: "$tag:sd-svs-disp-vm sd-svs allow\n"
+
+ # Installs the securedrop-workstation-svs-disp package that will download all
+install nautilus in sd-svs:
+  pkg.installed:
+    - pkgs:
+      # Nautilus necessary for manual file browsing, remove when
+      # the securedrop-client code package is installed
+      - nautilus
