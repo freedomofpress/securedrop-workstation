@@ -27,7 +27,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         # let's maintain the default config and retrieve the value elsewise.
         cmd = "perl -nE '/^PRETTY_NAME=\"(.*)\"$/ and say $1' /etc/os-release"
         stdout, stderr = vm.run(cmd)
-        platform = stdout.rstrip("\n")
+        platform = stdout.decode("utf-8").rstrip("\n")
         return platform
 
     def _validate_vm_platform(self, vm):
@@ -47,7 +47,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         if not fedora:
             cmd = "apt list --upgradable"
             stdout, stderr = vm.run(cmd)
-            results = stdout.rstrip()
+            results = stdout.rstrip().decode("utf-8")
             # `apt list` will always print "Listing..." to stdout,
             # so expect only that string.
             self.assertEqual(results, "Listing...")
@@ -56,7 +56,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             # Will raise CalledProcessError if updates available
             stdout, stderr = vm.run(cmd)
             # 'stdout' will contain timestamped progress info; ignore it
-            results = stderr.rstrip()
+            results = stderr.rstrip().decode("utf-8")
             self.assertEqual(results, "")
 
     def test_all_sd_vms_uptodate(self):
@@ -112,7 +112,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         test because DispVMs may not be running at present.
         """
         cmd = ["qubes-prefs", "default_dispvm"]
-        result = subprocess.check_output(cmd).rstrip("\n")
+        result = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
         self.assertEqual(result, "fedora-28-dvm")
 
 
