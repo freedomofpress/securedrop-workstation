@@ -28,9 +28,8 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.kernel == "")
 
         # Check exact kernel version in VM
-        raw_output = vm.run("uname -r")
-        # Response is a tuple of e.g. ('4.14.74-grsec\n', '')
-        kernel_version = raw_output[0].rstrip()
+        stdout, stderr = vm.run("uname -r")
+        kernel_version = stdout.decode("utf-8").rstrip()
         assert kernel_version.endswith("-grsec")
         assert kernel_version == EXPECTED_KERNEL_VERSION
 
