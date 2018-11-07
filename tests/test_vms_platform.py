@@ -38,17 +38,26 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         platform = self._get_platform_info(vm)
         self.assertIn(platform, SUPPORTED_PLATFORMS)
 
-    def _ensure_packages_up_to_date(self, vm):
+    def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
-        Asserts that all available apt packages are installed; no pending
-        updates.
+        Asserts that all available packages are installed; no pending
+        updates. Assumes VM is Debian-based, so uses apt, but supports
+        `fedora=True` to use dnf instead.
         """
-        cmd = "apt list --upgradable"
-        stdout, stderr = vm.run(cmd)
-        results = stdout.rstrip()
-        # `apt list` will always print "Listing..." to stdout,
-        # so expect only that string.
-        self.assertEqual(results, "Listing...")
+        if not fedora:
+            cmd = "apt list --upgradable"
+            stdout, stderr = vm.run(cmd)
+            results = stdout.rstrip()
+            # `apt list` will always print "Listing..." to stdout,
+            # so expect only that string.
+            self.assertEqual(results, "Listing...")
+        else:
+            cmd = "dnf check-update"
+            # Will raise CalledProcessError if updates available
+            stdout, stderr = vm.run(cmd)
+            # 'stdout' will contain timestamped progress info; ignore it
+            results = stderr.rstrip()
+            self.assertEqual(results, "")
 
     def test_all_sd_vms_uptodate(self):
         """
@@ -58,6 +67,19 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         for vm_name in WANTED_VMS:
             vm = self.app.domains[vm_name]
             self._ensure_packages_up_to_date(vm)
+
+    def test_all_fedora_vms_uptodate(self):
+        """
+        Asserts that all Fedora-based templates, such as sys-net, have all
+        available packages at the latest versions, with no updates pending.
+        """
+        # Technically we want to know whether the sys-firewall, sys-net, and
+        # sys-usb VMs have their updates installed. This test assumes those
+        # AppVMs are based on fedora-28.
+        vm_name = "fedora-28"
+        vm = self.app.domains[vm_name]
+        self._ensure_packages_up_to_date(vm, fedora=True)
+        vm.shutdown()
 
     def test_sd_journalist_template(self):
         """
