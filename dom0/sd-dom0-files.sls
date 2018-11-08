@@ -41,8 +41,5 @@ dom0-securedrop-icon:
     - user: root
     - group: root
     - mode: 644
-  # Dependency on parent dir should be explicitly declared,
-  # but the require syntax below was throwing an error that the
-  # referenced task was "not available".
-  # require:
-  #   - dom0-securedrop-icons-directory
+  require:
+    - file: dom0-securedrop-icons-directory
