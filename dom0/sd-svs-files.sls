@@ -37,3 +37,13 @@ sudo update-mime-database /usr/share/mime:
 
 sudo update-desktop-database /usr/share/applications:
   cmd.run
+
+# FPF repo is setup in "securedrop-workstation" template
+install-securedrop-client-package:
+  pkg.installed:
+    - pkgs:
+      - python3-pyqt5
+      - python3-pyqt5.svg
+      - securedrop-client
+  require:
+    - sls: fpf-apt-test-repo
