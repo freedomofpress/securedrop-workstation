@@ -43,7 +43,7 @@ install-securedrop-client-package:
   pkg.installed:
     - pkgs:
       - python3-pyqt5
-      - python3-pyqt5.svg
+      - python3-pyqt5.qtsvg
       - securedrop-client
   require:
     - sls: fpf-apt-test-repo
