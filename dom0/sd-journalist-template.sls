@@ -20,6 +20,9 @@ sd-journalist-template:
     - clone:
       - source: whonix-ws-14
       - label: blue
+    - tags:
+      - add:
+        - sd-workstation
   require:
     - pkg: qubes-template-whonix-ws-14
     - qvm: sd-whonix

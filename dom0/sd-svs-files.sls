@@ -60,10 +60,3 @@ sudo update-mime-database /usr/share/mime:
 
 sudo update-desktop-database /usr/share/applications:
   cmd.run
-
-install nautilus in sd-svs:
-  pkg.installed:
-    - pkgs:
-      # Nautilus necessary for manual file browsing, remove when
-      # the securedrop-client code package is installed
-      - nautilus

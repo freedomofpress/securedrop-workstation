@@ -41,6 +41,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template == "sd-whonix-template")
         self.assertTrue(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
+        self.assertTrue('sd-workstation' in vm.tags)
 
     def test_sd_journalist_config(self):
         vm = self.app.domains["sd-journalist"]
@@ -49,6 +50,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template == "sd-journalist-template")
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
+        self.assertTrue('sd-workstation' in vm.tags)
 
     def test_sd_svs_config(self):
         vm = self.app.domains["sd-svs"]
@@ -58,6 +60,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
+        self.assertTrue('sd-workstation' in vm.tags)
 
     def test_sd_svs_disp_config(self):
         vm = self.app.domains["sd-svs-disp"]
@@ -67,6 +70,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
         self._check_kernel(vm)
+        self.assertTrue('sd-workstation' in vm.tags)
 
     def test_sd_gpg_config(self):
         vm = self.app.domains["sd-gpg"]
@@ -77,12 +81,35 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
+        self.assertTrue('sd-workstation' in vm.tags)
 
     def test_sd_workstation_template(self):
         vm = self.app.domains["sd-workstation-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self._check_kernel(vm)
+        self.assertTrue('sd-workstation' in vm.tags)
+        self._check_kernel(vm)
+
+    def test_sd_journalist_template(self):
+        vm = self.app.domains["sd-journalist-template"]
+        nvm = vm.netvm
+        self.assertTrue(nvm is None)
+        self.assertTrue('sd-workstation' in vm.tags)
+
+    def sd_svs_template(self):
+        vm = self.app.domains["sd-svs-template"]
+        nvm = vm.netvm
+        self.assertTrue(nvm is None)
+        self.assertTrue('sd-workstation' in vm.tags)
+        self._check_kernel(vm)
+
+    def sd_svs_disp_template(self):
+        vm = self.app.domains["sd-svs-disp-template"]
+        nvm = vm.netvm
+        self.assertTrue(nvm is None)
+        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue(vm.template_for_dispvms)
 
 
 def load_tests(loader, tests, pattern):

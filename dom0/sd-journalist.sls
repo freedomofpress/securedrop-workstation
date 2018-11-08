@@ -21,6 +21,9 @@ sd-journalist:
       - label: blue
     - prefs:
       - netvm: sd-whonix
+    - tags:
+      - add:
+        - sd-workstation
     - require:
       - pkg: qubes-template-whonix-ws-14
       - qvm: sd-whonix
@@ -47,19 +50,6 @@ sd-journalist-install-python-futures:
         { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
         qvm-shutdown --wait whonix-ws-14
 
-# When our Qubes bug is fixed, this will *not* be used
-sd-journalist-dom0-qubes.OpenInVM:
-  file.prepend:
-    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
-    - text: "sd-journalist sd-decrypt allow\n"
-
-# Allow sd-journalist to open files in sd-decrypt-bsed dispVM's
-# When our Qubes bug is fixed, this will be used.
-sd-journalist-dom0-qubes.OpenInVM-disp:
-  file.prepend:
-    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
-    - text: "sd-journalist sd-svs allow\n"
-
 # Permit the SecureDrop Proxy to manage Client connections
 sd-journalist-dom0-securedrop.Proxy:
   file.prepend:
@@ -67,9 +57,3 @@ sd-journalist-dom0-securedrop.Proxy:
     - text: |
         sd-svs sd-journalist allow
         $anyvm $anyvm deny
-
-# Permit the SecureDrop Proxy to copy files to Client.
-sd-journalist-dom0-qubes.Filecopy:
-  file.prepend:
-    - name: /etc/qubes-rpc/policy/qubes.Filecopy
-    - text: "sd-journalist sd-svs allow\n"

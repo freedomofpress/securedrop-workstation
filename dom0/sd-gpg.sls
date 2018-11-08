@@ -17,3 +17,6 @@ sd-gpg:
       - label: purple
     - prefs:
       - netvm: ""
+    - tags:
+      - add:
+        - sd-workstation
