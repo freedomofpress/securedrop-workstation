@@ -21,6 +21,9 @@ sd-journalist:
       - label: blue
     - prefs:
       - netvm: sd-whonix
+    - tags:
+      - add:
+        - sd-workstation
     - require:
       - pkg: qubes-template-whonix-ws-14
       - qvm: sd-whonix

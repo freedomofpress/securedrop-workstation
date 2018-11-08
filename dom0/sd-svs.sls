@@ -15,6 +15,9 @@ sd-svs-template:
     - clone:
       - source: sd-workstation-template
       - label: yellow
+    - tags:
+      - add:
+        - sd-workstation
 
 sd-svs:
   qvm.vm:
@@ -24,6 +27,9 @@ sd-svs:
       - label: yellow
     - prefs:
       - netvm: ""
+    - tags:
+      - add:
+        - sd-workstation
   require:
     - qvm: sd-svs-template
 

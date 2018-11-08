@@ -26,6 +26,9 @@ sd-svs-disp:
       - label: green
     - prefs:
       - netvm: ""
+    - tags:
+      - add:
+        - sd-workstation
 
 # tell qubes this VM can be used as a disp VM template
 qvm-prefs sd-svs-disp template_for_dispvms True:

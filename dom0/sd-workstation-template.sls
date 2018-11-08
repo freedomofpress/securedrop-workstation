@@ -19,3 +19,6 @@ sd-workstation-template:
     - prefs:
       - virt-mode: hvm
       - kernel: ''
+    - tags:
+      - add:
+        - sd-workstation
