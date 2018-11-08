@@ -41,8 +41,3 @@ qvm-prefs sd-svs-disp template_for_dispvms True:
 # This feels like a Qubes bug.
 qvm-tags sd-svs-disp add sd-svs-disp-vm:
   cmd.run
-
-sd-svs-disp-dom0-qubes.OpenInVM:
-  file.prepend:
-    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
-    - text: "$tag:sd-svs-disp-vm sd-svs allow\n"

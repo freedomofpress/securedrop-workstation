@@ -33,17 +33,6 @@ sd-svs:
   require:
     - qvm: sd-svs-template
 
-sd-svs-dom0-qubes.OpenInVM:
-  file.prepend:
-    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
-    - text: "sd-svs $dispvm:sd-svs-disp allow\n"
-
-# Allow sd-svs to access gpg keys on sd-gpg
-sd-svs-dom0-qubes.qubesGpg:
-  file.prepend:
-    - name: /etc/qubes-rpc/policy/qubes.Gpg
-    - text: "sd-svs sd-gpg allow\n"
-
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.
 sd-svs-template-sync-appmenus:

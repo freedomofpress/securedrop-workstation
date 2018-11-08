@@ -10,10 +10,14 @@ endif
 all: assert-dom0 validate clean update-fedora-templates			\
 	update-whonix-templates prep-whonix prep-dom0 sd-workstation-template \
 	sd-whonix sd-svs sd-gpg	\
-	sd-journalist sd-svs-disp
+	sd-journalist sd-svs-disp qubes-rpc
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
+
+qubes-rpc: prep-salt ## Places default deny qubes-rpc policies for sd-svs and sd-gpg
+	sudo qubesctl top.enable sd-dom0-qvm-rpc
+	sudo qubesctl --show-output --targets sd-dom0-qvm-rpc state.highstate
 
 sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
 	sudo qubesctl top.enable sd-workstation-template
