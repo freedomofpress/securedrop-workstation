@@ -46,6 +46,7 @@ sd-whonix:
       - provides-network: true
       - netvm: "sys-firewall"
       - autostart: true
+      - kernelopts: "nopat apparmor=1 security=apparmor"
     - tags:
       - add:
         - sd-workstation
