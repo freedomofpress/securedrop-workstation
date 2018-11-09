@@ -57,7 +57,7 @@ After that initial manual step, the code in your development VM may be copied in
 
 ```
 export SECUREDROP_DEV_DIR=sd-dev    # set to your dev VM
-export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory 
+export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory
 make clone
 ```
 
@@ -79,35 +79,32 @@ When the installation process completes, a number of new VMs will be available o
 
 #### Initial Use
 
-From the "Q" menu, open Tor Browser in the `sd-journalist` machine. Visit the journalist interface of your development SecureDrop instance.
+From the "Q" menu, open SecureDrop Client in the `sd-svs` machine.
 
-Once you've logged in, select submissions to download. Tor Browser will present a dialogue to save the download or open with `sd-process-download`. Select the latter option.
-
-That download kicks off a series of steps (described below) which will eventually leave decrypted files in the `~/Sources` directory in `sd-svs`. Double-clicking any of those files will open the file in a disposable VM. Part of the processing involves using GPG to decrypt the submissions. Qubes will present a dialog asking if that's OK. Click "Allow".
+Once you've logged in, select submissions to download.
+That download kicks off a series of steps (described below) which will eventually leave decrypted messages in the SecureDrop Client interface, and files that are clicked will be opened in a disposable VM.
 
 ### Architecture
 
 The current architecture replaces the `Journalist Workstation` and `Secure Viewing Station` Tails installations with specially-configured Qubes VMs; these are the VMs the user will primarily interact with. There are a number of other configured VMs which provide ancillary services.
 
-![](docs/images/vm-diagram.png)
+![(Data Flow Diagram for the SecureDrop Workstation)](docs/images/data-flow-diagram.png)
 
 Currently, the following VMs are provisioned:
 
-- `sd-journalist` is used for accessing the journalist Tor hidden service. It uses `sd-whonix` as its network gateway. The submission processing workflow is triggered from this VM as submissions are downloaded.
-- `sd-svs` is a non-networked VM used to store and explore submissions after they're unarchived and decrypted. Any files double-clicked in this VM are opened in a disposable VM.
+- `sd-journalist` is where the SecureDrop proxy resides, which allows the non-networked `sd-svs` vm to communicate with the Journalist Interface over Tor..
+- `sd-svs` is a non-networked VM in which the SecureDrop Client runs used to store and explore submissions after they're unarchived and decrypted. Any files opened in this VM are opened in a disposable VM.
 - `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the `Journalist Interface`.
 - `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
-- `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files.[1]
+- `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files.
 
 Submissions are processed in the following steps:
 
-1. Journalist uses the Tor Browser in the `sd-journalist` VM to visit the authenticated Tor hidden service Journalist Interface. After logging in, the journalist clicks
+1. Journalist uses the SecureDrop Client to access the Journalist Interface via the Journalist API. After logging in, the journalist clicks
 on any submission of interest.
-2. The Tor Browser in the `sd-journalist` VM offers to open the submission with the configured handler (`sd-process-download`).
-3. The `sd-process-download` script, run by Tor Browser, moves the submission to the svs for decryption.
-4. In the SVS VM, the submission is unarchived and decrypted using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
-5. The decrypted submission is stored on the `sd-svs` Secure Viewing Station VM, where it's placed in the `Sources` directory based on the source name.
-6. Any file viewed in the Secure Viewing Station is opened in a Disposable VM, largely mitigating attacks from malicious content.
+2. The SecureDrop client will use `sd-gpg` to decrypt the submission using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
+5. The decrypted submission is stored on the `sd-svs` Secure Viewing Station VM, where it's placed in a local database.
+6. Any file opened by the SecureDrop Client in the Secure Viewing Station is opened in a Disposable VM, largely mitigating attacks from malicious content.
 
 See below for a closer examination of this process, and see `docs/images` for screenshots related to the steps above.
 
@@ -116,17 +113,12 @@ See below for a closer examination of this process, and see `docs/images` for sc
 This project can be broken neatly into two parts: 1) a set of salt states and `top` files which configure the various VMs, and 2) scripts and system configuration files which set up the document handling process.
 
 Qubes uses SaltStack internally for VM provisionining and configuration management (see https://www.qubes-os.org/doc/salt/), so it's natural for us to use it as well. The `dom0` directory contains salt `.top` and `.sls` files used to provision the VMs noted above.
+- `Makefile` is used with the `make` command on dom0 to build the Qubes/SecureDrop installation, and also contains some development and testing features.
+- The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) is installed in `sd-svs` and will be used to access the SecureDrop server Journalist Interface via the SecureDrop proxy.
+- The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-proxy) is installed in `sd-journalist` to communicate to the SecureDrop server Journalist Interface via `sd-whonix`.
+- Within `sd-svs`, the SecureDrop client will open all submissions in the `sd-svs-disp` disposable VM.
+- `config.json.sample` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
 
-`sd-journalist` contains scripts and configuration which will be placed on the sd-journalist VM. In particular, two scripts to initiate the handling of new submissions exists in this directory:
-
-- `move-to-svs` will explore all files in Tor Browser's Downloads directory, and attempt to process them all. This script is run by hand, and shouldn't be necessary in day-to-day use.
-- `sd-process-download` is configured as the VM's `application/zip` mime type handler, so Tor Browser will by default open SD submissions with this script.
-
-`sd-svs` contains scripts and configuration for the viewing station VM. These include a script to handle incoming, encrypted files during the submission handling process, and desktop configuration files to make this VM decrypt the files using `sd-gpg` and open all files in a disposable VM.
-
-`config.json.sample` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
-
-`Makefile` is used with the `make` command on dom0 to build the Qubes/SecureDrop installation, and also contains some development and testing features
 
 ### Development
 
@@ -151,25 +143,6 @@ Note that since tests confirm the states of provisioned VMs, they should be run 
 Individual tests can be run with `make <test-name>`, where `test-name` is one of `test-svs`, `test-journalist`, `test-whonix`, or `test-disp`.
 
 Be aware that running tests *will* power down running SecureDrop VMs, and may result in *data loss*. Only run tests in a development / testing environment.
-
-#### Integration Tests
-
-These tests exercise the full submission handling process. These are unique in that they require communication and coordination across multiple VMs, which is challenging in the Qubes world (where, by design, communication among VMs is restricted). This is particularly true concerning `dom0`. We've developed a process for communicating back to `sd-journalist` to enable feedback to the user and can leverage that framework for running tests which cross VMs. But, that requires we run tests from `sd-journalist`.
-
-To run the integration tests, copy the `tests/integration` directory to `sd-journalist` from the root of the checked-out project:
-
-    $ qvm-copy-to-vm sd-journalist tests/integration
-
-Open a shell on `sd-journalist`, and copy the directory out of QubesIncoming:
-
-    $ mv QubesIncoming/work/integration ~
-
-and run tests with
-
-    $ cd integration
-    $ ./test_integration
-
-For more information on the integration tests, run `test_integration --help`.
 
 ## Building the Templates
 
@@ -205,10 +178,6 @@ make test
 
 This section outlines the threat model for the SecureDrop workstation, and should complement [SecureDrop's threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html). This document is always a work in progress, if you have any questions or comments, please open an issue on [GitHub](https://github.com/freedomofpress/securedrop-workstation) or send an email to [securedrop@freedom.press](mailto:securedrop@freedom.press).
 
-### Data Flow Diagram
-
-![(Data Flow Diagram for the SecureDrop Workstation)](docs/images/data-flow-diagram.png)
-
 ### Assumptions
 
 #### Assumptions About the SecureDrop Servers
@@ -243,7 +212,6 @@ The *Display VM* is disposable, does not have network access, and is used to dis
 
 #### What Compromise of the *Journalist VM* Can Achieve
 
-* An adversary can initiate arbitrary decryption of messages and submissions, but cannot access the decrypted contents.
 * An adversary can intercept and modify any and all communication between the Tor Browser and the SecureDrop Journalist interface, including but not limited to:
   * Send messages to (but not view messages from) sources.
   * Delete messages and submissions.
@@ -278,6 +246,3 @@ The *GPG VM* does not have network access, and the Qubes split-gpg mechanism res
 #### What Compromise of *dom0* Can Achieve
 
 *Dom0* can do all of the above: spawn arbitrary virtual machines, access all data, modify all SecureDrop Workstation provisioning code, as well as introduce mechanisms to establish persistence and exfiltrate data.
-
-
-[1] Due to a [Qubes bug](https://github.com/freedomofpress/securedrop-workstation/issues/46), we're currently using a non-disposable instance of this VM for decryption. When the Qubes bug is fixed, we can easily migrate to a disposable instance.
