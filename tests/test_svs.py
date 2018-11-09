@@ -8,16 +8,6 @@ class SD_SVS_Tests(SD_VM_Local_Test):
         self.vm_name = "sd-svs"
         super(SD_SVS_Tests, self).setUp()
 
-    def test_decrypt_sd_submission(self):
-        self.assertFilesMatch(
-            "/usr/bin/decrypt-sd-submission",
-            "sd-svs/decrypt-sd-submission")
-
-    def test_decrypt_sd_submission_desktop(self):
-        self.assertFilesMatch(
-            "/usr/share/applications/decrypt-sd-submission.desktop",
-            "sd-svs/decrypt-sd-submission.desktop")
-
     def test_decrypt_sd_user_profile(self):
         self.assertFilesMatch(
             "/etc/profile.d/sd-svs-qubes-gpg-domain.sh",
@@ -32,6 +22,9 @@ class SD_SVS_Tests(SD_VM_Local_Test):
         self.assertFilesMatch(
             "/usr/share/applications/mimeapps.list",
             "sd-svs/mimeapps.list")
+
+    def test_sd_client_package_installed(self):
+        self.assertTrue(self._package_is_installed("securedrop-client"))
 
 
 def load_tests(loader, tests, pattern):

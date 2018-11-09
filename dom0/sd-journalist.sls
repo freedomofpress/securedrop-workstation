@@ -30,17 +30,10 @@ sd-journalist:
       - qvm: sd-journalist-template
       - cmd: sd-journalist-install-python-futures
 
-/etc/qubes-rpc/policy/sd-process.Feedback:
-  file.managed:
-    - source: salt://sd/sd-journalist/sd-process.Feedback-dom0
-    - user: root
-    - group: root
-    - mode: 644
-
 # Temporary workarounds for sd-journalist:
 #
 #   * python-futures required bootstrap Salt support
-#   * python-qt4 required for sd-process-feedback GUI integration
+#   * python-qt4 required for GUI window to inform people not to take actions in this VM
 #
 sd-journalist-install-python-futures:
   cmd.run:
