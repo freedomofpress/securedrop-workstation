@@ -111,3 +111,6 @@ builder/packages/securedrop-workstation-grsec/debian/securedrop-workstation-grse
 builder/packages/securedrop-workstation-grsec/debian/files
 *.rpm
 artifacts/RPM*
+
+# visual studio code
+.vscode
