@@ -10,17 +10,7 @@
 ##
 
 include:
-  - qvm.template-whonix-gw
-  - qvm.sys-firewall
-
-# Temporary workaround to bootstrap Salt support on target.
-sd-whonix-install-python-futures:
-  cmd.run:
-    - name: >
-        qvm-run -a whonix-gw-14
-        "python -c 'import concurrent.futures' ||
-        { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
-        qvm-shutdown --wait whonix-gw-14
+  - sd-dom0-files
 
 sd-whonix-template:
   qvm.vm:
@@ -32,8 +22,7 @@ sd-whonix-template:
       - add:
         - sd-workstation
     - require:
-      - pkg: qubes-template-whonix-gw-14
-      - qvm: sys-firewall
+      - sls: sd-dom0-files
 
 sd-whonix:
   qvm.vm:
@@ -51,6 +40,4 @@ sd-whonix:
       - add:
         - sd-workstation
     - require:
-      - pkg: qubes-template-whonix-gw-14
-      - qvm: sys-firewall
-      - cmd: sd-whonix-install-python-futures
+      - qvm: sd-whonix-template

@@ -16,8 +16,9 @@ sd-journalist-create-feedback-pipe:
     - user: user
     - group: user
     - mode: 666
-  require:
-    - cmd: sd-journalist-install-python-futures
+    - require:
+      - cmd: sd-journalist-install-python-futures
+      - qvm: sd-journalist
 
 /home/user/.config/mimeapps.list:
   file.managed:
@@ -26,12 +27,14 @@ sd-journalist-create-feedback-pipe:
     - group: user
     - mode: 644
     - makedirs: True
-  require:
-    - cmd: sd-journalist-install-python-futures
+    - require:
+      - cmd: sd-journalist-install-python-futures
+      - qvm: sd-journalist
 
 sd-journalist-install-python-qt4:
   pkg.installed:
     - pkgs:
         - python-qt4
-  require:
-    - cmd: sd-journalist-install-python-futures
+    - require:
+      - cmd: sd-journalist-install-python-futures
+      - qvm: sd-journalist

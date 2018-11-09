@@ -7,10 +7,8 @@ ifneq ($(HOST),dom0)
 endif
 
 ## Builds and provisions all VMs required for testing workstation
-all: assert-dom0 validate clean prep-dom0 \
-	sd-workstation-template \
-	sd-whonix sd-svs sd-gpg \
-	sd-journalist sd-svs-disp qubes-rpc
+all: assert-dom0 validate clean prep-dom0
+	sudo qubesctl --show-output state.highstate
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
@@ -68,6 +66,14 @@ prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@sudo cp -r sd-svs /srv/salt/sd
 	@sudo cp -r sd-workstation /srv/salt/sd
 	@sudo cp dom0/* /srv/salt/
+	@sudo find /srv/salt -maxdepth 1 -type f -iname '*.top' \
+		| xargs -n1 basename \
+		| sort \
+		| grep -P '^(sd-|fpf-)' \
+		| perl -npE 's/\.top$$//' \
+		| xargs sudo qubesctl top.enable
+
+
 #sudo cp -r sd-svs-disp /srv/salt/sd  # nothing there yet...
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
@@ -121,7 +127,7 @@ flake8: ## Lints all Python files with flake8
 template: ## Builds securedrop-workstation Qube template RPM
 	./builder/build-workstation-template
 
-prep-dom0: prep-salt # Copies dom0 config files for VM updates
+prep-dom0: prep-salt ## Copies dom0 config files for VM updates
 	sudo qubesctl top.enable sd-vm-updates
 	sudo qubesctl top.enable sd-dom0-files
 	sudo qubesctl --show-output --targets dom0 state.highstate

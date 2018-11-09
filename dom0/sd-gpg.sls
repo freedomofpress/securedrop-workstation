@@ -20,3 +20,5 @@ sd-gpg:
     - tags:
       - add:
         - sd-workstation
+    - require:
+      - qvm: sd-workstation-template

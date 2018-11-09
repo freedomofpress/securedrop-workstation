@@ -10,8 +10,7 @@
 ##
 
 include:
-  - qvm.template-whonix-ws
-  - sd-journalist-template
+  - sd-dom0-files
 
 sd-journalist:
   qvm.vm:
@@ -26,23 +25,9 @@ sd-journalist:
       - add:
         - sd-workstation
     - require:
-      - pkg: qubes-template-whonix-ws-14
       - qvm: sd-whonix
       - qvm: sd-journalist-template
-      - cmd: sd-journalist-install-python-futures
-
-# Temporary workarounds for sd-journalist:
-#
-#   * python-futures required bootstrap Salt support
-#   * python-qt4 required for GUI window to inform people not to take actions in this VM
-#
-sd-journalist-install-python-futures:
-  cmd.run:
-    - name: >
-        qvm-run -a whonix-ws-14
-        "python -c 'import concurrent.futures' ||
-        { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
-        qvm-shutdown --wait whonix-ws-14
+      - sls: sd-dom0-files
 
 # Permit the SecureDrop Proxy to manage Client connections
 sd-journalist-dom0-securedrop.Proxy:

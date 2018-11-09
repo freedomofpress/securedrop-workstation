@@ -9,6 +9,8 @@
 #
 ##
 
+include:
+  - sd-dom0-files
 
 sd-workstation-template:
   qvm.vm:
@@ -22,3 +24,5 @@ sd-workstation-template:
     - tags:
       - add:
         - sd-workstation
+    - require:
+      - sls: sd-dom0-files

@@ -8,14 +8,12 @@
 # Moves files into place on sd-svs-disp
 #
 ##
+include:
+  - fpf-apt-test-repo
 
-sd-svs-disp-write-mimetyeps:
-  file.managed:
-    - name: /usr/share/applications/mimeapps.list
-    - source: salt://sd/sd-svs/mimeapps-sd-svs-disp.list
-    - user: root
-    - group: root
-    - mode: 644
-
-sudo update-mime-database /usr/share/mime:
-  cmd.run
+sd-svs-disp-install-mimetype-handler-package:
+  pkg.installed:
+    - pkgs:
+      - securedrop-workstation-svs-disp
+    - require:
+      - sls: fpf-apt-test-repo

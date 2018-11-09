@@ -11,7 +11,7 @@
 ##
 
 include:
-  - qvm.template-whonix-ws
+  - sd-dom0-files
   - sd-whonix
 
 sd-journalist-template:
@@ -23,9 +23,10 @@ sd-journalist-template:
     - tags:
       - add:
         - sd-workstation
-  require:
-    - pkg: qubes-template-whonix-ws-14
-    - qvm: sd-whonix
+    - require:
+      - sls: sd-whonix
+      - sls: sd-dom0-files
+      - qvm: sd-workstation-template
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Tor Browser can be started via GUI interactions.
@@ -34,4 +35,6 @@ sd-journalist-template-sync-appmenus:
     - name: >
         qvm-start --skip-if-running sd-journalist-template &&
         qvm-sync-appmenus sd-journalist-template &&
-        qvm-shutdown sd-journalist-template
+        qvm-shutdown --wait sd-journalist-template
+    - require:
+      - qvm: sd-journalist-template

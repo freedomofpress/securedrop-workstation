@@ -72,3 +72,25 @@ dom0-enabled-apparmor-on-whonix-ws-14-template:
       - kernelopts: "nopat apparmor=1 security=apparmor"
     - require:
       - pkg: dom0-install-whonix-14-templates
+
+# Temporary workaround to bootstrap Salt support on target.
+dom0-whonix-gw-14-install-python-futures:
+  cmd.run:
+    - name: >
+        qvm-run -a whonix-gw-14
+        "python -c 'import concurrent.futures' ||
+        { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
+        qvm-shutdown --wait whonix-gw-14
+    - require:
+      - qvm: dom0-enabled-apparmor-on-whonix-gw-14-template
+
+# Temporary workaround to bootstrap Salt support on target.
+dom0-whonix-ws-14-install-python-futures:
+  cmd.run:
+    - name: >
+        qvm-run -a whonix-ws-14
+        "python -c 'import concurrent.futures' ||
+        { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
+        qvm-shutdown --wait whonix-ws-14
+    - require:
+      - qvm: dom0-enabled-apparmor-on-whonix-ws-14-template
