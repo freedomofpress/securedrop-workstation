@@ -8,6 +8,7 @@ endif
 
 ## Builds and provisions all VMs required for testing workstation
 all: assert-dom0 validate prep-dom0
+	sudo qubesctl --show-output --targets dom0 state.highstate
 	sudo qubesctl --show-output state.highstate
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
