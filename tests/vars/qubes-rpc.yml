@@ -1,7 +1,6 @@
 - policy: ClipboardPaste
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm sd-journalist ask
     $anyvm $tag:sd-workstation deny
     ### END securedrop-workstation ###
 
@@ -14,7 +13,6 @@
 - policy: Filecopy
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    sd-journalist sd-svs allow
     $anyvm $tag:sd-workstation deny
     ### END securedrop-workstation ###
 
@@ -90,7 +88,6 @@
 - policy: OpenInVM
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    sd-journalist sd-svs allow
     $tag:sd-svs-disp-vm sd-svs allow
     sd-svs $dispvm:sd-svs-disp allow
     $anyvm $tag:sd-workstation deny

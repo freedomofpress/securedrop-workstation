@@ -81,14 +81,14 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         self._ensure_packages_up_to_date(vm, fedora=True)
         vm.shutdown()
 
-    def test_sd_journalist_template(self):
+    def test_sd_proxy_template(self):
         """
-        Asserts that the 'sd-journalist' VM is using a supported base OS.
+        Asserts that the 'sd-proxy' VM is using a supported base OS.
         """
         # This test is a single example of the method for testing: it would
         # be ideal to use a loop construct (such as pytest.mark.parametrize),
         # but doing so would introduce additional dependencies to dom0.
-        vm = self.app.domains["sd-journalist"]
+        vm = self.app.domains["sd-proxy"]
         self._validate_vm_platform(vm)
 
     def test_all_sd_vm_platforms(self):

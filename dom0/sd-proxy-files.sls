@@ -2,14 +2,14 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 ##
-# sd-journalist-files
+# sd-proxy-files
 # ========
 #
 # Moves files in to place
 #
 ##
 
-sd-journalist-create-feedback-pipe:
+sd-proxy-create-feedback-pipe:
   file.mknod:
     - name: /home/user/sdfifo
     - ntype: p
@@ -17,21 +17,21 @@ sd-journalist-create-feedback-pipe:
     - group: user
     - mode: 666
   require:
-    - cmd: sd-journalist-install-python-futures
+    - cmd: sd-proxy-install-python-futures
 
 /home/user/.config/mimeapps.list:
   file.managed:
-    - source: salt://sd/sd-journalist/mimeapps.list
+    - source: salt://sd/sd-proxy/mimeapps.list
     - user: user
     - group: user
     - mode: 644
     - makedirs: True
   require:
-    - cmd: sd-journalist-install-python-futures
+    - cmd: sd-proxy-install-python-futures
 
-sd-journalist-install-python-qt4:
+sd-proxy-install-python-qt4:
   pkg.installed:
     - pkgs:
         - python-qt4
   require:
-    - cmd: sd-journalist-install-python-futures
+    - cmd: sd-proxy-install-python-futures

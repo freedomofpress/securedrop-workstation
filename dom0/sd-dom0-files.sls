@@ -37,7 +37,7 @@ dom0-securedrop-icons-directory:
 dom0-securedrop-icon:
   file.managed:
     - name: /usr/share/securedrop/icons/sd-logo.png
-    - source: salt://sd/sd-journalist/logo-small.png
+    - source: salt://sd/sd-proxy/logo-small.png
     - user: root
     - group: root
     - mode: 644

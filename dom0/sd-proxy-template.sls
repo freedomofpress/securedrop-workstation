@@ -5,7 +5,7 @@
 # qvm.work
 # ========
 #
-# Installs 'sd-journalist-template' TemplateVM, for hosting the
+# Installs 'sd-proxy-template' TemplateVM, for hosting the
 # securedrop proxy connection and feedback tooling.
 #
 ##
@@ -14,9 +14,9 @@ include:
   - qvm.template-whonix-ws
   - sd-whonix
 
-sd-journalist-template:
+sd-proxy-template:
   qvm.vm:
-    - name: sd-journalist-template
+    - name: sd-proxy-template
     - clone:
       - source: whonix-ws-14
       - label: blue
@@ -29,9 +29,9 @@ sd-journalist-template:
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Tor Browser can be started via GUI interactions.
-sd-journalist-template-sync-appmenus:
+sd-proxy-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start --skip-if-running sd-journalist-template &&
-        qvm-sync-appmenus sd-journalist-template &&
-        qvm-shutdown sd-journalist-template
+        qvm-start --skip-if-running sd-proxy-template &&
+        qvm-sync-appmenus sd-proxy-template &&
+        qvm-shutdown sd-proxy-template

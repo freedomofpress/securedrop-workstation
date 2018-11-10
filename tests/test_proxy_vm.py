@@ -4,14 +4,14 @@ import json
 from base import SD_VM_Local_Test
 
 
-class SD_Journalist_Tests(SD_VM_Local_Test):
+class SD_Proxy_Tests(SD_VM_Local_Test):
     def setUp(self):
-        self.vm_name = "sd-journalist"
-        super(SD_Journalist_Tests, self).setUp()
+        self.vm_name = "sd-proxy"
+        super(SD_Proxy_Tests, self).setUp()
 
     def test_do_not_open_here(self):
         self.assertFilesMatch("/usr/bin/do-not-open-here",
-                              "sd-journalist/do-not-open-here")
+                              "sd-proxy/do-not-open-here")
 
     def test_sd_proxy_package_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-proxy"))
@@ -33,5 +33,5 @@ class SD_Journalist_Tests(SD_VM_Local_Test):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Journalist_Tests)
+    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Proxy_Tests)
     return suite
