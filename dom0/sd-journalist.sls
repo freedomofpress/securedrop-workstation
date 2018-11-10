@@ -21,6 +21,7 @@ sd-journalist:
       - label: blue
     - prefs:
       - netvm: sd-whonix
+      - kernelopts: "nopat apparmor=1 security=apparmor"
     - tags:
       - add:
         - sd-workstation

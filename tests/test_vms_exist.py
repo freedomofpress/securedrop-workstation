@@ -38,6 +38,8 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-whonix"]
         nvm = vm.netvm
         self.assertTrue(nvm.name == "sys-firewall")
+        wanted_kernelopts = "nopat apparmor=1 security=apparmor"
+        self.assertEqual(vm.kernelopts, wanted_kernelopts)
         self.assertTrue(vm.template == "sd-whonix-template")
         self.assertTrue(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -47,6 +49,8 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-journalist"]
         nvm = vm.netvm
         self.assertTrue(nvm.name == "sd-whonix")
+        wanted_kernelopts = "nopat apparmor=1 security=apparmor"
+        self.assertEqual(vm.kernelopts, wanted_kernelopts)
         self.assertTrue(vm.template == "sd-journalist-template")
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)

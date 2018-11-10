@@ -7,9 +7,9 @@ ifneq ($(HOST),dom0)
 endif
 
 ## Builds and provisions all VMs required for testing workstation
-all: assert-dom0 validate clean update-fedora-templates			\
-	update-whonix-templates prep-whonix prep-dom0 sd-workstation-template \
-	sd-whonix sd-svs sd-gpg	\
+all: assert-dom0 validate clean prep-dom0 \
+	sd-workstation-template \
+	sd-whonix sd-svs sd-gpg \
 	sd-journalist sd-svs-disp qubes-rpc
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
@@ -118,18 +118,8 @@ flake8: ## Lints all Python files with flake8
 		--entrypoint /code/scripts/flake8-linting \
 		quay.io/freedomofpress/ci-python \
 
-update-fedora-templates: assert-dom0 ## Upgrade to Fedora 28 templates
-	@./scripts/update-fedora-templates
-
-update-whonix-templates: assert-dom0 ## Upgrade to Whonix 14 templates
-	@./scripts/update-whonix-templates
-
 template: ## Builds securedrop-workstation Qube template RPM
 	./builder/build-workstation-template
-
-prep-whonix: ## enables apparmor on whonix-ws-14 and whonix-gw-14
-	qvm-prefs -s whonix-gw-14 kernelopts "nopat apparmor=1 security=apparmor"
-	qvm-prefs -s whonix-ws-14 kernelopts "nopat apparmor=1 security=apparmor"
 
 prep-dom0: prep-salt # Copies dom0 config files for VM updates
 	sudo qubesctl top.enable sd-vm-updates

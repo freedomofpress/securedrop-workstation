@@ -43,3 +43,32 @@ dom0-securedrop-icon:
     - mode: 644
   require:
     - file: dom0-securedrop-icons-directory
+
+# Install latest templates required for SDW VMs.
+dom0-install-fedora-28-template:
+  pkg.installed:
+    - pkgs:
+      - qubes-template-fedora-28
+
+dom0-install-whonix-14-templates:
+  pkg.installed:
+    - fromrepo: qubes-templates-community
+    - pkgs:
+      - qubes-template-whonix-gw-14
+      - qubes-template-whonix-ws-14
+
+dom0-enabled-apparmor-on-whonix-gw-14-template:
+  qvm.vm:
+    - name: whonix-gw-14
+    - prefs:
+      - kernelopts: "nopat apparmor=1 security=apparmor"
+    - require:
+      - pkg: dom0-install-whonix-14-templates
+
+dom0-enabled-apparmor-on-whonix-ws-14-template:
+  qvm.vm:
+    - name: whonix-ws-14
+    - prefs:
+      - kernelopts: "nopat apparmor=1 security=apparmor"
+    - require:
+      - pkg: dom0-install-whonix-14-templates
