@@ -4,3 +4,5 @@
 base:
   dom0:
     - sd-dom0-files
+    - sd-dom0-qvm-rpc
+    - sd-dom0-vm-declarations

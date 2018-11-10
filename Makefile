@@ -7,16 +7,12 @@ ifneq ($(HOST),dom0)
 endif
 
 ## Builds and provisions all VMs required for testing workstation
-all: assert-dom0 validate prep-dom0
+all: assert-dom0 validate prep-salt
 	sudo qubesctl --show-output --targets dom0 state.highstate
 	sudo qubesctl --show-output state.highstate
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
-
-qubes-rpc: prep-salt ## Places default deny qubes-rpc policies for sd-svs and sd-gpg
-	sudo qubesctl top.enable sd-dom0-qvm-rpc
-	sudo qubesctl --show-output --targets sd-dom0-qvm-rpc state.highstate
 
 sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
 	sudo qubesctl top.enable sd-workstation-template
@@ -127,11 +123,6 @@ flake8: ## Lints all Python files with flake8
 
 template: ## Builds securedrop-workstation Qube template RPM
 	./builder/build-workstation-template
-
-prep-dom0: prep-salt ## Copies dom0 config files for VM updates
-	sudo qubesctl top.enable sd-vm-updates
-	sudo qubesctl top.enable sd-dom0-files
-	sudo qubesctl --show-output --targets dom0 state.highstate
 
 list-vms: ## Prints all Qubes VMs managed by Workstation salt config
 	@./scripts/list-vms
