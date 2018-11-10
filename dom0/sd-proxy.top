@@ -3,5 +3,5 @@
 
 base:
   dom0:
-    - sd-journalist-template
-    - sd-journalist
+    - sd-proxy-template
+    - sd-proxy

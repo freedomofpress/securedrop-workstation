@@ -17,7 +17,6 @@ dom0-rpc-qubes.ClipboardPaste:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $anyvm sd-journalist ask
         $anyvm $tag:sd-workstation deny
 dom0-rpc-qubes.FeaturesRequest:
   file.blockreplace:
@@ -34,7 +33,6 @@ dom0-rpc-qubes.Filecopy:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        sd-journalist sd-svs allow
         $anyvm $tag:sd-workstation deny
 dom0-rpc-qubes.OpenInVM:
   file.blockreplace:
@@ -43,7 +41,6 @@ dom0-rpc-qubes.OpenInVM:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        sd-journalist sd-svs allow
         $tag:sd-svs-disp-vm sd-svs allow
         sd-svs $dispvm:sd-svs-disp allow
         $anyvm $tag:sd-workstation deny

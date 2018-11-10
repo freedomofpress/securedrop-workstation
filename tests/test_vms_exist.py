@@ -45,13 +45,13 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.template_for_dispvms)
         self.assertTrue('sd-workstation' in vm.tags)
 
-    def test_sd_journalist_config(self):
-        vm = self.app.domains["sd-journalist"]
+    def test_sd_proxy_config(self):
+        vm = self.app.domains["sd-proxy"]
         nvm = vm.netvm
         self.assertTrue(nvm.name == "sd-whonix")
         wanted_kernelopts = "nopat apparmor=1 security=apparmor"
         self.assertEqual(vm.kernelopts, wanted_kernelopts)
-        self.assertTrue(vm.template == "sd-journalist-template")
+        self.assertTrue(vm.template == "sd-proxy-template")
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self.assertTrue('sd-workstation' in vm.tags)
@@ -95,8 +95,8 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue('sd-workstation' in vm.tags)
         self._check_kernel(vm)
 
-    def test_sd_journalist_template(self):
-        vm = self.app.domains["sd-journalist-template"]
+    def test_sd_proxy_template(self):
+        vm = self.app.domains["sd-proxy-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)

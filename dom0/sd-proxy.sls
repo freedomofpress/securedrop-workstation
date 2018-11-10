@@ -11,13 +11,13 @@
 
 include:
   - qvm.template-whonix-ws
-  - sd-journalist-template
+  - sd-proxy-template
 
-sd-journalist:
+sd-proxy:
   qvm.vm:
-    - name: sd-journalist
+    - name: sd-proxy
     - present:
-      - template: sd-journalist-template
+      - template: sd-proxy-template
       - label: blue
     - prefs:
       - netvm: sd-whonix
@@ -28,15 +28,15 @@ sd-journalist:
     - require:
       - pkg: qubes-template-whonix-ws-14
       - qvm: sd-whonix
-      - qvm: sd-journalist-template
-      - cmd: sd-journalist-install-python-futures
+      - qvm: sd-proxy-template
+      - cmd: sd-proxy-install-python-futures
 
-# Temporary workarounds for sd-journalist:
+# Temporary workarounds for sd-proxy:
 #
 #   * python-futures required bootstrap Salt support
 #   * python-qt4 required for GUI window to inform people not to take actions in this VM
 #
-sd-journalist-install-python-futures:
+sd-proxy-install-python-futures:
   cmd.run:
     - name: >
         qvm-run -a whonix-ws-14
@@ -45,9 +45,9 @@ sd-journalist-install-python-futures:
         qvm-shutdown --wait whonix-ws-14
 
 # Permit the SecureDrop Proxy to manage Client connections
-sd-journalist-dom0-securedrop.Proxy:
+sd-proxy-dom0-securedrop.Proxy:
   file.prepend:
     - name: /etc/qubes-rpc/policy/securedrop.Proxy
     - text: |
-        sd-svs sd-journalist allow
+        sd-svs sd-proxy allow
         $anyvm $anyvm deny

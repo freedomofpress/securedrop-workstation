@@ -3,14 +3,14 @@
 
 /usr/bin/do-not-open-here:
   file.managed:
-    - source: salt://sd/sd-journalist/do-not-open-here
+    - source: salt://sd/sd-proxy/do-not-open-here
     - user: root
     - group: root
     - mode: 755
 
 /usr/share/applications/do-not-open.desktop:
   file.managed:
-    - source: salt://sd/sd-journalist/do-not-open.desktop
+    - source: salt://sd/sd-proxy/do-not-open.desktop
     - user: root
     - group: root
     - mode: 644
@@ -18,7 +18,7 @@
 
 /usr/share/sd/logo-small.png:
   file.managed:
-    - source: salt://sd/sd-journalist/logo-small.png
+    - source: salt://sd/sd-proxy/logo-small.png
     - user: root
     - group: root
     - mode: 644

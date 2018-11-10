@@ -8,7 +8,7 @@ from qubesadmin import Qubes
 # Reusable constant for DRY import across tests
 WANTED_VMS = [
     "sd-gpg",
-    "sd-journalist",
+    "sd-proxy",
     "sd-svs",
     "sd-svs-disp",
     "sd-whonix",
