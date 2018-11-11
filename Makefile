@@ -88,22 +88,22 @@ remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
 clean: assert-dom0 destroy-all clean-salt ## Destroys all SD VMs
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
-	python -m unittest discover tests
+	python3 -m unittest discover -v tests
 
 test-base: assert-dom0 ## Runs tests for VMs layout
-	python -m unittest -v tests.test_vms_exist.SD_VM_Tests
+	python3 -m unittest -v tests.test_vms_exist.SD_VM_Tests
 
 test-svs: assert-dom0 ## Runs tests for SD SVS VM config
-	python -m unittest -v tests.test_svs.SD_SVS_Tests
+	python3 -m unittest -v tests.test_svs.SD_SVS_Tests
 
 test-journalist: assert-dom0 ## Runs tests for SD Journalist VM
-	python -m unittest -v tests.test_journalist_vm
+	python3 -m unittest -v tests.test_journalist_vm
 
 test-whonix: assert-dom0 ## Runs tests for SD Whonix VM
-	python -m unittest -v tests.test_sd_whonix
+	python3 -m unittest -v tests.test_sd_whonix
 
 test-gpg: assert-dom0 ## Runs tests for SD GPG functionality
-	python -m unittest -v tests.test_gpg
+	python3 -m unittest -v tests.test_gpg
 
 validate: assert-dom0 ## Checks for local requirements in dev env
 	@bash -c "test -e config.json" || \

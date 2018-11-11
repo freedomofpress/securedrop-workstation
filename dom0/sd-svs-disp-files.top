@@ -3,4 +3,5 @@
 
 base:
   sd-svs-disp-template:
+    - fpf-apt-test-repo
     - sd-svs-disp-files

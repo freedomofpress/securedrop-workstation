@@ -58,8 +58,9 @@ class SD_VM_Local_Test(unittest.TestCase):
         self.vm.start()
 
     def _get_file_contents(self, path):
-        contents = subprocess.check_output(["qvm-run", "-p", self.vm_name,
-                                            "/bin/cat {}".format(path)])
+        cmd = ["qvm-run", "-p", self.vm_name,
+               "/bin/cat {}".format(path)]
+        contents = subprocess.check_output(cmd).decode("utf-8")
         return contents
 
     def _package_is_installed(self, pkg):
@@ -79,7 +80,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         with open(local_path) as f:
             content = f.read()
         import difflib
-        print("".join(difflib.unified_diff(remote_content, content)))
+        print("".join(difflib.unified_diff(remote_content, content)), end="")
         self.assertTrue(remote_content == content)
 
     def assertFileHasLine(self, remote_path, wanted_line):

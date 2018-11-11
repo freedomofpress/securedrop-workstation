@@ -7,7 +7,7 @@ from base import SD_VM_Local_Test
 
 def find_fp_from_gpg_output(gpg):
 
-    lines = gpg.split("\n")
+    lines = gpg.decode("utf-8").split("\n")
 
     for line in lines:
         # dom0 uses Fedora25 with gpg 1.4.22, whereas AppVMs
