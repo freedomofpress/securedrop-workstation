@@ -9,8 +9,15 @@
 #
 ##
 
-include:
-  - sd-proxy-template
+sd-proxy-template:
+  qvm.vm:
+    - name: sd-proxy-template
+    - clone:
+      - source: sd-workstation-template
+      - label: blue
+    - tags:
+      - add:
+        - sd-workstation
 
 sd-proxy:
   qvm.vm:
