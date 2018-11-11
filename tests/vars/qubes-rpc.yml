@@ -13,6 +13,7 @@
 - policy: Filecopy
   starts_with: |-
     ### BEGIN securedrop-workstation ###
+    sd-proxy sd-svs allow
     $anyvm $tag:sd-workstation deny
     ### END securedrop-workstation ###
 

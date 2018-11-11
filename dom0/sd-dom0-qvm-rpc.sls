@@ -33,6 +33,7 @@ dom0-rpc-qubes.Filecopy:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
+        sd-proxy sd-svs allow
         $anyvm $tag:sd-workstation deny
 dom0-rpc-qubes.OpenInVM:
   file.blockreplace:
