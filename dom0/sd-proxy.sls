@@ -11,7 +11,17 @@
 
 include:
   - qvm.template-whonix-ws
-  - sd-proxy-template
+  - sd-whonix
+
+sd-proxy-template:
+  qvm.vm:
+    - name: sd-proxy-template
+    - clone:
+      - source: whonix-ws-14
+      - label: blue
+    - tags:
+      - add:
+        - sd-workstation
 
 sd-proxy:
   qvm.vm:

@@ -3,5 +3,4 @@
 
 base:
   dom0:
-    - sd-proxy-template
     - sd-proxy
