@@ -9,6 +9,10 @@
 #
 ##
 
+/home/user/.profile:
+  file.append:
+    - text: "export QUBES_GPG_AUTOACCEPT=28800"
+
 /tmp/sd-journalist.sec:
   file.managed:
     - source: salt://sd/sd-journalist.sec
