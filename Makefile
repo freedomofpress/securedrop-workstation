@@ -109,6 +109,9 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 	@bash -c "test -e config.json" || \
 		{ echo "ERROR: missing 'config.json'!" && \
 		echo "Create from 'config.json.example'." && exit 1 ; }
+	@bash -c "test -e sd-journalist.sec" || \
+		{ echo "ERROR: missing 'sd-journalist.sec" && \
+		echo "Create from 'sd-journalist.sec.example'." && exit 1 ; }
 
 .PHONY: flake8
 flake8: ## Lints all Python files with flake8
