@@ -5,7 +5,7 @@
 # qvm.sd-whonix
 # ==============
 #
-# Installs 'sd-whonix' ProxyVM for securedrop journalist workstation.
+# Installs 'sd-whonix' ProxyVM for securedrop workstation.
 #
 ##
 

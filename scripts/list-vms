@@ -7,8 +7,8 @@ set -o pipefail
 
 declare -a sd_workstation_vm_names=(
   sd-gpg
-  sd-journalist
-  sd-journalist-template
+  sd-proxy
+  sd-proxy-template
   sd-svs
   sd-svs-template
   sd-workstation-template

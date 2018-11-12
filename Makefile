@@ -10,7 +10,7 @@ endif
 all: assert-dom0 validate clean prep-dom0 \
 	sd-workstation-template \
 	sd-whonix sd-svs sd-gpg \
-	sd-journalist sd-svs-disp qubes-rpc
+	sd-proxy sd-svs-disp qubes-rpc
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
@@ -24,11 +24,11 @@ sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
 	sudo qubesctl top.enable sd-workstation-template-files
 	sudo qubesctl --show-output --targets sd-workstation-template state.highstate
 
-sd-journalist: prep-salt ## Provisions SD Journalist VM
-	sudo qubesctl top.enable sd-journalist
-	sudo qubesctl top.enable sd-journalist-files
-	sudo qubesctl --show-output --targets sd-journalist-template state.highstate
-	sudo qubesctl --show-output --targets sd-journalist state.highstate
+sd-proxy: prep-salt ## Provisions SD Proxy VM
+	sudo qubesctl top.enable sd-proxy
+	sudo qubesctl top.enable sd-proxy-files
+	sudo qubesctl --show-output --targets sd-proxy-template state.highstate
+	sudo qubesctl --show-output --targets sd-proxy state.highstate
 
 sd-gpg: prep-salt ## Provisions SD GPG keystore VM
 	sudo qubesctl top.enable sd-gpg
@@ -64,7 +64,7 @@ prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@sudo mkdir -p /srv/salt/sd
 	@sudo cp config.json /srv/salt/sd
 	@sudo cp sd-journalist.sec /srv/salt/sd
-	@sudo cp -r sd-journalist /srv/salt/sd
+	@sudo cp -r sd-proxy /srv/salt/sd
 	@sudo cp -r sd-svs /srv/salt/sd
 	@sudo cp -r sd-workstation /srv/salt/sd
 	@sudo cp dom0/* /srv/salt/
@@ -76,8 +76,8 @@ remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
 remove-sd-svs-disp: assert-dom0 ## Destroys SD Submission reading VM
 	@./scripts/destroy-vm sd-svs-disp
 
-remove-sd-journalist: assert-dom0 ## Destroys SD Journalist VM
-	@./scripts/destroy-vm sd-journalist
+remove-sd-proxy: assert-dom0 ## Destroys SD Proxy VM
+	@./scripts/destroy-vm sd-proxy
 
 remove-sd-svs: assert-dom0 ## Destroys SD SVS VM
 	@./scripts/destroy-vm sd-svs
@@ -96,8 +96,8 @@ test-base: assert-dom0 ## Runs tests for VMs layout
 test-svs: assert-dom0 ## Runs tests for SD SVS VM config
 	python3 -m unittest -v tests.test_svs.SD_SVS_Tests
 
-test-journalist: assert-dom0 ## Runs tests for SD Journalist VM
-	python3 -m unittest -v tests.test_journalist_vm
+test-proxy: assert-dom0 ## Runs tests for SD Proxy VM
+	python3 -m unittest -v tests.test_proxy_vm
 
 test-whonix: assert-dom0 ## Runs tests for SD Whonix VM
 	python3 -m unittest -v tests.test_sd_whonix
