@@ -14,5 +14,5 @@ configure apt-test apt repo:
     - name: "deb [arch=amd64] https://apt-test-qubes.freedom.press stretch main"
     - file: /etc/apt/sources.list.d/fpf-apt-test.list
     - key_url: "salt://sd/sd-workstation/apt-test-pubkey.asc"
-  require:
-    - pkg: install-python-apt-for-repo-config
+    - require:
+      - pkg: install-python-apt-for-repo-config

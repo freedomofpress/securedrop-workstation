@@ -17,5 +17,5 @@ sd-svs-disp-install-mimetype-handler-package:
   pkg.installed:
     - pkgs:
       - securedrop-workstation-svs-disp
-  require:
-    - sls: fpf-apt-test-repo
+    - require:
+      - sls: fpf-apt-test-repo

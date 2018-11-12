@@ -41,8 +41,8 @@ dom0-securedrop-icon:
     - user: root
     - group: root
     - mode: 644
-  require:
-    - file: dom0-securedrop-icons-directory
+    - require:
+      - file: dom0-securedrop-icons-directory
 
 # Install latest templates required for SDW VMs.
 dom0-install-fedora-28-template:

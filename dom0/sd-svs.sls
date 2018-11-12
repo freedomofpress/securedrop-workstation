@@ -30,8 +30,9 @@ sd-svs:
     - tags:
       - add:
         - sd-workstation
-  require:
-    - qvm: sd-svs-template
+    - require:
+      - qvm: sd-svs-template
+      - cmd: sd-svs-template-sync-appmenus
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.
@@ -40,4 +41,6 @@ sd-svs-template-sync-appmenus:
     - name: >
         qvm-start --skip-if-running sd-svs-template &&
         qvm-sync-appmenus sd-svs-template &&
-        qvm-shutdown sd-svs-template
+        qvm-shutdown --wait sd-svs-template
+    - require:
+      - qvm: sd-svs-template

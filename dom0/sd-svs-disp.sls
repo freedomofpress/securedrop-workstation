@@ -26,18 +26,10 @@ sd-svs-disp:
       - label: green
     - prefs:
       - netvm: ""
+      - template_for_dispvms: True
     - tags:
       - add:
         - sd-workstation
-
-# tell qubes this VM can be used as a disp VM template
-qvm-prefs sd-svs-disp template_for_dispvms True:
-  cmd.run
-
-# Allow dispvms based on this vm to open files in sd-svs.
-# (eg, "dispvms created from this VM can use the OpenInVM facility provided
-# by sd-svs"), but the "$dispvm:sd-svs" syntax can only be used as an
-# RPC policy *target*, not source. Tagged VMs can be used as a source.
-# This feels like a Qubes bug.
-qvm-tags sd-svs-disp add sd-svs-disp-vm:
-  cmd.run
+        - sd-svs-disp-vm
+    - require:
+      - qvm: sd-svs-disp-template
