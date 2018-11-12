@@ -11,12 +11,17 @@
 # This VM has no network configured.
 ##
 
+include:
+  - sd-workstation-template
+
 sd-svs-disp-template:
   qvm.vm:
     - name: sd-svs-disp-template
     - clone:
       - source: sd-workstation-template
       - label: green
+    - require:
+      - sls: sd-workstation-template
 
 sd-svs-disp:
   qvm.vm:

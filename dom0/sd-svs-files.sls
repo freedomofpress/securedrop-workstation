@@ -40,6 +40,9 @@ sd-svs-configure-mimetypes:
     - name: sudo update-desktop-database /usr/share/applications
     - require:
       - file: sd-svs-configure-mimetypes
+    - onchanges:
+      - file: sd-svs-configure-mimetypes
+      - file: sd-svs-open-in-dvm-desktop-file
 
 # FPF repo is setup in "securedrop-workstation" template
 install-securedrop-client-package:

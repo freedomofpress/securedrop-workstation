@@ -34,6 +34,10 @@ sd-proxy-configure-mimetypes:
       - file: sd-proxy-configure-mimetypes
       - file: sd-proxy-do-not-open-here-desktop-file
       - file: sd-proxy-do-not-open-here-script
+    - onchanges:
+      - file: sd-proxy-do-not-open-here-script
+      - file: sd-proxy-do-not-open-here-desktop-file
+      - file: sd-proxy-configure-mimetypes
 
 # Depends on FPF-controlled apt repo, already present
 # in underlying "securedrop-workstation" base template.

@@ -8,6 +8,8 @@
 # Installs 'sd-svs' AppVM, to persistently store SD data
 # This VM has no network configured.
 ##
+include:
+  - sd-workstation-template
 
 sd-svs-template:
   qvm.vm:
@@ -18,6 +20,8 @@ sd-svs-template:
     - tags:
       - add:
         - sd-workstation
+    - require:
+      - sls: sd-workstation-template
 
 sd-svs:
   qvm.vm:
@@ -32,7 +36,6 @@ sd-svs:
         - sd-workstation
     - require:
       - qvm: sd-svs-template
-      - cmd: sd-svs-template-sync-appmenus
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.
@@ -40,7 +43,8 @@ sd-svs-template-sync-appmenus:
   cmd.run:
     - name: >
         qvm-start --skip-if-running sd-svs-template &&
-        qvm-sync-appmenus sd-svs-template &&
-        qvm-shutdown --wait sd-svs-template
+        qvm-sync-appmenus sd-svs-template
     - require:
+      - qvm: sd-svs-template
+    - onchanges:
       - qvm: sd-svs-template
