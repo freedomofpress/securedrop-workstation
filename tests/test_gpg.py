@@ -43,6 +43,10 @@ class SD_GPG_Tests(SD_VM_Local_Test):
         self.vm_name = "sd-gpg"
         super(SD_GPG_Tests, self).setUp()
 
+    def test_sd_gpg_timeout(self):
+        line = "export QUBES_GPG_AUTOACCEPT=28800"
+        self.assertFileHasLine("/home/user/.profile", line)
+
     def test_we_have_the_key(self):
         self.assertEqual(get_local_fp(), get_remote_fp())
 
