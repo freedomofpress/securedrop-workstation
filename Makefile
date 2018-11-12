@@ -7,10 +7,8 @@ ifneq ($(HOST),dom0)
 endif
 
 ## Builds and provisions all VMs required for testing workstation
-all: assert-dom0 validate clean prep-dom0 \
-	sd-workstation-template \
-	sd-whonix sd-svs sd-gpg \
-	sd-proxy sd-svs-disp qubes-rpc
+all: assert-dom0 validate prep-salt
+	./scripts/provision-all
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
@@ -68,6 +66,11 @@ prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@sudo cp -r sd-svs /srv/salt/sd
 	@sudo cp -r sd-workstation /srv/salt/sd
 	@sudo cp dom0/* /srv/salt/
+	sudo find /srv/salt -maxdepth 1 -type f -iname '*.top' \
+		| xargs -n1 basename \
+		| sed -e 's/\.top$$//g' \
+		| xargs sudo qubesctl top.enable
+
 #sudo cp -r sd-svs-disp /srv/salt/sd  # nothing there yet...
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
