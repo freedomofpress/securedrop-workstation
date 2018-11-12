@@ -13,24 +13,11 @@ include:
   - qvm.template-whonix-gw
   - qvm.sys-firewall
 
-sd-whonix-template:
-  qvm.vm:
-    - name: sd-whonix-template
-    - clone:
-      - source: whonix-gw-14
-      - label: purple
-    - tags:
-      - add:
-        - sd-workstation
-    - require:
-      - pkg: qubes-template-whonix-gw-14
-      - qvm: sys-firewall
-
 sd-whonix:
   qvm.vm:
     - name: sd-whonix
     - present:
-      - template: sd-whonix-template
+      - template: whonix-gw-14
       - label: purple
       - mem: 500
     - prefs:
