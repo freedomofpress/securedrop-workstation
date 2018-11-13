@@ -131,8 +131,8 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 - The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) is installed in `sd-svs` and will be used to access the SecureDrop server Journalist Interface via the SecureDrop proxy.
 - The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-proxy) is installed in `sd-proxy` to communicate to the SecureDrop server Journalist Interface via `sd-whonix`.
 - Within `sd-svs`, the SecureDrop client will open all submissions in the `sd-svs-disp` disposable VM.
-- `config.json.sample` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
-
+- `config.json.example` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
+- `sd-journalist.sec.example` is an example GPG private key for use in decrypting submissions. It must match the public key set on a SecureDrop server used for testing. Before use, you should copy it to `sd-journalist.sec`, or store the submission key used with your SecureDrop server as `sd-journalist.sec`.
 
 ### Development
 
