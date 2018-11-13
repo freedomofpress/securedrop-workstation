@@ -216,40 +216,41 @@ This section outlines the threat model for the SecureDrop workstation, and shoul
 
 As the SecureDrop workstation is not Internet-reachable, an attacker must first obtain code execution on a virtual machine. This can be achieved through a malicious SecureDrop submission, websites visited by a journalist or a vulnerability in the provisioning code and its dependencies. The Virtual Machine in which the adversary obtains code execution will dictate what information is potentially compromised, as well as the attack surface exposed for lateral movement or escalation of privilege.
 
-#### What Compromise of the *Display VM* Can Achieve
+#### What Compromise of the *Display VM* (sd-svs-disp) Can Achieve
 
-The *Display VM* is disposable, does not have network access, and is used to display only one submission before being destroyed.
+The *Display VM* (sd-svs-disp) is disposable, does not have network access, and is used to display only one submission before being destroyed.
 
 * An adversary can read the decrypted submission.
 * An adversary can attempt to elevate their privileges and escape the VM.
 * An adversary can attempt to communicate through a side channel to another VM or device in the SecureDrop Workstation's environment.
 
-#### What Compromise of the *Journalist VM* Can Achieve
+#### What Compromise of the *Proxy VM* (sd-proxy) Can Achieve
 
 * An adversary can intercept and modify any and all communication between the Tor Browser and the SecureDrop Journalist interface, including but not limited to:
   * Send messages to (but not view messages from) sources.
   * Delete messages and submissions.
   * Access encrypted messages and submissions.
-  * Access plaintext passwords to the Journalist interface.
+  * Access plaintext journalist passwords to the Journalist interface.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What Compromise of the *Whonix Gateway VM* Can Achieve
+#### What Compromise of the *Whonix Gateway VM* (sd-whonix) Can Achieve
 
 * An adversary can obtain the Journalist Interface's ATHS cookie.
-* An adversary can intercept and modify any and all communication between the Journalist VM and the SecureDrop Journalist interface, including but not limited to:
+* An adversary can intercept and modify any and all communication between the Proxy VM and the SecureDrop Journalist interface, including but not limited to:
   * Send messages to sources (but not view messages from a source).
   * Delete messages and submissions.
   * Access encrypted messages and submissions.
-  * Access plaintext passwords to the Journalist interface.
+  * Access plaintext journalist passwords to the Journalist interface.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What compromise of the *SVS VM* can achieve
-The *SVS VM* does not have network access, and the Qubes split-gpg mechanism permits access to GPG keys from this VM.
+#### What compromise of the *SVS VM* (sd-svs) can achieve
+The *SVS VM* is where securedrop-client resides. It does not have network access, and the Qubes split-gpg mechanism permits access to GPG keys from this VM.
 * An adversary can view all decrypted submissions.
-* An adversary can decrypt arbitrary submission.
+* An adversary can decrypt arbitrary encrypted submissions.
+* An adversary can interact with the SecureDrop Journalist interface or modify SecureDrop client code.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What Compromise of the *GPG VM* Can Achieve
+#### What Compromise of the *GPG VM* (sd-gpg) Can Achieve
 
 The *GPG VM* does not have network access, and the Qubes split-gpg mechanism restricts access to this VM per the Qubes GPG RPC policy.
 
@@ -259,4 +260,4 @@ The *GPG VM* does not have network access, and the Qubes split-gpg mechanism res
 
 #### What Compromise of *dom0* Can Achieve
 
-*Dom0* can do all of the above: spawn arbitrary virtual machines, access all data, modify all SecureDrop Workstation provisioning code, as well as introduce mechanisms to establish persistence and exfiltrate data.
+*Dom0* can do all of the above: spawn arbitrary virtual machines, access all data, modify all SecureDrop Workstation provisioning code, as well as introduce mechanisms to establish persistence and exfiltrate data. By design, Qubes' dom0 does not have network access, files cannot be copied to dom0, and clipboard sharing is disabled.
