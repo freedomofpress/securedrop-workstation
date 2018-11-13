@@ -2,12 +2,14 @@
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: FeaturesRequest
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: Filecopy
@@ -15,6 +17,7 @@
     ### BEGIN securedrop-workstation ###
     sd-proxy sd-svs allow
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: GetDate
@@ -51,12 +54,14 @@
     ### BEGIN securedrop-workstation ###
     sd-svs sd-gpg allow
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: GpgImportKey
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: InputKeyboard
@@ -92,18 +97,21 @@
     $tag:sd-svs-disp-vm sd-svs allow
     sd-svs $dispvm:sd-svs-disp allow
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: OpenURL
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: PdfConvert
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: ReceiveUpdates
@@ -119,6 +127,7 @@
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: SyncAppMenus
@@ -148,18 +157,21 @@
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: VMRootShell
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: VMShell
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     $anyvm $tag:sd-workstation deny
+    $tag:sd-workstation $anyvm deny
     ### END securedrop-workstation ###
 
 - policy: WindowIconUpdater
