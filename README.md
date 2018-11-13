@@ -1,20 +1,20 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/freedomofpress/securedrop?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-![Example of viewing a submitted document inside Qubes](docs/images/step6-view-cropped.png)
+![Example of viewing submitted documents inside Qubes OS using the SecureDrop Client](docs/images/client-with-documents.png)
 
 ## Bringing SecureDrop to Qubes
 
 This project aims to make journalists' experience working with SecureDrop less onerous while retaining the current security and privacy features SecureDrop provides. We're doing that by moving the set of journalist-facing tools, which currently spans multiple Tails installations and requires physical USB drives to move data, to a single computer running multiple virtual machines, with data moved as automatically and transparently as possible between otherwise isolated VMs.
 
-This project is under active development, has known bugs and shortcomings, and is not ready for end users. This README is geared towards interested technical users and developers.
+**IMPORTANT:** This project is in alpha, has known bugs and shortcomings, and should not be used in production environments. This README is geared towards interested technical users and developers.
 
 ### Detailed Rationale
 
 SecureDrop's [architecture](https://docs.securedrop.org/en/latest/overview.html#infrastructure) and [threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html) are proven, but the current approach also has major drawbacks:
 
-- Journalists must access a separate, airgapped device to even validate that a submission is relevant. This is very onerous, and may reduce the reliance on SecureDrop overall.
+- Journalists must access a separate, airgapped device to even validate that a submission is relevant. The airgapped workflow is complex and slow, and may reduce the reliance on SecureDrop overall.
 
-- The complexity of the setup and the usage procedures create operational security risks. For example, journalists may accidentally boot up the wrong device using the _Secure Viewing Station_ (SVS) USB drive, breaking the airgap, or they may attempt "workarounds" to shortcut the onerous process of checking for submissions.
+- The complexity of the setup and the usage procedures create operational security risks. For example, journalists may accidentally boot up the wrong device using the _Secure Viewing Station_ (SVS) USB drive, breaking the airgap, or they may attempt "workarounds" to shortcut the laborious process of checking for submissions.
 
 - Applying security updates to the SVS is difficult, which may cause administrators to wait a long time before doing so. While the SVS is airgapped, an insecure SVS still exposes additional vectors of attack, especially since the journalist is by design opening unknown files on the workstation.
 
@@ -32,7 +32,7 @@ However, the Qubes OS approach is not without downsides. It stands and falls wit
 
 While we are strongly committed to piloting the use of Qubes OS for SecureDrop, no final decision has been made to move to this new architecture. This decision will require a full audit of this new approach, consideration of alternatives, and extensive validation with SecureDrop's current user community.
 
-### Using This Repo
+### Installation
 
 Installing this project is involved. It requires an up-to-date Qubes 4.0 installation running on a machine with at least 12GB of RAM. You'll need access to a SecureDrop staging server as well.
 
@@ -60,8 +60,8 @@ Decide on a VM to use for development. Clone this repo to your preferred locatio
 
 Next we need to do some SecureDrop-specific configuration:
 
-- edit `config.json` to include your values for the Journalist hidden service `.onion` hostname and PSK.
-- Replace the `sd-journalist.sec` file in the root directory with the GPG private key used to encrypt submissions in your test SecureDrop instance. The included key is the one used by default in the SecureDrop staging instance.
+- create a `config.json` based on `config.json.example` and include your values for the Journalist hidden service `.onion` hostname and PSK.
+- create an `sd-journalist.sec` file in the root directory with the ASCII-armored GPG private key used to encrypt submissions in your test SecureDrop instance. The included key `sd-journalist.sec` is the one used by default in the SecureDrop staging instance.
 
 Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM. That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`:
 
@@ -83,20 +83,149 @@ Once the configuration is done and this directory is copied to `dom0`, you must 
 make all
 ```
 
-The build process takes quite a while. You will be presented with a dialogue asking how to connect to Tor: you should be able to select the default option and continue. You may wish to increase the scrollback in the dom0 terminal from 1000 (the default) to 100000, to ensure you can review any errors in the verbose output.
+The build process takes quite a while. You will be presented with a dialog asking how to connect to Tor: you should be able to select the default option and continue. You may wish to increase the scrollback in the dom0 terminal from 1000 (the default) to 100000, to ensure you can review any errors in the verbose output.
+
+**NOTE:** Due to [issue #202](https://github.com/freedomofpress/securedrop-workstation/issues/202), the installation may fail with disk quota errors. If this happens, reboot the entire workstation and run `make all` again.
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
 
-*note* If you've previously installed sd-workstation before January 2018, you may need to run this in dom0 once, by hand, in order to install cleanly:
+#### Using the SecureDrop Client
 
-    sudo qubesctl top.disable sd-dispvm
 
-#### Initial Use
+Once your workstation environment is set up, you will be able to manage messages and submissions through a graphical user interface.
 
-From the "Q" menu, open SecureDrop Client in the `sd-svs` machine.
+First, power on the workstation. When prompted, enter the *Disk Password* and press Enter to unlock the workstation. Then, when the login dialog box appears, enter the *Login Password* and click **Log in**.
 
-Once you've logged in, select submissions to download.
-That download kicks off a series of steps (described below) which will eventually leave decrypted messages in the SecureDrop Client interface, and files that are clicked will be opened in a disposable VM.
+To launch the SecureDrop Client, open the “Q” menu in the top left corner. Select the SecureDrop Client from the `sd-svs` menu.
+
+##### Signing in
+
+You should see a login prompt similar to the following:
+
+![Sign-in Prompt](docs/images/signin.png)
+
+In the background, you will see any previously downloaded messages. This is intended behavior: You do not have to sign into the server to browse the messages and files you have downloaded using the client. To work offline, press Esc to close the sign-in dialog.
+
+If the sign-in fails, make sure to wait for another Two-Factor Code before trying again. To troubleshoot, verify that you can successfully sign in by visiting the .onion address of your Journalist Interface in the Tor browser in the sd-proxy AppVM.
+
+##### Viewing messages and documents
+
+After the sign-in or the next time you attempt to view encrypted content, you will be prompted by a dialog asking “Do you allow VM ‘sd-svs’ to access your GPG keys (now and for the following 28800 seconds)?”. Click **Yes**.
+
+Once you are successfully signed in, you should see a screen similar to the following:
+
+![Client with Messages](docs/images/client-with-messages.png)
+
+On the left-hand side, you will see a list of sources who have submitted messages or documents to your SecureDrop instance. Each source is represented by a two word designation like “controlled gate”. You can display the messages and documents associated with a source by clicking its entry in the list.
+
+On the right-hand side, you will see the messages and documents associated with the currently selected source, in chronological order (newest at the bottom).
+
+Replies, if any, from onboarded journalists to SecureDrop will appear in the conversation flow.
+
+When the client starts, it will begin downloading messages and replies, and immediately decrypt them such that it can show the decrypted content in the conversation view. This will produce a request to access your GPG keys as described above, and is part of normal behavior.
+
+Because of their potential size, documents are not downloaded immediately to the workstation. To download a document from the server, click its entry, which should say something like “Download (10MB)” for a 10MB file.
+
+To open a downloaded file, click the “Open” icon. Note that we do not currently display the filenames of files that have been downloaded and decrypted, but this will be [done in a future release](https://github.com/freedomofpress/securedrop-client/issues/163).
+
+Opening a file in this manner will launch a non-networked [disposable Virtual Machine](https://www.qubes-os.org/doc/dispvm/) with the Debian GNU/Linux operating system. This process takes several seconds. You will see a Qubes OS notification telling you that the DispVM is starting. After a few seconds, another notification will be displayed telling you that the DispVM has started.
+
+Do not repeatedly click the “Open” icon; instead, wait for the process to complete. Your workstation memory limits the number of disposable VMs you can launch; we recommend closing previously opened documents before opening new ones.
+
+Files are opened in disposable VMs to ensure that any malware contained within files cannot access any other part of the workstation. The disposable VMs do not have Internet access, to prevent exfiltration of data through embedded resources or scripts.  Changes you make within the disposable VM will be lost after you close the associated window(s).
+
+**Note:** If an appropriate application is not available in the disposable VM, you will be alerted with the following dialog: “Unable to handle mimetype of the requested file (exit status: 768)!”. Click **OK**. The DispVM will shut down and be deleted. You should speak to your administrator or Freedom of the Press Foundation support staff about being able to open this file type.
+
+While you are logged in, the workstation will check for new messages and documents every 5 minutes. You can also force a check by clicking the “Refresh” button.
+
+Closing the client application will sign you out of the server. If you manually sign out using the “Sign out” button, you can browse previously downloaded messages and documents without Internet connectivity.
+
+After you have completed your session, we strongly recommend shutting down the workstation (as opposed to sleeping the system) and storing it in a secure location.
+
+Replies and Source Deletion will be added in the next major release of the SecureDrop Workstation.
+
+
+##### Exporting documents
+
+**WARNING:** Opening files from an unknown origin presents certain risks (malware, fingerprinting). While the workstation helps reduce these risks by offering VM-level isolation, transferring documents to another host without the same level of isolation may expose you to these risks. Using tools to sanitize submitted documents, such as right-clicking a .pdf and selecting "Convert to trusted PDF" in Qubes OS, may help mitigate some of these risks. Further mitigating these risks will be a focus of future development.
+
+Exporting documents directly from within the SecureDrop Client is not currently supported, but you can export documents manually via USB by following these steps:
+
+1. Create an export VM based on `sd-workstation-template`.
+   1. Click the Qubes menu in the upper left of the screen.
+   2. Click **Create Qubes VM**
+   3. Name the VM `sd-export`
+   4. Set the template as `sd-workstation-template`
+   5. Set networking to (none).
+   6. Click **OK** to create the VM.
+2. Start the VM. Again from the Qubes menu:
+   1. Select "Domain: sd-export"
+   2. Click "export: Files". This will launch the file manager in the export VM.
+   3. Insert your USB drive into the workstation. A notification will pop up indicating the name of your USB device, e.g. "Innostor_PenDrive".
+   4. In the upper right hand side of your screen, there is a small icon in the system tray with a USB drive. Click that icon.
+   5. Select the name of your USB drive.
+   6. Click the **+** icon next to the `sd-export` VM.
+3. You can use the command line in `sd-svs` to manually move selected files:
+
+```
+qvm-copy-to-vm sd-export ~/.securedrop_client/data/name-of-file
+```
+
+4. You may now use the File manager that you opened in `sd-export` to move files from `~/QubesIncoming/sd-svs` to the USB drive. Delete the original file from `~/QubesIncoming/sd-svs` once it has been moved. Note that the drive and files are not encrypted, so ensure that the key is properly erased and/or destroyed after use.
+
+The development plan is to provide functionality in the sd-svs client that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
+
+##### Transferring files via OnionShare
+1. Create an `sd-export-template` VM based on fedora-28:
+   1. Left click on the Qubes menu in the upper left, right click on `fedora-28` and left click on **Clone Qube**
+   2. Name this machine `sd-export-template`
+   3. In a dom0 terminal, run `qvm-run sd-export-template gnome-terminal`
+   4. Install OnionShare: `sudo dnf install onionshare`
+   5. Shut down the template (sudo poweroff)
+2. Create a new AppVM based on `sd-export-template`
+   1. Click the Qubes menu in the upper left of the screen.
+   2. Click **Create Qubes VM**
+   3. Name the VM `sd-export`
+   4. Set the template as `sd-export-template`
+   5. Set networking to sys-firewall.
+   6. Click **OK** to create the VM.
+3. Start the `sd-export` VM and open OnionShare
+   1. In the Qubes menu on the top-left, select `sd-export` and left click on "OnionShare"
+   2. Click on the wheel at the bottom left of the screen and de-select ""Stop sharing after first download" (this due to a [known bug in OnionShare](https://github.com/micahflee/onionshare/issues/812))
+4. You can use the command line in `sd-svs` to manually move selected files (this part will be replaced by functionality in the `sd-svs` client):
+
+```
+qvm-copy-to-vm sd-export ~/.securedrop_client/data/name-of-file
+```
+
+5. You may now return to the OnionShare window, click on add and select the file you transferred from `sd-svs` by browsing to `~/QubesIncoming/sd-svs`.
+6. On the target machine, navigate to the Tor onion service URL provided by OnionShare using the Tor Browser to retrieve the file.
+7. Close OnionShare and delete the decrypted submission on `sd-export` from ~/QubesIncoming/sd-svs
+
+##### Printing
+
+Printing directly from the sd-svs AppVM or the disposable VMs will not be supported. The development plan is to instruct admins to install printer drivers in a template associated with a new printing VM. This template will not be shared with any other VMs.
+
+#### Automatic updates
+
+The `securedrop-update` script will automatically update packages in all TemplateVMs, as well as dom0, as part of a daily cron job. This script will also run the salt provisioning logic to ensure the state is consistent. Because AppVMs must be rebooted after a TemplateVM upgrade, a message will inform users to reboot their workstations to apply changes.
+
+To update workstation provisioning logic, one must use the `work` AppVM that was created during the install. From your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
+
+```
+git fetch --tags
+git tag -v <tag>
+git checkout <tag>
+```
+
+In dom0:
+
+```
+make clone
+make all
+```
+
+In the future, we plan on shipping a SecureDrop Workstation installer package as an RPM package in dom0 to automatically update the salt provisioning logic.
 
 ### Architecture
 
