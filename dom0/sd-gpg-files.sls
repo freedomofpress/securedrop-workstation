@@ -37,7 +37,7 @@ sd-gpg-import-submission-key:
     - require:
       - file: sd-gpg-create-keyring-directory
   cmd.run:
-    - name: sudo -u user gpg --import /tmp/sd-journalist.sec
+    - name: sudo -u user gpg --import /home/user/.gnupg/sd-journalist.sec
     - require:
       - file: sd-gpg-import-submission-key
     - onchanges:
