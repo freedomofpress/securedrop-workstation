@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+#
+# Source file for docker actions on rpm tooling containers
+# Should be sourced with digest hash as an arg
+
+export ROOT_DIR="$(git rev-parse --show-toplevel)"
+. "${ROOT_DIR}/scripts/rpm-docker-ver"
+export TAG="${RPM_BUILD_VER:0:10}"
+export LOCAL_IMG="fpf.local/rpmbuilder:${TAG}"
+export USER_RPMDIR="/home/user/rpmbuild"
+
+function build_local_base {
+    # Build a local revision of quay.io/freedomofpress/rpmbuilder. Needed to pass UIDs without
+    # doing privilege escalation hoops at run-time
+    docker build --build-arg="RPM_HASH=${RPM_BUILD_VER}" \
+                 --build-arg=USERID="$(id -u)" \
+                 -t "${LOCAL_IMG}" \
+                 -f scripts/rpmbuilder.Dockerfile scripts/ 2>&1 1> /dev/null
+}
+
+function docker_cmd_wrapper() {
+    mkdir -p "${ROOT_DIR}/dist" || true
+
+    docker run -it --rm \
+               -v "${ROOT_DIR}:/sd" \
+               -v "${ROOT_DIR}/rpm_spec:${USER_RPMDIR}/SPECS" \
+               -v "${ROOT_DIR}/dist:${USER_RPMDIR}/SOURCES" \
+               -v "${ROOT_DIR}/artifacts/RPMBUILD:${USER_RPMDIR}/BUILD" \
+               -v "${ROOT_DIR}/artifacts/RPMBUILDROOT:${USER_RPMDIR}/BUILDROOT" \
+               -v "${ROOT_DIR}/artifacts/SRPMS:${USER_RPMDIR}/SRPMS" \
+               -v "${ROOT_DIR}/artifacts/RPMS:${USER_RPMDIR}/RPMS" \
+               -v "${ROOT_DIR}/artifacts/repo_staging:/rpm_in" \
+               -v "${ROOT_DIR}/artifacts/repo_snapshot:/rpm_out" \
+               -it "${LOCAL_IMG}" \
+               $@
+}

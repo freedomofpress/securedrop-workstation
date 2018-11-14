@@ -1,6 +1,4 @@
 HOST=$(shell hostname)
-# maps to label 0.6.0.1-1.fc25
-RPM_BUILD_VER=957d2953870c72aec6d5faf3ce5a0666def3667de5dee0b94294905e2f065f38
 
 assert-dom0: ## Confirms command is being run under dom0
 ifneq ($(HOST),dom0)
@@ -14,8 +12,11 @@ all: assert-dom0 validate clean update-fedora-templates			\
 	sd-whonix sd-svs sd-gpg	\
 	sd-journalist sd-svs-disp
 
-build-dom0-rpm: ## Builds rpm package to be installed on dom0
-	@./scripts/rpm-dom0-package "${RPM_BUILD_VER}"
+build-rpm-docker: ## Builds local docker container with injected userid
+	@./scripts/rpm-docker-build
+
+build-dom0-rpm: build-rpm-docker ## Builds rpm package to be installed on dom0
+	@./scripts/rpm-dom0-package
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0

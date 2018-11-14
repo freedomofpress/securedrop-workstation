@@ -10,6 +10,7 @@ autopep8 = "*"
 boto3 = "*"
 flake8 = "*"
 ipdb = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3"

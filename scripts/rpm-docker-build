@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+#
+# Builds local docker container for rpm tooling
+# $1 - Digest Hash of base docker container to use
+
+set -u
+set -e
+
+export CUR_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+. "${CUR_DIR}/rpm-docker-source"
+
+build_local_base
