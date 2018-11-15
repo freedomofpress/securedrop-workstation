@@ -42,16 +42,16 @@ Before trying to use this project, install [Qubes 4.0](https://www.qubes-os.org/
 
 After installing Qubes, you must update both dom0 and debian-9 template VM to include the latest version of the `qubes-kernel-vm-support` package.
 
-##### dom0
+##### `dom0`
 
-Open a terminal in dom0 by clicking on the Qubes menu top-right of the screen and left-clicking on Terminal Emulator and run:
+Open a terminal in `dom0` by clicking on the Qubes menu top-right of the screen and left-clicking on Terminal Emulator and run:
 
 ```
 sudo qubes-dom0-update
 ```
 
-##### debian-9
-Open a terminal in the debian-9 TemplateVM and run:
+##### `debian-9`
+Open a terminal in the `debian-9` TemplateVM and run:
 
 ```
 sudo apt-get update
@@ -65,7 +65,7 @@ After verifying that the latest version of `qubes-kernel-vm-support` is installe
 sudo poweroff
 ```
 
-#### Download, Configure, Copy to dom0
+#### Download, Configure, Copy to `dom0`
 
 Decide on a VM to use for development. Clone this repo to your preferred location on that VM.
 
@@ -106,9 +106,9 @@ When the installation process completes, a number of new VMs will be available o
 
 Proceed to the following steps to clean up templates on workstation, which are necessary due to the inclusion of end-of-life templates in Qubes 4.0.
 
-##### Upgrading `sys-net`, `sys-usb` and `sys-firewall` to fedora-28
+##### Upgrading `sys-net`, `sys-usb` and `sys-firewall` to `fedora-28`
 
-Qubes 4.0 ships with end-of-life fedora-26 templates which are used by default for `sys-net`, `sys-firewall` and `sys-usb`. You need to manually upgrade `sys-net`, `sys-firewall` and `sys-usb` VMs to fedora-28 by running the following commands in dom0:
+Qubes 4.0 ships with end-of-life `fedora-26` templates which are used by default for `sys-net`, `sys-firewall` and `sys-usb`. You need to manually upgrade `sys-net`, `sys-firewall` and `sys-usb` VMs to `fedora-28` by running the following commands in `dom0`:
 
 ```
 qvm-kill sys-net
@@ -125,9 +125,9 @@ qvm-start sys-usb
 
 ```
 
-Any other fedora-26 VMs you may have created or that are installed by default (`work`, `personal`, `untrusted`, `vault`) should also be updated in the same manner.
+Any other `fedora-26` VMs you may have created or that are installed by default (`work`, `personal`, `untrusted`, `vault`) should also be updated in the same manner.
 
-You will also need to update the default disposable VM template to fedora-28:
+You will also need to update the default disposable VM template to `fedora-28`:
 
 ```
 qvm-create --template fedora-28 --label red fedora-28-dvm
@@ -135,39 +135,39 @@ qvm-prefs fedora-28-dvm template_for_dispvms True
 qubes-prefs default_dispvm fedora-28-dvm
 ```
 
-You can then delete the end-of-life fedora-26 template in dom0 by running:
+You can then delete the end-of-life `fedora-26` template in `dom0` by running:
 
 ```
 sudo dnf remove qubes-template-fedora-26
 ```
 
-If this command produces an error, open the Qubes VM Manager and ensure that there are no remaining VMs using the fedora-26 template.
+If this command produces an error, open the Qubes VM Manager and ensure that there are no remaining VMs using the `fedora-26` template.
 
 #### Upgrading `sys-whonix` and `whonix-ws` AppVMs to Whonix 14
 
-Qubes 4.0 also ships with end-of-life Whonix templates (`whonix-gw` and `whonix-ws`).`sys-whonix` is used by `sd-whonix` to fetch updates, and should be upgraded. You should destroy `whonix-gw` from the Qubes VM Manager and re-provision a new `sys-whonix` AppVM based on `whonix-gw-14` with the option **provides network**. You will need to delete the `whonix-ws-dvm` and `anon-whonix` VMs. You can then remove the end-of-life templates by running the following commands in dom0:
+Qubes 4.0 also ships with end-of-life Whonix templates (`whonix-gw` and `whonix-ws`).`sys-whonix` is used by `sd-whonix` to fetch updates, and should be upgraded. You should destroy `whonix-gw` from the Qubes VM Manager and re-provision a new `sys-whonix` AppVM based on `whonix-gw-14` with the option **provides network**. You will need to delete the `whonix-ws-dvm` and `anon-whonix` VMs. You can then remove the end-of-life templates by running the following commands in `dom0`:
 
 ```
 sudo dnf remove qubes-template-whonix-gw
 sudo dnf remove qubes-template-whonix-ws
 ```
 
-Upon release, Qubes 4.0.1 will no longer ship fedora-26 or older Whonix templates, and the above steps will no longer be necessary.
+Upon release, Qubes 4.0.1 will no longer ship `fedora-26` or older Whonix templates, and the above steps will no longer be necessary.
 
-Finally, update all the templates and reboot the machine. Your workstation will then be ready for use. In dom0, run:
+Finally, update all the templates and reboot the machine. Your workstation will then be ready for use. In `dom0`, run:
 
 ```
 sudo securedrop-update
 ```
 
-#### Using the SecureDrop Client
+#### Using the *SecureDrop Client*
 
 
 Once your workstation environment is set up, you will be able to manage messages and submissions through a graphical user interface.
 
 First, power on the workstation. When prompted, enter the *Disk Password* and press Enter to unlock the workstation. Then, when the login dialog box appears, enter the *Login Password* and click **Log in**.
 
-To launch the SecureDrop Client, open the “Q” menu in the top left corner. Select the SecureDrop Client from the `sd-svs` menu.
+To launch the *SecureDrop Client*, open the “Q” menu in the top left corner. Select "SecureDrop Client" from the `sd-svs` menu.
 
 ##### Signing in
 
@@ -177,7 +177,7 @@ You should see a login prompt similar to the following:
 
 In the background, you will see any previously downloaded messages. This is intended behavior: You do not have to sign into the server to browse the messages and files you have downloaded using the client. To work offline, press Esc to close the sign-in dialog.
 
-If the sign-in fails, make sure to wait for another Two-Factor Code before trying again. To troubleshoot, verify that you can successfully sign in by visiting the .onion address of your Journalist Interface in the Tor browser in the sd-proxy AppVM.
+If the sign-in fails, make sure to wait for another Two-Factor Code before trying again. To troubleshoot, verify that you can successfully sign in by visiting the .onion address of your *Journalist Interface* in the Tor browser in the `sd-proxy` AppVM.
 
 ##### Viewing messages and documents
 
@@ -213,14 +213,14 @@ Closing the client application will sign you out of the server. If you manually 
 
 After you have completed your session, we strongly recommend shutting down the workstation (as opposed to sleeping the system) and storing it in a secure location.
 
-Replies and Source Deletion will be added in the next major release of the SecureDrop Workstation.
+Replies and Source Deletion will be added in the next major release of the *SecureDrop Workstation*.
 
 
 ##### Exporting documents
 
 **WARNING:** Opening files from an unknown origin presents certain risks (malware, fingerprinting). While the workstation helps reduce these risks by offering VM-level isolation, transferring documents to another host without the same level of isolation may expose you to these risks. Using tools to sanitize submitted documents, such as right-clicking a .pdf and selecting "Convert to trusted PDF" in Qubes OS, may help mitigate some of these risks. Further mitigating these risks will be a focus of future development.
 
-Exporting documents directly from within the SecureDrop Client is not currently supported, but you can export documents manually via USB by following these steps:
+Exporting documents directly from within the *SecureDrop Client* is not currently supported, but you can export documents manually via USB by following these steps:
 
 1. Create an export VM based on `sd-workstation-template`.
    1. Click the Qubes menu in the upper left of the screen.
@@ -244,13 +244,13 @@ qvm-copy-to-vm sd-export ~/.securedrop_client/data/name-of-file
 
 4. You may now use the File manager that you opened in `sd-export` to move files from `~/QubesIncoming/sd-svs` to the USB drive. Delete the original file from `~/QubesIncoming/sd-svs` once it has been moved. Note that the drive and files are not encrypted, so ensure that the key is properly erased and/or destroyed after use.
 
-The development plan is to provide functionality in the sd-svs client that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
+The development plan is to provide functionality in the *SecureDrop Client* that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
 
 ##### Transferring files via OnionShare
-1. Create an `sd-export-template` VM based on fedora-28:
+1. Create an `sd-export-template` VM based on `fedora-28`:
    1. Left click on the Qubes menu in the upper left, right click on `fedora-28` and left click on **Clone Qube**
    2. Name this machine `sd-export-template`
-   3. In a dom0 terminal, run `qvm-run sd-export-template gnome-terminal`
+   3. In a `dom0` terminal, run `qvm-run sd-export-template gnome-terminal`
    4. Install OnionShare: `sudo dnf install onionshare`
    5. Shut down the template (sudo poweroff)
 2. Create a new AppVM based on `sd-export-template`
@@ -275,11 +275,11 @@ qvm-copy-to-vm sd-export ~/.securedrop_client/data/name-of-file
 
 ##### Printing
 
-Printing directly from the sd-svs AppVM or the disposable VMs will not be supported. The development plan is to instruct admins to install printer drivers in a template associated with a new printing VM. This template will not be shared with any other VMs.
+Printing directly from the `sd-svs` AppVM or the disposable VMs will not be supported. The development plan is to instruct admins to install printer drivers in a template associated with a new printing VM. This template will not be shared with any other VMs.
 
 #### Automatic updates
 
-The `securedrop-update` script will automatically update packages in all TemplateVMs, as well as dom0, as part of a daily cron job. This script will also run the salt provisioning logic to ensure the state is consistent. Because AppVMs must be rebooted after a TemplateVM upgrade, a message will inform users to reboot their workstations to apply changes.
+The `securedrop-update` script will automatically update packages in all TemplateVMs, as well as `dom0`, as part of a daily cron job. This script will also run the salt provisioning logic to ensure the state is consistent. Because AppVMs must be rebooted after a TemplateVM upgrade, a message will inform users to reboot their workstations to apply changes.
 
 To update workstation provisioning logic, one must use the `work` AppVM that was created during the install. From your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
 
@@ -289,36 +289,36 @@ git tag -v <tag>
 git checkout <tag>
 ```
 
-In dom0:
+In `dom0`:
 
 ```
 make clone
 make all
 ```
 
-In the future, we plan on shipping a SecureDrop Workstation installer package as an RPM package in dom0 to automatically update the salt provisioning logic.
+In the future, we plan on shipping a *SecureDrop Workstation* installer package as an RPM package in `dom0` to automatically update the salt provisioning logic.
 
 ### Architecture
 
-The current architecture replaces the `Journalist Workstation` and `Secure Viewing Station` Tails installations with specially-configured Qubes VMs; these are the VMs the user will primarily interact with. There are a number of other configured VMs which provide ancillary services.
+The current architecture replaces the *Journalist Workstation* and *Secure Viewing Station* Tails installations with specially-configured Qubes VMs; these are the VMs the user will primarily interact with. There are a number of other configured VMs which provide ancillary services.
 
 ![(Data Flow Diagram for the SecureDrop Workstation)](docs/images/data-flow-diagram.png)
 
 Currently, the following VMs are provisioned:
 
-- `sd-proxy` is where the SecureDrop proxy resides, which allows the non-networked `sd-svs` vm to communicate with the Journalist Interface over Tor..
-- `sd-svs` is a non-networked VM in which the SecureDrop Client runs used to store and explore submissions after they're unarchived and decrypted. Any files opened in this VM are opened in a disposable VM.
-- `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the `Journalist Interface`.
+- `sd-proxy` is where the SecureDrop proxy resides, which allows the non-networked `sd-svs` vm to communicate with the *Journalist Interface* over Tor.
+- `sd-svs` is a non-networked VM in which the *SecureDrop Client* runs used to store and explore submissions after they're unarchived and decrypted. Any files opened in this VM are opened in a disposable VM.
+- `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the *Journalist Interface*.
 - `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
 - `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files.
 
 Submissions are processed in the following steps:
 
-1. Journalist uses the SecureDrop Client to access the Journalist Interface via the Journalist API. After logging in, the journalist clicks
+1. Journalist uses the *SecureDrop Client* to access the *Journalist Interface* via the Journalist API. After logging in, the journalist clicks
 on any submission of interest.
-2. The SecureDrop client will use `sd-gpg` to decrypt the submission using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
-5. The decrypted submission is stored on the `sd-svs` Secure Viewing Station VM, where it's placed in a local database.
-6. Any file opened by the SecureDrop Client in the Secure Viewing Station is opened in a Disposable VM, largely mitigating attacks from malicious content.
+2. The *SecureDrop Client* will use `sd-gpg` to decrypt the submission using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
+5. The decrypted submission is stored on the `sd-svs` *Secure Viewing Station VM*, where it's placed in a local database.
+6. Any file opened by the *SecureDrop Client* in the *Secure Viewing Station VM* is opened in a Disposable VM, largely mitigating attacks from malicious content.
 
 See below for a closer examination of this process, and see `docs/images` for screenshots related to the steps above.
 
@@ -327,10 +327,10 @@ See below for a closer examination of this process, and see `docs/images` for sc
 This project can be broken neatly into two parts: 1) a set of salt states and `top` files which configure the various VMs, and 2) scripts and system configuration files which set up the document handling process.
 
 Qubes uses SaltStack internally for VM provisionining and configuration management (see https://www.qubes-os.org/doc/salt/), so it's natural for us to use it as well. The `dom0` directory contains salt `.top` and `.sls` files used to provision the VMs noted above.
-- `Makefile` is used with the `make` command on dom0 to build the Qubes/SecureDrop installation, and also contains some development and testing features.
-- The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) is installed in `sd-svs` and will be used to access the SecureDrop server Journalist Interface via the SecureDrop proxy.
-- The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-proxy) is installed in `sd-proxy` to communicate to the SecureDrop server Journalist Interface via `sd-whonix`.
-- Within `sd-svs`, the SecureDrop client will open all submissions in the `sd-svs-disp` disposable VM.
+- `Makefile` is used with the `make` command on `dom0` to build the Qubes/SecureDrop installation, and also contains some development and testing features.
+- The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) is installed in `sd-svs` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
+- The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-proxy) is installed in `sd-proxy` to communicate to the SecureDrop server *Journalist Interface* via `sd-whonix`.
+- Within `sd-svs`, the *SecureDrop Client* will open all submissions in the `sd-svs-disp` disposable VM.
 - `config.json.example` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
 - `sd-journalist.sec.example` is an example GPG private key for use in decrypting submissions. It must match the public key set on a SecureDrop server used for testing. Before use, you should copy it to `sd-journalist.sec`, or store the submission key used with your SecureDrop server as `sd-journalist.sec`.
 
@@ -360,7 +360,7 @@ Be aware that running tests *will* power down running SecureDrop VMs, and may re
 
 ## Building the Templates
 
-1. Create a fedora-28 AppVM for building
+1. Create a `fedora-28` AppVM for building
 2. Increase the disk size to at least 15GB (as the build uses over 10GB)
 3. Import the QubesOS master key and the GPG key used to sign tags (see https://www.qubes-os.org/security/verifying-signatures/)
 4. Run `make template` in the top-level of this repository.
@@ -390,7 +390,7 @@ make test
 
 ## Threat model
 
-This section outlines the threat model for the SecureDrop workstation, and should complement [SecureDrop's threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html). This document is always a work in progress, if you have any questions or comments, please open an issue on [GitHub](https://github.com/freedomofpress/securedrop-workstation) or send an email to [securedrop@freedom.press](mailto:securedrop@freedom.press).
+This section outlines the threat model for the *SecureDrop Workstation*, and should complement [SecureDrop's threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html). This document is always a work in progress, if you have any questions or comments, please open an issue on [GitHub](https://github.com/freedomofpress/securedrop-workstation) or send an email to [securedrop@freedom.press](mailto:securedrop@freedom.press).
 
 ### Assumptions
 
@@ -399,10 +399,10 @@ This section outlines the threat model for the SecureDrop workstation, and shoul
 * The SecureDrop *Application* and *Monitor* servers are properly installed and configured.
 * Operational security, administration and usage of the SecureDrop instance follows the guidance provided by the SecureDrop documentation.
 
-#### Assumptions About the Securedrop Workstation Install
+#### Assumptions About the *Securedrop Workstation* Install
 
-* SecureDrop workstation was installed correctly
-* Updates are applied to SecureDrop Workstation provisioning code, VM templates and dom0 as they are available.
+* *SecureDrop Workstation* was installed correctly
+* Updates are applied to *SecureDrop Workstation* provisioning code, VM templates and `dom0` as they are available.
 
 #### Assumptions About the World
 
@@ -414,50 +414,50 @@ This section outlines the threat model for the SecureDrop workstation, and shoul
 
 ### Attack Scenarios
 
-As the SecureDrop workstation is not Internet-reachable, an attacker must first obtain code execution on a virtual machine. This can be achieved through a malicious SecureDrop submission, websites visited by a journalist or a vulnerability in the provisioning code and its dependencies. The Virtual Machine in which the adversary obtains code execution will dictate what information is potentially compromised, as well as the attack surface exposed for lateral movement or escalation of privilege.
+As the *SecureDrop Workstation* is not Internet-reachable, an attacker must first obtain code execution on a virtual machine. This can be achieved through a malicious SecureDrop submission, websites visited by a journalist or a vulnerability in the provisioning code and its dependencies. The Virtual Machine in which the adversary obtains code execution will dictate what information is potentially compromised, as well as the attack surface exposed for lateral movement or escalation of privilege.
 
-#### What Compromise of the *Display VM* (sd-svs-disp) Can Achieve
+#### What Compromise of the *Display VM* (`sd-svs-disp`) Can Achieve
 
 The *Display VM* (sd-svs-disp) is disposable, does not have network access, and is used to display only one submission before being destroyed.
 
 * An adversary can read the decrypted submission.
 * An adversary can attempt to elevate their privileges and escape the VM.
-* An adversary can attempt to communicate through a side channel to another VM or device in the SecureDrop Workstation's environment.
+* An adversary can attempt to communicate through a side channel to another VM or device in the *SecureDrop Workstation's* environment.
 
-#### What Compromise of the *Proxy VM* (sd-proxy) Can Achieve
+#### What Compromise of the *Proxy VM* (`sd-proxy`) Can Achieve
 
-* An adversary can intercept and modify any and all communication between the Tor Browser and the SecureDrop Journalist interface, including but not limited to:
+* An adversary can intercept and modify any and all communication between the Tor Browser and the SecureDrop *Journalist Interface*, including but not limited to:
   * Send messages to (but not view messages from) sources.
   * Delete messages and submissions.
   * Access encrypted messages and submissions.
-  * Access plaintext journalist passwords to the Journalist interface.
+  * Access plaintext journalist passwords to the *Journalist Interface*.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What Compromise of the *Whonix Gateway VM* (sd-whonix) Can Achieve
+#### What Compromise of the *Whonix Gateway VM* (`sd-whonix`) Can Achieve
 
-* An adversary can obtain the Journalist Interface's ATHS cookie.
-* An adversary can intercept and modify any and all communication between the Proxy VM and the SecureDrop Journalist interface, including but not limited to:
+* An adversary can obtain the *Journalist Interface's* ATHS cookie.
+* An adversary can intercept and modify any and all communication between the Proxy VM and the SecureDrop *Journalist Interface*, including but not limited to:
   * Send messages to sources (but not view messages from a source).
   * Delete messages and submissions.
   * Access encrypted messages and submissions.
-  * Access plaintext journalist passwords to the Journalist interface.
+  * Access plaintext journalist passwords to the *Journalist Interface*.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What compromise of the *SVS VM* (sd-svs) can achieve
+#### What compromise of the *SVS VM* (`sd-svs`) can achieve
 The *SVS VM* is where securedrop-client resides. It does not have network access, and the Qubes split-gpg mechanism permits access to GPG keys from this VM.
 * An adversary can view all decrypted submissions.
 * An adversary can decrypt arbitrary encrypted submissions.
-* An adversary can interact with the SecureDrop Journalist interface or modify SecureDrop client code.
+* An adversary can interact with the SecureDrop *Journalist Interface* or modify SecureDrop client code.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What Compromise of the *GPG VM* (sd-gpg) Can Achieve
+#### What Compromise of the *GPG VM* (`sd-gpg`) Can Achieve
 
 The *GPG VM* does not have network access, and the Qubes split-gpg mechanism restricts access to this VM per the Qubes GPG RPC policy.
 
 * An adversary can decrypt and encrypted message or submission.
-* An adversary can store and view any message that is being decrypted by the SecureDrop Workstation.
+* An adversary can store and view any message that is being decrypted by the *SecureDrop Workstation*.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What Compromise of *dom0* Can Achieve
+#### What Compromise of `dom0` Can Achieve
 
-*Dom0* can do all of the above: spawn arbitrary virtual machines, access all data, modify all SecureDrop Workstation provisioning code, as well as introduce mechanisms to establish persistence and exfiltrate data. By design, Qubes' dom0 does not have network access, files cannot be copied to dom0, and clipboard sharing is disabled.
+`dom0` can do all of the above: spawn arbitrary virtual machines, access all data, modify all *SecureDrop Workstation* provisioning code, as well as introduce mechanisms to establish persistence and exfiltrate data. By design, Qubes' `dom0` does not have network access, files cannot be copied to `dom0`, and clipboard sharing is disabled.
