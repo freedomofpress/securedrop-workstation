@@ -129,16 +129,16 @@ qubes-prefs default_dispvm fedora-28-dvm
 You can then delete the end-of-life fedora-26 template in dom0 by running:
 
 ```
-sudo yum remove qubes-template-fedora-26
+sudo dnf remove qubes-template-fedora-26
 ```
 
 #### Upgrading `sys-whonix` and `whonix-ws` AppVMs to Whonix 14
 
-Qubes 4.0 also ships with end-of-life Whonix templates (`whonix-gw` and `whonix-ws`).`sys-whonix` is used by `sd-whonix` to fetch updates, and should be upgraded. You should destroy `whonix-gw` from the Qube Manager and re-provision a new `sys-whonix` AppVM with the potion **provides network** based on `whonix-gw-14`. You will need to delete the `whonix-ws-dvm` and `anon-whonix` vmsYou can then remove the end-of-life templates:
+Qubes 4.0 also ships with end-of-life Whonix templates (`whonix-gw` and `whonix-ws`).`sys-whonix` is used by `sd-whonix` to fetch updates, and should be upgraded. You should destroy `whonix-gw` from the Qube Manager and re-provision a new `sys-whonix` AppVM with the potion **provides network** based on `whonix-gw-14`. You will need to delete the `whonix-ws-dvm` and `anon-whonix` VMs. You can then remove the end-of-life templates:
 
 ```
-sudo yum remove qubes-template-whonix-gw
-sudo yum remove qubes-template-whonix-ws
+sudo dnf remove qubes-template-whonix-gw
+sudo dnf remove qubes-template-whonix-ws
 ```
 
 Upon release, Qubes 4.0.1 will no longer ship fedora-26 or older Whonix templates, and the above steps will no longer be necessary.
