@@ -167,7 +167,7 @@ Once your workstation environment is set up, you will be able to manage messages
 
 First, power on the workstation. When prompted, enter the *Disk Password* and press Enter to unlock the workstation. Then, when the login dialog box appears, enter the *Login Password* and click **Log in**.
 
-To launch the *SecureDrop Client*, open the “Q” menu in the top left corner. Select "SecureDrop Client" from the `sd-svs` menu.
+To launch the *SecureDrop Client*, temporarily until [this issue](https://github.com/freedomofpress/securedrop-workstation/issues/198) is resolved, you should from a `dom0` terminal `qvm-run sd-svs securedrop-client`. This will start the *SecureDrop Client* in the `sd-svs` AppVM.
 
 ##### Signing in
 
