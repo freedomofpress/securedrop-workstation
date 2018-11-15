@@ -5,15 +5,19 @@
 
 """
 
+import awscli.clidriver
+import argparse
 import boto3
 import hashlib
 import subprocess
 import os
+import shutil
 import sys
 import yaml
 
-RAW_BUCKET = "dev-bin.ops.securedrop.org/rpmraw-wrkstn"
-REPO_BUCKET = "dev-bin.ops.securedrop.org/rpmrepo-wrkstn"
+
+RAW_BUCKET_DIR = "rpmraw-wrkstn"
+REPO_BUCKET_DIR = "rpmrepo-wrkstn"
 LOCAL_STAGING_DIR = "artifacts/repo_staging"
 LOCAL_SNAPSHOT_DIR = "artifacts/repo_snapshot"
 ROOT_DIR = subprocess.check_output(
@@ -22,13 +26,28 @@ ROOT_DIR = subprocess.check_output(
 
 class RpmPublish(object):
 
-    def __init__(self, root_dir=ROOT_DIR):
-        self.s3 = boto3.resource('s3')
+    def __init__(self,
+                 repo_file,
+                 archive_path,
+                 staging_dir,
+                 snapshot_dir,
+                 aws_profile='default',
+                 root_dir=ROOT_DIR):
+
+        self.boto_profile = aws_profile
+        session = boto3.session.Session(profile_name=self.boto_profile)
+        self.s3 = session.client('s3')
+
         self.docker_tags = self._grab_docker_meta()
-        self.repo_cofig = self.parse_repo_config()
         self.root_dir = root_dir
+        self.repo_file = repo_file
         self.source_script = os.path.join(
             root_dir, "scripts/rpm-docker-source")
+        self.repo_cfg = self.parse_repo_config()
+        self.archive_upload_path = self.repo_cfg['archive_path']
+        self.repo_upload_path = self.repo_cfg['repo_path']
+        self.staging_dir = staging_dir
+        self.snapshot_dir = snapshot_dir
 
     def _grab_docker_meta(self):
         docker_metadata = {}
@@ -43,16 +62,15 @@ class RpmPublish(object):
         return docker_metadata
 
     def parse_repo_config(self,
-                          config=os.path.join(ROOT_DIR, 'rpm-repo.yml'),
-                          repo="dev_repo"):
+                          repo="repo"):
         '''
             Return a yaml dictionary from a conig file defining the repository
         '''
 
-        with open(config, 'r') as config_file:
+        with open(self.repo_file, 'r') as config_file:
             return yaml.load(config_file)[repo]
 
-    def docker_repo_build(self):
+    def docker_base_container_build(self) -> None:
         """ To be run prior to running repo commands,
             builds local container with UID injected
         """
@@ -61,12 +79,95 @@ class RpmPublish(object):
             executable='/bin/bash',
             shell=True)
 
-    def docker_rpm_command(self, cmd):
+    def _docker_rpm_command(self, cmd) -> None:
         """ Wrap pass commands to an rpm docker instance """
         subprocess.check_output(
             ". {} && docker_cmd_wrapper {}".format(self.source_script, cmd),
             executable='/bin/bash',
             shell=True)
+
+    def create_rpm_repo(self) -> None:
+        """ Creates an RPM repo using 'createrepo' tooling """
+        repo_cmd = "createrepo -o /rpm_out /rpm_in"
+        s3publish._docker_rpm_command(repo_cmd)
+
+    def archive_packages(self) -> None:
+        """ Push raw packages up to s3 for archival """
+
+        for rpm in self.repo_cfg['rpms']:
+            rpm_realpath = os.path.join(self.staging_dir, rpm['file'])
+            with open(rpm_realpath, 'rb') as rpm_content:
+                import ipdb
+                ipdb.set_trace()
+                self.s3.put_object(Bucket=self.repo_cfg['bucket'],
+                                   Key=os.path.join(
+                                       self.archive_upload_path, rpm['file']),
+                                   Body=rpm_content.read())
+
+    def push_local_repo(self) -> None:
+        """ Take whats in the local snapshot directory and sync to s3 """
+
+        sync_cmd = ["s3",
+                    "sync",
+                    self.snapshot_dir,
+                    "s3://" + "/".join([cfg['bucket'], self.repo_upload_path]),
+                    "--delete",
+                    "--exclude",
+                    ".gitignore"]
+        print(" ".join(sync_cmd))
+        self._aws_cli(sync_cmd)
+
+    def copy_packages_to_snapshot_dir(self) -> None:
+        for rpm in self.repo_cfg['rpms']:
+            rpm_realpath = os.path.join(self.staging_dir, rpm['file'])
+            rpm_snappath = os.path.join(self.snapshot_dir, rpm['file'])
+            shutil.copy(rpm_realpath, rpm_snappath)
+
+    def verify_packages_hashes(self) -> bool:
+        """ Verify packgage hashes match what is in the yml config file """
+
+        # TODO - Ensure no dangling files in staging directory
+        # IE - FILES THAT SHOULDNT EXIST THERE
+        for rpm in self.repo_cfg['rpms']:
+            try:
+                rpm_realpath = os.path.join(self.staging_dir, rpm['file'])
+                sha256hash = rpm['hash']
+                with open(rpm_realpath, 'rb') as artifact:
+                    actual_hash = hashlib.sha256(artifact.read()).hexdigest()
+                    if sha256hash != actual_hash:
+                        print("ERR: Hash verify failed on {}".format(rpm_realpath))
+
+            except KeyError:
+                print("ERR: Ensure you have an rpms section defined within the "
+                      "repo yml with 'file' and 'hash' attributes")
+                return False
+
+            else:
+                return True
+
+    def _aws_cli(self, *cmd) -> None:
+        """ s3 sync not implemented in boto3 :(
+            source: https://github.com/boto/boto3/issues/358#issuecomment-372086466
+        """
+        old_env = dict(os.environ)
+        try:
+
+            # Environment
+            env = os.environ.copy()
+            env['LC_CTYPE'] = u'en_US.UTF'
+            env['AWS_PROFILE'] = self.boto_profile
+            os.environ.update(env)
+
+            # Run awscli in the same process
+            exit_code = awscli.clidriver.create_clidriver().main(*cmd)
+
+            # Deal with problems
+            if exit_code > 0:
+                raise RuntimeError(
+                    'AWS CLI exited with code {}'.format(exit_code))
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
 
 
 def verify_gpg(filename,
@@ -106,40 +207,52 @@ def wait_for_sig(path_to_file,
         input("Please provide detached signature {}".format(sig_file))
         wait_for_sig(path_to_file, fingerprint, sig_ext)
     elif not verify_gpg(path_to_file, fingerprint=fingerprint, extension='.asc'):
-        print("oh shit")
+        print("repometa data sig fail")
+        sys.exit(1)
 
 
 if __name__ == '__main__':
-    s3publish = RpmPublish()
+    argparser = argparse.ArgumentParser(description=__doc__)
+    argparser.add_argument(
+        '--repofile', default='dev-rpm-repo.yml', help="Repo snapshot file to use")
+    argparser.add_argument(
+        '--awsprofile', default='infrawww', help="AWS boto profile to use")
+    args = argparser.parse_args()
+
+    s3publish = RpmPublish(repo_file=args.repofile,
+                           archive_path=RAW_BUCKET_DIR,
+                           staging_dir=LOCAL_STAGING_DIR,
+                           snapshot_dir=LOCAL_SNAPSHOT_DIR,
+                           aws_profile=args.awsprofile
+                           )
     # Parse config file
     cfg = s3publish.parse_repo_config()
     # Pull down remote file if doesnt exist locally
     # Verify yml file
-    if not verify_gpg('rpm-repo.yml', cfg['fingerprint']):
+    if not verify_gpg(args.repofile, cfg['fingerprint']):
         print("ERR: The yml file isnt properly signed")
         sys.exit(1)
-    # Loop through verification
-    rpmrepo_includes = ""
-    for rpm in cfg['rpms']:
-        try:
-            rpm_realpath = os.path.join(LOCAL_STAGING_DIR, rpm['file'])
-            sha256hash = rpm['hash']
-            with open(rpm_realpath, 'rb') as artifact:
-                actual_hash = hashlib.sha256(artifact.read()).hexdigest()
-                if sha256hash != actual_hash:
-                    print("ERR: Hash verify failed on {}".format(rpm_realpath))
-                    sys.exit(1)
-            # Add to our repocreate list
-            rpmrepo_includes += "-n /rpm_in/{}".format(rpm['file'])
 
-        except KeyError:
-            print("ERR: Ensure you have an rpms section defined within the "
-                  "repo yml with 'file' and 'hash' attributes")
-            sys.exit(1)
-    # generate_repo
-    s3publish.docker_repo_build()
-    s3publish.docker_rpm_command(
-        "createrepo -o /rpm_out {} /".format(rpmrepo_includes))
+    subprocess.check_output(
+        ['git', 'clean', '-Xdf', LOCAL_SNAPSHOT_DIR])
+
+    # Pull down raw files in case they are missing locally
+
+    if not s3publish.verify_packages_hashes():
+        sys.exit(1)
+    else:
+        s3publish.copy_packages_to_snapshot_dir()
+
+    # Generate base docker image
+    s3publish.docker_base_container_build()
+
+    # Create RPM repo
+    s3publish.create_rpm_repo()
+
+    # Wait for signature
     wait_for_sig(os.path.join(LOCAL_SNAPSHOT_DIR, "repodata/repomd.xml"),
                  fingerprint=cfg['fingerprint'])
+
     # push_repo
+    s3publish.archive_packages()
+    s3publish.push_local_repo()

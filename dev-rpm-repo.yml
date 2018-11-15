@@ -1,0 +1,10 @@
+---
+repo:
+  bucket: dev-bin.ops.securedrop.org
+  archive_path: rpmraw-wrkstn
+  repo_path: rpmrepo-wrkstn
+  # Apt-test key
+  fingerprint: 4ED79CC3362D7D12837046024A3BE4A92211B03C
+  rpms:
+    - file: securedrop-workstation-0.0.1-1.fc25.noarch.rpm
+      hash: 9d274d28dd1e691f50bab54e6daa00b8e084bb1792d5532df11b33acee6131b9
