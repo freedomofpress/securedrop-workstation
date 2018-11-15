@@ -9,6 +9,9 @@
 # This VM has no network configured.
 ##
 
+include:
+  - sd-workstation-template
+
 sd-gpg:
   qvm.vm:
     - name: sd-gpg
@@ -20,3 +23,5 @@ sd-gpg:
     - tags:
       - add:
         - sd-workstation
+    - require:
+      - sls: sd-workstation-template

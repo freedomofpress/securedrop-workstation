@@ -18,16 +18,27 @@ sd-gpg-increase-keyring-access-timeout:
     - content: |
         export QUBES_GPG_AUTOACCEPT=28800
 
+sd-gpg-create-keyring-directory:
+  file.directory:
+    - name: /home/user/.gnupg
+    - user: user
+    - group: user
+    - mode: 700
+
 sd-gpg-import-submission-key:
   file.managed:
-    - name: /tmp/sd-journalist.sec
+    - name: /home/user/.gnupg/sd-journalist.sec
     - source: salt://sd/sd-journalist.sec
     - user: user
     - group: user
-    - mode: 644
+    - mode: 600
     # Don't print private key to stdout
     - show_changes: False
-  cmd.run:
-    - name: sudo -u user gpg --import /tmp/sd-journalist.sec
     - require:
+      - file: sd-gpg-create-keyring-directory
+  cmd.run:
+    - name: sudo -u user gpg --import /home/user/.gnupg/sd-journalist.sec
+    - require:
+      - file: sd-gpg-import-submission-key
+    - onchanges:
       - file: sd-gpg-import-submission-key

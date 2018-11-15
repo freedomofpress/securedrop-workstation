@@ -5,6 +5,7 @@ set -e
 set -u
 set -o pipefail
 
+
 declare -a sd_workstation_vm_names=(
   sd-gpg
   sd-proxy
@@ -13,7 +14,6 @@ declare -a sd_workstation_vm_names=(
   sd-svs-template
   sd-workstation-template
   sd-whonix
-  sd-whonix-template
   sd-svs-disp
   sd-svs-disp-template
 )

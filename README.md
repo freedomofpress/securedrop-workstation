@@ -40,7 +40,18 @@ Installing this project is involved. It requires an up-to-date Qubes 4.0 install
 
 Before trying to use this project, install [Qubes 4.0](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
 
-After installing Qubes, update your debian-9 template VM to include the latest version of the `qubes-kernel-vm-support` package. Open a terminal in the debian-9 VM and run:
+After installing Qubes, you must update both dom0 and debian-9 template VM to include the latest version of the `qubes-kernel-vm-support` package.
+
+##### dom0
+
+Open a terminal in dom0 by clicking on the Qubes menu top-right of the screen and left-clicking on Terminal Emulator and run:
+
+```
+sudo qubes-dom0-update
+```
+
+##### debian-9
+Open a terminal in the debian-9 TemplateVM and run:
 
 ```
 sudo apt-get update
@@ -70,7 +81,7 @@ Qubes provisioning is handled by Salt on `dom0`, so this project must be copied 
 After that initial manual step, the code in your development VM may be copied into place on `dom0` by setting the `SECUREDROP_DEV_VM` and `SECUREDROP_DEV_DIR` environmental variables to reflect the VM and directory to which you've cloned this repo, and running `make clone` from the root of the project on `dom0`:
 
 ```
-export SECUREDROP_DEV_DIR=sd-dev    # set to your dev VM
+export SECUREDROP_DEV_DIR=work    # set to your dev VM
 export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory
 make clone
 ```
@@ -85,9 +96,58 @@ make all
 
 The build process takes quite a while. You will be presented with a dialog asking how to connect to Tor: you should be able to select the default option and continue. You may wish to increase the scrollback in the dom0 terminal from 1000 (the default) to 100000, to ensure you can review any errors in the verbose output.
 
-**NOTE:** Due to [issue #202](https://github.com/freedomofpress/securedrop-workstation/issues/202), the installation may fail with disk quota errors. If this happens, reboot the entire workstation and run `make all` again.
+**NOTE:** Due to [issue #202](https://github.com/freedomofpress/securedrop-workstation/issues/202), the installation may fail with disk quota errors. If this happens, reboot the entire workstation and run `make all` again. The error will contain the following informating in your dom0 terminal:
+
+```
+qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (error type: Disk quota exceeded) '/usr/lib/qubes/qrexec-client-vm dom0 qubes.Receiveupdates /usr/lib/qubes/qfile-agent /var/lib/qubes/dom0-updates/packages/*.rpm' failed with exit code 1!
+```
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
+
+Proceed to the following steps to clean up templates on workstation, which are necessary due to the inclusion of end-of-life templates in Qubes 4.0.
+
+##### Upgrading `sys-net`, `sys-usb` and `sys-firewall` to fedora-28
+
+Qubes 4.0 ships with end-of-life fedora-26 templates which are used by default for `sys-net`, `sys-firewall` and `sys-usb`. One needs to manually upgrade their `sys-net`, `sys-firewall` and `sys-usb` VMs to fedora-28. The following commands should be run for all VMs that use the fedora-26 template:
+
+```
+qvm-kill sys-net
+qvm-prefs sys-net template fedora-28
+qvm-start sys-net
+```
+
+Any other VM you may have created (e.g., `work`) should also be updated.
+
+You will also need to update the default dispvm template to fedora-28:
+
+```
+qvm-create --template fedora-28 --label red fedora-28-dvm
+qvm-prefs fedora-28-dvm template_for_dispvms True
+qubes-prefs default_dispvm fedora-28-dvm
+```
+
+You can then delete the end-of-life fedora-26 template in dom0 by running:
+
+```
+sudo dnf remove qubes-template-fedora-26
+```
+
+#### Upgrading `sys-whonix` and `whonix-ws` AppVMs to Whonix 14
+
+Qubes 4.0 also ships with end-of-life Whonix templates (`whonix-gw` and `whonix-ws`).`sys-whonix` is used by `sd-whonix` to fetch updates, and should be upgraded. You should destroy `whonix-gw` from the Qube Manager and re-provision a new `sys-whonix` AppVM with the potion **provides network** based on `whonix-gw-14`. You will need to delete the `whonix-ws-dvm` and `anon-whonix` VMs. You can then remove the end-of-life templates:
+
+```
+sudo dnf remove qubes-template-whonix-gw
+sudo dnf remove qubes-template-whonix-ws
+```
+
+Upon release, Qubes 4.0.1 will no longer ship fedora-26 or older Whonix templates, and the above steps will no longer be necessary.
+
+Finally, update all the templates and reboot the machine. Your workstation will then be ready for use. In dom0, run:
+
+```
+sudo securedrop-update
+```
 
 #### Using the SecureDrop Client
 

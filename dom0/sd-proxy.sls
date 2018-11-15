@@ -39,20 +39,6 @@ sd-proxy:
       - pkg: qubes-template-whonix-ws-14
       - qvm: sd-whonix
       - qvm: sd-proxy-template
-      - cmd: sd-proxy-install-python-futures
-
-# Temporary workarounds for sd-proxy:
-#
-#   * python-futures required bootstrap Salt support
-#   * python-qt4 required for GUI window to inform people not to take actions in this VM
-#
-sd-proxy-install-python-futures:
-  cmd.run:
-    - name: >
-        qvm-run -a whonix-ws-14
-        "python -c 'import concurrent.futures' ||
-        { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
-        qvm-shutdown --wait whonix-ws-14
 
 # Permit the SecureDrop Proxy to manage Client connections
 sd-proxy-dom0-securedrop.Proxy:

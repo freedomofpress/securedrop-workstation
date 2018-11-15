@@ -41,8 +41,8 @@ dom0-securedrop-icon:
     - user: root
     - group: root
     - mode: 644
-  require:
-    - file: dom0-securedrop-icons-directory
+    - require:
+      - file: dom0-securedrop-icons-directory
 
 # Install latest templates required for SDW VMs.
 dom0-install-fedora-28-template:
@@ -72,3 +72,32 @@ dom0-enabled-apparmor-on-whonix-ws-14-template:
       - kernelopts: "nopat apparmor=1 security=apparmor"
     - require:
       - pkg: dom0-install-whonix-14-templates
+
+dom0-create-opt-securedrop-directory:
+  file.directory:
+    - name: /opt/securedrop
+
+# Temporary workaround to bootstrap Salt support on target.
+dom0-whonix-gw-14-install-python-futures:
+  cmd.run:
+    - name: >
+        test -f /opt/securedrop/whonix-gw-14-python-futures ||
+        qvm-run -a whonix-gw-14
+        "python -c 'import concurrent.futures' ||
+        { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
+        qvm-shutdown --wait whonix-gw-14 &&
+        touch /opt/securedrop/whonix-gw-14-python-futures
+    - require:
+      - file: dom0-create-opt-securedrop-directory
+
+dom0-whonix-ws-14-install-python-futures:
+  cmd.run:
+    - name: >
+        test -f /opt/securedrop/whonix-ws-14-python-futures ||
+        qvm-run -a whonix-ws-14
+        "python -c 'import concurrent.futures' ||
+        { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
+        qvm-shutdown --wait whonix-ws-14 &&
+        touch /opt/securedrop/whonix-ws-14-python-futures
+    - require:
+      - file: dom0-create-opt-securedrop-directory
