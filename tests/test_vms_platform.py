@@ -52,7 +52,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             # so expect only that string.
             self.assertEqual(results, "Listing...")
         else:
-            cmd = "dnf check-update"
+            cmd = "sudo dnf check-update"
             # Will raise CalledProcessError if updates available
             stdout, stderr = vm.run(cmd)
             # 'stdout' will contain timestamped progress info; ignore it
