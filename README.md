@@ -102,9 +102,13 @@ The build process takes quite a while. You will be presented with a dialog askin
 qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (error type: Disk quota exceeded) '/usr/lib/qubes/qrexec-client-vm dom0 qubes.Receiveupdates /usr/lib/qubes/qfile-agent /var/lib/qubes/dom0-updates/packages/*.rpm' failed with exit code 1!
 ```
 
+When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
+
+Proceed to the following steps to clean up templates on workstation, which are necessary due to the inclusion of end-of-life templates in Qubes 4.0.
+
 ##### Upgrading `sys-net`, `sys-usb` and `sys-firewall` to fedora-28
 
-Qubes 4.0 ships with end-of-life fedora-26 templates which are used by default for `sys-net`, `sys-firewall` and `sys-usb`. One needs to manually upgrade their `sys-net`, `sys-firewall` and `sys-usb` VMs to fedora-28. The following commands should be run for all three VMs:
+Qubes 4.0 ships with end-of-life fedora-26 templates which are used by default for `sys-net`, `sys-firewall` and `sys-usb`. One needs to manually upgrade their `sys-net`, `sys-firewall` and `sys-usb` VMs to fedora-28. The following commands should be run for all VMs that use the fedora-26 template:
 
 ```
 qvm-kill sys-net
@@ -122,15 +126,28 @@ qvm-prefs fedora-28-dvm template_for_dispvms True
 qubes-prefs default_dispvm fedora-28-dvm
 ```
 
-Upon release, Qubes 4.0.1 will no longer ship fedora-26 templates, and the above steps will no longer be necessary.
+You can then delete the end-of-life fedora-26 template in dom0 by running:
+
+```
+sudo yum remove qubes-template-fedora-26
+```
+
+#### Upgrading `sys-whonix` and `whonix-ws` AppVMs to Whonix 14
+
+Qubes 4.0 also ships with end-of-life Whonix templates (`whonix-gw` and `whonix-ws`).`sys-whonix` is used by `sd-whonix` to fetch updates, and should be upgraded. You should destroy `whonix-gw` from the Qube Manager and re-provision a new `sys-whonix` AppVM with the potion **provides network** based on `whonix-gw-14`. You will need to delete the `whonix-ws-dvm` and `anon-whonix` vmsYou can then remove the end-of-life templates:
+
+```
+sudo yum remove qubes-template-whonix-gw
+sudo yum remove qubes-template-whonix-ws
+```
+
+Upon release, Qubes 4.0.1 will no longer ship fedora-26 or older Whonix templates, and the above steps will no longer be necessary.
 
 Finally, update all the templates and reboot the machine. Your workstation will then be ready for use. In dom0, run:
 
 ```
 sudo securedrop-update
 ```
-
-When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
 
 #### Using the SecureDrop Client
 
@@ -186,9 +203,6 @@ Closing the client application will sign you out of the server. If you manually 
 After you have completed your session, we strongly recommend shutting down the workstation (as opposed to sleeping the system) and storing it in a secure location.
 
 Replies and Source Deletion will be added in the next major release of the SecureDrop Workstation.
-
-
-#### Initial Use
 
 
 ##### Exporting documents
