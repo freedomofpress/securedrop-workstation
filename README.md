@@ -108,17 +108,26 @@ Proceed to the following steps to clean up templates on workstation, which are n
 
 ##### Upgrading `sys-net`, `sys-usb` and `sys-firewall` to fedora-28
 
-Qubes 4.0 ships with end-of-life fedora-26 templates which are used by default for `sys-net`, `sys-firewall` and `sys-usb`. One needs to manually upgrade their `sys-net`, `sys-firewall` and `sys-usb` VMs to fedora-28. The following commands should be run for all VMs that use the fedora-26 template:
+Qubes 4.0 ships with end-of-life fedora-26 templates which are used by default for `sys-net`, `sys-firewall` and `sys-usb`. You need to manually upgrade `sys-net`, `sys-firewall` and `sys-usb` VMs to fedora-28 by running the following commands in dom0:
 
 ```
 qvm-kill sys-net
 qvm-prefs sys-net template fedora-28
 qvm-start sys-net
+
+qvm-kill sys-firewall
+qvm-prefs sys-firewall template fedora-28
+qvm-start sys-firewall
+
+qvm-kill sys-usb
+qvm-prefs sys-usb template fedora-28
+qvm-start sys-usb
+
 ```
 
-Any other VM you may have created (e.g., `work`) should also be updated.
+Any other fedora-26 VMs you may have created or that are installed by default (`work`, `personal`, `untrusted`, `vault`) should also be updated in the same manner.
 
-You will also need to update the default dispvm template to fedora-28:
+You will also need to update the default disposable VM template to fedora-28:
 
 ```
 qvm-create --template fedora-28 --label red fedora-28-dvm
@@ -132,9 +141,11 @@ You can then delete the end-of-life fedora-26 template in dom0 by running:
 sudo dnf remove qubes-template-fedora-26
 ```
 
+If this command produces an error, open the Qubes VM Manager and ensure that there are no remaining VMs using the fedora-26 template.
+
 #### Upgrading `sys-whonix` and `whonix-ws` AppVMs to Whonix 14
 
-Qubes 4.0 also ships with end-of-life Whonix templates (`whonix-gw` and `whonix-ws`).`sys-whonix` is used by `sd-whonix` to fetch updates, and should be upgraded. You should destroy `whonix-gw` from the Qube Manager and re-provision a new `sys-whonix` AppVM with the potion **provides network** based on `whonix-gw-14`. You will need to delete the `whonix-ws-dvm` and `anon-whonix` VMs. You can then remove the end-of-life templates:
+Qubes 4.0 also ships with end-of-life Whonix templates (`whonix-gw` and `whonix-ws`).`sys-whonix` is used by `sd-whonix` to fetch updates, and should be upgraded. You should destroy `whonix-gw` from the Qubes VM Manager and re-provision a new `sys-whonix` AppVM based on `whonix-gw-14` with the option **provides network**. You will need to delete the `whonix-ws-dvm` and `anon-whonix` VMs. You can then remove the end-of-life templates by running the following commands in dom0:
 
 ```
 sudo dnf remove qubes-template-whonix-gw
