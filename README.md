@@ -81,7 +81,7 @@ Qubes provisioning is handled by Salt on `dom0`, so this project must be copied 
 After that initial manual step, the code in your development VM may be copied into place on `dom0` by setting the `SECUREDROP_DEV_VM` and `SECUREDROP_DEV_DIR` environmental variables to reflect the VM and directory to which you've cloned this repo, and running `make clone` from the root of the project on `dom0`:
 
 ```
-export SECUREDROP_DEV_DIR=work    # set to your dev VM
+export SECUREDROP_DEV_VM=work    # set to your dev VM
 export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory
 make clone
 ```
