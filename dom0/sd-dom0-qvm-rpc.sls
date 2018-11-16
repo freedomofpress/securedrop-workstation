@@ -42,7 +42,6 @@ dom0-rpc-qubes.OpenInVM:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $tag:sd-svs-disp-vm sd-svs allow
         sd-svs $dispvm:sd-svs-disp allow
         $anyvm $tag:sd-workstation deny
 dom0-rpc-qubes.OpenURL:
