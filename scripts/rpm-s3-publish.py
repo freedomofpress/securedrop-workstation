@@ -24,7 +24,7 @@ ROOT_DIR = subprocess.check_output(
     ["git", "rev-parse", "--show-toplevel"]).rstrip().decode("utf-8")
 
 
-class RpmPublish(object):
+class RepoPublish(object):
 
     def __init__(self,
                  repo_file,
@@ -44,6 +44,7 @@ class RpmPublish(object):
         self.source_script = os.path.join(
             root_dir, "scripts/rpm-docker-source")
         self.repo_cfg = self.parse_repo_config()
+        self.pkg_type = self.repo_cfg['type']
         self.archive_upload_path = self.repo_cfg['archive_path']
         self.repo_upload_path = self.repo_cfg['repo_path']
         self.staging_dir = staging_dir
@@ -94,11 +95,9 @@ class RpmPublish(object):
     def archive_packages(self) -> None:
         """ Push raw packages up to s3 for archival """
 
-        for rpm in self.repo_cfg['rpms']:
+        for rpm in self.repo_cfg[self.pkg_type]:
             rpm_realpath = os.path.join(self.staging_dir, rpm['file'])
             with open(rpm_realpath, 'rb') as rpm_content:
-                import ipdb
-                ipdb.set_trace()
                 self.s3.put_object(Bucket=self.repo_cfg['bucket'],
                                    Key=os.path.join(
                                        self.archive_upload_path, rpm['file']),
@@ -118,7 +117,7 @@ class RpmPublish(object):
         self._aws_cli(sync_cmd)
 
     def copy_packages_to_snapshot_dir(self) -> None:
-        for rpm in self.repo_cfg['rpms']:
+        for rpm in self.repo_cfg[self.pkg_type]:
             rpm_realpath = os.path.join(self.staging_dir, rpm['file'])
             rpm_snappath = os.path.join(self.snapshot_dir, rpm['file'])
             shutil.copy(rpm_realpath, rpm_snappath)
@@ -128,7 +127,7 @@ class RpmPublish(object):
 
         # TODO - Ensure no dangling files in staging directory
         # IE - FILES THAT SHOULDNT EXIST THERE
-        for rpm in self.repo_cfg['rpms']:
+        for rpm in self.repo_cfg[self.pkg_type]:
             try:
                 rpm_realpath = os.path.join(self.staging_dir, rpm['file'])
                 sha256hash = rpm['hash']
@@ -168,6 +167,41 @@ class RpmPublish(object):
         finally:
             os.environ.clear()
             os.environ.update(old_env)
+
+    def pull_remote_pkgs_if_missing(self) -> None:
+        """ Pull down remote packages from archive bucket if missing """
+
+        for package in self.repo_cfg[self.pkg_type]:
+            stagingpath = os.path.join(self.staging_dir, package['file'])
+
+            if not os.path.exists(stagingpath):
+                print(
+                    "DEBUG - {} not found locally. Downloading..".format(
+                        package['file']))
+                self.s3.download_file(
+                    self.repo_cfg['bucket'],
+                    "/".join([self.archive_upload_path, package['file']]),
+                    stagingpath
+                )
+
+    def check_no_extra_packages(self) -> bool:
+        """
+            Return boolean results (pass/fail) if there are extra packages found
+            in staging dir. That would be bad because one could inadvertently push
+            up superflous packages to a remote repo even though the other packages
+            passed hash validation.
+        """
+
+        pkgs_on_disk = [pkg for pkg in os.listdir(self.staging_dir) if
+                        pkg.endswith(self.repo_cfg['type'])]
+        pkgs_expected = [pkg['file'] for pkg in self.repo_cfg[self.pkg_type]]
+
+        for local_package in pkgs_on_disk:
+            if local_package not in pkgs_expected:
+                print("OH NO" + local_package)
+                return False
+
+        return True
 
 
 def verify_gpg(filename,
@@ -217,42 +251,53 @@ if __name__ == '__main__':
         '--repofile', default='dev-rpm-repo.yml', help="Repo snapshot file to use")
     argparser.add_argument(
         '--awsprofile', default='infrawww', help="AWS boto profile to use")
+    argparser.add_argument(
+        'action',
+        choices=['all', 'pull', 'createrepo', 'push'],
+        help="Action to take of the deployment process")
     args = argparser.parse_args()
 
-    s3publish = RpmPublish(repo_file=args.repofile,
-                           archive_path=RAW_BUCKET_DIR,
-                           staging_dir=LOCAL_STAGING_DIR,
-                           snapshot_dir=LOCAL_SNAPSHOT_DIR,
-                           aws_profile=args.awsprofile
-                           )
+    s3publish = RepoPublish(repo_file=args.repofile,
+                            archive_path=RAW_BUCKET_DIR,
+                            staging_dir=LOCAL_STAGING_DIR,
+                            snapshot_dir=LOCAL_SNAPSHOT_DIR,
+                            aws_profile=args.awsprofile
+                            )
     # Parse config file
     cfg = s3publish.parse_repo_config()
-    # Pull down remote file if doesnt exist locally
+
     # Verify yml file
     if not verify_gpg(args.repofile, cfg['fingerprint']):
         print("ERR: The yml file isnt properly signed")
         sys.exit(1)
 
-    subprocess.check_output(
-        ['git', 'clean', '-Xdf', LOCAL_SNAPSHOT_DIR])
-
     # Pull down raw files in case they are missing locally
+    if args.action in ['all', 'pull']:
+        s3publish.pull_remote_pkgs_if_missing()
+        if not s3publish.check_no_extra_packages():
+            print("ERROR - Extra files found")
+            sys.exit(1)
 
-    if not s3publish.verify_packages_hashes():
-        sys.exit(1)
-    else:
-        s3publish.copy_packages_to_snapshot_dir()
+    if args.action in ['all', 'createrepo']:
+        subprocess.check_output(
+            ['git', 'clean', '-Xdf', LOCAL_SNAPSHOT_DIR])
 
-    # Generate base docker image
-    s3publish.docker_base_container_build()
+        if not s3publish.verify_packages_hashes():
+            sys.exit(1)
+        else:
+            s3publish.copy_packages_to_snapshot_dir()
 
-    # Create RPM repo
-    s3publish.create_rpm_repo()
+        # Generate base docker image
+        s3publish.docker_base_container_build()
 
-    # Wait for signature
-    wait_for_sig(os.path.join(LOCAL_SNAPSHOT_DIR, "repodata/repomd.xml"),
-                 fingerprint=cfg['fingerprint'])
+        # Create RPM repo
+        s3publish.create_rpm_repo()
 
-    # push_repo
-    s3publish.archive_packages()
-    s3publish.push_local_repo()
+        # Wait for signature
+        wait_for_sig(os.path.join(LOCAL_SNAPSHOT_DIR, "repodata/repomd.xml"),
+                     fingerprint=cfg['fingerprint'])
+
+    if args.action in ['all', 'push']:
+        # push_repo
+        s3publish.archive_packages()
+        s3publish.push_local_repo()
