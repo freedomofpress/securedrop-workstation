@@ -247,31 +247,34 @@ qvm-copy-to-vm sd-export ~/.securedrop_client/data/name-of-file
 The development plan is to provide functionality in the *SecureDrop Client* that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
 
 ##### Transferring files via OnionShare
-1. Create an `sd-export-template` VM based on `fedora-28`:
-   1. Left click on the Qubes menu in the upper left, right click on `fedora-28` and left click on **Clone Qube**
-   2. Name this machine `sd-export-template`
-   3. In a `dom0` terminal, run `qvm-run sd-export-template gnome-terminal`
+1. Create an `sd-onionshare-template` VM based on `fedora-28`:
+   1. Click on the Qubes menu in the upper left, select "Template: Fedora 28", click on "fedora-28: Qube Settings", and click on **Clone Qube**
+   2. Name the cloned qube `sd-onionshare-template`
+   3. In the Qubes menu on the top-left, select "Template: sd-onionshare-template" and click on "sd-onionshare-template: Terminal"
    4. Install OnionShare: `sudo dnf install onionshare`
-   5. Shut down the template (sudo poweroff)
-2. Create a new AppVM based on `sd-export-template`
-   1. Click the Qubes menu in the upper left of the screen.
+   5. Shut down the template: `sudo poweroff`
+2. Create a new AppVM based on `sd-onionshare-template`
+   1. Click on the Qubes menu in the upper left of the screen.
    2. Click **Create Qubes VM**
-   3. Name the VM `sd-export`
-   4. Set the template as `sd-export-template`
-   5. Set networking to sys-firewall.
-   6. Click **OK** to create the VM.
-3. Start the `sd-export` VM and open OnionShare
-   1. In the Qubes menu on the top-left, select `sd-export` and left click on "OnionShare"
-   2. Click on the wheel at the bottom left of the screen and de-select ""Stop sharing after first download" (this due to a [known bug in OnionShare](https://github.com/micahflee/onionshare/issues/812))
+   3. Name the VM `sd-onionshare`
+   4. Set the template as `sd-onionshare-template`
+   5. Set networking to `sys-firewall`.
+   6. Check the box "launch settings after creation"
+   7. Click **OK** to create the VM.
+   8. In the settings, under "Applications", add OnionShare from the "Available" to the "Selected" list.
+   9. Click **OK**.
+3. Start the `sd-onionshare` VM and open OnionShare
+   1. In the Qubes menu on the top-left, select "Domain: sd-onionshare" and click on "OnionShare"
+   2. Click the settings gear on the bottom right of the OnionShare window and de-select "Stop sharing after first download" (this due to a [known bug in OnionShare](https://github.com/micahflee/onionshare/issues/812))
 4. You can use the command line in `sd-svs` to manually move selected files (this part will be replaced by functionality in the `sd-svs` client):
 
 ```
-qvm-copy-to-vm sd-export ~/.securedrop_client/data/name-of-file
+qvm-copy-to-vm sd-onionshare ~/.securedrop_client/data/name-of-file
 ```
 
 5. You may now return to the OnionShare window, click on add and select the file you transferred from `sd-svs` by browsing to `~/QubesIncoming/sd-svs`.
 6. On the target machine, navigate to the Tor onion service URL provided by OnionShare using the Tor Browser to retrieve the file.
-7. Close OnionShare and delete the decrypted submission on `sd-export` from ~/QubesIncoming/sd-svs
+7. Close OnionShare and delete the decrypted submission on `sd-onionshare` from `~/QubesIncoming/sd-svs`
 
 ##### Printing
 
