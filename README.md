@@ -86,6 +86,8 @@ export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to
 make clone
 ```
 
+**NOTE:** The destination directory on `dom0` is not customizable; it must be `securedrop-workstation` in your home directory.
+
 #### Building
 
 Once the configuration is done and this directory is copied to `dom0`, you must update existing Qubes templates and use `make` to handle all provisioning and configuration by your unprivileged user:
