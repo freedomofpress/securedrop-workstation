@@ -59,6 +59,30 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             results = stderr.rstrip().decode("utf-8")
             self.assertEqual(results, "")
 
+    def _ensure_jessie_backports_disabled(self, vm):
+        """
+        Ensures that there are no Debian Jessie repos configured in
+        apt source lists. This is only relevant for Debian Stretch,
+        on which misconfigured apt sources containing Jessie references
+        will cause apt commands to fail.
+        """
+        # Use a fileglob to account for /etc/apt/sources.list.d/, as well.
+        # Add `|| true` to ensure dom0 receives a zero exit code.
+        cmd = "grep -i jessie /etc/apt/sources.list* || true"
+        # Will raise CalledProcessError if no hits found
+        stdout, stderr = vm.run(cmd)
+        results = stdout.rstrip().decode("utf-8")
+        # We expect zero hits, so confirm output is empty string.
+        self.assertEqual(results, "")
+
+    def test_all_jessie_backports_disabled(self):
+        """
+        Asserts that all VMs lack references to Jessie in apt config.
+        """
+        for vm_name in WANTED_VMS:
+            vm = self.app.domains[vm_name]
+            self._ensure_jessie_backports_disabled(vm)
+
     def test_all_sd_vms_uptodate(self):
         """
         Asserts that all VMs have all available apt packages at the latest
