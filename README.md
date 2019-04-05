@@ -36,9 +36,9 @@ While we are strongly committed to piloting the use of Qubes OS for SecureDrop, 
 
 Installing this project is involved. It requires an up-to-date Qubes 4.0 installation running on a machine with at least 12GB of RAM. You'll need access to a SecureDrop staging server as well.
 
-#### Qubes 4.0
+#### Qubes 4.0.1
 
-Before trying to use this project, install [Qubes 4.0](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
+Before trying to use this project, install [Qubes 4.0.1](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
 
 After installing Qubes, you must update both dom0 and debian-9 template VM to include the latest version of the `qubes-kernel-vm-support` package.
 
@@ -105,62 +105,6 @@ qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (err
 ```
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
-
-Proceed to the following steps to clean up templates on workstation, which are necessary due to the inclusion of end-of-life templates in Qubes 4.0.
-
-##### Upgrading `sys-net`, `sys-usb` and `sys-firewall` to `fedora-28`
-
-Qubes 4.0 ships with end-of-life `fedora-26` templates which are used by default for `sys-net`, `sys-firewall` and `sys-usb`. You need to manually upgrade `sys-net`, `sys-firewall` and `sys-usb` VMs to `fedora-28` by running the following commands in `dom0`:
-
-```
-qvm-kill sys-net
-qvm-prefs sys-net template fedora-28
-qvm-start sys-net
-
-qvm-kill sys-firewall
-qvm-prefs sys-firewall template fedora-28
-qvm-start sys-firewall
-
-qvm-kill sys-usb
-qvm-prefs sys-usb template fedora-28
-qvm-start sys-usb
-
-```
-
-Any other `fedora-26` VMs you may have created or that are installed by default (`work`, `personal`, `untrusted`, `vault`) should also be updated in the same manner.
-
-You will also need to update the default disposable VM template to `fedora-28`:
-
-```
-qvm-create --template fedora-28 --label red fedora-28-dvm
-qvm-prefs fedora-28-dvm template_for_dispvms True
-qubes-prefs default_dispvm fedora-28-dvm
-```
-
-You can then delete the end-of-life `fedora-26` template in `dom0` by running:
-
-```
-sudo dnf remove qubes-template-fedora-26
-```
-
-If this command produces an error, open the Qube Manager and ensure that there are no remaining VMs using the `fedora-26` template.
-
-#### Upgrading `sys-whonix` and `whonix-ws` AppVMs to Whonix 14
-
-Qubes 4.0 also ships with end-of-life Whonix templates (`whonix-gw` and `whonix-ws`).`sys-whonix` is used by `sd-whonix` to fetch updates, and should be upgraded. You should destroy `whonix-gw` from the Qube Manager and re-provision a new `sys-whonix` AppVM based on `whonix-gw-14` with the option **provides network**. You will need to delete the `whonix-ws-dvm` and `anon-whonix` VMs. You can then remove the end-of-life templates by running the following commands in `dom0`:
-
-```
-sudo dnf remove qubes-template-whonix-gw
-sudo dnf remove qubes-template-whonix-ws
-```
-
-Upon release, Qubes 4.0.1 will no longer ship `fedora-26` or older Whonix templates, and the above steps will no longer be necessary.
-
-Finally, update all the templates and reboot the machine. Your workstation will then be ready for use. In `dom0`, run:
-
-```
-sudo securedrop-update
-```
 
 #### Using the *SecureDrop Client*
 
