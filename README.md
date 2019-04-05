@@ -164,6 +164,7 @@ sudo securedrop-update
 
 #### Using the *SecureDrop Client*
 
+**note:** the version of the client shipped here is currently unable to communicate with the server. Please use the [development environment](https://docs.securedrop.org/en/latest/development/setup_development.html?highlight=development#qubes) of [securedrop-client](https://github.com/freedomofpress/securedrop-client/) to test it instead, as more recent versions have that problem fixed.
 
 Once your workstation environment is set up, you will be able to manage messages and submissions through a graphical user interface.
 
