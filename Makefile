@@ -122,7 +122,7 @@ flake8: ## Lints all Python files with flake8
 # available only in the developer environment, i.e. Work VM.
 	@docker run -v $(PWD):/code -w /code --name sdw_flake8 --rm \
 		--entrypoint /code/scripts/flake8-linting \
-		quay.io/freedomofpress/ci-python \
+		python:3.5.7-slim-stretch
 
 template: ## Builds securedrop-workstation Qube template RPM
 	./builder/build-workstation-template
