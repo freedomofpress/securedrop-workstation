@@ -40,7 +40,7 @@ Installing this project is involved. It requires an up-to-date Qubes 4.0 install
 
 Before trying to use this project, install [Qubes 4.0.1](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
 
-After installing Qubes, you must update both dom0 and debian-9 template VM to include the latest version of the `qubes-kernel-vm-support` package.
+After installing Qubes, you must update both dom0 and the base templates to include the latest versions of apt packages.
 
 ##### `dom0`
 
@@ -50,20 +50,14 @@ Open a terminal in `dom0` by clicking on the Qubes menu top-right of the screen 
 sudo qubes-dom0-update
 ```
 
-##### `debian-9`
-Open a terminal in the `debian-9` TemplateVM and run:
+Finally, update all existing TemplateVMs:
 
 ```
-sudo apt-get update
-sudo apt-get upgrade
-apt-cache policy qubes-kernel-vm-support
+qubes-update-gui
 ```
 
-After verifying that the latest version of `qubes-kernel-vm-support` is installed, shut down the template VM:
+Select all VMs marked as **updates available**, then click **Next**. Once all updates have been applied, you're ready to proceed.
 
-```
-sudo poweroff
-```
 
 #### Download, Configure, Copy to `dom0`
 
