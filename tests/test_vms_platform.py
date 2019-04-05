@@ -44,20 +44,23 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         updates. Assumes VM is Debian-based, so uses apt, but supports
         `fedora=True` to use dnf instead.
         """
+        # Create custom error message, so failing test cases display
+        # which VM caused the looped check to fail.
+        fail_msg = "Unapplied updates for VM '{}'".format(vm)
         if not fedora:
             cmd = "apt list --upgradable"
             stdout, stderr = vm.run(cmd)
             results = stdout.rstrip().decode("utf-8")
             # `apt list` will always print "Listing..." to stdout,
             # so expect only that string.
-            self.assertEqual(results, "Listing...")
+            self.assertEqual(results, "Listing...", fail_msg)
         else:
             cmd = "sudo dnf check-update"
             # Will raise CalledProcessError if updates available
             stdout, stderr = vm.run(cmd)
             # 'stdout' will contain timestamped progress info; ignore it
             results = stderr.rstrip().decode("utf-8")
-            self.assertEqual(results, "")
+            self.assertEqual(results, "", fail_msg)
 
     def _ensure_jessie_backports_disabled(self, vm):
         """
