@@ -45,10 +45,10 @@ dom0-securedrop-icon:
       - file: dom0-securedrop-icons-directory
 
 # Install latest templates required for SDW VMs.
-dom0-install-fedora-28-template:
+dom0-install-fedora-29-template:
   pkg.installed:
     - pkgs:
-      - qubes-template-fedora-28
+      - qubes-template-fedora-29
 
 dom0-install-whonix-14-templates:
   pkg.installed:

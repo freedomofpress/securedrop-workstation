@@ -194,8 +194,8 @@ qvm-copy-to-vm sd-export ~/.securedrop_client/data/name-of-file
 The development plan is to provide functionality in the *SecureDrop Client* that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
 
 ##### Transferring files via OnionShare
-1. Create an `sd-onionshare-template` VM based on `fedora-28`:
-   1. Click on the Qubes menu in the upper left, select "Template: Fedora 28", click on "fedora-28: Qube Settings", and click on **Clone Qube**
+1. Create an `sd-onionshare-template` VM based on `fedora-29`:
+   1. Click on the Qubes menu in the upper left, select "Template: Fedora 29", click on "fedora-29: Qube Settings", and click on **Clone Qube**
    2. Name the cloned qube `sd-onionshare-template`
    3. In the Qubes menu on the top-left, select "Template: sd-onionshare-template" and click on "sd-onionshare-template: Terminal"
    4. Install OnionShare: `sudo dnf install onionshare`
@@ -310,7 +310,7 @@ Be aware that running tests *will* power down running SecureDrop VMs, and may re
 
 ## Building the Templates
 
-1. Create a `fedora-28` AppVM for building
+1. Create a `fedora-29` AppVM for building
 2. Increase the disk size to at least 15GB (as the build uses over 10GB)
 3. Import the QubesOS master key and the GPG key used to sign tags (see https://www.qubes-os.org/security/verifying-signatures/)
 4. Run `make template` in the top-level of this repository.

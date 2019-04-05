@@ -42,7 +42,7 @@ securedrop-update-feedback "Updating application..."
 # update only fedora template: dist_upgrade is required for debian package
 # upgrades and causes fedora template upgrades to fail.
 
-qubesctl --target fedora-28 pkg.upgrade refresh=true
+qubesctl --target fedora-29 pkg.upgrade refresh=true
 
 # upgrade all (other) templates
 qubesctl --skip-dom0 --templates \
