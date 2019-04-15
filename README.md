@@ -392,6 +392,28 @@ rpm -Kv  # will now say signatures are OK: "Digests signatures OK"
 You can then proceed with distributing the package, via the "test" or "prod" repo,
 as appropriate.
 
+## Distributing packages
+
+For the Debian packages, see https://github.com/freedomofpress/securedrop-debian-packaging/.
+For the RPM packages, such as the `securedrop-workstation` TemplateVM package, first
+build the package (e.g. `make template`), then sign the RPM, as outlined above.
+
+To upload the package to S3, you'll need valid AWS credentials. Talk to a member of the ops team.
+Once you have valid credentials configured, install the dependencies (`pipenv install`), then run:
+
+```
+./scripts/publish-rpm
+```
+
+The RPM will immediately be available in dom0. Provided you've run the Salt configurations,
+find it via:
+
+```
+sudo qubes-dom0-update --action=search qubes-template-securedrop-workstation
+```
+
+You can then install it directly.
+
 ## Threat model
 
 This section outlines the threat model for the *SecureDrop Workstation*, and should complement [SecureDrop's threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html). This document is always a work in progress, if you have any questions or comments, please open an issue on [GitHub](https://github.com/freedomofpress/securedrop-workstation) or send an email to [securedrop@freedom.press](mailto:securedrop@freedom.press).
