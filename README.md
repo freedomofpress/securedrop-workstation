@@ -356,33 +356,41 @@ git checkout <tag>
 
 ### Signing binaries/packages
 
-#### Debs
+#### Debian packages
 Apt repository Release file will be signed, containing checksum of the debs.
 
-#### Rpms
-The entire RPM must be signed. This process also requires a Fedora machine/VM on which the GPG signing key (either in GPG keyring or in qubes-split-gpg) is setup. You will need to add the public key to RPM for verification (see below).
+#### RPM packages
+The entire RPM must be signed. This process also requires a Fedora machine/VM on which
+the GPG signing key (either in GPG keyring or in qubes-split-gpg) is setup.
+You will need to add the public key to RPM for verification (see below).
 
-`rpm -Kv` indicates if digests and sigs are OK. Before signature it should not return signature, and `rpm -qi <file>.rpm` will indicate an empty Signature field.
+`rpm -Kv` indicates if digests and sigs are OK. Before signature it should not return signature,
+and `rpm -qi <file>.rpm` will indicate an empty Signature field. Set up your environment:
 
-Set up environment:
-`sudo dnf install rpm-build rpm-sign`
-Set your vault vm in /rw/config/gpg-split-domain
-Edit ~/.rpmmacros with the following contents:
 ```
+sudo dnf install rpm-build rpm-sign  # install required packages
+echo "QUBES_GPG_DOMAIN=vault" | sudo tee /rw/config/gpg-split-domain  # edit 'vault' as required
+cat << EOF > ~/.rpmmacros
 %_signature gpg
 %_gpg_name <gpg_key_id>
 %__gpg /usr/bin/qubes-gpg-client-wrapper
 %__gpg_sign_cmd %{__gpg} --no-verbose --detach-sign %{__plaintext_filename} --output %{__signature_filename}
+EOF
+```
+Now we'll sign the RPM:
+
+```
+rpm --resign <rpm>.rpm  # --addsign would allow us to apply multiple signatures to the RPM
+rpm -qi<file.rpm>  # should now show that the file is signed
+rpm -Kv  # will complain that signature is not OK: "Digests SIGNATURES NOT OK"
+# This is because the the (public) key of the RPM signing key is not present,
+# and must be added to the RPM client config to verify the signature:
+sudo rpm --import <publicKey>.asc
+rpm -Kv  # will now say signatures are OK: "Digests signatures OK"
 ```
 
-Sign the rpm:
-`rpm --resign <rpm>.rpm` (--addsign would allow us to apply multiple signatures to the RPM)
-Verify that the rpm is signed:
-`rpm -qi<file.rpm>` should now show that the file is signed
-`rpm -Kv` will complain that signature is not ok (`Digests SIGNATURES NOT OK`)
-This is because the the (public) key of the RPM signing key is not present and must be added to the RPM client config to verify the signature:
-`sudo rpm --import <publicKey>.asc`
-`rpm -Kv` will now say signatures are ok (`Digests signatures OK`)
+You can then proceed with distributing the package, via the "test" or "prod" repo,
+as appropriate.
 
 ## Threat model
 
