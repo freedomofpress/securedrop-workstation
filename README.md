@@ -75,7 +75,7 @@ Qubes provisioning is handled by Salt on `dom0`, so this project must be copied 
 After that initial manual step, the code in your development VM may be copied into place on `dom0` by setting the `SECUREDROP_DEV_VM` and `SECUREDROP_DEV_DIR` environmental variables to reflect the VM and directory to which you've cloned this repo, and running `make clone` from the root of the project on `dom0`:
 
 ```
-export SECUREDROP_DEV_VM=work    # set to your dev VM
+export SECUREDROP_DEV_VM=sd-dev    # set to your dev VM
 export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory
 make clone
 ```
@@ -331,6 +331,66 @@ pipenv shell
 apt install lintian
 make test
 ```
+## Signing sources
+
+SecureDrop Workstation code spans across the following repositories:
+
+* https://github.com/freedomofpress/securedrop-client
+* https://github.com/freedomofpress/securedrop-debian-packaging
+* https://github.com/freedomofpress/securedrop-proxy
+* https://github.com/freedomofpress/securedrop-sdk
+* https://github.com/freedomofpress/securedrop-workstation
+* https://github.com/freedomofpress/qubes-template-securedrop-workstation
+
+
+### Release
+1. For each release, a tag for each release will be signed and pushed to each of the above repos.
+
+2. Create a Makefile target in securedrop-debian-packaging repo that contains release tags / commit hashes for each repository used for the release. To verify the tag signature and check out the packaging logic:
+```
+git tag -v <tag>
+git checkout <tag>
+```
+
+3. Metadata (e.g. commit hash for release) should be tracked inside the .deb (e.g.: `/usr/share/packagename/release-info.txt`)
+
+### Signing binaries/packages
+
+#### Debian packages
+Apt repository Release file will be signed, containing checksum of the debs.
+
+#### RPM packages
+The entire RPM must be signed. This process also requires a Fedora machine/VM on which
+the GPG signing key (either in GPG keyring or in qubes-split-gpg) is setup.
+You will need to add the public key to RPM for verification (see below).
+
+`rpm -Kv` indicates if digests and sigs are OK. Before signature it should not return signature,
+and `rpm -qi <file>.rpm` will indicate an empty Signature field. Set up your environment:
+
+```
+sudo dnf install rpm-build rpm-sign  # install required packages
+echo "QUBES_GPG_DOMAIN=vault" | sudo tee /rw/config/gpg-split-domain  # edit 'vault' as required
+cat << EOF > ~/.rpmmacros
+%_signature gpg
+%_gpg_name <gpg_key_id>
+%__gpg /usr/bin/qubes-gpg-client-wrapper
+%__gpg_sign_cmd %{__gpg} --no-verbose -u %{_gpg_name} --detach-sign %{__plaintext_filename} --output %{__signature_filename}
+EOF
+```
+Now we'll sign the RPM:
+
+```
+rpm --resign <rpm>.rpm  # --addsign would allow us to apply multiple signatures to the RPM
+rpm -qi<file.rpm>  # should now show that the file is signed
+rpm -Kv  # will complain that signature is not OK: "Digests SIGNATURES NOT OK"
+# This is because the the (public) key of the RPM signing key is not present,
+# and must be added to the RPM client config to verify the signature:
+sudo rpm --import <publicKey>.asc
+rpm -Kv  # will now say signatures are OK: "Digests signatures OK"
+```
+
+You can then proceed with distributing the package, via the "test" or "prod" repo,
+as appropriate.
 
 ## Threat model
 
