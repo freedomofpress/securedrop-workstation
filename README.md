@@ -374,7 +374,7 @@ cat << EOF > ~/.rpmmacros
 %_signature gpg
 %_gpg_name <gpg_key_id>
 %__gpg /usr/bin/qubes-gpg-client-wrapper
-%__gpg_sign_cmd %{__gpg} --no-verbose --detach-sign %{__plaintext_filename} --output %{__signature_filename}
+%__gpg_sign_cmd %{__gpg} --no-verbose -u %{_gpg_name} --detach-sign %{__plaintext_filename} --output %{__signature_filename}
 EOF
 ```
 Now we'll sign the RPM:
