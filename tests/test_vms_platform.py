@@ -44,20 +44,47 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         updates. Assumes VM is Debian-based, so uses apt, but supports
         `fedora=True` to use dnf instead.
         """
+        # Create custom error message, so failing test cases display
+        # which VM caused the looped check to fail.
+        fail_msg = "Unapplied updates for VM '{}'".format(vm)
         if not fedora:
             cmd = "apt list --upgradable"
             stdout, stderr = vm.run(cmd)
             results = stdout.rstrip().decode("utf-8")
             # `apt list` will always print "Listing..." to stdout,
             # so expect only that string.
-            self.assertEqual(results, "Listing...")
+            self.assertEqual(results, "Listing...", fail_msg)
         else:
             cmd = "sudo dnf check-update"
             # Will raise CalledProcessError if updates available
             stdout, stderr = vm.run(cmd)
             # 'stdout' will contain timestamped progress info; ignore it
             results = stderr.rstrip().decode("utf-8")
-            self.assertEqual(results, "")
+            self.assertEqual(results, "", fail_msg)
+
+    def _ensure_jessie_backports_disabled(self, vm):
+        """
+        Ensures that there are no Debian Jessie repos configured in
+        apt source lists. This is only relevant for Debian Stretch,
+        on which misconfigured apt sources containing Jessie references
+        will cause apt commands to fail.
+        """
+        # Use a fileglob to account for /etc/apt/sources.list.d/, as well.
+        # Add `|| true` to ensure dom0 receives a zero exit code.
+        cmd = "grep -i jessie /etc/apt/sources.list* || true"
+        # Will raise CalledProcessError if no hits found
+        stdout, stderr = vm.run(cmd)
+        results = stdout.rstrip().decode("utf-8")
+        # We expect zero hits, so confirm output is empty string.
+        self.assertEqual(results, "")
+
+    def test_all_jessie_backports_disabled(self):
+        """
+        Asserts that all VMs lack references to Jessie in apt config.
+        """
+        for vm_name in WANTED_VMS:
+            vm = self.app.domains[vm_name]
+            self._ensure_jessie_backports_disabled(vm)
 
     def test_all_sd_vms_uptodate(self):
         """
@@ -75,8 +102,8 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         # Technically we want to know whether the sys-firewall, sys-net, and
         # sys-usb VMs have their updates installed. This test assumes those
-        # AppVMs are based on fedora-28.
-        vm_name = "fedora-28"
+        # AppVMs are based on fedora-29.
+        vm_name = "fedora-29"
         vm = self.app.domains[vm_name]
         self._ensure_packages_up_to_date(vm, fedora=True)
         vm.shutdown()
@@ -113,7 +140,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         cmd = ["qubes-prefs", "default_dispvm"]
         result = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
-        self.assertEqual(result, "fedora-28-dvm")
+        self.assertEqual(result, "fedora-29-dvm")
 
 
 def load_tests(loader, tests, pattern):

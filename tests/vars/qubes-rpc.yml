@@ -19,12 +19,12 @@
 
 - policy: GetDate
   starts_with: |-
-    $tag:anon-vm $anyvm deny
     ## Note that policy parsing stops at the first match,
     ## so adding anything below "$anyvm $anyvm action" line will have no effect
 
     ## Please use a single # to start your custom comments
 
+    $tag:anon-vm	$anyvm	deny
     $anyvm	$anyvm	allow,target=dom0
 
 - policy: GetRandomizedTime
@@ -131,12 +131,19 @@
 
 - policy: UpdatesProxy
   starts_with: |-
-    $tag:whonix-updatevm $default allow,target=sys-whonix
-    $tag:whonix-updatevm $anyvm deny
     ## Note that policy parsing stops at the first match,
     ## so adding anything below "$anyvm $anyvm action" line will have no effect
 
     ## Please use a single # to start your custom comments
+
+    # Upgrade all TemplateVMs through sys-whonix.
+    #$type:TemplateVM $default allow,target=sys-whonix
+
+    # Upgrade Whonix TemplateVMs through sys-whonix.
+    $tag:whonix-updatevm $default allow,target=sys-whonix
+
+    # Deny Whonix TemplateVMs using UpdatesProxy of any other VM.
+    $tag:whonix-updatevm $anyvm deny
 
     # Default rule for all TemplateVMs - direct the connection to sys-net
     $type:TemplateVM $default allow,target=sys-net
