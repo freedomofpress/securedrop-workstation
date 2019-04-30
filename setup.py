@@ -1,6 +1,6 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -15,7 +15,7 @@ setuptools.setup(
     python_requires=">=3.5",
     url="https://github.com/freedomofpress/securdrop-workstation",
     data_files=[
-        ("share/securedrop-workstation", ["config.json.sample"]),
+        ("share/securedrop-workstation", ["config.json.example"]),
         ("bin/", ["dom0/securedrop-update"]),
     ],
     classifiers=(
