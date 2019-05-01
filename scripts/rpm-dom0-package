@@ -23,17 +23,10 @@ function build_local_base {
 }
 
 function docker_cmd_wrapper() {
-    mkdir -p "${ROOT_DIR}/dist" || true
-
     docker run -it --rm \
                -v "${ROOT_DIR}:/sd" \
-               -v "${ROOT_DIR}/rpm_spec:${USER_RPMDIR}/SPECS" \
-               -v "${ROOT_DIR}/dist:${USER_RPMDIR}/SOURCES" \
-               -v "${ROOT_DIR}/artifacts/RPMBUILD:${USER_RPMDIR}/BUILD" \
-               -v "${ROOT_DIR}/artifacts/RPMBUILDROOT:${USER_RPMDIR}/BUILDROOT" \
-               -v "${ROOT_DIR}/artifacts/SRPMS:${USER_RPMDIR}/SRPMS" \
-               -v "${ROOT_DIR}/artifacts/RPMS:${USER_RPMDIR}/RPMS" \
-               -it "${LOCAL_IMG}" \
+               -v "${ROOT_DIR}/rpm-build:${USER_RPMDIR}" \
+               "${LOCAL_IMG}" \
                $@
 }
 
@@ -43,6 +36,16 @@ build_local_base
 
 docker_cmd_wrapper /usr/bin/python3 setup.py sdist
 
+# Remove any cached tarballs. We must do this because the container image config
+# needlessly marks the rpmbuild dir as a volume. If we don't remove tarballs
+# before building, the subsequent cp command will fail.
+docker_cmd_wrapper find "${USER_RPMDIR}" -type f -iname '*.tar.gz' -delete
+
+# The tarball will exist in the /sd workdir, copy it to the RPM build dir.
+docker_cmd_wrapper find /sd -type f -iname '*.tar.gz' -exec cp -u -t "${USER_RPMDIR}/SOURCES/" {} +
+
 docker_cmd_wrapper rpmbuild -ba "${USER_RPMDIR}/SPECS/securedrop-workstation.spec"
 
-printf "\n\nRPM Artifacts available in ./artifacts RPMS and SRPMS sub-directories\n"
+local_rpms="$(find rpm-build/ -type f -iname '*.rpm')"
+
+printf "\nRPM packages can be found at:\n\n%s\n" "$local_rpms"
