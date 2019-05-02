@@ -44,7 +44,7 @@ docker_cmd_wrapper find "${USER_RPMDIR}" -type f -iname '*.tar.gz' -delete
 # The tarball will exist in the /sd workdir, copy it to the RPM build dir.
 docker_cmd_wrapper find /sd -type f -iname '*.tar.gz' -exec cp -u -t "${USER_RPMDIR}/SOURCES/" {} +
 
-docker_cmd_wrapper rpmbuild -ba "${USER_RPMDIR}/SPECS/securedrop-workstation.spec"
+docker_cmd_wrapper rpmbuild -ba "${USER_RPMDIR}/SPECS/securedrop-workstation-dom0-config.spec"
 
 local_rpms="$(find rpm-build/ -type f -iname '*.rpm')"
 

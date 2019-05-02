@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="securedrop-workstation",
+    name="securedrop-workstation-dom0-config",
     version="0.0.1",
     author="Kushal Das",
     author_email="securedrop@freedom.press",
@@ -15,7 +15,7 @@ setuptools.setup(
     python_requires=">=3.5",
     url="https://github.com/freedomofpress/securdrop-workstation",
     data_files=[
-        ("share/securedrop-workstation", ["config.json.example"]),
+        ("share/securedrop-workstation-dom0-config", ["config.json.example"]),
         ("bin/", ["dom0/securedrop-update"]),
     ],
     classifiers=(
