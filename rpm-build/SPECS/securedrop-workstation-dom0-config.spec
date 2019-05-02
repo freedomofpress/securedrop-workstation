@@ -1,12 +1,12 @@
-Name:		securedrop-workstation
+Name:		securedrop-workstation-dom0-config
 Version:	0.0.1
 Release:	1%{?dist}
-Summary:	SecurdDrop Workstation
+Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-0.0.1.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.0.1.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -17,7 +17,10 @@ Requires:       qubes-mgmt-salt-dom0-virtual-machines
 
 %description
 
-This is the SecureDrop Workstation project.
+This package contains VM configuration files for the Qubes-based
+SecureDrop Workstation project. The package should be installed
+in dom0, or AdminVM, context, in order to manage updates to the VM
+configuration over time.
 
 %prep
 %setup -q
@@ -33,7 +36,7 @@ install -m 755 -d %{buildroot}/srv/salt/sd
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-svs
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-journalist
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-workstation
-install -m 755 -d %{buildroot}/usr/share/securedrop-workstation/scripts
+install -m 755 -d %{buildroot}/usr/share/securedrop-workstation-dom0-config/scripts
 install -m 755 -d %{buildroot}/usr/share/securedrop/icons
 install -m 644 dom0/*.sls %{buildroot}/srv/salt/
 install -m 644 dom0/*.top %{buildroot}/srv/salt/
@@ -46,7 +49,7 @@ install -m 644 Makefile %{buildroot}/usr/share/%{name}/Makefile
 install -m 755 scripts/* %{buildroot}/usr/share/%{name}/scripts/
 %files
 %doc README.md LICENSE
-%{python3_sitelib}/securedrop_workstation*
+%{python3_sitelib}/securedrop_workstation_dom0_config*
 %{_datadir}/%{name}
 %{_datadir}/securedrop/*
 %{_bindir}/securedrop-update
