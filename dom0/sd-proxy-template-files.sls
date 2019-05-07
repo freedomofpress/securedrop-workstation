@@ -51,11 +51,10 @@ install-securedrop-proxy-package:
 {% import_json "sd/config.json" as d %}
 
 install-securedrop-proxy-yaml-config:
-  file.append:
+  file.managed:
     - name: /etc/sd-proxy.yaml
-    - text: |
-        host: {{ d.hidserv.hostname }}
-        scheme: http
-        port: 80
-        target_vm: sd-svs
-        dev: False
+    - source: salt://sd/sd-proxy/sd-proxy.yaml
+    - template: jinja
+    - context:
+        hostname: {{ d.hidserv.hostname}}
+    - mode: 0644
