@@ -12,7 +12,7 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: make build-dom0-rpm
+      - run: make dom0-rpm
 
 workflows:
   version: 2
