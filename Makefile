@@ -61,20 +61,7 @@ clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
 	@sudo find /srv/salt/_tops -lname '/srv/salt/sd-*' -delete
 
 prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
-	@echo "Deploying Salt config..."
-	@sudo mkdir -p /srv/salt/sd
-	@sudo cp config.json /srv/salt/sd
-	@sudo cp sd-journalist.sec /srv/salt/sd
-	@sudo cp -r sd-proxy /srv/salt/sd
-	@sudo cp -r sd-svs /srv/salt/sd
-	@sudo cp -r sd-workstation /srv/salt/sd
-	@sudo cp dom0/* /srv/salt/
-	sudo find /srv/salt -maxdepth 1 -type f -iname '*.top' \
-		| xargs -n1 basename \
-		| sed -e 's/\.top$$//g' \
-		| xargs sudo qubesctl top.enable
-
-#sudo cp -r sd-svs-disp /srv/salt/sd  # nothing there yet...
+	@./scripts/prep-salt
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
 	@./scripts/destroy-vm sd-whonix
@@ -92,6 +79,9 @@ remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
 	@./scripts/destroy-vm sd-gpg
 
 clean: assert-dom0 destroy-all clean-salt ## Destroys all SD VMs
+	sudo dnf -y -q remove securedrop-workstation-dom0-config || true
+	sudo rm -f /usr/bin/securedrop-update \
+		/etc/cron.daily/securedrop-update-cron
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python3 -m unittest discover -v tests
