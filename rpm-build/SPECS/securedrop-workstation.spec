@@ -54,7 +54,11 @@ install -m 755 scripts/* %{buildroot}/usr/share/%{name}/scripts/
 /srv/salt/fpf*
 /srv/salt/securedrop-update
 
-
+%post
+find /srv/salt -maxdepth 1 -type f -iname '*.top' \
+    | xargs -n1 basename \
+    | sed -e 's/\.top$$//g' \
+    | xargs qubesctl top.enable > /dev/null
 
 %changelog
 * Fri Oct 26 2018 Kushal Das <kushal@freedom.press> - 0.0.1-1
