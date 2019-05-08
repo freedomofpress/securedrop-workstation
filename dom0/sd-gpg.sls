@@ -20,6 +20,7 @@ sd-gpg:
       - label: purple
     - prefs:
       - netvm: ""
+      - autostart: true
     - tags:
       - add:
         - sd-workstation
