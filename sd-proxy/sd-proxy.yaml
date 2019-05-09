@@ -1,0 +1,5 @@
+host: {{ hostname }}
+scheme: http
+port: 80
+target_vm: sd-svs
+dev: False
