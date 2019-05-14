@@ -108,4 +108,5 @@ dom0-rpc-qubes.GpgImportKey:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
+        sd-svs sd-gpg allow
         $anyvm $tag:sd-workstation deny

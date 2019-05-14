@@ -56,6 +56,7 @@
 - policy: GpgImportKey
   starts_with: |-
     ### BEGIN securedrop-workstation ###
+    sd-svs sd-gpg allow
     $anyvm $tag:sd-workstation deny
     ### END securedrop-workstation ###
 
