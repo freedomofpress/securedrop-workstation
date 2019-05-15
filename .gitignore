@@ -111,3 +111,7 @@ builder/packages/securedrop-workstation-grsec/debian/debhelper-build-stamp
 builder/packages/securedrop-workstation-grsec/debian/securedrop-workstation-grsec.substvars
 builder/packages/securedrop-workstation-grsec/debian/securedrop-workstation-grsec
 builder/packages/securedrop-workstation-grsec/debian/files
+
+# rpm package build artifacts
+*.rpm
+rpm-repo/

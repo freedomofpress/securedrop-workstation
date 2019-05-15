@@ -304,15 +304,22 @@ Be aware that running tests *will* power down running SecureDrop VMs, and may re
 
 ## Building the Templates
 
-1. Create a `fedora-29` AppVM for building
-2. Increase the disk size to at least 15GB (as the build uses over 10GB)
+1. Create a `fedora-29` AppVM for building the templates. It's going
+   to need Docker and several other packages every time you use it, so
+   it might be worth creating another template derived from
+   `fedora-29`, into which you can install those extras, and basing
+   the builder VM on that, or just using a StandaloneVM to save time
+   and repetition.
+2. Increase the disk size to at least 15GB (as the build uses over
+   10GB): `qvm-volume extend sd-template-builder:private 15GB` (if
+   your VM is not named `sd-template-builder`, adjust that command)
 3. Import the QubesOS master key and the GPG key used to sign tags (see https://www.qubes-os.org/security/verifying-signatures/)
 4. Run `make template` in the top-level of this repository.
 5. Copy the rpm generated in `/home/user/src/securedrop-workstation/builder/qubes-builder/qubes-src/linux-template-builder/rpm/` to `dom0`
 6. Install the template in `dom0` : `sudo rpm -i <file>.rpm` (this takes a few minutes)
 7. Create a new VM based on this template:
 ```
-qvm-create --template grsec-workstation test-grsec-kernels --class AppVM --property virt_mode=hvm --property kernel='' --label green
+qvm-create --template securedrop-workstation test-securedrop-workstation --class AppVM --property virt_mode=hvm --property kernel='' --label green
 ```
 
 ## Building workstation deb packages
@@ -369,7 +376,7 @@ and `rpm -qi <file>.rpm` will indicate an empty Signature field. Set up your env
 
 ```
 sudo dnf install rpm-build rpm-sign  # install required packages
-echo "QUBES_GPG_DOMAIN=vault" | sudo tee /rw/config/gpg-split-domain  # edit 'vault' as required
+echo "vault" | sudo tee /rw/config/gpg-split-domain  # edit 'vault' as required
 cat << EOF > ~/.rpmmacros
 %_signature gpg
 %_gpg_name <gpg_key_id>
@@ -382,15 +389,37 @@ Now we'll sign the RPM:
 ```
 rpm --resign <rpm>.rpm  # --addsign would allow us to apply multiple signatures to the RPM
 rpm -qi<file.rpm>  # should now show that the file is signed
-rpm -Kv  # will complain that signature is not OK: "Digests SIGNATURES NOT OK"
+rpm -Kv  # should contain NOKEY errors in the lines containing Signature
 # This is because the the (public) key of the RPM signing key is not present,
 # and must be added to the RPM client config to verify the signature:
 sudo rpm --import <publicKey>.asc
-rpm -Kv  # will now say signatures are OK: "Digests signatures OK"
+rpm -Kv  # Signature lines will now contain OK instead of NOKEY
 ```
 
 You can then proceed with distributing the package, via the "test" or "prod" repo,
 as appropriate.
+
+## Distributing packages
+
+For the Debian packages, see https://github.com/freedomofpress/securedrop-debian-packaging/.
+For the RPM packages, such as the `securedrop-workstation` TemplateVM package, first
+build the package (e.g. `make template`), then sign the RPM, as outlined above.
+
+To upload the package to S3, you'll need valid AWS credentials. Talk to a member of the ops team.
+Once you have valid credentials configured, install the dependencies (`pipenv install`), then run:
+
+```
+./scripts/publish-rpm
+```
+
+The RPM will immediately be available in dom0. Provided you've run the Salt configurations,
+find it via:
+
+```
+sudo qubes-dom0-update --action=search qubes-template-securedrop-workstation
+```
+
+You can then install it directly.
 
 ## Threat model
 

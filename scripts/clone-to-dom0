@@ -25,6 +25,7 @@ function create-tarball() {
     printf "Cloning code from %s:%s ...\n" "${dev_vm}" "${dev_dir}"
     qvm-run --pass-io "$dev_vm" \
         "tar -c --exclude-vcs \
+        --exclude='*.rpm' \
         -C '$(dirname "$dev_dir")' \
         '$(basename "$dev_dir")'" > /tmp/sd-proj.tar
 }
