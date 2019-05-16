@@ -41,6 +41,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(vm.kernelopts, wanted_kernelopts)
         self.assertTrue(vm.template == "whonix-gw-14")
         self.assertTrue(vm.provides_network)
+        self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.template_for_dispvms)
         self.assertTrue('sd-workstation' in vm.tags)
 
@@ -51,6 +52,7 @@ class SD_VM_Tests(unittest.TestCase):
         wanted_kernelopts = "nopat apparmor=1 security=apparmor"
         self.assertEqual(vm.kernelopts, wanted_kernelopts)
         self.assertTrue(vm.template == "sd-proxy-template")
+        self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self.assertTrue('sd-workstation' in vm.tags)
@@ -81,6 +83,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(nvm is None)
         # No sd-gpg-template, since keyring is managed in $HOME
         self.assertTrue(vm.template == "sd-workstation-template")
+        self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
