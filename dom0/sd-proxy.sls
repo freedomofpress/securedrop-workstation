@@ -32,6 +32,7 @@ sd-proxy:
     - prefs:
       - netvm: sd-whonix
       - kernelopts: "nopat apparmor=1 security=apparmor"
+      - autostart: true
     - tags:
       - add:
         - sd-workstation
