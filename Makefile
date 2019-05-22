@@ -54,6 +54,12 @@ sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 	sudo qubesctl --show-output --targets sd-svs-disp-template state.highstate
 	sudo qubesctl --show-output --targets sd-svs-disp state.highstate
 
+sd-export: prep-salt ## Provisions SD Export VM
+	sudo qubesctl top.enable sd-export
+	sudo qubesctl top.enable sd-export-files
+	sudo qubesctl --show-output --targets sd-export-template state.highstate
+	sudo qubesctl --show-output --targets sd-export-dvm state.highstate
+
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
 	@echo "Purging Salt config..."
 	@sudo rm -rf /srv/salt/sd
@@ -77,6 +83,12 @@ remove-sd-svs: assert-dom0 ## Destroys SD SVS VM
 
 remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
 	@./scripts/destroy-vm sd-gpg
+
+remove-sd-export: assert-dom0 ## Destroys SD EXPORT VMs
+	@qvm-kill sd-export-usb
+	@qvm-usb detach sd-export-usb || true
+	@./scripts/destroy-vm sd-export-usb
+	@./scripts/destroy-vm sd-export-dvm
 
 clean: assert-dom0 destroy-all clean-salt ## Destroys all SD VMs
 	sudo dnf -y -q remove securedrop-workstation-dom0-config || true
@@ -131,7 +143,7 @@ prep-dom0: prep-salt # Copies dom0 config files for VM updates
 list-vms: ## Prints all Qubes VMs managed by Workstation salt config
 	@./scripts/list-vms
 
-destroy-all: ## Destroys all VMs managed by Workstation salt config
+destroy-all: remove-sd-export ## Destroys all VMs managed by Workstation salt config
 	@./scripts/list-vms | xargs ./scripts/destroy-vm
 
 # Explanation of the below shell command should it ever break.

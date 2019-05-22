@@ -1,0 +1,30 @@
+#! /usr/bin/python3
+
+import os
+import shutil
+import subprocess
+import sys
+
+DEVICE = "/dev/sda1"
+MOUNTPOINT = "/tmp/usb"
+FILE = sys.argv[1]
+
+if os.path.exists(FILE):
+    # mount target not created
+    if not os.path.exists(MOUNTPOINT):
+        os.makedirs(MOUNTPOINT)
+    # check if drive already mounted, otherwise mount
+    rc = subprocess.call(["mountpoint", MOUNTPOINT],
+                         stdout = subprocess.DEVNULL,
+                         stderr = subprocess.DEVNULL)
+    if rc:
+        out = subprocess.run(["sudo",
+                              "mount",
+                              "-o", "uid=1000,gid=1000",
+                              DEVICE,
+                              MOUNTPOINT])
+
+    # move files to drive (overwrites existing files) and unmount drive
+    shutil.move(FILE,
+                os.path.join(MOUNTPOINT, os.path.basename(FILE)))
+    subprocess.run(["sudo", "umount", MOUNTPOINT])

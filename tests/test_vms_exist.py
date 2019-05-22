@@ -118,6 +118,28 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue('sd-workstation' in vm.tags)
         self.assertTrue(vm.template_for_dispvms)
 
+    def sd_export_template(self):
+        vm = self.app.domains["sd-export-template"]
+        nvm = vm.netvm
+        self.assertTrue(nvm is None)
+        self.assertTrue('sd-workstation' in vm.tags)
+        self._check_kernel(vm)
+
+    def sd_export_dvm(self):
+        vm = self.app.domains["sd-export-dvm"]
+        nvm = vm.netvm
+        self.assertTrue(nvm is None)
+        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue(vm.template_for_dispvms)
+        self._check_kernel(vm)
+
+    def sd_export(self):
+        vm = self.app.domains["sd-export-usb"]
+        nvm = vm.netvm
+        self.assertTrue(nvm is None)
+        self.assertTrue('sd-workstation' in vm.tags)
+        self._check_kernel(vm)
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_VM_Tests)
