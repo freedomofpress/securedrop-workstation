@@ -15,7 +15,7 @@ sd-svs-template:
   qvm.vm:
     - name: sd-svs-template
     - clone:
-      - source: sd-workstation-template
+      - source: securedrop-workstation
       - label: yellow
     - tags:
       - add:

@@ -16,7 +16,7 @@ sd-gpg:
   qvm.vm:
     - name: sd-gpg
     - present:
-      - template: sd-workstation-template
+      - template: securedrop-workstation
       - label: purple
     - prefs:
       - netvm: ""
