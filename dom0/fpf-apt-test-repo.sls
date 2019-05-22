@@ -31,3 +31,11 @@ configure apt-test apt repo:
     - key_url: "salt://sd/sd-workstation/apt-test-pubkey.asc"
     - require:
       - pkg: install-python-apt-for-repo-config
+
+# Ensure all apt updates are applied, since the VMs
+# will be cloned, duplicating package version drift.
+update-all-apt-packages:
+  pkg.uptodate:
+    - cache_valid_time: "3600"
+    - require:
+      - pkg: install-python-apt-for-repo-config
