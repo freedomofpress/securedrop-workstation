@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+#
+# Builds RPM for dom0 bootstrap logic
+# $1 - Digest Hash of base docker container to use
+
+set -u
+set -e
+
+# maps to label 0.6.0.1-1.fc25
+export RPM_BUILDER_IMG_HASH="957d2953870c72aec6d5faf3ce5a0666def3667de5dee0b94294905e2f065f38"
+export LOCAL_IMG="fpf.local/rpmbuilder:${RPM_BUILDER_IMG_HASH}"
+export ROOT_DIR="$(git rev-parse --show-toplevel)"
+export USER_RPMDIR="/home/user/rpmbuild"
+
+
+function build_local_base {
+    # Build a local revision of quay.io/freedomofpress/rpmbuilder. Needed to pass UIDs without
+    # doing privilege escalation hoops at run-time
+    docker build --build-arg="RPM_HASH=${RPM_BUILDER_IMG_HASH}" \
+                 --build-arg=USERID="$(id -u)" \
+                 -t "${LOCAL_IMG}" \
+                 -f scripts/rpmbuilder.Dockerfile scripts/ 2>&1 1> /dev/null
+}
+
+function docker_cmd_wrapper() {
+    docker run -it --rm \
+               --network=none \
+               -v "${ROOT_DIR}:/sd" \
+               -v "${ROOT_DIR}/rpm-build:${USER_RPMDIR}" \
+               "${LOCAL_IMG}" \
+               $@
+}
+
+
+
+build_local_base
+
+docker_cmd_wrapper /usr/bin/python3 setup.py sdist
+
+# Remove any cached tarballs. We must do this because the container image config
+# needlessly marks the rpmbuild dir as a volume. If we don't remove tarballs
+# before building, the subsequent cp command will fail.
+docker_cmd_wrapper find "${USER_RPMDIR}" -type f -iname '*.tar.gz' -delete
+
+# The tarball will exist in the /sd workdir, copy it to the RPM build dir.
+docker_cmd_wrapper find /sd -type f -iname '*.tar.gz' -exec cp -u -t "${USER_RPMDIR}/SOURCES/" {} +
+
+docker_cmd_wrapper rpmbuild -ba "${USER_RPMDIR}/SPECS/securedrop-workstation-dom0-config.spec"
+
+local_rpms="$(find rpm-build/ -type f -iname '*.rpm')"
+
+printf "\nRPM packages can be found at:\n\n%s\n" "$local_rpms"
