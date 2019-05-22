@@ -22,3 +22,5 @@ sd-workstation-template:
     - tags:
       - add:
         - sd-workstation
+    - require:
+      - pkg: dom0-install-securedrop-workstation-template
