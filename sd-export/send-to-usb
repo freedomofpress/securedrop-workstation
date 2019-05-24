@@ -32,7 +32,7 @@ if os.path.exists(FILE):
     shutil.copy(FILE, os.path.join(MOUNTPOINT, os.path.basename(FILE)))
 
     # sync to ensure the files are fully written before unmounting
-    subprocess.run(["sudo", "sync"])
+    subprocess.run(["sync"])
 
     # finally, unmount the USB device
     subprocess.run(["sudo", "umount", MOUNTPOINT])
