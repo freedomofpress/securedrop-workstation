@@ -161,31 +161,77 @@ Replies and Source Deletion will be added in the next major release of the *Secu
 
 **WARNING:** Opening files from an unknown origin presents certain risks (malware, fingerprinting). While the workstation helps reduce these risks by offering VM-level isolation, transferring documents to another host without the same level of isolation may expose you to these risks. Using tools to sanitize submitted documents, such as right-clicking a .pdf and selecting "Convert to trusted PDF" in Qubes OS, may help mitigate some of these risks. Further mitigating these risks will be a focus of future development.
 
+##### Manual export flow
+
 Exporting documents directly from within the *SecureDrop Client* is not currently supported, but you can export documents manually via USB by following these steps:
 
-1. Create an export VM based on the `securedrop-workstation` template.
-   1. Click the Qubes menu in the upper left of the screen.
-   2. Click **Create Qubes VM**
-   3. Name the VM `sd-export`
-   4. Set the template as `securedrop-workstation`
-   5. Set networking to (none).
-   6. Click **OK** to create the VM.
-2. Start the VM. Again from the Qubes menu:
+1. . Start the `sd-export-usb` VM. Again from the Qubes menu:
    1. Select "Domain: sd-export"
    2. Click "export: Files". This will launch the file manager in the export VM.
    3. Insert your USB drive into the workstation. A notification will pop up indicating the name of your USB device, e.g. "Innostor_PenDrive".
    4. In the upper right hand side of your screen, there is a small icon in the system tray with a USB drive. Click that icon.
    5. Select the name of your USB drive.
-   6. Click the **+** icon next to the `sd-export` VM.
+   6. Click the **+** icon next to the `sd-export-usb` VM.
 3. You can use the command line in `sd-svs` to manually move selected files:
 
 ```
-qvm-copy-to-vm sd-export ~/.securedrop_client/data/name-of-file
+qvm-copy-to-vm sd-export-usb ~/.securedrop_client/data/name-of-file
 ```
 
-4. You may now use the File manager that you opened in `sd-export` to move files from `~/QubesIncoming/sd-svs` to the USB drive. Delete the original file from `~/QubesIncoming/sd-svs` once it has been moved. Note that the drive and files are not encrypted, so ensure that the key is properly erased and/or destroyed after use.
+4. You may now use the File manager that you opened in `sd-export-usbs` to move files from `~/QubesIncoming/sd-svs` to the USB drive. Delete the original file from `~/QubesIncoming/sd-svs` once it has been moved. Note that the drive and files are not encrypted, so ensure that the key is properly erased and/or destroyed after use.
 
 The development plan is to provide functionality in the *SecureDrop Client* that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
+
+#####  Automated export flow (Work in progress, client integration TBD)
+
+Currently does not support automatic encryption, and assumes file encryption (to be handled by the SecureDrop client.
+
+###### Install-time configuration
+
+A single USB port will be assigned to the exporting feature. Qubes will automatically attach any USB device to the Export VM. It should be labeled and only used for exporting purposes. You will be able to use different USB Transfer Devices, but they will always need to be plugged into the same port.
+
+
+1. Connect the USB device to the port you would like to use. Then in `dom0`, run the following command:
+
+```
+qvm-usb
+```
+
+2. Take note of the device ID (e.g. `sys-usb:3-4`) used by your USB Transfer Device
+3. Populate `config.json` with this value
+4. Run the configuration of the sd-export feature.
+  1. If this is a new install, you can run, in `dom0`:
+
+  ```
+  make all
+  ```
+
+  2. If the workstation has already been properly configured and you wish to reconfigure the USB export functionality, run the following commands in `dom0`:
+
+  ```
+  make remove-sd-export
+  make sd-export
+  ```
+
+###### Exporting
+
+1. Plug in the USB drive into the dedicated export port on your workstation.
+2. In `sd-svs`, run the following command:
+
+```
+qvm-open-in-vm sd-export-usb <name-of-file>
+```
+
+###### Troubleshooting
+
+If you are experiencing issues with the export flow, or would like to use a different port, you can re-run the configuration steps and apply the configuration to the VMs.
+In `dom0`, ensure your config.json contains the correct usb device identifier (see above) and rebuild the export machines (with the USB device attached):
+
+```
+make remove-sd-export
+make sd-export
+```
+
 
 ##### Transferring files via OnionShare
 1. Create an `sd-onionshare-template` VM based on `fedora-29`:
