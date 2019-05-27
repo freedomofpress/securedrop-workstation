@@ -165,7 +165,7 @@ Replies and Source Deletion will be added in the next major release of the *Secu
 
 Exporting documents directly from within the *SecureDrop Client* is not currently supported, but you can export documents manually via USB by following these steps:
 
-1. . Start the `sd-export-usb` VM. Again from the Qubes menu:
+1. Start the `sd-export-usb` VM. Again from the Qubes menu:
    1. Select "Domain: sd-export"
    2. Click "export: Files". This will launch the file manager in the export VM.
    3. Insert your USB drive into the workstation. A notification will pop up indicating the name of your USB device, e.g. "Innostor_PenDrive".
@@ -178,17 +178,40 @@ Exporting documents directly from within the *SecureDrop Client* is not currentl
 qvm-copy-to-vm sd-export-usb ~/.securedrop_client/data/name-of-file
 ```
 
-4. You may now use the File manager that you opened in `sd-export-usbs` to move files from `~/QubesIncoming/sd-svs` to the USB drive. Delete the original file from `~/QubesIncoming/sd-svs` once it has been moved. Note that the drive and files are not encrypted, so ensure that the key is properly erased and/or destroyed after use.
+4. You may now use the File manager that you opened in `sd-export-usb` to move files from `~/QubesIncoming/sd-svs` to the USB drive. Delete the original file from `~/QubesIncoming/sd-svs` once it has been moved. Note that the drive and files are not encrypted, so ensure that the key is properly erased and/or destroyed after use.
 
 The development plan is to provide functionality in the *SecureDrop Client* that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
 
 #####  Automated export flow (Work in progress, client integration TBD)
 
-Currently does not support automatic encryption, and assumes file encryption (to be handled by the SecureDrop client.
+The SecureDrop Workstation can automatically export to a luks-encrypted USB device provided the correct format. The file extension of the tar archive must be `.sd-export`, containing the following structure:
+
+```
+.
+├── metadata.json
+└── export_data
+    ├── file-to-export-1.txt
+    ├── file-to-export-2.pdf
+    ├── file-to-export-3.doc
+    [...]
+```
+
+The folder `export_data` contains all the files that will be exported to the disk, and the file `metadata.json` contains the encryption passphrase and method for the USB Transfer Device (only LUKS is supported at the moment). The file should be formatted as follows:
+
+```
+{
+  "encryption-method": "luks"
+  "encryption-key": "Your encryption passhrase goes here"
+}
+```
+
+###### Create the transfer device
+
+You can find instructions to create a luks-encrypted transfer device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_device.html).
 
 ###### Install-time configuration
 
-A single USB port will be assigned to the exporting feature. Qubes will automatically attach any USB device to the Export VM. It should be labeled and only used for exporting purposes. You will be able to use different USB Transfer Devices, but they will always need to be plugged into the same port.
+A single USB port will be assigned to the exporting feature. Qubes will automatically attach any USB device to the Export VM. It should be labeled and only used for exporting purposes. You will be able to use different USB Transfer Devices, but they will always need to be plugged into the same port. Note that a USB stick must be connected during the entirety of the provisioning process. If you forget, you can run `make sd-export` after the install.
 
 
 1. Connect the USB device to the port you would like to use. Then in `dom0`, run the following command:

@@ -20,13 +20,29 @@ sd-export-send-to-usb-script:
     - mode: 755
     - makedirs: True
 
-sd-export-template-mimetype:
-  file.blockreplace:
-    - name: /etc/mailcap
-    - prepend_if_not_found: False
-    - marker_start: "# ----- User Section Begins ----- #"
-    - marker_end: "# -----  User Section Ends  ----- #"
-    - content: |
-        application/octet-stream; /usr/bin/send-to-usb '%s';
+sd-export-desktop-file:
+  file.managed:
+    - name: /usr/share/applications/send-to-usb.desktop
+    - source: salt://sd/sd-export/send-to-usb.desktop
+    - user: root
+    - group: root
+    - mode: 755
+    - makedirs: True
   cmd.run:
-    - name: sudo update-mime
+    - name: sudo update-desktop-database /usr/share/applications
+    - require:
+      - file: sd-export-desktop-file
+
+sd-export-file-format:
+  file.managed:
+    - name: /usr/share/mime/packages/application-x-sd-export.xml
+    - source: salt://sd/sd-export/application-x-sd-export.xml
+    - user: root
+    - group: root
+    - mode: 755
+    - makedirs: True
+  cmd.run:
+    - name: sudo update-mime-database /usr/share/mime
+    - require:
+      - file: sd-export-file-format
+      - file: sd-export-desktop-file

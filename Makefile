@@ -85,7 +85,7 @@ remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
 	@./scripts/destroy-vm sd-gpg
 
 remove-sd-export: assert-dom0 ## Destroys SD EXPORT VMs
-	@qvm-kill sd-export-usb
+	@qvm-kill sd-export-usb || true
 	@qvm-usb detach sd-export-usb || true
 	@./scripts/destroy-vm sd-export-usb
 	@./scripts/destroy-vm sd-export-dvm
@@ -143,7 +143,7 @@ prep-dom0: prep-salt # Copies dom0 config files for VM updates
 list-vms: ## Prints all Qubes VMs managed by Workstation salt config
 	@./scripts/list-vms
 
-destroy-all: remove-sd-export ## Destroys all VMs managed by Workstation salt config
+destroy-all: ## Destroys all VMs managed by Workstation salt config
 	@./scripts/list-vms | xargs ./scripts/destroy-vm
 
 # Explanation of the below shell command should it ever break.
