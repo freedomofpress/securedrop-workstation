@@ -20,9 +20,9 @@ sd-export-template:
     - require:
       - sls: sd-workstation-template
 
-sd-export-dvm:
+sd-export-usb-dvm:
   qvm.vm:
-    - name: sd-export-dvm
+    - name: sd-export-usb-dvm
     - present:
       - template: sd-export-template
       - label: yellow
@@ -56,5 +56,5 @@ create-named-sd-export-dispvm-and-permanently-attach:
   cmd.run:
     - name: >
         qvm-remove --force sd-export-usb || true;
-        qvm-create --class DispVM --template sd-export-dvm --label red sd-export-usb;
+        qvm-create --class DispVM --template sd-export-usb-dvm --label red sd-export-usb;
         qvm-usb attach --persistent sd-export-usb {{ d.usb.device }} || true;

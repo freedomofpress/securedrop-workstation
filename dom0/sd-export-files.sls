@@ -26,7 +26,7 @@ sd-export-desktop-file:
     - source: salt://sd/sd-export/send-to-usb.desktop
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
     - makedirs: True
   cmd.run:
     - name: sudo update-desktop-database /usr/share/applications
@@ -39,7 +39,7 @@ sd-export-file-format:
     - source: salt://sd/sd-export/application-x-sd-export.xml
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
     - makedirs: True
   cmd.run:
     - name: sudo update-mime-database /usr/share/mime

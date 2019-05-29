@@ -17,7 +17,7 @@ declare -a sd_workstation_vm_names=(
   sd-svs-disp
   sd-svs-disp-template
   sd-export-template
-  sd-export-dvm
+  sd-export-usb-dvm
   sd-export-usb
 )
 

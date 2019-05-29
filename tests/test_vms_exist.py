@@ -126,7 +126,7 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_kernel(vm)
 
     def sd_export_dvm(self):
-        vm = self.app.domains["sd-export-dvm"]
+        vm = self.app.domains["sd-export-usb-dvm"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)

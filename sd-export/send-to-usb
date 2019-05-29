@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/env python3
 
 import datetime
 import json
@@ -16,7 +16,7 @@ FILE = sys.argv[1]
 folder_name = ""
 encryption_method = ""
 encryption_key = ""
-target_folder = "sd-export-{}".format(datetime.datetime.now().isoformat())
+target_folder = "sd-export-{}".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
 tmpdir = tempfile.mkdtemp()
 
@@ -28,7 +28,8 @@ if os.path.exists(FILE):
     except Exception as e:
         # exit with 0 return code otherwise the os will attempt to open
         # the file with another application
-        print("Error opening export bundle")
+        print("Error opening export bundle:")
+        print(e.output)
         sys.exit(0)
 
     try:
@@ -38,16 +39,16 @@ if os.path.exists(FILE):
             encryption_method = data["encryption-method"]
             encryption_key = data["encryption-key"]
     except Exception as e:
-        print("Error parsing metadata")
+        print("Error parsing metadata:")
+        print(e.output)
         sys.exit(0)
 
     # we only support luks for now
     if encryption_method != "luks":
-        print("Unsupported export encryption")
+        print("Unsupported export encryption:")
         sys.exit(0)
 
     # the luks device is not already unlocked
-
     if not os.path.exists(os.path.join("/dev/mapper/", ENCRYPTED_DEVICE)):
         p = subprocess.Popen(
             ["sudo", "cryptsetup", "luksOpen", DEVICE, ENCRYPTED_DEVICE],
@@ -58,27 +59,40 @@ if os.path.exists(FILE):
         stdout_data = p.communicate(input=str.encode(encryption_key, "utf-8"))[0]
         rc = p.returncode
         if rc != 0:
-            print("Bad passphrase or luks error")
+            print("Bad passphrase or luks error:")
             sys.exit(0)
 
-    # mount target not created
-    if not os.path.exists(MOUNTPOINT):
-        out = subprocess.call(["sudo", "mkdir", MOUNTPOINT])
-        out = subprocess.call(["sudo", "chown", "-R", "user:user", MOUNTPOINT])
-    out = subprocess.call(
-        ["sudo", "mount", os.path.join("/dev/mapper/", ENCRYPTED_DEVICE), MOUNTPOINT]
-    )
+    # for the entire rest of the script, large try/catch block as we do not
+    # want to return other than 0, otherwise another application will attempt
+    # to handle the script
+    try:
+        # mount target not created
+        if not os.path.exists(MOUNTPOINT):
+            subprocess.check_call(["sudo", "mkdir", MOUNTPOINT])
+            subprocess.check_call(["sudo", "chown", "-R", "user:user", MOUNTPOINT])
+        subprocess.check_call(
+            [
+                "sudo",
+                "mount",
+                os.path.join("/dev/mapper/", ENCRYPTED_DEVICE),
+                MOUNTPOINT
+            ]
+        )
 
-    # move files to drive (overrites files with same filename) and unmount drive
-    target_folder_path = os.path.join(MOUNTPOINT, target_folder)
-    subprocess.call(["mkdir", target_folder_path])
-    export_data = os.path.join(tmpdir, folder_name, "export_data/")
-    shutil.move(export_data, target_folder_path)
+        # move files to drive (overrites files with same filename) and unmount drive
+        target_folder_path = os.path.join(MOUNTPOINT, target_folder)
+        subprocess.check_call(["mkdir", target_folder_path])
+        export_data = os.path.join(tmpdir, folder_name, "export_data/")
+        shutil.move(export_data, target_folder_path)
 
-    # sync the filesystem, unmount drive and lock the luks volume
-    # we use call here to ensure they are blocking and avoid races
-    subprocess.call(["sync"])
-    subprocess.call(["sudo", "umount", MOUNTPOINT])
-    subprocess.call(["sudo", "cryptsetup", "luksClose", ENCRYPTED_DEVICE])
-    # race condition when using shutils
-    subprocess.call(["rm", "-rf", tmpdir])
+        # sync the filesystem, unmount drive and lock the luks volume
+        # we use call here to ensure they are blocking and avoid races
+        subprocess.check_call(["sync"])
+        subprocess.check_call(["sudo", "umount", MOUNTPOINT])
+        subprocess.check_call(["sudo", "cryptsetup", "luksClose", ENCRYPTED_DEVICE])
+        # race condition when using shutils
+        subprocess.check_call(["rm", "-rf", tmpdir])
+    except (subprocess.CalledProcessError, os.OSError) as e:
+        print("An error occurred while mounting disk or copying files to disk:")
+        print(e.output)
+        sys.exit(0)

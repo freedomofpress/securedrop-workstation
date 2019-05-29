@@ -6,7 +6,7 @@ from base import SD_VM_Local_Test
 class SD_Export_Tests(SD_VM_Local_Test):
 
     def setUp(self):
-        self.vm_name = "sd-export-dvm"
+        self.vm_name = "sd-export-usb-dvm"
         super(SD_Export_Tests, self).setUp()
 
     def test_files_are_properly_copied(self):
