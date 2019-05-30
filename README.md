@@ -163,11 +163,11 @@ Replies and Source Deletion will be added in the next major release of the *Secu
 
 Exporting documents directly from within the *SecureDrop Client* is not currently supported, but you can export documents manually via USB by following these steps:
 
-1. Create an export VM based on `sd-workstation-template`.
+1. Create an export VM based on the `securedrop-workstation` template.
    1. Click the Qubes menu in the upper left of the screen.
    2. Click **Create Qubes VM**
    3. Name the VM `sd-export`
-   4. Set the template as `sd-workstation-template`
+   4. Set the template as `securedrop-workstation`
    5. Set networking to (none).
    6. Click **OK** to create the VM.
 2. Start the VM. Again from the Qubes menu:
