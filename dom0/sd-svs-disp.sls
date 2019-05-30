@@ -18,7 +18,7 @@ sd-svs-disp-template:
   qvm.vm:
     - name: sd-svs-disp-template
     - clone:
-      - source: sd-workstation-template
+      - source: securedrop-workstation
       - label: green
     - require:
       - sls: sd-workstation-template

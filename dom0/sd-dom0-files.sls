@@ -60,14 +60,13 @@ dom0-workstation-rpm-repo:
     - require:
       - file: dom0-rpm-test-key
 
-# Not installing automatically, since we have more testing to do
-# dom0-install-securedrop-workstation-template:
-#   pkg.installed:
-#     - pkgs:
-#       - qubes-template-securedrop-workstation
-#     - require:
-#       - file: dom0-workstation-rpm-repo
-#       - cmd: dom0-rpm-test-key-sys-firewall
+dom0-install-securedrop-workstation-template:
+  pkg.installed:
+    - pkgs:
+      - qubes-template-securedrop-workstation
+    - require:
+      - file: dom0-workstation-rpm-repo
+      - cmd: dom0-rpm-test-key-sys-firewall
 
 # Copy script to system location so admins can run ad-hoc
 dom0-update-securedrop-script:
