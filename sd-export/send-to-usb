@@ -3,7 +3,6 @@
 import datetime
 import json
 import os
-import shutil
 import subprocess
 import sys
 import tarfile
@@ -83,16 +82,15 @@ if os.path.exists(FILE):
         target_folder_path = os.path.join(MOUNTPOINT, target_folder)
         subprocess.check_call(["mkdir", target_folder_path])
         export_data = os.path.join(tmpdir, folder_name, "export_data/")
-        shutil.move(export_data, target_folder_path)
+        subprocess.check_call(["cp", "-r", export_data, target_folder_path])
 
         # sync the filesystem, unmount drive and lock the luks volume
         # we use call here to ensure they are blocking and avoid races
         subprocess.check_call(["sync"])
         subprocess.check_call(["sudo", "umount", MOUNTPOINT])
         subprocess.check_call(["sudo", "cryptsetup", "luksClose", ENCRYPTED_DEVICE])
-        # race condition when using shutils
         subprocess.check_call(["rm", "-rf", tmpdir])
-    except (subprocess.CalledProcessError, os.OSError) as e:
+    except (subprocess.CalledProcessError, OSError) as e:
         print("An error occurred while mounting disk or copying files to disk:")
         print(e.output)
         sys.exit(0)

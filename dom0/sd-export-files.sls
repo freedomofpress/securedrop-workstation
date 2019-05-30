@@ -11,6 +11,11 @@
 include:
   - fpf-apt-test-repo
 
+sd-export-template-install-cryptsetup:
+  pkg.installed:
+    - pkgs:
+      - cryptsetup
+
 sd-export-send-to-usb-script:
   file.managed:
     - name: /usr/bin/send-to-usb

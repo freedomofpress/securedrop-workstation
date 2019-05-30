@@ -12,8 +12,8 @@ sd-export-template:
   qvm.vm:
     - name: sd-export-template
     - clone:
-      - source: sd-workstation-template
-      - label: yellow
+      - source: securedrop-workstation
+      - label: red
     - tags:
       - add:
         - sd-workstation
@@ -25,7 +25,7 @@ sd-export-usb-dvm:
     - name: sd-export-usb-dvm
     - present:
       - template: sd-export-template
-      - label: yellow
+      - label: red
     - prefs:
       - netvm: ""
       - template_for_dispvms: True
@@ -55,6 +55,8 @@ sd-export-template-sync-appmenus:
 create-named-sd-export-dispvm-and-permanently-attach:
   cmd.run:
     - name: >
+        qvm-kill sd-export-usb || true;
         qvm-remove --force sd-export-usb || true;
         qvm-create --class DispVM --template sd-export-usb-dvm --label red sd-export-usb;
         qvm-usb attach --persistent sd-export-usb {{ d.usb.device }} || true;
+        qvm-tags sd-export-usb add sd-workstation

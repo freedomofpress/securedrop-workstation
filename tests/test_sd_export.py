@@ -17,6 +17,9 @@ class SD_Export_Tests(SD_VM_Local_Test):
         self.assertFilesMatch("/usr/share/mime/packages/application-x-sd-export.xml", # noqa
                               "sd-export/application-x-sd-export.xml")
 
+    def test_sd_export_package_installed(self):
+        self.assertTrue(self._package_is_installed("cryptsetup"))
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Export_Tests)
