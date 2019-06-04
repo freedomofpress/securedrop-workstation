@@ -20,77 +20,94 @@ target_folder = "sd-export-{}".format(datetime.datetime.now().strftime("%Y%m%d-%
 tmpdir = tempfile.mkdtemp()
 
 if os.path.exists(FILE):
-
     try:
-        with tarfile.open(FILE) as tar:
-            tar.extractall(tmpdir)
-    except Exception as e:
-        # exit with 0 return code otherwise the os will attempt to open
-        # the file with another application
-        print("Error opening export bundle:")
-        print(e.output)
-        sys.exit(0)
-
-    try:
-        folder_name = os.path.basename(FILE).split(".")[0]
-        with open(os.path.join(tmpdir, folder_name, "metadata.json")) as json_data:
-            data = json.load(json_data)
-            encryption_method = data["encryption-method"]
-            encryption_key = data["encryption-key"]
-    except Exception as e:
-        print("Error parsing metadata:")
-        print(e.output)
-        sys.exit(0)
-
-    # we only support luks for now
-    if encryption_method != "luks":
-        print("Unsupported export encryption:")
-        sys.exit(0)
-
-    # the luks device is not already unlocked
-    if not os.path.exists(os.path.join("/dev/mapper/", ENCRYPTED_DEVICE)):
-        p = subprocess.Popen(
-            ["sudo", "cryptsetup", "luksOpen", DEVICE, ENCRYPTED_DEVICE],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        stdout_data = p.communicate(input=str.encode(encryption_key, "utf-8"))[0]
-        rc = p.returncode
-        if rc != 0:
-            print("Bad passphrase or luks error:")
+        try:
+            with tarfile.open(FILE) as tar:
+                tar.extractall(tmpdir)
+        except Exception as e:
+            # exit with 0 return code otherwise the os will attempt to open
+            # the file with another application
+            sys.stderr.write("Error opening export bundle:")
+            sys.stderr.write(e.output)
             sys.exit(0)
 
-    # for the entire rest of the script, large try/catch block as we do not
-    # want to return other than 0, otherwise another application will attempt
-    # to handle the script
-    try:
+        try:
+            folder_name = os.path.basename(FILE).split(".")[0]
+            with open(os.path.join(tmpdir, folder_name, "metadata.json")) as json_data:
+                data = json.load(json_data)
+                encryption_method = data["encryption-method"]
+                encryption_key = data["encryption-key"]
+        except Exception as e:
+            sys.stderr.write("Error parsing metadata.")
+            sys.stderr.write(e.output)
+            sys.exit(0)
+
+        # we only support luks for now
+        if encryption_method != "luks":
+            sys.stderr.write("Unsupported export encryption.")
+            sys.exit(0)
+
+        # the luks device is not already unlocked
+        if not os.path.exists(os.path.join("/dev/mapper/", ENCRYPTED_DEVICE)):
+            p = subprocess.Popen(
+                ["sudo", "cryptsetup", "luksOpen", DEVICE, ENCRYPTED_DEVICE],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            stdout_data = p.communicate(input=str.encode(encryption_key, "utf-8"))[0]
+            rc = p.returncode
+            if rc != 0:
+                sys.stderr.write("Bad passphrase or luks error.")
+                sys.exit(0)
+
         # mount target not created
         if not os.path.exists(MOUNTPOINT):
             subprocess.check_call(["sudo", "mkdir", MOUNTPOINT])
+        try:
+            subprocess.check_call(
+                [
+                    "sudo",
+                    "mount",
+                    os.path.join("/dev/mapper/", ENCRYPTED_DEVICE),
+                    MOUNTPOINT
+                ]
+            )
             subprocess.check_call(["sudo", "chown", "-R", "user:user", MOUNTPOINT])
-        subprocess.check_call(
-            [
-                "sudo",
-                "mount",
-                os.path.join("/dev/mapper/", ENCRYPTED_DEVICE),
-                MOUNTPOINT
-            ]
-        )
+        except subprocess.CalledProcessError as e:
+            # clean up
+            subprocess.check_call(["sudo", "cryptsetup", "luksClose", ENCRYPTED_DEVICE])
+            subprocess.check_call(["rm", "-rf", tmpdir])
+            sys.stderr.write("An error occurred while mounting disk :")
+            sys.stderr.write(e.output)
+            sys.exit(0)
 
         # move files to drive (overrites files with same filename) and unmount drive
-        target_folder_path = os.path.join(MOUNTPOINT, target_folder)
-        subprocess.check_call(["mkdir", target_folder_path])
-        export_data = os.path.join(tmpdir, folder_name, "export_data/")
-        subprocess.check_call(["cp", "-r", export_data, target_folder_path])
+        try:
+            target_folder_path = os.path.join(MOUNTPOINT, target_folder)
+            subprocess.check_call(["mkdir", target_folder_path])
+            export_data = os.path.join(tmpdir, folder_name, "export_data/")
+            subprocess.check_call(["cp", "-r", export_data, target_folder_path])
+        except (subprocess.CalledProcessError, OSError) as e:
+            sys.stderr.write("Error writing to disk:")
+            sys.stderr.write(e.output)
+            sys.exit(0)
+        finally:
+            # Finally, we sync the filesystem, unmount the drive and lock the
+            # luks volume, and exit 0
+            subprocess.check_call(["sync"])
+            subprocess.check_call(["sudo", "umount", MOUNTPOINT])
+            subprocess.check_call(["sudo", "cryptsetup", "luksClose", ENCRYPTED_DEVICE])
+            subprocess.check_call(["rm", "-rf", tmpdir])
+            sys.exit(0)
 
-        # sync the filesystem, unmount drive and lock the luks volume
-        # we use call here to ensure they are blocking and avoid races
-        subprocess.check_call(["sync"])
-        subprocess.check_call(["sudo", "umount", MOUNTPOINT])
-        subprocess.check_call(["sudo", "cryptsetup", "luksClose", ENCRYPTED_DEVICE])
-        subprocess.check_call(["rm", "-rf", tmpdir])
-    except (subprocess.CalledProcessError, OSError) as e:
-        print("An error occurred while mounting disk or copying files to disk:")
-        print(e.output)
+    except Exception as e:
+        # exit with 0 return code otherwise the os will attempt to open
+        # the file with another application
+        sys.stderr.write("Unhandled exception:")
+        sys.stderr.write(e.output)
         sys.exit(0)
+
+else:
+    sys.stderr.write("File does not exist")
+    sys.exit(0)
