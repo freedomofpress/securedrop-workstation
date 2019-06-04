@@ -47,16 +47,31 @@ sd-export-template-sync-appmenus:
     - onchanges:
       - qvm: sd-export-template
 
-{% import_json "sd/config.json" as d %}
-
 # Here we must create as the salt stack does not appear to allow us to create
 # VMs with the class DispVM and attach the usb device specified in the config
 # permanently to this VM
-create-named-sd-export-dispvm-and-permanently-attach:
+sd-export-create-named-dispvm:
   cmd.run:
     - name: >
-        qvm-kill sd-export-usb || true;
-        qvm-remove --force sd-export-usb || true;
-        qvm-create --class DispVM --template sd-export-usb-dvm --label red sd-export-usb;
-        qvm-usb attach --persistent sd-export-usb {{ d.usb.device }} || true;
-        qvm-tags sd-export-usb add sd-workstation
+        qvm-check sd-export-usb ||
+        qvm-create --class DispVM --template sd-export-usb-dvm --label red sd-export-usb
+    - require:
+      - qvm: sd-export-usb-dvm
+
+{% import_json "sd/config.json" as d %}
+
+sd-export-named-dispvm-permanently-attach-usb:
+  cmd.run:
+    - name: >
+        qvm-usb attach --persistent sd-export-usb {{ d.usb.device }} || true
+    - require:
+      - cmd: sd-export-create-named-dispvm
+
+sd-export-named-dispvm-add-tags:
+  qvm.vm:
+    - name: sd-export-usb
+    - tags:
+      - add:
+        - sd-workstation
+    - require:
+      - cmd: sd-export-create-named-dispvm
