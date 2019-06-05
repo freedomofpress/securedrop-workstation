@@ -18,8 +18,8 @@ declare -a sd_workstation_vm_names=(
   sd-whonix
   sd-svs-disp
   sd-svs-disp-template
-  sd-export-usb-dvm
   sd-export-usb
+  sd-export-usb-dvm
   sd-export-template
 )
 
