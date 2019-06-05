@@ -60,9 +60,13 @@ sd-export-create-named-dispvm:
 
 {% import_json "sd/config.json" as d %}
 
+# Persistent attachments can only be removed when the domain is off, so we must
+# kill sd-export-usb before detaching the USB devices from the domain
 sd-export-named-dispvm-permanently-attach-usb:
   cmd.run:
     - name: >
+        qvm-kill sd-export-usb || true ;
+        qvm-usb detach sd-export-usb || true ;
         qvm-usb attach --persistent sd-export-usb {{ d.usb.device }} || true
     - require:
       - cmd: sd-export-create-named-dispvm
