@@ -137,6 +137,8 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-export-usb"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
+        vm_type = vm.klass
+        self.assertTrue(vm_type == "DispVM")
         self.assertTrue('sd-workstation' in vm.tags)
         self._check_kernel(vm)
 
