@@ -91,6 +91,7 @@
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     sd-svs $dispvm:sd-svs-disp allow
+    sd-svs sd-export-usb allow
     $anyvm $tag:sd-workstation deny
     ### END securedrop-workstation ###
 

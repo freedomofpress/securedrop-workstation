@@ -20,6 +20,7 @@ if [[ ! -d "$SDW_SALT_DIR" ]]; then
     sudo cp -r sd-proxy /srv/salt/sd
     sudo cp -r sd-svs /srv/salt/sd
     sudo cp -r sd-workstation /srv/salt/sd
+    sudo cp -r sd-export /srv/salt/sd
     sudo cp dom0/* /srv/salt/
 fi
 

@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+
+import datetime
+import json
+import os
+import subprocess
+import sys
+import tarfile
+import tempfile
+
+
+def exit_gracefully(msg, e=False):
+    """
+    Utility to print error messages, mostly used during debugging,
+    then exits successfully despite the error. Always exits 0,
+    since non-zero exit values will cause system to try alternative
+    solutions for mimetype handling, which we want to avoid.
+    """
+    sys.stderr.write(msg)
+    sys.stderr.write("\n")
+    if e:
+        try:
+            e_output = e.output
+        except Exception:
+            e_output = "<unknown exception>"
+        sys.stderr.write(e_output)
+        sys.stderr.write("\n")
+    # exit with 0 return code otherwise the os will attempt to open
+    # the file with another application
+    sys.exit(0)
+
+
+def extract_tarball():
+    try:
+        with tarfile.open(SUBMISSION_ARCHIVE) as tar:
+            tar.extractall(SUBMISSION_TMPDIR)
+    except Exception as e:
+        msg = "Error opening export bundle: "
+        exit_gracefully(msg, e=e)
+
+
+def retrieve_metadata():
+    try:
+        metadata_filepath = os.path.join(SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "metadata.json")
+        with open(metadata_filepath) as json_data:
+            data = json.load(json_data)
+            encryption_method = data["encryption-method"]
+            encryption_key = data["encryption-key"]
+    except Exception as e:
+        msg = "Error parsing metadata."
+        exit_gracefully(msg, e=e)
+
+    # we only support luks for now
+    if encryption_method != "luks":
+        msg = "Unsupported export encryption."
+        exit_gracefully(msg)
+
+    return (encryption_method, encryption_key)
+
+
+def unlock_luks_volume(encryption_key):
+    # the luks device is not already unlocked
+    if not os.path.exists(os.path.join("/dev/mapper/", ENCRYPTED_DEVICE)):
+        p = subprocess.Popen(
+            ["sudo", "cryptsetup", "luksOpen", DEVICE, ENCRYPTED_DEVICE],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        p.communicate(input=str.encode(encryption_key, "utf-8"))
+        rc = p.returncode
+        if rc != 0:
+            msg = "Bad passphrase or luks error."
+            exit_gracefully(msg)
+
+
+def mount_volume():
+    # mount target not created
+    if not os.path.exists(MOUNTPOINT):
+        subprocess.check_call(["sudo", "mkdir", MOUNTPOINT])
+    try:
+        subprocess.check_call(
+            [
+                "sudo",
+                "mount",
+                os.path.join("/dev/mapper/", ENCRYPTED_DEVICE),
+                MOUNTPOINT
+            ]
+        )
+        subprocess.check_call(["sudo", "chown", "-R", "user:user", MOUNTPOINT])
+    except subprocess.CalledProcessError as e:
+        # clean up
+        subprocess.check_call(["sudo", "cryptsetup", "luksClose", ENCRYPTED_DEVICE])
+        subprocess.check_call(["rm", "-rf", SUBMISSION_TMPDIR])
+        msg = "An error occurred while mounting disk: "
+        exit_gracefully(msg, e=e)
+
+
+def copy_submission():
+    # move files to drive (overwrites files with same filename) and unmount drive
+    try:
+        TARGET_DIRNAME_path = os.path.join(MOUNTPOINT, TARGET_DIRNAME)
+        subprocess.check_call(["mkdir", TARGET_DIRNAME_path])
+        export_data = os.path.join(SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "export_data/")
+        subprocess.check_call(["cp", "-r", export_data, TARGET_DIRNAME_path])
+    except (subprocess.CalledProcessError, OSError) as e:
+        msg = "Error writing to disk:"
+        exit_gracefully(msg, e=e)
+    finally:
+        # Finally, we sync the filesystem, unmount the drive and lock the
+        # luks volume, and exit 0
+        subprocess.check_call(["sync"])
+        subprocess.check_call(["sudo", "umount", MOUNTPOINT])
+        subprocess.check_call(["sudo", "cryptsetup", "luksClose", ENCRYPTED_DEVICE])
+        subprocess.check_call(["rm", "-rf", SUBMISSION_TMPDIR])
+        sys.exit(0)
+
+
+def main():
+    extract_tarball()
+    encryption_method, encryption_key = retrieve_metadata()
+    unlock_luks_volume(encryption_key)
+    mount_volume()
+    copy_submission()
+
+
+if __name__ == "__main__":
+    try:
+        # We define globals inside the main block, rather than at the top
+        # of the file, to catch exceptions via exit_gracefully. All var names
+        # will be available to all functions called via main().
+        DEVICE = "/dev/sda1"
+        MOUNTPOINT = "/media/usb"
+        ENCRYPTED_DEVICE = "encrypted_volume"
+        SUBMISSION_ARCHIVE = sys.argv[1]
+
+        # Halt immediately if target file is absent
+        if not os.path.exists(SUBMISSION_ARCHIVE):
+            msg = "File does not exist"
+            exit_gracefully(msg)
+
+        SUBMISSION_DIRNAME = os.path.basename(SUBMISSION_ARCHIVE).split(".")[0]
+        TARGET_DIRNAME = "sd-export-{}".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+        SUBMISSION_TMPDIR = tempfile.mkdtemp()
+
+        main()
+    except Exception as e:
+        # exit with 0 return code otherwise the os will attempt to open
+        # the file with another application
+        msg = "Unhandled exception:"
+        exit_gracefully(msg, e=e)

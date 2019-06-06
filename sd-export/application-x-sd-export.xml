@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-sd-export">
+    <comment>Archive for transfering files from the SecureDrop workstation to an external USB device.</comment>
+    <glob pattern="*.sd-export"/>
+  </mime-type>
+</mime-info>

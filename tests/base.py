@@ -12,6 +12,7 @@ WANTED_VMS = [
     "sd-svs",
     "sd-svs-disp",
     "sd-whonix",
+    "sd-export-usb"
 ]
 
 
