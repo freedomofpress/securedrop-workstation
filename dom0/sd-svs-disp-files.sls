@@ -31,3 +31,6 @@ sd-svs-disp-install-libreoffice:
     - retry:
         attempts: 3
         interval: 60
+    - install_recommends: False
+    - require:
+      - service: paxctld
