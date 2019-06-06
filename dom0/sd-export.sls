@@ -32,6 +32,9 @@ sd-export-usb-dvm:
     - tags:
       - add:
         - sd-workstation
+    - features:
+      - enable:
+        - service.paxctld
     - require:
       - qvm: sd-export-template
 

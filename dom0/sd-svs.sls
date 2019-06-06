@@ -34,6 +34,9 @@ sd-svs:
     - tags:
       - add:
         - sd-workstation
+    - features:
+      - enable:
+        - service.paxctld
     - require:
       - qvm: sd-svs-template
 

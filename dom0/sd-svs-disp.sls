@@ -36,5 +36,8 @@ sd-svs-disp:
       - add:
         - sd-workstation
         - sd-svs-disp-vm
+    - features:
+      - enable:
+        - service.paxctld
     - require:
       - qvm: sd-svs-disp-template

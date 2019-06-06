@@ -14,5 +14,8 @@ sd-workstation-template:
     - tags:
       - add:
         - sd-workstation
+    - features:
+      - enable:
+        - service.paxctld
     - require:
       - pkg: dom0-install-securedrop-workstation-template

@@ -20,11 +20,6 @@ sd-svs-disp-install-mimetype-handler-package:
     - require:
       - sls: fpf-apt-test-repo
 
-paxctld:
-  service.running:
-    - enable: True
-    - reload: True
-
 sd-svs-disp-install-libreoffice:
   pkg.installed:
     - name: libreoffice
@@ -32,5 +27,3 @@ sd-svs-disp-install-libreoffice:
         attempts: 3
         interval: 60
     - install_recommends: False
-    - require:
-      - service: paxctld

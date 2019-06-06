@@ -10,3 +10,13 @@ sd-workstation-template-install-kernel-config-packages:
       - securedrop-workstation-grsec
     - require:
       - sls: fpf-apt-test-repo
+
+# Ensure that paxctld starts immediately. For AppVMs,
+# use qvm.features.enabled = ["paxctld"] to ensure service start.
+sd-workstation-template-enable-paxctld:
+  service.running:
+    - name: paxctld
+    - enable: True
+    - reload: True
+    - require:
+      - pkg: sd-workstation-template-install-kernel-config-packages
