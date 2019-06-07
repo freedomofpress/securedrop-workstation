@@ -33,6 +33,16 @@ class SD_VM_Tests(unittest.TestCase):
         assert kernel_version.endswith("-grsec")
         assert kernel_version == EXPECTED_KERNEL_VERSION
 
+    def _check_service_running(self, vm, service):
+        """
+        Ensures a given service is running inside a given VM.
+        Uses systemctl is-active to query the service state.
+        """
+        cmd = "systemctl is-active {}".format(service)
+        stdout, stderr = vm.run(cmd)
+        service_status = stdout.decode("utf-8").rstrip()
+        assert service_status == "active"
+
     def test_sd_whonix_config(self):
         vm = self.app.domains["sd-whonix"]
         nvm = vm.netvm
@@ -65,6 +75,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
+        self._check_service_running(vm, "paxctld")
         self.assertTrue('sd-workstation' in vm.tags)
 
     def test_sd_svs_disp_config(self):
@@ -75,6 +86,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
         self._check_kernel(vm)
+        self._check_service_running(vm, "paxctld")
         self.assertTrue('sd-workstation' in vm.tags)
 
     def test_sd_gpg_config(self):
@@ -97,6 +109,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.kernel == "")
         self.assertTrue('sd-workstation' in vm.tags)
         self._check_kernel(vm)
+        self._check_service_running(vm, "paxctld")
 
     def test_sd_proxy_template(self):
         vm = self.app.domains["sd-proxy-template"]

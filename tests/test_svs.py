@@ -27,16 +27,6 @@ class SD_SVS_Tests(SD_VM_Local_Test):
         self.assertTrue(self._package_is_installed("securedrop-client"))
 
 
-class SD_SVS_Disp_Tests(SD_VM_Local_Test):
-    def setUp(self):
-        self.vm_name = "sd-svs-disp"
-        super(SD_SVS_Disp_Tests, self).setUp()
-
-    def test_sd_client_package_installed(self):
-        pkg = "securedrop-workstation-svs-disp"
-        self.assertTrue(self._package_is_installed(pkg))
-
-
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_SVS_Tests)
     return suite

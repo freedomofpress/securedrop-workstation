@@ -19,3 +19,11 @@ sd-svs-disp-install-mimetype-handler-package:
       - securedrop-workstation-svs-disp
     - require:
       - sls: fpf-apt-test-repo
+
+sd-svs-disp-install-libreoffice:
+  pkg.installed:
+    - name: libreoffice
+    - retry:
+        attempts: 3
+        interval: 60
+    - install_recommends: False
