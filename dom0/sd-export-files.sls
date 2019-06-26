@@ -11,10 +11,12 @@
 include:
   - fpf-apt-test-repo
 
-sd-export-template-install-cryptsetup:
+sd-export-template-install-packages:
   pkg.installed:
     - pkgs:
       - cryptsetup
+      - cups
+      - task-print-server
 
 sd-export-send-to-usb-script:
   file.managed:

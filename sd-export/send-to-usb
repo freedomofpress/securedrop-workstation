@@ -3,6 +3,7 @@
 import datetime
 import json
 import os
+import re
 import subprocess
 import sys
 import tarfile
@@ -39,9 +40,32 @@ def extract_tarball():
         exit_gracefully(msg, e=e)
 
 
-def retrieve_metadata():
+def retrieve_export_method():
     try:
-        metadata_filepath = os.path.join(SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "metadata.json")
+        metadata_filepath = os.path.join(
+            SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "metadata.json"
+        )
+        with open(metadata_filepath) as json_data:
+            data = json.load(json_data)
+            export_method = data["device"]
+    except Exception as e:
+        msg = "Error parsing metadata."
+        exit_gracefully(msg, e=e)
+
+    # we only support printers and encrypted disks as well as their test methods
+    # for now
+    if export_method not in ["disk", "disk-test", "printer", "printer-test"]:
+        msg = "Unsupported export device."
+        exit_gracefully(msg)
+
+    return export_method
+
+
+def retrieve_encryption_metadata():
+    try:
+        metadata_filepath = os.path.join(
+            SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "metadata.json"
+        )
         with open(metadata_filepath) as json_data:
             data = json.load(json_data)
             encryption_method = data["encryption-method"]
@@ -84,7 +108,7 @@ def mount_volume():
                 "sudo",
                 "mount",
                 os.path.join("/dev/mapper/", ENCRYPTED_DEVICE),
-                MOUNTPOINT
+                MOUNTPOINT,
             ]
         )
         subprocess.check_call(["sudo", "chown", "-R", "user:user", MOUNTPOINT])
@@ -101,7 +125,9 @@ def copy_submission():
     try:
         TARGET_DIRNAME_path = os.path.join(MOUNTPOINT, TARGET_DIRNAME)
         subprocess.check_call(["mkdir", TARGET_DIRNAME_path])
-        export_data = os.path.join(SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "export_data/")
+        export_data = os.path.join(
+            SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "export_data/"
+        )
         subprocess.check_call(["cp", "-r", export_data, TARGET_DIRNAME_path])
     except (subprocess.CalledProcessError, OSError) as e:
         msg = "Error writing to disk:"
@@ -116,12 +142,116 @@ def copy_submission():
         sys.exit(0)
 
 
+def get_printer_uri():
+    # Get the URI via lpinfo and only accept URIs of supported printers
+    printer_uri = ""
+    try:
+        output = subprocess.check_output(["sudo", "lpinfo", "-v"])
+    except subprocess.CalledProcessError as e:
+        msg = "Error retrieving printer uri."
+        exit_gracefully(msg, e=e)
+
+    # fetch the usb printer uri
+    for line in output.split():
+        if "usb://" in line.decode("utf-8"):
+            printer_uri = line.decode("utf-8")
+
+    # verify that the printer is supported, else exit
+    if printer_uri == "":
+        # No usb printer is connected
+        exit_gracefully("USB Printer not found")
+    elif "Brother" in printer_uri:
+        return printer_uri
+    else:
+        # printer url is a make that is unsupported
+        exit_gracefully("USB Printer not supported")
+
+
+def install_printer_ppd(uri):
+    # Some drivers don't come with ppd files pre-compiled, we must compile them
+    if "Brother" in uri:
+        try:
+            subprocess.check_call(
+                ["sudo", "ppdc", BRLASER_DRIVER, "-d", "/usr/share/cups/model/"]
+            )
+        except subprocess.CalledProcessError as e:
+            msg = "Error installing ppd file for printer {}.".format(uri)
+            exit_gracefully(msg, e=e)
+        return BRLASER_PPD
+    # Here, we could support ppd drivers for other makes or models in the future
+
+
+def setup_printer(printer_name, printer_uri, printer_ppd):
+    try:
+        # Add the printer using lpadmin
+        subprocess.check_call(
+            [
+                "sudo",
+                "lpadmin",
+                "-p",
+                printer_name,
+                "-v",
+                printer_uri,
+                "-P",
+                printer_ppd,
+            ]
+        )
+        # Activate the printer so that it can receive jobs
+        subprocess.check_call(["sudo", "lpadmin", "-p", printer_name, "-E"])
+        # Allow user to print (without using sudo)
+        subprocess.check_call(
+            ["sudo", "lpadmin", "-p", printer_name, "-u", "allow:user"]
+        )
+    except subprocess.CalledProcessError as e:
+        msg = "Error setting up printer {} at {} using {}.".format(
+            printer_name, printer_uri, printer_ppd
+        )
+        exit_gracefully(msg, e=e)
+
+
+def print_test_page(printer_name):
+    print_file(printer_name, "/usr/share/cups/data/testprint")
+
+
+def print_all_files(printer_name):
+    files_path = os.path.join(SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "export_data/")
+    files = os.listdir(files_path)
+    for f in files:
+        file_path = os.path.join(files_path, f)
+        print_file(printer_name, file_path)
+
+
+def print_file(printer_name, file_to_print):
+    try:
+        subprocess.check_call(["lpr", "-P", printer_name, file_to_print])
+    except subprocess.CalledProcessError as e:
+        msg = "Error printing file {} with printer {}.".format(
+            file_to_print, printer_name
+        )
+        exit_gracefully(msg, e=e)
+
+
 def main():
     extract_tarball()
-    encryption_method, encryption_key = retrieve_metadata()
-    unlock_luks_volume(encryption_key)
-    mount_volume()
-    copy_submission()
+    export_method = retrieve_export_method()
+    if export_method == "disk":
+        # exports all documents in the archive to luks-encrypted volume
+        encryption_method, encryption_key = retrieve_encryption_metadata()
+        unlock_luks_volume(encryption_key)
+        mount_volume()
+        copy_submission()
+    elif export_method == "printer":
+        # prints all documents in the archive
+        printer_uri = get_printer_uri()
+        printer_ppd = install_printer_ppd(printer_uri)
+        setup_printer(PRINTER_NAME, printer_uri, printer_ppd)
+        print_all_files(PRINTER_NAME)
+    elif export_method == "printer-test":
+        # Prints a test page to ensure the printer is functional
+        printer_uri = get_printer_uri()
+        printer_ppd = install_printer_ppd(printer_uri)
+        setup_printer(PRINTER_NAME, printer_uri, printer_ppd)
+        print_test_page(PRINTER_NAME)
 
 
 if __name__ == "__main__":
@@ -133,6 +263,9 @@ if __name__ == "__main__":
         MOUNTPOINT = "/media/usb"
         ENCRYPTED_DEVICE = "encrypted_volume"
         SUBMISSION_ARCHIVE = sys.argv[1]
+        BRLASER_DRIVER = "/usr/share/cups/drv/brlaser.drv"
+        BRLASER_PPD = "/usr/share/cups/model/br7030.ppd"
+        PRINTER_NAME = "sdw-printer"
 
         # Halt immediately if target file is absent
         if not os.path.exists(SUBMISSION_ARCHIVE):
@@ -140,7 +273,9 @@ if __name__ == "__main__":
             exit_gracefully(msg)
 
         SUBMISSION_DIRNAME = os.path.basename(SUBMISSION_ARCHIVE).split(".")[0]
-        TARGET_DIRNAME = "sd-export-{}".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+        TARGET_DIRNAME = "sd-export-{}".format(
+            datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        )
         SUBMISSION_TMPDIR = tempfile.mkdtemp()
 
         main()
