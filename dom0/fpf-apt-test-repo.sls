@@ -37,5 +37,6 @@ configure apt-test apt repo:
 update-all-apt-packages:
   pkg.uptodate:
     - cache_valid_time: "3600"
+    - dist_upgrade: True
     - require:
       - pkg: install-python-apt-for-repo-config
