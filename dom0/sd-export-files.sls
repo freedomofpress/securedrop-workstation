@@ -53,3 +53,12 @@ sd-export-file-format:
     - require:
       - file: sd-export-file-format
       - file: sd-export-desktop-file
+
+sd-export-securedrop-icon:
+  file.managed:
+    - name: /usr/share/securedrop/icons/sd-logo.png
+    - source: salt://sd/sd-proxy/logo-small.png
+    - user: root
+    - group: root
+    - mode: 644
+    - makedirs: True

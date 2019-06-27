@@ -3,7 +3,6 @@
 import datetime
 import json
 import os
-import re
 import subprocess
 import sys
 import tarfile
@@ -28,7 +27,52 @@ def exit_gracefully(msg, e=False):
         sys.stderr.write("\n")
     # exit with 0 return code otherwise the os will attempt to open
     # the file with another application
+    popup_message("Export error: {}".format(msg))
     sys.exit(0)
+
+
+def popup_message(msg):
+    try:
+        subprocess.check_call([
+            "notify-send",
+            "--expire-time", "3000",
+            "--icon", "/usr/share/securedrop/icons/sd-logo.png",
+            "SecureDrop: {}".format(msg)
+        ])
+    except subprocess.CalledProcessError as e:
+        msg = "Error sending notification:"
+        exit_gracefully(msg, e=e)
+
+
+class Metadata(object):
+    """
+    Object to parse, validate and store json metadata from the sd-export archive.
+    """
+
+    METADATA_FILE = "metadata.json"
+    SUPPORTED_EXPORT_METHODS = ["disk", "printer", "printer-test"]
+    SUPPORTED_ENCRYPTION_METHODS = ["luks"]
+
+    def __init__(self, archive_path):
+        self.metadata_path = os.path.join(archive_path, self.METADATA_FILE)
+        try:
+            with open(self.metadata_path) as f:
+                json_config = json.loads(f.read())
+                self.export_method = json_config.get("device", None)
+                self.encryption_method = json_config.get("encryption_method", None)
+                self.encryption_key = json_config.get("encryption_key", None)
+        except Exception as e:
+            msg = "Error parsing metadata: "
+            exit_gracefully(msg, e=e)
+
+    def is_valid(self):
+        if self.export_method not in self.SUPPORTED_EXPORT_METHODS:
+            return False
+
+        if self.export_method == "disk":
+            if self.encryption_method not in self.SUPPORTED_ENCRYPTION_METHODS:
+                return False
+        return True
 
 
 def extract_tarball():
@@ -38,48 +82,6 @@ def extract_tarball():
     except Exception as e:
         msg = "Error opening export bundle: "
         exit_gracefully(msg, e=e)
-
-
-def retrieve_export_method():
-    try:
-        metadata_filepath = os.path.join(
-            SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "metadata.json"
-        )
-        with open(metadata_filepath) as json_data:
-            data = json.load(json_data)
-            export_method = data["device"]
-    except Exception as e:
-        msg = "Error parsing metadata."
-        exit_gracefully(msg, e=e)
-
-    # we only support printers and encrypted disks as well as their test methods
-    # for now
-    if export_method not in ["disk", "disk-test", "printer", "printer-test"]:
-        msg = "Unsupported export device."
-        exit_gracefully(msg)
-
-    return export_method
-
-
-def retrieve_encryption_metadata():
-    try:
-        metadata_filepath = os.path.join(
-            SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "metadata.json"
-        )
-        with open(metadata_filepath) as json_data:
-            data = json.load(json_data)
-            encryption_method = data["encryption-method"]
-            encryption_key = data["encryption-key"]
-    except Exception as e:
-        msg = "Error parsing metadata."
-        exit_gracefully(msg, e=e)
-
-    # we only support luks for now
-    if encryption_method != "luks":
-        msg = "Unsupported export encryption."
-        exit_gracefully(msg)
-
-    return (encryption_method, encryption_key)
 
 
 def unlock_luks_volume(encryption_key):
@@ -129,6 +131,7 @@ def copy_submission():
             SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "export_data/"
         )
         subprocess.check_call(["cp", "-r", export_data, TARGET_DIRNAME_path])
+        popup_message("Files exported successfully to disk.")
     except (subprocess.CalledProcessError, OSError) as e:
         msg = "Error writing to disk:"
         exit_gracefully(msg, e=e)
@@ -211,14 +214,19 @@ def setup_printer(printer_name, printer_uri, printer_ppd):
 
 def print_test_page(printer_name):
     print_file(printer_name, "/usr/share/cups/data/testprint")
+    popup_message("Printing test page")
 
 
 def print_all_files(printer_name):
     files_path = os.path.join(SUBMISSION_TMPDIR, SUBMISSION_DIRNAME, "export_data/")
     files = os.listdir(files_path)
+    print_count = 0
     for f in files:
         file_path = os.path.join(files_path, f)
         print_file(printer_name, file_path)
+        print_count += 1
+        msg = "Printing document {} of {}".format(print_count, len(files))
+        popup_message(msg)
 
 
 def print_file(printer_name, file_to_print):
@@ -233,25 +241,29 @@ def print_file(printer_name, file_to_print):
 
 def main():
     extract_tarball()
-    export_method = retrieve_export_method()
-    if export_method == "disk":
-        # exports all documents in the archive to luks-encrypted volume
-        encryption_method, encryption_key = retrieve_encryption_metadata()
-        unlock_luks_volume(encryption_key)
-        mount_volume()
-        copy_submission()
-    elif export_method == "printer":
-        # prints all documents in the archive
-        printer_uri = get_printer_uri()
-        printer_ppd = install_printer_ppd(printer_uri)
-        setup_printer(PRINTER_NAME, printer_uri, printer_ppd)
-        print_all_files(PRINTER_NAME)
-    elif export_method == "printer-test":
-        # Prints a test page to ensure the printer is functional
-        printer_uri = get_printer_uri()
-        printer_ppd = install_printer_ppd(printer_uri)
-        setup_printer(PRINTER_NAME, printer_uri, printer_ppd)
-        print_test_page(PRINTER_NAME)
+
+    archive_path = os.path.join(SUBMISSION_TMPDIR, SUBMISSION_DIRNAME)
+    archive_metadata = Metadata(archive_path)
+    if archive_metadata.is_valid():
+        if archive_metadata.export_method == "disk":
+            # exports all documents in the archive to luks-encrypted volume
+            unlock_luks_volume(archive_metadata.encryption_key)
+            mount_volume()
+            copy_submission()
+        elif archive_metadata.export_method == "printer":
+            # prints all documents in the archive
+            printer_uri = get_printer_uri()
+            printer_ppd = install_printer_ppd(printer_uri)
+            setup_printer(PRINTER_NAME, printer_uri, printer_ppd)
+            print_all_files(PRINTER_NAME)
+        elif archive_metadata.export_method == "printer-test":
+            # Prints a test page to ensure the printer is functional
+            printer_uri = get_printer_uri()
+            printer_ppd = install_printer_ppd(printer_uri)
+            setup_printer(PRINTER_NAME, printer_uri, printer_ppd)
+            print_test_page(PRINTER_NAME)
+    else:
+        exit_gracefully("Archive metadata is invalid")
 
 
 if __name__ == "__main__":

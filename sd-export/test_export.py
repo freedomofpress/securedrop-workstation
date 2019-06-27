@@ -1,6 +1,13 @@
+from unittest import mock
+
 import imp
 import os
 import pytest
+import tempfile
+
+
+SAMPLE_OUTPUT_NO_PRINTER = b"network beh\nnetwork https\nnetwork ipp\nnetwork ipps\nnetwork http\nnetwork\nnetwork ipp14\nnetwork lpd"  # noqa
+SAMPLE_OUTPUT_BOTHER_PRINTER = b"network beh\nnetwork https\nnetwork ipp\nnetwork ipps\nnetwork http\nnetwork\nnetwork ipp14\ndirect usb://Brother/HL-L2320D%20series?serial=A00000A000000\nnetwork lpd"  # noqa
 
 
 # This below stanza is only necessary because the export code is not
@@ -17,7 +24,7 @@ def test_exit_gracefully_no_exception(capsys):
 
     with pytest.raises(SystemExit) as sysexit:
         securedropexport.exit_gracefully(test_msg)
-    
+
     # A graceful exit means a return code of 0
     assert sysexit.value.code == 0
 
@@ -38,4 +45,94 @@ def test_exit_gracefully_exception(capsys):
 
     captured = capsys.readouterr()
     assert captured.err == "{}\n<unknown exception>\n".format(test_msg)
+    assert captured.out == ""
+
+
+def test_empty_config(capsys):
+    temp_folder = tempfile.mkdtemp()
+    metadata = os.path.join(temp_folder, securedropexport.Metadata.METADATA_FILE)
+    with open(metadata, "w") as f:
+        f.write("{}")
+    config = securedropexport.Metadata(temp_folder)
+    assert not config.is_valid()
+
+
+def test_valid_printer_test_config(capsys):
+    temp_folder = tempfile.mkdtemp()
+    metadata = os.path.join(temp_folder, securedropexport.Metadata.METADATA_FILE)
+    with open(metadata, "w") as f:
+        f.write('{"device": "printer-test"}')
+    config = securedropexport.Metadata(temp_folder)
+    assert config.is_valid()
+    assert config.encryption_key is None
+    assert config.encryption_method is None
+
+
+def test_valid_printer_config(capsys):
+    temp_folder = tempfile.mkdtemp()
+    metadata = os.path.join(temp_folder, securedropexport.Metadata.METADATA_FILE)
+    with open(metadata, "w") as f:
+        f.write('{"device": "printer"}')
+    config = securedropexport.Metadata(temp_folder)
+    assert config.is_valid()
+    assert config.encryption_key is None
+    assert config.encryption_method is None
+
+
+def test_invalid_encryption_config(capsys):
+    temp_folder = tempfile.mkdtemp()
+    metadata = os.path.join(temp_folder, securedropexport.Metadata.METADATA_FILE)
+    with open(metadata, "w") as f:
+        f.write(
+            '{"device": "disk", "encryption_method": "base64", "encryption_key": "hunter1"}'
+        )
+    config = securedropexport.Metadata(temp_folder)
+    assert config.encryption_key == "hunter1"
+    assert config.encryption_method == "base64"
+    assert not config.is_valid()
+
+
+def test_valid_encryption_config(capsys):
+    temp_folder = tempfile.mkdtemp()
+    metadata = os.path.join(temp_folder, securedropexport.Metadata.METADATA_FILE)
+    with open(metadata, "w") as f:
+        f.write(
+            '{"device": "disk", "encryption_method": "luks", "encryption_key": "hunter1"}'
+        )
+    config = securedropexport.Metadata(temp_folder)
+    assert config.encryption_key == "hunter1"
+    assert config.encryption_method == "luks"
+    assert config.is_valid()
+
+
+@mock.patch("subprocess.check_call")
+def test_popup_message(mocked_call):
+    securedropexport.popup_message("hello!")
+    mocked_call.assert_called_once_with([
+        "notify-send",
+        "--expire-time", "3000",
+        "--icon", "/usr/share/securedrop/icons/sd-logo.png",
+        "SecureDrop: hello!"
+    ])
+
+
+@mock.patch("subprocess.check_output", return_value=SAMPLE_OUTPUT_BOTHER_PRINTER)
+def test_get_good_printer_uri(mocked_call):
+    result = securedropexport.get_printer_uri()
+    assert result == "usb://Brother/HL-L2320D%20series?serial=A00000A000000"
+
+
+@mock.patch("subprocess.check_output", return_value=SAMPLE_OUTPUT_NO_PRINTER)
+def test_get_bad_printer_uri(mocked_call, capsys):
+    expected_message = "USB Printer not found"
+    mocked_exit = mock.patch("securedropexport.exit_gracefully", return_value=0)
+
+    with pytest.raises(SystemExit) as sysexit:
+        result = securedropexport.get_printer_uri()
+        assert result == ""
+        mocked_exit.assert_called_once_with(expected_message)
+
+    assert sysexit.value.code == 0
+    captured = capsys.readouterr()
+    assert captured.err == "{}\n".format(expected_message)
     assert captured.out == ""
