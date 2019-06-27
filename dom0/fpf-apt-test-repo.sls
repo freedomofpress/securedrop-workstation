@@ -27,7 +27,7 @@ install-python-apt-for-repo-config:
 configure apt-test apt repo:
   pkgrepo.managed:
     - name: "deb [arch=amd64] https://apt-test-qubes.freedom.press stretch main"
-    - file: /etc/apt/sources.list.d/fpf-apt-test.list
+    - file: /etc/apt/sources.list.d/securedrop_workstation.list
     - key_url: "salt://sd/sd-workstation/apt-test-pubkey.asc"
     - require:
       - pkg: install-python-apt-for-repo-config
@@ -37,5 +37,6 @@ configure apt-test apt repo:
 update-all-apt-packages:
   pkg.uptodate:
     - cache_valid_time: "3600"
+    - dist_upgrade: True
     - require:
       - pkg: install-python-apt-for-repo-config
