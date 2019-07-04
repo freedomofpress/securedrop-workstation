@@ -17,6 +17,21 @@ sd-export-template-install-packages:
       - cryptsetup
       - cups
       - task-print-server
+      - system-config-printer
+      - xpp
+      - libcups2-dev
+      - python3-dev
+      - libtool-bin
+      - unoconv
+
+# Libreoffice needs to be installed here to convert to pdf to allow printing
+sd-export-install-libreoffice:
+  pkg.installed:
+    - name: libreoffice
+    - retry:
+        attempts: 3
+        interval: 60
+    - install_recommends: False
 
 sd-export-send-to-usb-script:
   file.managed:

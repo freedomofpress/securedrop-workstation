@@ -136,3 +136,23 @@ def test_get_bad_printer_uri(mocked_call, capsys):
     captured = capsys.readouterr()
     assert captured.err == "{}\n".format(expected_message)
     assert captured.out == ""
+
+
+@pytest.mark.parametrize('open_office_paths', [
+    "/tmp/whatver/thisisadoc.doc"
+    "/home/user/Downloads/thisisadoc.xlsx"
+    "/home/user/Downloads/file.odt"
+    "/tmp/tmpJf83j9/secret.pptx"
+])
+def test_is_open_office_file(capsys, open_office_paths):
+    assert securedropexport.is_open_office_file(open_office_paths)
+
+
+@pytest.mark.parametrize('open_office_paths', [
+    "/tmp/whatver/thisisadoc.doccc"
+    "/home/user/Downloads/thisisa.xlsx.zip"
+    "/home/user/Downloads/file.odz"
+    "/tmp/tmpJf83j9/secret.gpg"
+])
+def test_is_not_open_office_file(capsys, open_office_paths):
+    assert not securedropexport.is_open_office_file(open_office_paths)
