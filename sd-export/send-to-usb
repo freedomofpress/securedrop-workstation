@@ -231,7 +231,7 @@ def print_all_files(printer_name):
 
 def print_file(printer_name, file_to_print):
     try:
-        subprocess.check_call(["lpr", "-P", printer_name, file_to_print])
+        subprocess.check_call(["xpp", "-P", printer_name, file_to_print])
     except subprocess.CalledProcessError as e:
         msg = "Error printing file {} with printer {}.".format(
             file_to_print, printer_name

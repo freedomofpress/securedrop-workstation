@@ -17,6 +17,8 @@ sd-export-template-install-packages:
       - cryptsetup
       - cups
       - task-print-server
+      - system-config-printer-applet
+      - xpp
 
 sd-export-send-to-usb-script:
   file.managed:
