@@ -3,10 +3,12 @@
 import datetime
 import json
 import os
+import signal
 import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 
 
 def exit_gracefully(msg, e=False):
@@ -145,6 +147,36 @@ def copy_submission():
         sys.exit(0)
 
 
+class TimeoutException(Exception):
+    pass
+
+
+def handler(s, f):
+    raise TimeoutException("Timeout")
+
+
+def wait_for_print():
+    # use lpstat to ensure the job was fully transfered to the printer
+    # returns True if print was successful, otherwise will throw exceptions
+    signal.signal(signal.SIGALRM, handler)
+    signal.alarm(PRINTER_WAIT_TIMEOUT)
+    printer_idle_string = "printer {} is idle".format(PRINTER_NAME)
+    while(True):
+        try:
+            output = subprocess.check_output(["lpstat", "-p", PRINTER_NAME])
+            if(printer_idle_string in output.decode("utf-8")):
+                return True
+            else:
+              time.sleep(5)
+        except subprocess.CalledProcessError as e:
+            msg = "Error while retrieving print status"
+            exit_gracefully(msg, e=e)
+        except TimeoutException as e:
+            msg = "Timeout when getting printer information"
+            exit_gracefully(msg, e=e)
+    return True
+
+
 def get_printer_uri():
     # Get the URI via lpinfo and only accept URIs of supported printers
     printer_uri = ""
@@ -267,6 +299,8 @@ def main():
 
 
 if __name__ == "__main__":
+    PRINTER_NAME = "sdw-printer"
+    wait_for_print()
     try:
         # We define globals inside the main block, rather than at the top
         # of the file, to catch exceptions via exit_gracefully. All var names
@@ -278,7 +312,7 @@ if __name__ == "__main__":
         BRLASER_DRIVER = "/usr/share/cups/drv/brlaser.drv"
         BRLASER_PPD = "/usr/share/cups/model/br7030.ppd"
         PRINTER_NAME = "sdw-printer"
-
+        PRINTER_WAIT_TIMEOUT = 60
         # Halt immediately if target file is absent
         if not os.path.exists(SUBMISSION_ARCHIVE):
             msg = "File does not exist"
