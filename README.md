@@ -184,7 +184,7 @@ The development plan is to provide functionality in the *SecureDrop Client* that
 
 ##### Automated export flows
 
-The `sd-export-usb` disposable VM handles exports to USB devices through `qvm-open-in-vm`. USB device IDs are configured in `config.json`. The automated export flows make use of the `qvm-usb --persistent` feature. This means that the persistent USB device must be available for `sd-export-usb` to start. In other words, a USB memory stick or a printer must be connected **prior** to the the `qvm-open-in-vm sd-export-usb` call is made.
+The `sd-export-usb` disposable VM handles exports to USB devices through `qvm-open-in-vm`. USB device IDs are configured in `config.json`. The automated export flows make use of the `qvm-usb --persistent` feature. This means that the persistent USB device must be available for `sd-export-usb` to start. In other words, a USB memory stick or a printer must be connected **before** the call to `qvm-open-in-vm sd-export-usb <file>` is made.
 
 ######  Automated encrypted USB export flow (Work in progress, client integration TBD)
 
