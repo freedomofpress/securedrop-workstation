@@ -167,7 +167,7 @@ def wait_for_print():
             if(printer_idle_string in output.decode("utf-8")):
                 return True
             else:
-              time.sleep(5)
+                time.sleep(5)
         except subprocess.CalledProcessError as e:
             msg = "Error while retrieving print status"
             exit_gracefully(msg, e=e)
@@ -261,8 +261,26 @@ def print_all_files(printer_name):
         popup_message(msg)
 
 
+def is_open_office_file(filename):
+    OPEN_OFFICE_FORMATS = [".doc", ".docx", ".xls", ".xlsx",
+                           ".ppt", ".pptx", ".odt", ".ods", ".odp"]
+    for extension in OPEN_OFFICE_FORMATS:
+        if os.path.basename(filename).endswith(extension):
+            return True
+    return False
+
+
 def print_file(printer_name, file_to_print):
     try:
+        # if the file to print is an (open)office document, we need to call unoconf to convert
+        # the file to pdf as printer drivers do not immediately support this format out of the box
+        if is_open_office_file(file_to_print):
+            folder = os.path.dirname(file_to_print)
+            converted_filename = file_to_print + ".pdf"
+            converted_path = os.path.join(folder, converted_filename)
+            subprocess.check_call(["unoconv", "-o", converted_path, file_to_print])
+            file_to_print = converted_path
+
         subprocess.check_call(["xpp", "-P", printer_name, file_to_print])
     except subprocess.CalledProcessError as e:
         msg = "Error printing file {} with printer {}.".format(
@@ -300,7 +318,6 @@ def main():
 
 if __name__ == "__main__":
     PRINTER_NAME = "sdw-printer"
-    wait_for_print()
     try:
         # We define globals inside the main block, rather than at the top
         # of the file, to catch exceptions via exit_gracefully. All var names
