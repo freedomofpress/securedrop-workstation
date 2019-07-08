@@ -3,6 +3,7 @@
 import datetime
 import json
 import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -22,6 +23,9 @@ def exit_gracefully(msg, e=False):
     sys.stderr.write("\n")
     if e:
         try:
+            # If the file archive was extracted, delete before returning
+            if os.path.isdir(SUBMISSION_TMPDIR):
+                shutil.rmtree(SUBMISSION_TMPDIR)
             e_output = e.output
         except Exception:
             e_output = "<unknown exception>"
@@ -342,6 +346,9 @@ if __name__ == "__main__":
         SUBMISSION_TMPDIR = tempfile.mkdtemp()
 
         main()
+
+        # Delete extracted achive from tempfile
+        shutil.rmtree(SUBMISSION_TMPDIR)
     except Exception as e:
         # exit with 0 return code otherwise the os will attempt to open
         # the file with another application
