@@ -116,16 +116,12 @@ dom0-enabled-apparmor-on-whonix-gw-14-template:
     - name: whonix-gw-14
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
-    - require:
-      - pkg: dom0-install-whonix-14-templates
 
 dom0-enabled-apparmor-on-whonix-ws-14-template:
   qvm.vm:
     - name: whonix-ws-14
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
-    - require:
-      - pkg: dom0-install-whonix-14-templates
 
 dom0-create-opt-securedrop-directory:
   file.directory:
