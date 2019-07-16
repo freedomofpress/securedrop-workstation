@@ -111,13 +111,6 @@ dom0-install-fedora-29-template:
     - pkgs:
       - qubes-template-fedora-29
 
-dom0-install-whonix-14-templates:
-  pkg.installed:
-    - fromrepo: qubes-templates-community
-    - pkgs:
-      - qubes-template-whonix-gw-14
-      - qubes-template-whonix-ws-14
-
 dom0-enabled-apparmor-on-whonix-gw-14-template:
   qvm.vm:
     - name: whonix-gw-14
