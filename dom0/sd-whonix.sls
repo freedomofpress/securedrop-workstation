@@ -29,5 +29,4 @@ sd-whonix:
       - add:
         - sd-workstation
     - require:
-      - pkg: qubes-template-whonix-gw-14
       - qvm: sys-firewall

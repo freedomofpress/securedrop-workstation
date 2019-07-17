@@ -37,7 +37,6 @@ sd-proxy:
       - add:
         - sd-workstation
     - require:
-      - pkg: qubes-template-whonix-ws-14
       - qvm: sd-whonix
       - qvm: sd-proxy-template
 
