@@ -33,7 +33,7 @@ def exit_gracefully(msg, e=False):
         sys.stderr.write("\n")
     # exit with 0 return code otherwise the os will attempt to open
     # the file with another application
-    popup_message("Export error: {}".format(msg))
+    # popup_message("Export error: {}".format(msg))
     sys.exit(0)
 
 
@@ -56,7 +56,13 @@ class Metadata(object):
     """
 
     METADATA_FILE = "metadata.json"
-    SUPPORTED_EXPORT_METHODS = ["disk", "printer", "printer-test"]
+    SUPPORTED_EXPORT_METHODS = [
+        "usb-test",
+        "disk",
+        "disk-test",
+        "printer",
+        "printer-test",
+    ]
     SUPPORTED_ENCRYPTION_METHODS = ["luks"]
 
     def __init__(self, archive_path):
@@ -88,6 +94,37 @@ def extract_tarball():
     except Exception as e:
         msg = "Error opening export bundle: "
         exit_gracefully(msg, e=e)
+
+
+def check_usb_connected():
+    # Rely on the output of lsusb on the bus assigned to. We might need to make this variable configurable
+    # In the future and extracted from config.json
+    p = subprocess.check_output(["lsusb", "-s", PCI_BUS_ID])
+    n_usb = len(p.decode("utf-8").rstrip().split("\n"))
+    # If there is one device, it is the root hub.
+    if n_usb == 1:
+        msg = "ERROR_NO_USB"
+        exit_gracefully(msg)
+    # If there are two devices, it's the root hub and another device (presumably for export)
+    elif n_usb == 2:
+        msg = "USB_OK"
+        exit_gracefully(msg)
+    # Else the result is unexpected
+    else:
+        msg = "USB_CHECK_ERROR"
+        exit_gracefully(msg)
+
+
+def check_luks_volume():
+    try:
+        # cryptsetup isLuks returns 0 if the device is a luks volume
+        # subprocess with throw if the device is not luks (rc !=0)
+        p = subprocess.check_call(["sudo", "cryptsetup", "isLuks", DEVICE])
+        msg = "USB_ENCRYPTED_OK"
+        exit_gracefully(msg)
+    except subprocess.CalledProcessError as e:
+        msg = "USB_NOT_ENCRYPTED"
+        exit_gracefully(msg)
 
 
 def unlock_luks_volume(encryption_key):
@@ -299,11 +336,15 @@ def main():
     archive_path = os.path.join(SUBMISSION_TMPDIR, SUBMISSION_DIRNAME)
     archive_metadata = Metadata(archive_path)
     if archive_metadata.is_valid():
-        if archive_metadata.export_method == "disk":
+        if archive_metadata.export_method == "usb-test":
+            check_usb_connected()
+        elif archive_metadata.export_method == "disk":
             # exports all documents in the archive to luks-encrypted volume
             unlock_luks_volume(archive_metadata.encryption_key)
             mount_volume()
             copy_submission()
+        elif archive_metadata.export_method == "disk-test":
+            check_luks_volume()
         elif archive_metadata.export_method == "printer":
             # prints all documents in the archive
             printer_uri = get_printer_uri()
@@ -326,6 +367,7 @@ if __name__ == "__main__":
         # We define globals inside the main block, rather than at the top
         # of the file, to catch exceptions via exit_gracefully. All var names
         # will be available to all functions called via main().
+        PCI_BUS_ID = "002:"
         DEVICE = "/dev/sda1"
         MOUNTPOINT = "/media/usb"
         ENCRYPTED_DEVICE = "encrypted_volume"
