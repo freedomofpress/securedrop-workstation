@@ -5,7 +5,7 @@
 # sd-svs-files
 # ========
 #
-# Moves files into place on sd-svs
+# Moves files into place on sd-svs-template
 #
 ##
 include:

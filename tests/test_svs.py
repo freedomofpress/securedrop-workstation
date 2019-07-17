@@ -1,3 +1,4 @@
+import json
 import unittest
 
 from base import SD_VM_Local_Test
@@ -25,6 +26,14 @@ class SD_SVS_Tests(SD_VM_Local_Test):
 
     def test_sd_client_package_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-client"))
+
+    def test_sd_client_config(self):
+        with open("config.json") as c:
+            config = json.load(c)
+            submission_fpr = config['submission_key_fpr']
+
+        line = '{{"journalist_key_fingerprint": "{}"}}'.format(submission_fpr)
+        self.assertFileHasLine("/home/user/.securedrop_client/config.json", line)
 
 
 def load_tests(loader, tests, pattern):
