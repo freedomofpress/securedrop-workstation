@@ -11,10 +11,27 @@
 include:
   - fpf-apt-test-repo
 
-sd-export-template-install-cryptsetup:
+sd-export-template-install-packages:
   pkg.installed:
     - pkgs:
       - cryptsetup
+      - cups
+      - task-print-server
+      - system-config-printer
+      - xpp
+      - libcups2-dev
+      - python3-dev
+      - libtool-bin
+      - unoconv
+
+# Libreoffice needs to be installed here to convert to pdf to allow printing
+sd-export-install-libreoffice:
+  pkg.installed:
+    - name: libreoffice
+    - retry:
+        attempts: 3
+        interval: 60
+    - install_recommends: False
 
 sd-export-send-to-usb-script:
   file.managed:
@@ -51,3 +68,12 @@ sd-export-file-format:
     - require:
       - file: sd-export-file-format
       - file: sd-export-desktop-file
+
+sd-export-securedrop-icon:
+  file.managed:
+    - name: /usr/share/securedrop/icons/sd-logo.png
+    - source: salt://sd/sd-proxy/logo-small.png
+    - user: root
+    - group: root
+    - mode: 644
+    - makedirs: True

@@ -182,7 +182,11 @@ qvm-copy-to-vm sd-export-usb ~/.securedrop_client/data/name-of-file
 
 The development plan is to provide functionality in the *SecureDrop Client* that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
 
-#####  Automated export flow (Work in progress, client integration TBD)
+##### Automated export flows
+
+The `sd-export-usb` disposable VM handles exports to USB devices through `qvm-open-in-vm`. USB device IDs are configured in `config.json`. The automated export flows make use of the `qvm-usb --persistent` feature. This means that the persistent USB device must be available for `sd-export-usb` to start. In other words, a USB memory stick or a printer must be connected **before** the call to `qvm-open-in-vm sd-export-usb <file>` is made.
+
+######  Automated encrypted USB export flow (Work in progress, client integration TBD)
 
 The SecureDrop Workstation can automatically export to a luks-encrypted USB device provided the correct format. The file extension of the tar archive must be `.sd-export`, containing the following structure:
 
@@ -200,10 +204,45 @@ The folder `export_data` contains all the files that will be exported to the dis
 
 ```
 {
+  "device": "disk"
   "encryption-method": "luks"
   "encryption-key": "Your encryption passhrase goes here"
 }
 ```
+
+######  Automated printing flow (Work in progress, client integration TBD)
+
+The SecureDrop Workstation can automatically print files to a USB-connected printer provided the correct format. The file extension of the tar archive must be `.sd-export`, containing the following structure:
+
+Note that only Brother printers are supported now (tested with HL-L2320D)
+
+
+```
+.
+├── metadata.json
+└── export_data
+    ├── file-to-export-1.txt
+    ├── file-to-export-2.pdf
+    ├── file-to-export-3.doc
+    [...]
+```
+
+The folder `export_data` contains all the files that will be printed, and the file `metadata.json` contains an instruction indicating that the archive will be printed:
+
+```
+{
+  "device": "printer"
+}
+```
+
+Optionally you can use the `printer-test` device to send a printer test page and ensure the printer is functional
+
+```
+{
+  "device": "printer-test"
+}
+```
+
 
 ###### Create the transfer device
 
