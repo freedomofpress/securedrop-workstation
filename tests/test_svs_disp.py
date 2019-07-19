@@ -12,6 +12,10 @@ class SD_SVS_Disp_Tests(SD_VM_Local_Test):
         pkg = "securedrop-workstation-svs-disp"
         self.assertTrue(self._package_is_installed(pkg))
 
+    def test_sd_svs_disp_evince_installed(self):
+        pkg = "evince"
+        self.assertTrue(self._package_is_installed(pkg))
+
     def test_sd_svs_disp_libreoffice_installed(self):
         self.assertTrue(self._package_is_installed("libreoffice"))
 
