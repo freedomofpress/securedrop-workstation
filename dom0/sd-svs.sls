@@ -33,6 +33,7 @@ sd-svs:
       - netvm: ""
     - tags:
       - add:
+        - sd-client
         - sd-workstation
     - features:
       - enable:

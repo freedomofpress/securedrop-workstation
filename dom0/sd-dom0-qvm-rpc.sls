@@ -33,7 +33,7 @@ dom0-rpc-qubes.Filecopy:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        sd-proxy sd-svs allow
+        sd-proxy $tag:sd-client allow
         $anyvm $tag:sd-workstation deny
 dom0-rpc-qubes.OpenInVM:
   file.blockreplace:
@@ -42,8 +42,8 @@ dom0-rpc-qubes.OpenInVM:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        sd-svs $dispvm:sd-svs-disp allow
-        sd-svs sd-export-usb allow
+        $tag:sd-client $dispvm:sd-svs-disp allow
+        $tag:sd-client sd-export-usb allow
         $anyvm $tag:sd-workstation deny
 dom0-rpc-qubes.OpenURL:
   file.blockreplace:
@@ -100,7 +100,7 @@ dom0-rpc-qubes.Gpg:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        sd-svs sd-gpg allow
+        $tag:sd-client sd-gpg allow
         $anyvm $tag:sd-workstation deny
 dom0-rpc-qubes.GpgImportKey:
   file.blockreplace:
@@ -109,5 +109,5 @@ dom0-rpc-qubes.GpgImportKey:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        sd-svs sd-gpg allow
+        $tag:sd-client sd-gpg allow
         $anyvm $tag:sd-workstation deny

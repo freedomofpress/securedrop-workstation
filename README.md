@@ -80,6 +80,14 @@ export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to
 make clone
 ```
 
+If you plan to work on the [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) code, also run:
+
+```
+qvm-tags sd-dev add sd-client
+```
+
+Doing so will permit the `sd-dev` AppVM to make RPC calls with the same privileges as the `sd-svs` AppVM.
+
 **NOTE:** The destination directory on `dom0` is not customizable; it must be `securedrop-workstation` in your home directory.
 
 #### Building

@@ -77,6 +77,7 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
         self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue('sd-client' in vm.tags)
 
     def test_sd_svs_disp_config(self):
         vm = self.app.domains["sd-svs-disp"]
