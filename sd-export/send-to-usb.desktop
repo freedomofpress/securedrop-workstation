@@ -1,5 +1,0 @@
-[Desktop Entry]
-Type=Application
-MimeType=application/x-sd-export
-Name="Export SD submission to USB"
-Exec=/usr/bin/send-to-usb

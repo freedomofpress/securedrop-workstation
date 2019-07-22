@@ -11,19 +11,6 @@
 include:
   - fpf-apt-test-repo
 
-sd-export-template-install-packages:
-  pkg.installed:
-    - pkgs:
-      - cryptsetup
-      - cups
-      - task-print-server
-      - system-config-printer
-      - xpp
-      - libcups2-dev
-      - python3-dev
-      - libtool-bin
-      - unoconv
-
 # Libreoffice needs to be installed here to convert to pdf to allow printing
 sd-export-install-libreoffice:
   pkg.installed:
@@ -33,50 +20,10 @@ sd-export-install-libreoffice:
         interval: 60
     - install_recommends: False
 
-sd-export-send-to-usb-script:
-  file.managed:
-    - name: /usr/bin/send-to-usb
-    - source: salt://sd/sd-export/send-to-usb
-    - user: root
-    - group: root
-    - mode: 755
-    - makedirs: True
-
-sd-export-desktop-file:
-  file.managed:
-    - name: /usr/share/applications/send-to-usb.desktop
-    - source: salt://sd/sd-export/send-to-usb.desktop
-    - user: root
-    - group: root
-    - mode: 644
-    - makedirs: True
-  cmd.run:
-    - name: sudo update-desktop-database /usr/share/applications
-    - require:
-      - file: sd-export-desktop-file
-
-sd-export-file-format:
-  file.managed:
-    - name: /usr/share/mime/packages/application-x-sd-export.xml
-    - source: salt://sd/sd-export/application-x-sd-export.xml
-    - user: root
-    - group: root
-    - mode: 644
-    - makedirs: True
-  cmd.run:
-    - name: sudo update-mime-database /usr/share/mime
-    - require:
-      - file: sd-export-file-format
-      - file: sd-export-desktop-file
-
-sd-export-securedrop-icon:
-  file.managed:
-    - name: /usr/share/securedrop/icons/sd-logo.png
-    - source: salt://sd/sd-proxy/logo-small.png
-    - user: root
-    - group: root
-    - mode: 644
-    - makedirs: True
+# Install securedrop-export package https://github.com/freedomofpress/securedrop-export
+sd-export-install-package:
+  pkg.installed:
+    - name: securedrop-export
 
 # populate sd-export-config.json in sd-export-template. This contains the usb
 # device information used for the export
