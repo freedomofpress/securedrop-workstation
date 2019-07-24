@@ -90,11 +90,11 @@ remove-sd-export: assert-dom0 detach-sd-export-usb ## Destroys SD EXPORT VMs
 	@./scripts/destroy-vm sd-export-usb-dvm
 
 detach-sd-export-usb: assert-dom0 ## Detach USB device from SD EXPORT USB VM
-	@qvm-kill sd-export-usb || true
-	@qvm-usb detach sd-export-usb || true
+	@qvm-kill sd-export-usb 2>/dev/null || true
+	@qvm-usb detach sd-export-usb 2>/dev/null || true
 
 clean: assert-dom0 detach-sd-export-usb destroy-all clean-salt ## Destroys all SD VMs
-	sudo dnf -y -q remove securedrop-workstation-dom0-config || true
+	sudo dnf -y -q remove securedrop-workstation-dom0-config 2>/dev/null || true
 	sudo rm -f /usr/bin/securedrop-update \
 		/etc/cron.daily/securedrop-update-cron
 
