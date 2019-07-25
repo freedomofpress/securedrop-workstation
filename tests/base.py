@@ -58,6 +58,11 @@ class SD_VM_Local_Test(unittest.TestCase):
 
         self.vm.start()
 
+    def _run(self, cmd):
+        full_cmd = ["qvm-run", "-p", self.vm_name, cmd]
+        contents = subprocess.check_output(full_cmd).decode("utf-8").strip()
+        return contents
+
     def _get_file_contents(self, path):
         cmd = ["qvm-run", "-p", self.vm_name,
                "/bin/cat {}".format(path)]

@@ -13,7 +13,7 @@
 - policy: Filecopy
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    sd-proxy sd-svs allow
+    sd-proxy $tag:sd-client allow
     $anyvm $tag:sd-workstation deny
     ### END securedrop-workstation ###
 
@@ -49,14 +49,14 @@
 - policy: Gpg
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    sd-svs sd-gpg allow
+    $tag:sd-client sd-gpg allow
     $anyvm $tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: GpgImportKey
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    sd-svs sd-gpg allow
+    $tag:sd-client sd-gpg allow
     $anyvm $tag:sd-workstation deny
     ### END securedrop-workstation ###
 
@@ -90,8 +90,8 @@
 - policy: OpenInVM
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    sd-svs $dispvm:sd-svs-disp allow
-    sd-svs sd-export-usb allow
+    $tag:sd-client $dispvm:sd-svs-disp allow
+    $tag:sd-client sd-export-usb allow
     $anyvm $tag:sd-workstation deny
     ### END securedrop-workstation ###
 
