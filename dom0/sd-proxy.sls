@@ -17,7 +17,7 @@ sd-proxy-template:
   qvm.vm:
     - name: sd-proxy-template
     - clone:
-      - source: whonix-ws-14
+      - source: whonix-ws-15
       - label: blue
     - tags:
       - add:

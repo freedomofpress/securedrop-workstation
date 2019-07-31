@@ -17,7 +17,7 @@ sd-whonix:
   qvm.vm:
     - name: sd-whonix
     - present:
-      - template: whonix-gw-14
+      - template: whonix-gw-15
       - label: purple
       - mem: 500
     - prefs:

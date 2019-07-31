@@ -49,7 +49,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(nvm.name == "sys-firewall")
         wanted_kernelopts = "nopat apparmor=1 security=apparmor"
         self.assertEqual(vm.kernelopts, wanted_kernelopts)
-        self.assertTrue(vm.template == "whonix-gw-14")
+        self.assertTrue(vm.template == "whonix-gw-15")
         self.assertTrue(vm.provides_network)
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.template_for_dispvms)

@@ -111,15 +111,15 @@ dom0-install-fedora-29-template:
     - pkgs:
       - qubes-template-fedora-29
 
-dom0-enabled-apparmor-on-whonix-gw-14-template:
+dom0-enabled-apparmor-on-whonix-gw-15-template:
   qvm.vm:
-    - name: whonix-gw-14
+    - name: whonix-gw-15
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
 
-dom0-enabled-apparmor-on-whonix-ws-14-template:
+dom0-enabled-apparmor-on-whonix-ws-15-template:
   qvm.vm:
-    - name: whonix-ws-14
+    - name: whonix-ws-15
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
 
@@ -127,27 +127,3 @@ dom0-create-opt-securedrop-directory:
   file.directory:
     - name: /opt/securedrop
 
-# Temporary workaround to bootstrap Salt support on target.
-dom0-whonix-gw-14-install-python-futures:
-  cmd.run:
-    - name: >
-        test -f /opt/securedrop/whonix-gw-14-python-futures ||
-        qvm-run -a whonix-gw-14
-        "python -c 'import concurrent.futures' ||
-        { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
-        qvm-shutdown --wait whonix-gw-14 &&
-        touch /opt/securedrop/whonix-gw-14-python-futures
-    - require:
-      - file: dom0-create-opt-securedrop-directory
-
-dom0-whonix-ws-14-install-python-futures:
-  cmd.run:
-    - name: >
-        test -f /opt/securedrop/whonix-ws-14-python-futures ||
-        qvm-run -a whonix-ws-14
-        "python -c 'import concurrent.futures' ||
-        { sudo apt-get update && sudo apt-get install -qq python-futures ; }" &&
-        qvm-shutdown --wait whonix-ws-14 &&
-        touch /opt/securedrop/whonix-ws-14-python-futures
-    - require:
-      - file: dom0-create-opt-securedrop-directory

@@ -7,6 +7,7 @@ from base import WANTED_VMS
 
 SUPPORTED_PLATFORMS = [
     "Debian GNU/Linux 9 (stretch)",
+    "Debian GNU/Linux 10 (buster)"
 ]
 
 
