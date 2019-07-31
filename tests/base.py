@@ -98,3 +98,10 @@ class SD_VM_Local_Test(unittest.TestCase):
         msg = "File {} does not contain expected line {}".format(remote_path,
                                                                  wanted_line)
         raise AssertionError(msg)
+
+    def _fileExists(self, remote_path):
+        # ls will return non-zero if the file doesn't exists
+        # and error will be propagated to the unittest
+        subprocess.check_call(["qvm-run", "-a", "-q", self.vm_name,
+                               "ls {}".format(remote_path)])
+        return True
