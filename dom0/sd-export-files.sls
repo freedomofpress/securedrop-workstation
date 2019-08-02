@@ -77,3 +77,22 @@ sd-export-securedrop-icon:
     - group: root
     - mode: 644
     - makedirs: True
+
+# populate sd-export-config.json in sd-export-template. This contains the usb
+# device information used for the export
+
+{% import_json "sd/config.json" as d %}
+
+install-securedrop-export-json-config:
+  file.managed:
+    - name: /etc/sd-export-config.json
+    - source: salt://sd/sd-export/config.json.j2
+    - template: jinja
+    - context:
+        # get pci ID and usb ID from config.json
+        pci_bus_id_value: {{ (d.usb.device | regex_search('sys-usb:(.)-.'))[0] | int }}
+        usb_device_value: {{ (d.usb.device | regex_search('sys-usb:.-(.)'))[0] | int }}
+    - user: user
+    - group: user
+    - mode: 0644
+    - makedirs: True
