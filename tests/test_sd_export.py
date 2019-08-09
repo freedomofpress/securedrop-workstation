@@ -12,16 +12,14 @@ class SD_Export_Tests(SD_VM_Local_Test):
         super(SD_Export_Tests, self).setUp()
 
     def test_files_are_properly_copied(self):
-        self.assertFilesMatch("/usr/bin/send-to-usb",
-                              "sd-export/send-to-usb")
-        self.assertFilesMatch("/usr/share/applications/send-to-usb.desktop",
-                              "sd-export/send-to-usb.desktop")
-        self.assertFilesMatch("/usr/share/mime/packages/application-x-sd-export.xml", # noqa
-                              "sd-export/application-x-sd-export.xml")
+        self.assertTrue(self._fileExists("/usr/bin/send-to-usb"))
+        self.assertTrue(self._fileExists("/usr/share/applications/send-to-usb.desktop"))
+        self.assertTrue(self._fileExists("/usr/share/mime/packages/application-x-sd-export.xml"))
 
     def test_sd_export_package_installed(self):
         self.assertTrue(self._package_is_installed("cryptsetup"))
         self.assertTrue(self._package_is_installed("printer-driver-brlaser"))
+        self.assertTrue(self._package_is_installed("securedrop-export"))
 
     def test_sd_export_config_present(self):
         with open("config.json") as c:
