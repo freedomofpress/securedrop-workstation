@@ -1,175 +1,175 @@
 - policy: ClipboardPaste
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: FeaturesRequest
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: Filecopy
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    sd-proxy $tag:sd-client allow
-    $anyvm $tag:sd-workstation deny
+    sd-proxy @tag:sd-client allow
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: GetDate
   starts_with: |-
     ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
+    ## so adding anything below "@anyvm @anyvm action" line will have no effect
 
     ## Please use a single # to start your custom comments
 
-    $tag:anon-vm	$anyvm	deny
-    $anyvm	$anyvm	allow,target=dom0
+    @tag:anon-vm	@anyvm	deny
+    @anyvm	@anyvm	allow,target=dom0
 
 - policy: GetRandomizedTime
   starts_with: |-
     ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
+    ## so adding anything below "@anyvm @anyvm action" line will have no effect
 
     ## Please use a single # to start your custom comments
 
-    $anyvm	dom0	allow
+    @anyvm	dom0	allow
 
 - policy: GetImageRGBA
   starts_with: |-
     ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
+    ## so adding anything below "@anyvm @anyvm action" line will have no effect
 
     ## Please use a single # to start your custom comments
 
-    $anyvm $dispvm allow
-    $anyvm $anyvm ask
+    @anyvm @dispvm allow
+    @anyvm @anyvm ask
 
 - policy: Gpg
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $tag:sd-client sd-gpg allow
-    $anyvm $tag:sd-workstation deny
+    @tag:sd-client sd-gpg allow
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: GpgImportKey
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $tag:sd-client sd-gpg allow
-    $anyvm $tag:sd-workstation deny
+    @tag:sd-client sd-gpg allow
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: InputKeyboard
   starts_with: |-
-    $anyvm $anyvm deny
+    @anyvm @anyvm deny
 
 - policy: InputMouse
   starts_with: |-
     sys-usb dom0 allow,user=root
-    $anyvm $anyvm deny
+    @anyvm @anyvm deny
 
 - policy: NotifyTools
   starts_with: |-
     ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
+    ## so adding anything below "@anyvm @anyvm action" line will have no effect
 
     ## Please use a single # to start your custom comments
 
-    $anyvm	dom0	allow
+    @anyvm	dom0	allow
 
 - policy: NotifyUpdates
   starts_with: |-
     ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
+    ## so adding anything below "@anyvm @anyvm action" line will have no effect
 
     ## Please use a single # to start your custom comments
 
-    $anyvm	dom0	allow
+    @anyvm	dom0	allow
 
 - policy: OpenInVM
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $tag:sd-client $dispvm:sd-svs-disp allow
-    $tag:sd-client sd-export-usb allow
-    $anyvm $tag:sd-workstation deny
+    @tag:sd-client @dispvm:sd-svs-disp allow
+    @tag:sd-client sd-export-usb allow
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: OpenURL
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: PdfConvert
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: ReceiveUpdates
   starts_with: |-
     ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
+    ## so adding anything below "@anyvm @anyvm action" line will have no effect
 
     ## Please use a single # to start your custom comments
 
-    $anyvm	dom0	allow
+    @anyvm	dom0	allow
 
 - policy: StartApp
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: SyncAppMenus
   starts_with: |-
     ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
+    ## so adding anything below "@anyvm @anyvm action" line will have no effect
 
     ## Please use a single # to start your custom comments
 
-    $anyvm	dom0	allow
+    @anyvm	dom0	allow
 
 - policy: UpdatesProxy
   starts_with: |-
     ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
+    ## so adding anything below "@anyvm @anyvm action" line will have no effect
 
     ## Please use a single # to start your custom comments
 
     # Upgrade all TemplateVMs through sys-whonix.
-    #$type:TemplateVM $default allow,target=sys-whonix
+    #@type:TemplateVM @default allow,target=sys-whonix
 
     # Upgrade Whonix TemplateVMs through sys-whonix.
-    $tag:whonix-updatevm $default allow,target=sys-whonix
+    @tag:whonix-updatevm @default allow,target=sys-whonix
 
     # Deny Whonix TemplateVMs using UpdatesProxy of any other VM.
-    $tag:whonix-updatevm $anyvm deny
+    @tag:whonix-updatevm @anyvm deny
 
     # Default rule for all TemplateVMs - direct the connection to sys-net
-    $type:TemplateVM $default allow,target=sys-net
+    @type:TemplateVM @default allow,target=sys-net
 
-    $anyvm $anyvm deny
+    @anyvm @anyvm deny
 
 - policy: USB
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: VMRootShell
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: VMShell
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: WindowIconUpdater
   starts_with: |-
-    $anyvm dom0 allow
+    @anyvm dom0 allow

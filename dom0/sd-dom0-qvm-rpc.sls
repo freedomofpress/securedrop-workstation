@@ -17,7 +17,7 @@ dom0-rpc-qubes.ClipboardPaste:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $anyvm $tag:sd-workstation deny
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.FeaturesRequest:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.FeaturesRequest
@@ -25,7 +25,7 @@ dom0-rpc-qubes.FeaturesRequest:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $anyvm $tag:sd-workstation deny
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.Filecopy:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.Filecopy
@@ -33,8 +33,8 @@ dom0-rpc-qubes.Filecopy:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        sd-proxy $tag:sd-client allow
-        $anyvm $tag:sd-workstation deny
+        sd-proxy @tag:sd-client allow
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.OpenInVM:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.OpenInVM
@@ -42,9 +42,9 @@ dom0-rpc-qubes.OpenInVM:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $tag:sd-client $dispvm:sd-svs-disp allow
-        $tag:sd-client sd-export-usb allow
-        $anyvm $tag:sd-workstation deny
+        @tag:sd-client @dispvm:sd-svs-disp allow
+        @tag:sd-client sd-export-usb allow
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.OpenURL:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.OpenURL
@@ -52,7 +52,7 @@ dom0-rpc-qubes.OpenURL:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $anyvm $tag:sd-workstation deny
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.PdfConvert:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.PdfConvert
@@ -60,7 +60,7 @@ dom0-rpc-qubes.PdfConvert:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $anyvm $tag:sd-workstation deny
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.StartApp:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.StartApp
@@ -68,7 +68,7 @@ dom0-rpc-qubes.StartApp:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $anyvm $tag:sd-workstation deny
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.USB:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.USB
@@ -76,7 +76,7 @@ dom0-rpc-qubes.USB:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $anyvm $tag:sd-workstation deny
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.VMRootShell:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.VMRootShell
@@ -84,7 +84,7 @@ dom0-rpc-qubes.VMRootShell:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $anyvm $tag:sd-workstation deny
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.VMshell:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.VMShell
@@ -92,7 +92,7 @@ dom0-rpc-qubes.VMshell:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $anyvm $tag:sd-workstation deny
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.Gpg:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.Gpg
@@ -100,8 +100,8 @@ dom0-rpc-qubes.Gpg:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $tag:sd-client sd-gpg allow
-        $anyvm $tag:sd-workstation deny
+        @tag:sd-client sd-gpg allow
+        @anyvm @tag:sd-workstation deny
 dom0-rpc-qubes.GpgImportKey:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.GpgImportKey
@@ -109,5 +109,5 @@ dom0-rpc-qubes.GpgImportKey:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        $tag:sd-client sd-gpg allow
-        $anyvm $tag:sd-workstation deny
+        @tag:sd-client sd-gpg allow
+        @anyvm @tag:sd-workstation deny
