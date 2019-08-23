@@ -61,14 +61,18 @@ Select all VMs marked as **updates available**, then click **Next**. Once all up
 
 #### Download, Configure, Copy to `dom0`
 
-Decide on a VM to use for development. Clone this repo to your preferred location on that VM.
+Decide on a VM to use for development. We suggest creating a standalone VM called `sd-dev`. Clone this repo to your preferred location on that VM.
 
 Next we need to do some SecureDrop-specific configuration:
 
 - create a `config.json` based on `config.json.example` and include your values for the Journalist hidden service `.onion` hostname and PSK.
 - create an `sd-journalist.sec` file in the root directory with the ASCII-armored GPG private key used to encrypt submissions in your test SecureDrop instance. The included key `sd-journalist.sec` is the one used by default in the SecureDrop staging instance.
 
-Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM. That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`:
+Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM.
+
+*Understand that [copying data to dom0](https://www.qubes-os.org/doc/copy-from-dom0/#copying-to-dom0) goes against the grain of the Qubes security philosophy, and should only done with trusted code and for very specific purposes, such as Qubes-related development tasks. Still, be aware of the risks, especially if you rely on your Qubes installation for other sensitive work.*
+
+That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`:
 
     qvm-run --pass-io work 'tar -c -C /home/user/projects securedrop-workstation' | tar xvf -
 
