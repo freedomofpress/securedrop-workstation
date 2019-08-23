@@ -2,7 +2,32 @@
 
 ![Example of viewing submitted documents inside Qubes OS using the SecureDrop Client](docs/images/client-with-documents.png)
 
-## Bringing SecureDrop to Qubes
+## Contents
+
+1. [Introduction: Bringing SecureDrop to Qubes](#introduction-bringing-securedrop-to-qubes)  
+   *[Detailed Rationale](#detailed-rationale) • [Architecture](#architecture) • [What's In This Repo?](#whats-in-this-repo)*  
+2. [Installation](#installation)  
+   - [Install Qubes](#install-qubes)
+   - [Download, Configure, Copy to `dom0`](#download-configure-copy-to-dom0)
+   - [Provision the VMs](#provision-the-vms)
+3. [Development](#development)  
+   - [Testing](#testing)
+   - [Automatic Updates](#automatic-updates)
+   - [Building the Templates](#building-the-templates)
+   - [Building workstation deb packages](#building-workstation-deb-packages)
+   - [Building workstation rpm packages](#building-workstation-deb-packages)
+4. [Using the *SecureDrop Client*](#using-the-securedrop-client)  
+   - [Signing in](#signing-in)
+   - [Viewing messages and documents](#viewing-messages-and-documents)
+   - [Exporting documents](#exporting-documents)
+   - [Manual export flow](#manual-export-flow)
+   - [Automated export flows](#automated-export-flows)
+   - [Transferring files via OnionShare](#transferring-files-via-onionshare)
+   - [Printing](#printing)
+5. [Distributing and Releasing](#distributing-and-releasing)
+6. [Threat model](#threat-model)
+
+## Introduction: Bringing SecureDrop to Qubes
 
 This project aims to make journalists' experience working with SecureDrop less onerous while retaining the current security and privacy features SecureDrop provides. We're doing that by moving the set of journalist-facing tools, which currently spans multiple Tails installations and requires physical USB drives to move data, to a single computer running multiple virtual machines, with data moved as automatically and transparently as possible between otherwise isolated VMs.
 
@@ -71,7 +96,7 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 
 Installing this project is involved. It requires an up-to-date Qubes 4.0 installation running on a machine with at least 12GB of RAM. You'll need access to a SecureDrop staging server as well.
 
-### Qubes 4.0.1
+### Install Qubes
 
 Before trying to use this project, install [Qubes 4.0.1](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
 
@@ -129,7 +154,7 @@ Doing so will permit the `sd-dev` AppVM to make RPC calls with the same privileg
 
 **NOTE:** The destination directory on `dom0` is not customizable; it must be `securedrop-workstation` in your home directory.
 
-### Building
+### Provision the VMs
 
 Once the configuration is done and this directory is copied to `dom0`, you must update existing Qubes templates and use `make` to handle all provisioning and configuration by your unprivileged user:
 
@@ -146,7 +171,7 @@ qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (err
 ```
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
-### Development
+## Development
 
 This project's development requires different workflows for working on provisioning components and working on submission-handling scripts.
 
@@ -190,6 +215,53 @@ make all
 ```
 
 In the future, we plan on shipping a *SecureDrop Workstation* installer package as an RPM package in `dom0` to automatically update the salt provisioning logic.
+### Building the Templates
+
+1. Create a `fedora-29` AppVM for building the templates. It's going
+   to need Docker and several other packages every time you use it, so
+   it might be worth creating another template derived from
+   `fedora-29`, into which you can install those extras, and basing
+   the builder VM on that, or just using a StandaloneVM to save time
+   and repetition.
+2. Increase the disk size to at least 15GB (as the build uses over
+   10GB): `qvm-volume extend sd-template-builder:private 15GB` (if
+   your VM is not named `sd-template-builder`, adjust that command)
+3. Import the QubesOS master key and the GPG key used to sign tags (see https://www.qubes-os.org/security/verifying-signatures/)
+4. Run `make template` in the top-level of this repository.
+5. Copy the rpm generated in `/home/user/src/securedrop-workstation/builder/qubes-builder/qubes-src/linux-template-builder/rpm/` to `dom0`
+6. Install the template in `dom0` : `sudo rpm -i <file>.rpm` (this takes a few minutes)
+7. Create a new VM based on this template:
+```
+qvm-create --template securedrop-workstation test-securedrop-workstation --class AppVM --property virt_mode=hvm --property kernel='' --label green
+```
+
+### Building workstation deb packages
+
+```
+# go to the builder/ directory:
+cd builder/packages
+# build a specific package (e.g, grsecurity metapackage)
+make securedrop-workstation-grsec
+# OR build all the packages
+make all
+# run the tests
+pipenv install -d
+pipenv shell
+# install test requirements and run the test
+apt install lintian
+make test
+```
+
+### Building workstation rpm packages
+
+```
+make build-dom0-rpm
+```
+
+This uses a base docker image as defined in https://github.com/freedomofpress/containers/.
+If you need to bump versions of the rpmbuild tooling, make an update to that
+repo's metadata, and increment the version as defined in the `Makefile`. See the
+`RPM_BUILD_VER` variable.
 
 ## Using the *SecureDrop Client*
 
@@ -418,55 +490,8 @@ qvm-copy-to-vm sd-onionshare ~/.securedrop_client/data/name-of-file
 
 Printing directly from the `sd-svs` AppVM or the disposable VMs will not be supported. The development plan is to instruct admins to install printer drivers in a template associated with a new printing VM. This template will not be shared with any other VMs.
 
-## Building the Templates
-
-1. Create a `fedora-29` AppVM for building the templates. It's going
-   to need Docker and several other packages every time you use it, so
-   it might be worth creating another template derived from
-   `fedora-29`, into which you can install those extras, and basing
-   the builder VM on that, or just using a StandaloneVM to save time
-   and repetition.
-2. Increase the disk size to at least 15GB (as the build uses over
-   10GB): `qvm-volume extend sd-template-builder:private 15GB` (if
-   your VM is not named `sd-template-builder`, adjust that command)
-3. Import the QubesOS master key and the GPG key used to sign tags (see https://www.qubes-os.org/security/verifying-signatures/)
-4. Run `make template` in the top-level of this repository.
-5. Copy the rpm generated in `/home/user/src/securedrop-workstation/builder/qubes-builder/qubes-src/linux-template-builder/rpm/` to `dom0`
-6. Install the template in `dom0` : `sudo rpm -i <file>.rpm` (this takes a few minutes)
-7. Create a new VM based on this template:
-```
-qvm-create --template securedrop-workstation test-securedrop-workstation --class AppVM --property virt_mode=hvm --property kernel='' --label green
-```
-
-## Building workstation deb packages
-
-```
-# go to the builder/ directory:
-cd builder/packages
-# build a specific package (e.g, grsecurity metapackage)
-make securedrop-workstation-grsec
-# OR build all the packages
-make all
-# run the tests
-pipenv install -d
-pipenv shell
-# install test requirements and run the test
-apt install lintian
-make test
-```
-
-## Building workstation rpm packages
-
-```
-make build-dom0-rpm
-```
-
-This uses a base docker image as defined in https://github.com/freedomofpress/containers/.
-If you need to bump versions of the rpmbuild tooling, make an update to that
-repo's metadata, and increment the version as defined in the `Makefile`. See the
-`RPM_BUILD_VER` variable.
-
-## Signing sources
+## Distributing and Releasing
+### Signing sources
 
 SecureDrop Workstation code spans across the following repositories:
 
@@ -527,7 +552,7 @@ rpm -Kv  # Signature lines will now contain OK instead of NOKEY
 You can then proceed with distributing the package, via the "test" or "prod" repo,
 as appropriate.
 
-## Distributing packages
+### Distributing packages
 
 For the Debian packages, see https://github.com/freedomofpress/securedrop-debian-packaging/.
 For the RPM packages, such as the `securedrop-workstation` TemplateVM package, first
