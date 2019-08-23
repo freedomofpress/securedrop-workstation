@@ -271,7 +271,7 @@ First, power on the workstation. When prompted, enter the *Disk Password* and pr
 
 To launch the *SecureDrop Client*, temporarily until [this issue](https://github.com/freedomofpress/securedrop-workstation/issues/198) is resolved, you should from a `dom0` terminal `qvm-run sd-svs securedrop-client`. This will start the *SecureDrop Client* in the `sd-svs` AppVM.
 
-##### Signing in
+### Signing in
 
 You should see a login prompt similar to the following:
 
@@ -281,7 +281,7 @@ In the background, you will see any previously downloaded messages. This is inte
 
 If the sign-in fails, make sure to wait for another Two-Factor Code before trying again. To troubleshoot, verify that you can successfully sign in by visiting the .onion address of your *Journalist Interface* in the Tor browser in the `sd-proxy` AppVM.
 
-##### Viewing messages and documents
+### Viewing messages and documents
 
 After the sign-in or the next time you attempt to view encrypted content, you will be prompted by a dialog asking “Do you allow VM ‘sd-svs’ to access your GPG keys (now and for the following 28800 seconds)?”. Click **Yes**.
 
@@ -318,11 +318,11 @@ After you have completed your session, we strongly recommend shutting down the w
 Replies and Source Deletion will be added in the next major release of the *SecureDrop Workstation*.
 
 
-##### Exporting documents
+### Exporting documents
 
 **WARNING:** Opening files from an unknown origin presents certain risks (malware, fingerprinting). While the workstation helps reduce these risks by offering VM-level isolation, transferring documents to another host without the same level of isolation may expose you to these risks. Using tools to sanitize submitted documents, such as right-clicking a .pdf and selecting "Convert to trusted PDF" in Qubes OS, may help mitigate some of these risks. Further mitigating these risks will be a focus of future development.
 
-##### Manual export flow
+### Manual export flow
 
 Exporting documents directly from within the *SecureDrop Client* is not currently supported, but you can export documents manually via USB by following these steps:
 
@@ -343,11 +343,11 @@ qvm-copy-to-vm sd-export-usb ~/.securedrop_client/data/name-of-file
 
 The development plan is to provide functionality in the *SecureDrop Client* that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
 
-##### Automated export flows
+### Automated export flows
 
 The `sd-export-usb` disposable VM handles exports to USB devices through `qvm-open-in-vm`. USB device IDs are configured in `config.json`. The automated export flows make use of the `qvm-usb --persistent` feature. This means that the persistent USB device must be available for `sd-export-usb` to start. In other words, a USB memory stick or a printer must be connected **before** the call to `qvm-open-in-vm sd-export-usb <file>` is made.
 
-######  Automated encrypted USB export flow (Work in progress, client integration TBD)
+#### Automated encrypted USB export flow (Work in progress, client integration TBD)
 
 The SecureDrop Workstation can automatically export to a luks-encrypted USB device provided the correct format. The file extension of the tar archive must be `.sd-export`, containing the following structure:
 
@@ -371,7 +371,7 @@ The folder `export_data` contains all the files that will be exported to the dis
 }
 ```
 
-######  Automated printing flow (Work in progress, client integration TBD)
+#### Automated printing flow (Work in progress, client integration TBD)
 
 The SecureDrop Workstation can automatically print files to a USB-connected printer provided the correct format. The file extension of the tar archive must be `.sd-export`, containing the following structure:
 
@@ -405,11 +405,11 @@ Optionally you can use the `printer-test` device to send a printer test page and
 ```
 
 
-###### Create the transfer device
+#### Create the transfer device
 
 You can find instructions to create a luks-encrypted transfer device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_device.html).
 
-###### Install-time configuration
+#### Install-time configuration
 
 A single USB port will be assigned to the exporting feature. Qubes will automatically attach any USB device to the Export VM. It should be labeled and only used for exporting purposes. You will be able to use different USB Transfer Devices, but they will always need to be plugged into the same port. Note that a USB stick must be connected during the entirety of the provisioning process. If you forget, you can run `make sd-export` after the install.
 
@@ -436,7 +436,7 @@ qvm-usb
   make sd-export
   ```
 
-###### Exporting
+#### Exporting
 
 1. Plug in the USB drive into the dedicated export port on your workstation.
 2. In `sd-svs`, run the following command:
@@ -445,7 +445,7 @@ qvm-usb
 qvm-open-in-vm sd-export-usb <name-of-file>
 ```
 
-###### Troubleshooting
+#### Troubleshooting
 
 If you are experiencing issues with the export flow, or would like to use a different port, you can re-run the configuration steps and apply the configuration to the VMs.
 In `dom0`, ensure your config.json contains the correct usb device identifier (see above) and rebuild the export machines (with the USB device attached):
@@ -456,7 +456,7 @@ make sd-export
 ```
 
 
-##### Transferring files via OnionShare
+### Transferring files via OnionShare
 1. Create an `sd-onionshare-template` VM based on `fedora-29`:
    1. Click on the Qubes menu in the upper left, select "Template: Fedora 29", click on "fedora-29: Qube Settings", and click on **Clone Qube**
    2. Name the cloned qube `sd-onionshare-template`
@@ -486,7 +486,7 @@ qvm-copy-to-vm sd-onionshare ~/.securedrop_client/data/name-of-file
 6. On the target machine, navigate to the Tor onion service URL provided by OnionShare using the Tor Browser to retrieve the file.
 7. Close OnionShare and delete the decrypted submission on `sd-onionshare` from `~/QubesIncoming/sd-svs`
 
-##### Printing
+### Printing
 
 Printing directly from the `sd-svs` AppVM or the disposable VMs will not be supported. The development plan is to instruct admins to install printer drivers in a template associated with a new printing VM. This template will not be shared with any other VMs.
 
