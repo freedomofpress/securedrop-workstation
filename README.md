@@ -5,7 +5,7 @@
 ## Contents
 
 1. [Introduction: Bringing SecureDrop to Qubes](#introduction-bringing-securedrop-to-qubes)  
-   *[Detailed Rationale](#detailed-rationale) • [Architecture](#architecture) • [What's In This Repo?](#whats-in-this-repo)*  
+   [Detailed Rationale](#detailed-rationale) • [Architecture](#architecture) • [What's In This Repo?](#whats-in-this-repo)*  
 2. [Installation](#installation)  
    - [Install Qubes](#install-qubes)
    - [Download, Configure, Copy to `dom0`](#download-configure-copy-to-dom0)
@@ -56,6 +56,7 @@ The Qubes OS approach addresses this at multiple levels:
 However, the Qubes OS approach is not without downsides. It stands and falls with the security of Qubes OS itself, which in turn may be impacted by Spectre/Meltdown type CPU level vulnerabilities, hypervisor vulnerabilities, and so on. These risks must be compared against the operational security risks of the current architecture, including the work that journalists do after downloading a submission. The Qubes OS website provides a useful [comparison of its security model with that of using a separate machine](https://www.qubes-os.org/intro/#how-does-qubes-os-compare-to-using-a-separate-physical-machine).
 
 While we are strongly committed to piloting the use of Qubes OS for SecureDrop, no final decision has been made to move to this new architecture. This decision will require a full audit of this new approach, consideration of alternatives, and extensive validation with SecureDrop's current user community.
+
 ### Architecture
 
 The current architecture replaces the *Journalist Workstation* and *Secure Viewing Station* Tails installations with specially-configured Qubes VMs; these are the VMs the user will primarily interact with. There are a number of other configured VMs which provide ancillary services.
@@ -117,7 +118,6 @@ qubes-update-gui
 ```
 
 Select all VMs marked as **updates available**, then click **Next**. Once all updates have been applied, you're ready to proceed.
-
 
 ### Download, Configure, Copy to `dom0`
 
@@ -215,6 +215,7 @@ make all
 ```
 
 In the future, we plan on shipping a *SecureDrop Workstation* installer package as an RPM package in `dom0` to automatically update the salt provisioning logic.
+
 ### Building the Templates
 
 1. Create a `fedora-29` AppVM for building the templates. It's going
@@ -317,7 +318,6 @@ After you have completed your session, we strongly recommend shutting down the w
 
 Replies and Source Deletion will be added in the next major release of the *SecureDrop Workstation*.
 
-
 ### Exporting documents
 
 **WARNING:** Opening files from an unknown origin presents certain risks (malware, fingerprinting). While the workstation helps reduce these risks by offering VM-level isolation, transferring documents to another host without the same level of isolation may expose you to these risks. Using tools to sanitize submitted documents, such as right-clicking a .pdf and selecting "Convert to trusted PDF" in Qubes OS, may help mitigate some of these risks. Further mitigating these risks will be a focus of future development.
@@ -377,7 +377,6 @@ The SecureDrop Workstation can automatically print files to a USB-connected prin
 
 Note that only Brother printers are supported now (tested with HL-L2320D)
 
-
 ```
 .
 ├── metadata.json
@@ -404,7 +403,6 @@ Optionally you can use the `printer-test` device to send a printer test page and
 }
 ```
 
-
 #### Create the transfer device
 
 You can find instructions to create a luks-encrypted transfer device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_device.html).
@@ -412,7 +410,6 @@ You can find instructions to create a luks-encrypted transfer device in the [Sec
 #### Install-time configuration
 
 A single USB port will be assigned to the exporting feature. Qubes will automatically attach any USB device to the Export VM. It should be labeled and only used for exporting purposes. You will be able to use different USB Transfer Devices, but they will always need to be plugged into the same port. Note that a USB stick must be connected during the entirety of the provisioning process. If you forget, you can run `make sd-export` after the install.
-
 
 1. Connect the USB device to the port you would like to use. Then in `dom0`, run the following command:
 
@@ -455,8 +452,8 @@ make remove-sd-export
 make sd-export
 ```
 
-
 ### Transferring files via OnionShare
+
 1. Create an `sd-onionshare-template` VM based on `fedora-29`:
    1. Click on the Qubes menu in the upper left, select "Template: Fedora 29", click on "fedora-29: Qube Settings", and click on **Clone Qube**
    2. Name the cloned qube `sd-onionshare-template`
@@ -491,6 +488,7 @@ qvm-copy-to-vm sd-onionshare ~/.securedrop_client/data/name-of-file
 Printing directly from the `sd-svs` AppVM or the disposable VMs will not be supported. The development plan is to instruct admins to install printer drivers in a template associated with a new printing VM. This template will not be shared with any other VMs.
 
 ## Distributing and Releasing
+
 ### Signing sources
 
 SecureDrop Workstation code spans across the following repositories:
@@ -502,8 +500,8 @@ SecureDrop Workstation code spans across the following repositories:
 * https://github.com/freedomofpress/securedrop-workstation
 * https://github.com/freedomofpress/qubes-template-securedrop-workstation
 
-
 ### Release
+
 1. For each release, a tag for each release will be signed and pushed to each of the above repos.
 
 2. Create a Makefile target in securedrop-debian-packaging repo that contains release tags / commit hashes for each repository used for the release. To verify the tag signature and check out the packaging logic:
@@ -511,15 +509,16 @@ SecureDrop Workstation code spans across the following repositories:
 git tag -v <tag>
 git checkout <tag>
 ```
-
 3. Metadata (e.g. commit hash for release) should be tracked inside the .deb (e.g.: `/usr/share/packagename/release-info.txt`)
 
 ### Signing binaries/packages
 
 #### Debian packages
+
 Apt repository Release file will be signed, containing checksum of the debs.
 
 #### RPM packages
+
 The entire RPM must be signed. This process also requires a Fedora machine/VM on which
 the GPG signing key (either in GPG keyring or in qubes-split-gpg) is setup.
 You will need to add the public key to RPM for verification (see below).
