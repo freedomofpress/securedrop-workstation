@@ -103,11 +103,7 @@ Installing this project is involved. It requires an up-to-date Qubes 4.0 install
 
 Before trying to use this project, install [Qubes 4.0.1](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
 
-After installing Qubes, you must update both dom0 and the base templates to include the latest versions of apt packages.
-
-##### `dom0`
-
-Open a terminal in `dom0` by clicking on the Qubes menu top-right of the screen and left-clicking on Terminal Emulator and run:
+After installing Qubes, you must update both dom0 and the base templates to include the latest versions of apt packages. Open a terminal in `dom0` by clicking on the Qubes menu top-right of the screen and left-clicking on Terminal Emulator and run:
 
 ```
 sudo qubes-dom0-update
@@ -173,6 +169,7 @@ qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (err
 ```
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
+
 ## Development
 
 This project's development requires different workflows for working on provisioning components and working on submission-handling scripts.
