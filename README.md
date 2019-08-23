@@ -4,19 +4,21 @@
 
 ## Contents
 
-1. [Introduction: Bringing SecureDrop to Qubes](#introduction-bringing-securedrop-to-qubes)  
-   [Detailed Rationale](#detailed-rationale) • [Architecture](#architecture) • [What's In This Repo?](#whats-in-this-repo)*  
-2. [Installation](#installation)  
+1. [Introduction: Bringing SecureDrop to Qubes](#introduction-bringing-securedrop-to-qubes)
+   - [Detailed Rationale](#detailed-rationale)
+   - [Architecture](#architecture)
+   - [What's In This Repo?](#whats-in-this-repo)
+2. [Installation](#installation)
    - [Install Qubes](#install-qubes)
    - [Download, Configure, Copy to `dom0`](#download-configure-copy-to-dom0)
    - [Provision the VMs](#provision-the-vms)
-3. [Development](#development)  
+3. [Development](#development)
    - [Testing](#testing)
    - [Automatic Updates](#automatic-updates)
    - [Building the Templates](#building-the-templates)
    - [Building workstation deb packages](#building-workstation-deb-packages)
    - [Building workstation rpm packages](#building-workstation-deb-packages)
-4. [Using the *SecureDrop Client*](#using-the-securedrop-client)  
+4. [Using the *SecureDrop Client*](#using-the-securedrop-client)
    - [Signing in](#signing-in)
    - [Viewing messages and documents](#viewing-messages-and-documents)
    - [Exporting documents](#exporting-documents)
