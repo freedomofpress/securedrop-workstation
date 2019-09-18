@@ -41,3 +41,26 @@ update-all-apt-packages:
     - dist_upgrade: True
     - require:
       - pkg: install-python-apt-for-repo-config
+
+# The Whonix 14 repos are no longer maintained, so disable them to allow
+# apt to pull in updates from Debian upstream (and FPF apt repo).
+# Temporary measure until we migrate to Whonix 15, and Buster across the board.
+disable-whonix-14-repositories-onion:
+  file.line:
+    - name: /etc/apt/sources.list.d/whonix.list
+    - mode: replace
+    - match: "dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion stretch"
+    - content: "#deb tor+http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion stretch main contrib non-free"
+    - backup: yes
+    - onlyif:
+      - test -f /etc/apt/sources.list.d/whonix.list
+
+disable-whonix-14-repositories-clearnet:
+  file.line:
+    - name: /etc/apt/sources.list.d/whonix.list
+    - mode: replace
+    - match: "deb.whonix.org stretch"
+    - content: "#deb https://deb.whonix.org stretch main contrib non-free"
+    - backup: yes
+    - onlyif:
+      - test -f /etc/apt/sources.list.d/whonix.list
