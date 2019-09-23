@@ -2,13 +2,40 @@
 
 ![Example of viewing submitted documents inside Qubes OS using the SecureDrop Client](docs/images/client-with-documents.png)
 
+
 ## Bringing SecureDrop to Qubes
 
-This project aims to make journalists' experience working with SecureDrop less onerous while retaining the current security and privacy features SecureDrop provides. We're doing that by moving the set of journalist-facing tools, which currently spans multiple Tails installations and requires physical USB drives to move data, to a single computer running multiple virtual machines, with data moved as automatically and transparently as possible between otherwise isolated VMs.
+This project aims to improve journalists' experience working with SecureDrop while retaining the current security and privacy features SecureDrop provides. The journalist tools currently span multiple machines and require data to be moved using physical USB drives. We are re-designing this cumbersome process by moving the journalist workflow to a single computer running multiple virtual machines with [Qubes OS](https://qubes-os.org). Data is moved as automatically and transparently as possible between otherwise isolated VMs.
 
 **IMPORTANT:** This project is in alpha, has known bugs and shortcomings, and should not be used in production environments. This README is geared towards interested technical users and developers. When reviewing the state of the project, please take into account [known bugs](https://github.com/search?utf8=%E2%9C%93&q=repo%3Afreedomofpress%2Fsecuredrop-workstation+repo%3Afreedomofpress%2Fsecuredrop-client+repo%3Afreedomofpress%2Fsecuredrop-proxy+repo%3Afreedomofpress%2Fsecuredrop-client+repo%3Afreedmofpress%2Fsecuredrop-sdk+repo%3Afreedomofpress%2Fqubes-template-securedrop-workstation+label%3Abug+state%3Aopen&type=Issues&ref=advsearch&l=&l=) and [security issues](https://github.com/search?utf8=%E2%9C%93&q=repo%3Afreedomofpress%2Fsecuredrop-workstation+repo%3Afreedomofpress%2Fsecuredrop-client+repo%3Afreedomofpress%2Fsecuredrop-proxy+repo%3Afreedomofpress%2Fsecuredrop-client+repo%3Afreedmofpress%2Fsecuredrop-sdk+repo%3Afreedomofpress%2Fqubes-template-securedrop-workstation+label%3Asecurity+state%3Aopen&type=Issues&ref=advsearch&l=&l=) that will be addressed in future releases.
 
-### Detailed Rationale
+## Contents
+
+1. [Detailed Rationale](#detailed-rationale)
+2. [Architecture](#architecture)
+3. [What's In This Repo?](#whats-in-this-repo)
+2. [Installation](#installation)
+   - [Install Qubes](#install-qubes)
+   - [Download, Configure, Copy to `dom0`](#download-configure-copy-to-dom0)
+   - [Provision the VMs](#provision-the-vms)
+3. [Development](#development)
+   - [Testing](#testing)
+   - [Automatic Updates](#automatic-updates)
+   - [Building the Templates](#building-the-templates)
+   - [Building workstation deb packages](#building-workstation-deb-packages)
+   - [Building workstation rpm packages](#building-workstation-deb-packages)
+4. [Using the *SecureDrop Client*](#using-the-securedrop-client)
+   - [Signing in](#signing-in)
+   - [Viewing messages and documents](#viewing-messages-and-documents)
+   - [Exporting documents](#exporting-documents)
+   - [Manual export flow](#manual-export-flow)
+   - [Automated export flows](#automated-export-flows)
+   - [Transferring files via OnionShare](#transferring-files-via-onionshare)
+   - [Printing](#printing)
+5. [Distributing and Releasing](#distributing-and-releasing)
+6. [Threat model](#threat-model)
+
+## Detailed Rationale
 
 SecureDrop's [architecture](https://docs.securedrop.org/en/latest/overview.html#infrastructure) and [threat model](https://docs.securedrop.org/en/stable/threat_model/threat_model.html) are proven, but the current approach also has major drawbacks:
 
@@ -32,19 +59,51 @@ However, the Qubes OS approach is not without downsides. It stands and falls wit
 
 While we are strongly committed to piloting the use of Qubes OS for SecureDrop, no final decision has been made to move to this new architecture. This decision will require a full audit of this new approach, consideration of alternatives, and extensive validation with SecureDrop's current user community.
 
-### Installation
+## Architecture
+
+The current architecture replaces the *Journalist Workstation* and *Secure Viewing Station* Tails installations with specially-configured Qubes VMs; these are the VMs the user will primarily interact with. There are a number of other configured VMs which provide ancillary services.
+
+![(Data Flow Diagram for the SecureDrop Workstation)](docs/images/data-flow-diagram.png)
+
+Currently, the following VMs are provisioned:
+
+- `sd-proxy` is where the SecureDrop proxy resides, which allows the non-networked `sd-svs` vm to communicate with the *Journalist Interface* over Tor.
+- `sd-svs` is a non-networked VM in which the *SecureDrop Client* runs used to store and explore submissions after they're unarchived and decrypted. Any files opened in this VM are opened in a disposable VM.
+- `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the *Journalist Interface*.
+- `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
+- `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files.
+
+Submissions are processed in the following steps:
+
+1. Journalist uses the *SecureDrop Client* to access the *Journalist Interface* via the Journalist API. After logging in, the journalist clicks
+on any submission of interest.
+2. The *SecureDrop Client* will use `sd-gpg` to decrypt the submission using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
+5. The decrypted submission is stored on the `sd-svs` *Secure Viewing Station VM*, where it's placed in a local database.
+6. Any file opened by the *SecureDrop Client* in the *Secure Viewing Station VM* is opened in a Disposable VM, largely mitigating attacks from malicious content.
+
+See below for a closer examination of this process, and see `docs/images` for screenshots related to the steps above.
+
+## What's In This Repo?
+
+This project can be broken neatly into two parts: 1) a set of salt states and `top` files which configure the various VMs, and 2) scripts and system configuration files which set up the document handling process.
+
+Qubes uses SaltStack internally for VM provisionining and configuration management (see https://www.qubes-os.org/doc/salt/), so it's natural for us to use it as well. The `dom0` directory contains salt `.top` and `.sls` files used to provision the VMs noted above.
+- `Makefile` is used with the `make` command on `dom0` to build the Qubes/SecureDrop installation, and also contains some development and testing features.
+- The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) is installed in `sd-svs` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
+- The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-proxy) is installed in `sd-proxy` to communicate to the SecureDrop server *Journalist Interface* via `sd-whonix`.
+- Within `sd-svs`, the *SecureDrop Client* will open all submissions in the `sd-svs-disp` disposable VM.
+- `config.json.example` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
+- `sd-journalist.sec.example` is an example GPG private key for use in decrypting submissions. It must match the public key set on a SecureDrop server used for testing. Before use, you should copy it to `sd-journalist.sec`, or store the submission key used with your SecureDrop server as `sd-journalist.sec`.
+
+## Installation
 
 Installing this project is involved. It requires an up-to-date Qubes 4.0 installation running on a machine with at least 12GB of RAM. You'll need access to a SecureDrop staging server as well.
 
-#### Qubes 4.0.1
+### Install Qubes
 
 Before trying to use this project, install [Qubes 4.0.1](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
 
-After installing Qubes, you must update both dom0 and the base templates to include the latest versions of apt packages.
-
-##### `dom0`
-
-Open a terminal in `dom0` by clicking on the Qubes menu top-right of the screen and left-clicking on Terminal Emulator and run:
+After installing Qubes, you must update both dom0 and the base templates to include the latest versions of apt packages. Open a terminal in `dom0` by clicking on the Qubes menu top-right of the screen and left-clicking on Terminal Emulator and run:
 
 ```
 sudo qubes-dom0-update
@@ -58,17 +117,20 @@ qubes-update-gui
 
 Select all VMs marked as **updates available**, then click **Next**. Once all updates have been applied, you're ready to proceed.
 
+### Download, Configure, Copy to `dom0`
 
-#### Download, Configure, Copy to `dom0`
-
-Decide on a VM to use for development. Clone this repo to your preferred location on that VM.
+Decide on a VM to use for development. We suggest creating a standalone VM called `sd-dev`. Clone this repo to your preferred location on that VM.
 
 Next we need to do some SecureDrop-specific configuration:
 
 - create a `config.json` based on `config.json.example` and include your values for the Journalist hidden service `.onion` hostname and PSK.
 - create an `sd-journalist.sec` file in the root directory with the ASCII-armored GPG private key used to encrypt submissions in your test SecureDrop instance. The included key `sd-journalist.sec` is the one used by default in the SecureDrop staging instance.
 
-Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM. That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`:
+Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM.
+
+*Understand that [copying data to dom0](https://www.qubes-os.org/doc/copy-from-dom0/#copying-to-dom0) goes against the grain of the Qubes security philosophy, and should only done with trusted code and for very specific purposes, such as Qubes-related development tasks. Still, be aware of the risks, especially if you rely on your Qubes installation for other sensitive work.*
+
+That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `work` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`:
 
     qvm-run --pass-io work 'tar -c -C /home/user/projects securedrop-workstation' | tar xvf -
 
@@ -90,7 +152,7 @@ Doing so will permit the `sd-dev` AppVM to make RPC calls with the same privileg
 
 **NOTE:** The destination directory on `dom0` is not customizable; it must be `securedrop-workstation` in your home directory.
 
-#### Building
+### Provision the VMs
 
 Once the configuration is done and this directory is copied to `dom0`, you must update existing Qubes templates and use `make` to handle all provisioning and configuration by your unprivileged user:
 
@@ -108,7 +170,100 @@ qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (err
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
 
-#### Using the *SecureDrop Client*
+## Development
+
+This project's development requires different workflows for working on provisioning components and working on submission-handling scripts.
+
+For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make all` to rebuild the full installation. Current valid target VM names are `sd-proxy`, `sd-gpg`, `sd-whonix`, and `disp-vm`. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
+
+For developing submission processing scripts, work is done directly in the virtual machine running the component. To commit, copy the updated files to a development VM with `qvm-copy-to-vm`and move the copied files into place in the repo. (This process is a little awkward, and it would be nice to make it better.)
+
+### Testing
+
+Tests should cover two broad domains. First, we should assert that all the expected VMs exist and are configured as we expect (with the correct NetVM, with the expected files in the correct place). Second, we should end-to-end test the document handling scripts, asserting that files present in the `sd-proxy` VM correctly make their way to the `sd-svs` AppVM, and are opened correctly in disposable VMs.
+
+#### Configuration Tests
+
+These tests assert that expected scripts and configuration files are in the correct places across the VMs. These tests can be found in the `tests/` directory. They can be run from the project's root directory on `dom0` with:
+
+    make test
+
+Note that since tests confirm the states of provisioned VMs, they should be run _after_ all the VMs have been built with `make all`.
+
+Individual tests can be run with `make <test-name>`, where `test-name` is one of `test-svs`, `test-journalist`, `test-whonix`, or `test-disp`.
+
+Be aware that running tests *will* power down running SecureDrop VMs, and may result in *data loss*. Only run tests in a development / testing environment.
+
+### Automatic updates
+
+The `securedrop-update` script will automatically update packages in all TemplateVMs, as well as `dom0`, as part of a daily cron job. This script will also run the salt provisioning logic to ensure the state is consistent. Because AppVMs must be rebooted after a TemplateVM upgrade, a message will inform users to reboot their workstations to apply changes.
+
+To update workstation provisioning logic, one must use the `work` AppVM that was created during the install. From your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
+
+```
+git fetch --tags
+git tag -v <tag>
+git checkout <tag>
+```
+
+In `dom0`:
+
+```
+make clone
+make all
+```
+
+In the future, we plan on shipping a *SecureDrop Workstation* installer package as an RPM package in `dom0` to automatically update the salt provisioning logic.
+
+### Building the Templates
+
+1. Create a `fedora-29` AppVM for building the templates. It's going
+   to need Docker and several other packages every time you use it, so
+   it might be worth creating another template derived from
+   `fedora-29`, into which you can install those extras, and basing
+   the builder VM on that, or just using a StandaloneVM to save time
+   and repetition.
+2. Increase the disk size to at least 15GB (as the build uses over
+   10GB): `qvm-volume extend sd-template-builder:private 15GB` (if
+   your VM is not named `sd-template-builder`, adjust that command)
+3. Import the QubesOS master key and the GPG key used to sign tags (see https://www.qubes-os.org/security/verifying-signatures/)
+4. Run `make template` in the top-level of this repository.
+5. Copy the rpm generated in `/home/user/src/securedrop-workstation/builder/qubes-builder/qubes-src/linux-template-builder/rpm/` to `dom0`
+6. Install the template in `dom0` : `sudo rpm -i <file>.rpm` (this takes a few minutes)
+7. Create a new VM based on this template:
+```
+qvm-create --template securedrop-workstation test-securedrop-workstation --class AppVM --property virt_mode=hvm --property kernel='' --label green
+```
+
+### Building workstation deb packages
+
+```
+# go to the builder/ directory:
+cd builder/packages
+# build a specific package (e.g, grsecurity metapackage)
+make securedrop-workstation-grsec
+# OR build all the packages
+make all
+# run the tests
+pipenv install -d
+pipenv shell
+# install test requirements and run the test
+apt install lintian
+make test
+```
+
+### Building workstation rpm packages
+
+```
+make build-dom0-rpm
+```
+
+This uses a base docker image as defined in https://github.com/freedomofpress/containers/.
+If you need to bump versions of the rpmbuild tooling, make an update to that
+repo's metadata, and increment the version as defined in the `Makefile`. See the
+`RPM_BUILD_VER` variable.
+
+## Using the *SecureDrop Client*
 
 Once your workstation environment is set up, you will be able to manage messages and submissions through a graphical user interface.
 
@@ -116,7 +271,7 @@ First, power on the workstation. When prompted, enter the *Disk Password* and pr
 
 To launch the *SecureDrop Client*, temporarily until [this issue](https://github.com/freedomofpress/securedrop-workstation/issues/198) is resolved, you should from a `dom0` terminal `qvm-run sd-svs securedrop-client`. This will start the *SecureDrop Client* in the `sd-svs` AppVM.
 
-##### Signing in
+### Signing in
 
 You should see a login prompt similar to the following:
 
@@ -126,7 +281,7 @@ In the background, you will see any previously downloaded messages. This is inte
 
 If the sign-in fails, make sure to wait for another Two-Factor Code before trying again. To troubleshoot, verify that you can successfully sign in by visiting the .onion address of your *Journalist Interface* in the Tor browser in the `sd-proxy` AppVM.
 
-##### Viewing messages and documents
+### Viewing messages and documents
 
 After the sign-in or the next time you attempt to view encrypted content, you will be prompted by a dialog asking “Do you allow VM ‘sd-svs’ to access your GPG keys (now and for the following 28800 seconds)?”. Click **Yes**.
 
@@ -162,12 +317,11 @@ After you have completed your session, we strongly recommend shutting down the w
 
 Replies and Source Deletion will be added in the next major release of the *SecureDrop Workstation*.
 
-
-##### Exporting documents
+### Exporting documents
 
 **WARNING:** Opening files from an unknown origin presents certain risks (malware, fingerprinting). While the workstation helps reduce these risks by offering VM-level isolation, transferring documents to another host without the same level of isolation may expose you to these risks. Using tools to sanitize submitted documents, such as right-clicking a .pdf and selecting "Convert to trusted PDF" in Qubes OS, may help mitigate some of these risks. Further mitigating these risks will be a focus of future development.
 
-##### Manual export flow
+### Manual export flow
 
 Exporting documents directly from within the *SecureDrop Client* is not currently supported, but you can export documents manually via USB by following these steps:
 
@@ -188,11 +342,11 @@ qvm-copy-to-vm sd-export-usb ~/.securedrop_client/data/name-of-file
 
 The development plan is to provide functionality in the *SecureDrop Client* that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
 
-##### Automated export flows
+### Automated export flows
 
 The `sd-export-usb` disposable VM handles exports to USB devices through `qvm-open-in-vm`. USB device IDs are configured in `config.json`. The automated export flows make use of the `qvm-usb --persistent` feature. This means that the persistent USB device must be available for `sd-export-usb` to start. In other words, a USB memory stick or a printer must be connected **before** the call to `qvm-open-in-vm sd-export-usb <file>` is made.
 
-######  Automated encrypted USB export flow (Work in progress, client integration TBD)
+#### Automated encrypted USB export flow (Work in progress, client integration TBD)
 
 The SecureDrop Workstation can automatically export to a luks-encrypted USB device provided the correct format. The file extension of the tar archive must be `.sd-export`, containing the following structure:
 
@@ -216,12 +370,11 @@ The folder `export_data` contains all the files that will be exported to the dis
 }
 ```
 
-######  Automated printing flow (Work in progress, client integration TBD)
+#### Automated printing flow (Work in progress, client integration TBD)
 
 The SecureDrop Workstation can automatically print files to a USB-connected printer provided the correct format. The file extension of the tar archive must be `.sd-export`, containing the following structure:
 
 Note that only Brother printers are supported now (tested with HL-L2320D)
-
 
 ```
 .
@@ -249,15 +402,13 @@ Optionally you can use the `printer-test` device to send a printer test page and
 }
 ```
 
-
-###### Create the transfer device
+#### Create the transfer device
 
 You can find instructions to create a luks-encrypted transfer device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_device.html).
 
-###### Install-time configuration
+#### Install-time configuration
 
 A single USB port will be assigned to the exporting feature. Qubes will automatically attach any USB device to the Export VM. It should be labeled and only used for exporting purposes. You will be able to use different USB Transfer Devices, but they will always need to be plugged into the same port. Note that a USB stick must be connected during the entirety of the provisioning process. If you forget, you can run `make sd-export` after the install.
-
 
 1. Connect the USB device to the port you would like to use. Then in `dom0`, run the following command:
 
@@ -281,7 +432,7 @@ qvm-usb
   make sd-export
   ```
 
-###### Exporting
+#### Exporting
 
 1. Plug in the USB drive into the dedicated export port on your workstation.
 2. In `sd-svs`, run the following command:
@@ -290,7 +441,7 @@ qvm-usb
 qvm-open-in-vm sd-export-usb <name-of-file>
 ```
 
-###### Troubleshooting
+#### Troubleshooting
 
 If you are experiencing issues with the export flow, or would like to use a different port, you can re-run the configuration steps and apply the configuration to the VMs.
 In `dom0`, ensure your config.json contains the correct usb device identifier (see above) and rebuild the export machines (with the USB device attached):
@@ -300,8 +451,8 @@ make remove-sd-export
 make sd-export
 ```
 
+### Transferring files via OnionShare
 
-##### Transferring files via OnionShare
 1. Create an `sd-onionshare-template` VM based on `fedora-29`:
    1. Click on the Qubes menu in the upper left, select "Template: Fedora 29", click on "fedora-29: Qube Settings", and click on **Clone Qube**
    2. Name the cloned qube `sd-onionshare-template`
@@ -331,140 +482,13 @@ qvm-copy-to-vm sd-onionshare ~/.securedrop_client/data/name-of-file
 6. On the target machine, navigate to the Tor onion service URL provided by OnionShare using the Tor Browser to retrieve the file.
 7. Close OnionShare and delete the decrypted submission on `sd-onionshare` from `~/QubesIncoming/sd-svs`
 
-##### Printing
+### Printing
 
 Printing directly from the `sd-svs` AppVM or the disposable VMs will not be supported. The development plan is to instruct admins to install printer drivers in a template associated with a new printing VM. This template will not be shared with any other VMs.
 
-#### Automatic updates
+## Distributing and Releasing
 
-The `securedrop-update` script will automatically update packages in all TemplateVMs, as well as `dom0`, as part of a daily cron job. This script will also run the salt provisioning logic to ensure the state is consistent. Because AppVMs must be rebooted after a TemplateVM upgrade, a message will inform users to reboot their workstations to apply changes.
-
-To update workstation provisioning logic, one must use the `work` AppVM that was created during the install. From your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
-
-```
-git fetch --tags
-git tag -v <tag>
-git checkout <tag>
-```
-
-In `dom0`:
-
-```
-make clone
-make all
-```
-
-In the future, we plan on shipping a *SecureDrop Workstation* installer package as an RPM package in `dom0` to automatically update the salt provisioning logic.
-
-### Architecture
-
-The current architecture replaces the *Journalist Workstation* and *Secure Viewing Station* Tails installations with specially-configured Qubes VMs; these are the VMs the user will primarily interact with. There are a number of other configured VMs which provide ancillary services.
-
-![(Data Flow Diagram for the SecureDrop Workstation)](docs/images/data-flow-diagram.png)
-
-Currently, the following VMs are provisioned:
-
-- `sd-proxy` is where the SecureDrop proxy resides, which allows the non-networked `sd-svs` vm to communicate with the *Journalist Interface* over Tor.
-- `sd-svs` is a non-networked VM in which the *SecureDrop Client* runs used to store and explore submissions after they're unarchived and decrypted. Any files opened in this VM are opened in a disposable VM.
-- `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the *Journalist Interface*.
-- `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
-- `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files.
-
-Submissions are processed in the following steps:
-
-1. Journalist uses the *SecureDrop Client* to access the *Journalist Interface* via the Journalist API. After logging in, the journalist clicks
-on any submission of interest.
-2. The *SecureDrop Client* will use `sd-gpg` to decrypt the submission using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
-5. The decrypted submission is stored on the `sd-svs` *Secure Viewing Station VM*, where it's placed in a local database.
-6. Any file opened by the *SecureDrop Client* in the *Secure Viewing Station VM* is opened in a Disposable VM, largely mitigating attacks from malicious content.
-
-See below for a closer examination of this process, and see `docs/images` for screenshots related to the steps above.
-
-### What's In This Repo?
-
-This project can be broken neatly into two parts: 1) a set of salt states and `top` files which configure the various VMs, and 2) scripts and system configuration files which set up the document handling process.
-
-Qubes uses SaltStack internally for VM provisionining and configuration management (see https://www.qubes-os.org/doc/salt/), so it's natural for us to use it as well. The `dom0` directory contains salt `.top` and `.sls` files used to provision the VMs noted above.
-- `Makefile` is used with the `make` command on `dom0` to build the Qubes/SecureDrop installation, and also contains some development and testing features.
-- The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) is installed in `sd-svs` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
-- The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-proxy) is installed in `sd-proxy` to communicate to the SecureDrop server *Journalist Interface* via `sd-whonix`.
-- Within `sd-svs`, the *SecureDrop Client* will open all submissions in the `sd-svs-disp` disposable VM.
-- `config.json.example` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
-- `sd-journalist.sec.example` is an example GPG private key for use in decrypting submissions. It must match the public key set on a SecureDrop server used for testing. Before use, you should copy it to `sd-journalist.sec`, or store the submission key used with your SecureDrop server as `sd-journalist.sec`.
-
-### Development
-
-This project's development requires different workflows for working on provisioning components and working on submission-handling scripts.
-
-For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make all` to rebuild the full installation. Current valid target VM names are `sd-proxy`, `sd-gpg`, `sd-whonix`, and `disp-vm`. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
-
-For developing submission processing scripts, work is done directly in the virtual machine running the component. To commit, copy the updated files to a development VM with `qvm-copy-to-vm`and move the copied files into place in the repo. (This process is a little awkward, and it would be nice to make it better.)
-
-### Testing
-
-Tests should cover two broad domains. First, we should assert that all the expected VMs exist and are configured as we expect (with the correct NetVM, with the expected files in the correct place). Second, we should end-to-end test the document handling scripts, asserting that files present in the `sd-proxy` VM correctly make their way to the `sd-svs` AppVM, and are opened correctly in disposable VMs.
-
-#### Configuration Tests
-
-These tests assert that expected scripts and configuration files are in the correct places across the VMs. These tests can be found in the `tests/` directory. They can be run from the project's root directory on `dom0` with:
-
-    make test
-
-Note that since tests confirm the states of provisioned VMs, they should be run _after_ all the VMs have been built with `make all`.
-
-Individual tests can be run with `make <test-name>`, where `test-name` is one of `test-svs`, `test-journalist`, `test-whonix`, or `test-disp`.
-
-Be aware that running tests *will* power down running SecureDrop VMs, and may result in *data loss*. Only run tests in a development / testing environment.
-
-## Building the Templates
-
-1. Create a `fedora-29` AppVM for building the templates. It's going
-   to need Docker and several other packages every time you use it, so
-   it might be worth creating another template derived from
-   `fedora-29`, into which you can install those extras, and basing
-   the builder VM on that, or just using a StandaloneVM to save time
-   and repetition.
-2. Increase the disk size to at least 15GB (as the build uses over
-   10GB): `qvm-volume extend sd-template-builder:private 15GB` (if
-   your VM is not named `sd-template-builder`, adjust that command)
-3. Import the QubesOS master key and the GPG key used to sign tags (see https://www.qubes-os.org/security/verifying-signatures/)
-4. Run `make template` in the top-level of this repository.
-5. Copy the rpm generated in `/home/user/src/securedrop-workstation/builder/qubes-builder/qubes-src/linux-template-builder/rpm/` to `dom0`
-6. Install the template in `dom0` : `sudo rpm -i <file>.rpm` (this takes a few minutes)
-7. Create a new VM based on this template:
-```
-qvm-create --template securedrop-workstation test-securedrop-workstation --class AppVM --property virt_mode=hvm --property kernel='' --label green
-```
-
-## Building workstation deb packages
-
-```
-# go to the builder/ directory:
-cd builder/packages
-# build a specific package (e.g, grsecurity metapackage)
-make securedrop-workstation-grsec
-# OR build all the packages
-make all
-# run the tests
-pipenv install -d
-pipenv shell
-# install test requirements and run the test
-apt install lintian
-make test
-```
-
-## Building workstation rpm packages
-
-```
-make build-dom0-rpm
-```
-
-This uses a base docker image as defined in https://github.com/freedomofpress/containers/.
-If you need to bump versions of the rpmbuild tooling, make an update to that
-repo's metadata, and increment the version as defined in the `Makefile`. See the
-`RPM_BUILD_VER` variable.
-
-## Signing sources
+### Signing sources
 
 SecureDrop Workstation code spans across the following repositories:
 
@@ -475,8 +499,8 @@ SecureDrop Workstation code spans across the following repositories:
 * https://github.com/freedomofpress/securedrop-workstation
 * https://github.com/freedomofpress/qubes-template-securedrop-workstation
 
-
 ### Release
+
 1. For each release, a tag for each release will be signed and pushed to each of the above repos.
 
 2. Create a Makefile target in securedrop-debian-packaging repo that contains release tags / commit hashes for each repository used for the release. To verify the tag signature and check out the packaging logic:
@@ -484,15 +508,16 @@ SecureDrop Workstation code spans across the following repositories:
 git tag -v <tag>
 git checkout <tag>
 ```
-
 3. Metadata (e.g. commit hash for release) should be tracked inside the .deb (e.g.: `/usr/share/packagename/release-info.txt`)
 
 ### Signing binaries/packages
 
 #### Debian packages
+
 Apt repository Release file will be signed, containing checksum of the debs.
 
 #### RPM packages
+
 The entire RPM must be signed. This process also requires a Fedora machine/VM on which
 the GPG signing key (either in GPG keyring or in qubes-split-gpg) is setup.
 You will need to add the public key to RPM for verification (see below).
@@ -525,7 +550,7 @@ rpm -Kv  # Signature lines will now contain OK instead of NOKEY
 You can then proceed with distributing the package, via the "test" or "prod" repo,
 as appropriate.
 
-## Distributing packages
+### Distributing packages
 
 For the Debian packages, see https://github.com/freedomofpress/securedrop-debian-packaging/.
 For the RPM packages, such as the `securedrop-workstation` TemplateVM package, first
