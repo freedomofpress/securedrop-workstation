@@ -23,6 +23,9 @@ fi
 # issues with the git clone/checkout commands.
 rm -rf "${qubes_builder_dir}" "${sd_template_dir}"
 
+# Clones the upstream repo. In order to test a feature branch, update with:
+#   git clone -b test-branch https://github.com/freedomofpress/qubes-template-securedrop-workstation "${sd_template_dir}"
+# Make sure to add the corresponding pubkey for the signed tag to the gpg import tasks below.
 git clone https://github.com/qubesos/qubes-builder "${build_dir}/qubes-builder"
 git clone https://github.com/freedomofpress/qubes-template-securedrop-workstation "${sd_template_dir}"
 
@@ -34,10 +37,10 @@ cp ${sd_template_dir}/securedrop-workstation.conf builder.conf
 # Get sources for only the builder component, which will get Qubes dev keys and initialize the keyring
 make COMPONENTS="builder" get-sources
 
-# Add signing key to the keyring
-gpg --homedir ${gpg_homedir} --keyserver pool.sks-keyservers.net --recv-key AF775782949D263DAABB3387AAFB3575FAC82745 || exit 1;
+# Add signing key to the keyring. The pubkey fingerprint tracked here is the "FPF Authority Key".
+# In order to test PRs, you may want to use a personal key with a temporary signed tag.
+# See comments above regarding feature branches in the git clone operation.
 gpg --homedir ${gpg_homedir} --keyserver pool.sks-keyservers.net --recv-key F81962A54902300F72ECB83AA1FC1F6AD2D09049 || exit 1;
-echo 'AF775782949D263DAABB3387AAFB3575FAC82745:6:' | gpg --homedir ${gpg_homedir} --import-ownertrust;
 echo 'F81962A54902300F72ECB83AA1FC1F6AD2D09049:6:' | gpg --homedir ${gpg_homedir} --import-ownertrust;
 
 # Get all sources
