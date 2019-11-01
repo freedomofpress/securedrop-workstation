@@ -218,10 +218,10 @@ In the future, we plan on shipping a *SecureDrop Workstation* installer package 
 
 ### Building the Templates
 
-1. Create a `fedora-29` AppVM for building the templates. It's going
+1. Create a `fedora-30` AppVM for building the templates. It's going
    to need Docker and several other packages every time you use it, so
    it might be worth creating another template derived from
-   `fedora-29`, into which you can install those extras, and basing
+   `fedora-30`, into which you can install those extras, and basing
    the builder VM on that, or just using a StandaloneVM to save time
    and repetition.
 2. Increase the disk size to at least 15GB (as the build uses over
@@ -454,8 +454,8 @@ make sd-export
 
 ### Transferring files via OnionShare
 
-1. Create an `sd-onionshare-template` VM based on `fedora-29`:
-   1. Click on the Qubes menu in the upper left, select "Template: Fedora 29", click on "fedora-29: Qube Settings", and click on **Clone Qube**
+1. Create an `sd-onionshare-template` VM based on `fedora-30`:
+   1. Click on the Qubes menu in the upper left, select "Template: Fedora 30", click on "fedora-30: Qube Settings", and click on **Clone Qube**
    2. Name the cloned qube `sd-onionshare-template`
    3. In the Qubes menu on the top-left, select "Template: sd-onionshare-template" and click on "sd-onionshare-template: Terminal"
    4. Install OnionShare: `sudo dnf install onionshare`

@@ -10,7 +10,7 @@ dom0-rpm-test-key:
   file.managed:
     # We write the pubkey to the repos config location, because the repos
     # config location is automatically sent to dom0's UpdateVM. Otherwise,
-    # we must place the GPG key inside the fedora-29 TemplateVM, then
+    # we must place the GPG key inside the fedora-30 TemplateVM, then
     # restart sys-firewall.
     - name: /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
     - source: "salt://sd/sd-workstation/apt-test-pubkey.asc"
@@ -106,10 +106,10 @@ dom0-securedrop-icon:
       - file: dom0-securedrop-icons-directory
 
 # Install latest templates required for SDW VMs.
-dom0-install-fedora-29-template:
+dom0-install-fedora-template:
   pkg.installed:
     - pkgs:
-      - qubes-template-fedora-29
+      - qubes-template-fedora-30
 
 dom0-enabled-apparmor-on-whonix-gw-14-template:
   qvm.vm:
