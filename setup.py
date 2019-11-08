@@ -19,7 +19,6 @@ setuptools.setup(
     url="https://github.com/freedomofpress/securdrop-workstation",
     data_files=[
         ("share/securedrop-workstation-dom0-config", ["config.json.example"]),
-        ("bin/", ["dom0/securedrop-update"]),
     ],
     classifiers=(
         "Development Status :: 3 - Alpha",

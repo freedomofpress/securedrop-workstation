@@ -273,7 +273,7 @@ Be aware that running tests *will* power down running SecureDrop VMs, and may re
 
 ### Automatic updates
 
-The `securedrop-update` script will automatically update packages in all TemplateVMs, as well as `dom0`, as part of a daily cron job. This script will also run the salt provisioning logic to ensure the state is consistent. Because AppVMs must be rebooted after a TemplateVM upgrade, a message will inform users to reboot their workstations to apply changes.
+Double-clicking the "SecureDrop" desktop icon will launch a preflight updater that applies any necessary updates to VMs, and may prompt a reboot.
 
 To update workstation provisioning logic, one must use the `sd-dev` AppVM that was created during the install. From your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
 

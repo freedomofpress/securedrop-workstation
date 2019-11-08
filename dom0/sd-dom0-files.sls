@@ -67,20 +67,12 @@ dom0-install-securedrop-workstation-template:
       - file: dom0-workstation-rpm-repo
       - pkg: dom0-remove-securedrop-workstation-stretch-template
 
-# Copy script to system location so admins can run ad-hoc
-dom0-update-securedrop-script:
-  file.managed:
-    - name: /usr/bin/securedrop-update
-    - source: salt://securedrop-update
-    - user: root
-    - group: root
-    - mode: 755
-
-# Symlink update script into cron, for single point of update
-dom0-update-securedrop-script-cron:
-  file.symlink:
-    - name: /etc/cron.daily/securedrop-update-cron
-    - target: /usr/bin/securedrop-update
+# Remove the legacy auto updater script
+dom0-remove-legacy-updater:
+  file.absent:
+    - names:
+      - /usr/bin/securedrop-update
+      - /etc/cron.daily/securedrop-update-cron
 
 # Create directory for storing SecureDrop-specific icons
 dom0-securedrop-icons-directory:
