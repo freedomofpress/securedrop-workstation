@@ -140,7 +140,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         cmd = ["qubes-prefs", "default_dispvm"]
         result = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
-        self.assertEqual(result, "fedora-30-dvm")
+        self.assertEqual(result, "sd-svs-disp")
 
 
 def load_tests(loader, tests, pattern):
