@@ -41,3 +41,9 @@ sd-svs-disp:
         - service.paxctld
     - require:
       - qvm: sd-svs-disp-template
+
+sd-svs-disp-default-dispvm:
+  cmd.run:
+    - name: qubes-prefs default_dispvm sd-svs-disp
+    - require:
+      - qvm: sd-svs-disp
