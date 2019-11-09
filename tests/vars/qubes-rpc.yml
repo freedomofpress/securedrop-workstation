@@ -164,6 +164,15 @@
 - policy: USB
   starts_with: |-
     ### BEGIN securedrop-workstation ###
+    sd-devices sys-usb allow
+    @anyvm @tag:sd-workstation deny
+    @tag:sd-workstation @anyvm deny
+    ### END securedrop-workstation ###
+
+- policy: USBAttach
+  starts_with: |-
+    ### BEGIN securedrop-workstation ###
+    sys-usb sd-devices allow,user=root
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###

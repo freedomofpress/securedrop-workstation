@@ -18,3 +18,4 @@ include scripts/*
 include sys-firewall/*
 include launcher/*.py
 include launcher/sdw_updater_gui/*.py
+include sys-usb/*
