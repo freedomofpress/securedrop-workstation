@@ -24,23 +24,6 @@ dom0-rpm-test-key-import:
     - require:
       - file: dom0-rpm-test-key
 
-dom0-rpm-test-key-sys-firewall:
-  cmd.run:
-    # Pass in the pubkey directly to sys-firewall, so it's available on the
-    # UpdateVM for dom0 while we're configuring dom0 repos.
-    - name: >
-        qvm-run -p sys-firewall '
-        sudo tee /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
-        < /srv/salt/sd/sd-workstation/apt-test-pubkey.asc
-
-dom0-rpm-test-key-sys-firewall-import:
-  cmd.run:
-    - name: >
-        qvm-run --no-gui sys-firewall '
-        sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
-    - require:
-      - cmd: dom0-rpm-test-key-sys-firewall
-
 dom0-workstation-rpm-repo:
   # We use file.managed rather than pkgrepo.managed, because Qubes dom0
   # settings write new repos to /etc/yum.real.repos.d/, but only /etc/yum.repos.d/
@@ -66,7 +49,6 @@ dom0-install-securedrop-workstation-template:
       - qubes-template-securedrop-workstation
     - require:
       - file: dom0-workstation-rpm-repo
-      - cmd: dom0-rpm-test-key-sys-firewall
 
 # Copy script to system location so admins can run ad-hoc
 dom0-update-securedrop-script:
