@@ -127,6 +127,36 @@ dom0-create-opt-securedrop-directory:
   file.directory:
     - name: /opt/securedrop
 
+# Temporary workaround to ensure the whonix templateVMs have their whonix repos
+# disabled. While they are no longer supported by Whonix, they should still
+# receive upstream Debian updates). Broken apt list prevents these updates from
+# being applied. sd-whonix uses whonix-14-gw directly, so we must update that
+# template. We must also used the whonix_repository tool, as otherwise the
+# repos may reappear. sudo whonix_repository --enable to bring them back.
+dom0-whonix-gw-disable-apt-list:
+  cmd.run:
+    - name: >
+        test -f /opt/securedrop/whonix-gw-14-ths-repo-disabled ||
+        qvm-run -a whonix-gw-14
+        "sudo whonix_repository --disable" &&
+        qvm-shutdown --wait whonix-gw-14 &&
+        touch /opt/securedrop/whonix-gw-14-ths-repo-disabled
+    - require:
+      - file: dom0-create-opt-securedrop-directory
+
+# We need to disable the whonix apt sources for the python-futures installation
+# for ws as well, for the python-futures package to be properly installed
+dom0-whonix-ws-disable-apt-list:
+  cmd.run:
+    - name: >
+        test -f /opt/securedrop/whonix-ws-14-ths-repo-disabled ||
+        qvm-run -a whonix-ws-14
+        "sudo whonix_repository --disable" &&
+        qvm-shutdown --wait whonix-ws-14 &&
+        touch /opt/securedrop/whonix-ws-14-ths-repo-disabled
+    - require:
+      - file: dom0-create-opt-securedrop-directory
+
 # Temporary workaround to bootstrap Salt support on target.
 dom0-whonix-gw-14-install-python-futures:
   cmd.run:
@@ -139,6 +169,7 @@ dom0-whonix-gw-14-install-python-futures:
         touch /opt/securedrop/whonix-gw-14-python-futures
     - require:
       - file: dom0-create-opt-securedrop-directory
+      - cmd: dom0-whonix-gw-disable-apt-list
 
 dom0-whonix-ws-14-install-python-futures:
   cmd.run:
@@ -151,3 +182,4 @@ dom0-whonix-ws-14-install-python-futures:
         touch /opt/securedrop/whonix-ws-14-python-futures
     - require:
       - file: dom0-create-opt-securedrop-directory
+      - cmd: dom0-whonix-ws-disable-apt-list

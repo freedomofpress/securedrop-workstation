@@ -7,6 +7,7 @@ from base import SD_VM_Local_Test
 class SD_Proxy_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-proxy"
+        self.whonix_apt_list = "/etc/apt/sources.list.d/whonix.list"
         super(SD_Proxy_Tests, self).setUp()
 
     def test_do_not_open_here(self):
@@ -30,6 +31,9 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         ]
         for line in wanted_lines:
             self.assertFileHasLine("/etc/sd-proxy.yaml", line)
+
+    def test_whonix_ws_14_repo_disabled(self):
+        assert self._fileExists(self.whonix_apt_list) is False
 
 
 def load_tests(loader, tests, pattern):

@@ -102,6 +102,12 @@ class SD_VM_Local_Test(unittest.TestCase):
     def _fileExists(self, remote_path):
         # ls will return non-zero if the file doesn't exists
         # and error will be propagated to the unittest
-        subprocess.check_call(["qvm-run", "-a", "-q", self.vm_name,
-                               "ls {}".format(remote_path)])
+        # ls will return non-zero and an exception will be thrown if the file
+        # does not exist, so we return false in that case.
+        try:
+            subprocess.check_call(["qvm-run", "-a", "-q", self.vm_name,
+                                   "ls {}".format(remote_path)])
+        except subprocess.CalledProcessError:
+            return False
+
         return True
