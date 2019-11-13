@@ -1,5 +1,3 @@
-import json
-import re
 import unittest
 
 from base import SD_VM_Local_Test
