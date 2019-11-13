@@ -345,7 +345,7 @@ The development plan is to provide functionality in the *SecureDrop Client* that
 
 ### Automated export flows
 
-The `sd-export-usb` disposable VM handles exports to USB devices through `qvm-open-in-vm`. USB device IDs are configured in `config.json`. The automated export flows make use of the `qvm-usb --persistent` feature. This means that the persistent USB device must be available for `sd-export-usb` to start. In other words, a USB memory stick or a printer must be connected **before** the call to `qvm-open-in-vm sd-export-usb <file>` is made.
+The `sd-export-usb` disposable VM handles exports to USB devices through `qvm-open-in-vm`.
 
 #### Automated encrypted USB export flow (Work in progress, client integration TBD)
 
@@ -365,9 +365,9 @@ The folder `export_data` contains all the files that will be exported to the dis
 
 ```
 {
-  "device": "disk"
-  "encryption-method": "luks"
-  "encryption-key": "Your encryption passhrase goes here"
+  "device": "disk",
+  "encryption_method": "luks",
+  "encryption_key": "Your encryption passhrase goes here"
 }
 ```
 
@@ -407,50 +407,23 @@ Optionally you can use the `printer-test` device to send a printer test page and
 
 You can find instructions to create a luks-encrypted transfer device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_device.html).
 
-#### Install-time configuration
-
-A single USB port will be assigned to the exporting feature. Qubes will automatically attach any USB device to the Export VM. It should be labeled and only used for exporting purposes. You will be able to use different USB Transfer Devices, but they will always need to be plugged into the same port. Note that a USB stick must be connected during the entirety of the provisioning process. If you forget, you can run `make sd-export` after the install.
-
-1. Connect the USB device to the port you would like to use. Then in `dom0`, run the following command:
-
-```
-qvm-usb
-```
-
-2. Take note of the device ID (e.g. `sys-usb:3-4`) used by your USB Transfer Device
-3. Populate `config.json` with this value
-4. Run the configuration of the sd-export feature.
-  1. If this is a new install, you can run, in `dom0`:
-
-  ```
-  make all
-  ```
-
-  2. If the workstation has already been properly configured and you wish to reconfigure the USB export functionality, run the following commands in `dom0`:
-
-  ```
-  make remove-sd-export
-  make sd-export
-  ```
-
 #### Exporting
 
-1. Plug in the USB drive into the dedicated export port on your workstation.
-2. In `sd-svs`, run the following command:
+Your export devices should be labeled, and used for nothing else.
+
+1. Attach the USB device to your workstation.
+2. Use the Qube Manager to start the `sd-export-usb` VM.
+3. Use the Qubes Devices tool to attach the device to the `sd-export-usb` VM.
+4. In `sd-svs`, run the following command:
 
 ```
-qvm-open-in-vm sd-export-usb <name-of-file>
+qvm-open-in-vm sd-export-usb <export-archive-filename>
 ```
 
 #### Troubleshooting
 
-If you are experiencing issues with the export flow, or would like to use a different port, you can re-run the configuration steps and apply the configuration to the VMs.
-In `dom0`, ensure your config.json contains the correct usb device identifier (see above) and rebuild the export machines (with the USB device attached):
-
-```
-make remove-sd-export
-make sd-export
-```
+- Verify your export device is attached to `sd-export-usb`, either
+  with Qubes Devices or by running `qvm-usb` in dom0.
 
 ### Transferring files via OnionShare
 
