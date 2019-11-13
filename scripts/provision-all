@@ -9,6 +9,10 @@ set -o pipefail
 all_sdw_vms_target="$(./scripts/list-vms | perl -npE 's/\n/,/g' | perl -npE 's/,$//' )"
 
 
+echo "Configure Fedora-based system VMs"
+sudo qubesctl --show-output --targets dom0 state.sls sd-sys-vms
+sudo qubesctl --show-output --skip-dom0 --targets sys-firewall state.sls sd-sys-firewall-files
+
 echo "Create base Template to be used by others"
 sudo qubesctl --show-output --targets dom0 state.sls sd-workstation-template
 

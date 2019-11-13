@@ -10,7 +10,7 @@ dom0-rpm-test-key:
   file.managed:
     # We write the pubkey to the repos config location, because the repos
     # config location is automatically sent to dom0's UpdateVM. Otherwise,
-    # we must place the GPG key inside the fedora-29 TemplateVM, then
+    # we must place the GPG key inside the fedora-30 TemplateVM, then
     # restart sys-firewall.
     - name: /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
     - source: "salt://sd/sd-workstation/apt-test-pubkey.asc"
@@ -23,23 +23,6 @@ dom0-rpm-test-key-import:
     - name: sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
     - require:
       - file: dom0-rpm-test-key
-
-dom0-rpm-test-key-sys-firewall:
-  cmd.run:
-    # Pass in the pubkey directly to sys-firewall, so it's available on the
-    # UpdateVM for dom0 while we're configuring dom0 repos.
-    - name: >
-        qvm-run -p sys-firewall '
-        sudo tee /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
-        < /srv/salt/sd/sd-workstation/apt-test-pubkey.asc
-
-dom0-rpm-test-key-sys-firewall-import:
-  cmd.run:
-    - name: >
-        qvm-run --no-gui sys-firewall '
-        sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
-    - require:
-      - cmd: dom0-rpm-test-key-sys-firewall
 
 dom0-workstation-rpm-repo:
   # We use file.managed rather than pkgrepo.managed, because Qubes dom0
@@ -66,7 +49,6 @@ dom0-install-securedrop-workstation-template:
       - qubes-template-securedrop-workstation
     - require:
       - file: dom0-workstation-rpm-repo
-      - cmd: dom0-rpm-test-key-sys-firewall
 
 # Copy script to system location so admins can run ad-hoc
 dom0-update-securedrop-script:
@@ -104,12 +86,6 @@ dom0-securedrop-icon:
     - mode: 644
     - require:
       - file: dom0-securedrop-icons-directory
-
-# Install latest templates required for SDW VMs.
-dom0-install-fedora-29-template:
-  pkg.installed:
-    - pkgs:
-      - qubes-template-fedora-29
 
 dom0-enabled-apparmor-on-whonix-gw-14-template:
   qvm.vm:

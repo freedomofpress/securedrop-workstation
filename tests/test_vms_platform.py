@@ -102,8 +102,8 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         # Technically we want to know whether the sys-firewall, sys-net, and
         # sys-usb VMs have their updates installed. This test assumes those
-        # AppVMs are based on fedora-29.
-        vm_name = "fedora-29"
+        # AppVMs are based on fedora-30.
+        vm_name = "fedora-30"
         vm = self.app.domains[vm_name]
         self._ensure_packages_up_to_date(vm, fedora=True)
         vm.shutdown()
@@ -140,7 +140,23 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         cmd = ["qubes-prefs", "default_dispvm"]
         result = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
-        self.assertEqual(result, "fedora-29-dvm")
+        self.assertEqual(result, "sd-svs-disp")
+
+    def test_sys_vms_use_supported_fedora(self):
+        """
+        The 'sys-*' VMs must be updated to use the latest version of Fedora,
+        to ensure critical components such as 'sys-firewall' receive security
+        updates.
+        """
+        sys_vms = [
+            "sys-firewall",
+            "sys-net",
+            "sys-usb",
+        ]
+        for vm in sys_vms:
+            wanted_template = "fedora-30"
+            found_template = self.app.domains[vm].template.name
+            self.assertEqual(wanted_template, found_template)
 
 
 def load_tests(loader, tests, pattern):
