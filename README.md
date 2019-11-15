@@ -72,6 +72,7 @@ Currently, the following VMs are provisioned:
 - `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the *Journalist Interface*.
 - `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
 - `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files.
+- `sd-log` is an AppVM used for centralized logging - logs will appear in `~/QubesIncomingLogs` from each AppVM using the centralized logging service.
 
 Submissions are processed in the following steps:
 
@@ -599,6 +600,14 @@ The *GPG VM* does not have network access, and the Qubes split-gpg mechanism res
 
 * An adversary can decrypt and encrypted message or submission.
 * An adversary can store and view any message that is being decrypted by the *SecureDrop Workstation*.
+* An adversary can attempt to elevate their privileges and escape the VM.
+
+#### What Compromise of the *Log VM* (`sd-log`) Can Achieve
+
+The *Log VM* does not have network access nor does it contain any other secrets.
+
+* An adversary can read log messages from any VM using the centralized logging service.
+* An adversary can tamper with log messages from any VM using the centralized logging service.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
 #### What Compromise of `dom0` Can Achieve
