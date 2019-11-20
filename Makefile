@@ -145,6 +145,10 @@ list-vms: ## Prints all Qubes VMs managed by Workstation salt config
 destroy-all: ## Destroys all VMs managed by Workstation salt config
 	@./scripts/list-vms | xargs ./scripts/destroy-vm
 
+.PHONY: update-pip-requirements
+update-pip-requirements: ## Updates all Python requirements files via pip-compile.
+	pip-compile --generate-hashes --output-file requirements.txt requirements.in
+
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
 # 2. Check for second field matching, skip otherwise.

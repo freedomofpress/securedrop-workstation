@@ -246,8 +246,9 @@ make securedrop-workstation-grsec
 # OR build all the packages
 make all
 # run the tests
-pipenv install -d
-pipenv shell
+virtualenv --python python3 .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 # install test requirements and run the test
 apt install lintian
 make test
@@ -531,7 +532,7 @@ For the RPM packages, such as the `securedrop-workstation` TemplateVM package, f
 build the package (e.g. `make template`), then sign the RPM, as outlined above.
 
 To upload the package to S3, you'll need valid AWS credentials. Talk to a member of the ops team.
-Once you have valid credentials configured, install the dependencies (`pipenv install`), then run:
+Once you have valid credentials configured, install the dependencies (`pip install -r requirements.txt` in a virtualenv), then run:
 
 ```
 ./scripts/publish-rpm
