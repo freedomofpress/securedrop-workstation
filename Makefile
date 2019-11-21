@@ -131,9 +131,6 @@ flake8: ## Lints all Python files with flake8
 template: ## Builds securedrop-workstation Qube template RPM
 	./builder/build-workstation-template
 
-publish-rpm: ## Uploads signed RPMs to dom0 repository
-	./scripts/publish-rpm
-
 prep-dom0: prep-salt # Copies dom0 config files for VM updates
 	sudo qubesctl top.enable sd-vm-updates
 	sudo qubesctl top.enable sd-dom0-files

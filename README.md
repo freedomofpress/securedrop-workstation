@@ -531,12 +531,7 @@ For the Debian packages, see https://github.com/freedomofpress/securedrop-debian
 For the RPM packages, such as the `securedrop-workstation` TemplateVM package, first
 build the package (e.g. `make template`), then sign the RPM, as outlined above.
 
-To upload the package to S3, you'll need valid AWS credentials. Talk to a member of the ops team.
-Once you have valid credentials configured, install the dependencies (`pip install -r requirements.txt` in a virtualenv), then run:
-
-```
-./scripts/publish-rpm
-```
+To upload the package, submit a PR to https://github.com/freedomofpress/securedrop-workstation-dev-rpm-packages-lfs/
 
 The RPM will immediately be available in dom0. Provided you've run the Salt configurations,
 find it via:
