@@ -238,21 +238,8 @@ qvm-create --template securedrop-workstation test-securedrop-workstation --class
 
 ### Building workstation deb packages
 
-```
-# go to the builder/ directory:
-cd builder/packages
-# build a specific package (e.g, grsecurity metapackage)
-make securedrop-workstation-grsec
-# OR build all the packages
-make all
-# run the tests
-virtualenv --python python3 .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-# install test requirements and run the test
-apt install lintian
-make test
-```
+Debian packages for the SecureDrop Workstation components are maintained in a separate repository:
+https://github.com/freedomofpress/securedrop-debian-packaging/
 
 ### Building workstation rpm packages
 
