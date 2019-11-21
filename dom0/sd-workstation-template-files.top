@@ -2,6 +2,6 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 base:
-  securedrop-workstation:
+  securedrop-workstation-buster:
     - fpf-apt-test-repo
     - sd-workstation-template-files

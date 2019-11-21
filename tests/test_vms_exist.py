@@ -95,7 +95,7 @@ class SD_VM_Tests(unittest.TestCase):
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         # No sd-gpg-template, since keyring is managed in $HOME
-        self.assertTrue(vm.template == "securedrop-workstation")
+        self.assertTrue(vm.template == "securedrop-workstation-buster")
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -103,7 +103,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue('sd-workstation' in vm.tags)
 
     def test_sd_workstation_template(self):
-        vm = self.app.domains["securedrop-workstation"]
+        vm = self.app.domains["securedrop-workstation-buster"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue(vm.virt_mode == "hvm")

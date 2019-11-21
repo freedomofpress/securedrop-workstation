@@ -12,7 +12,7 @@ sd-export-template:
   qvm.vm:
     - name: sd-export-template
     - clone:
-      - source: securedrop-workstation
+      - source: securedrop-workstation-buster
       - label: red
     - tags:
       - add:

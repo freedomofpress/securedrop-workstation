@@ -17,7 +17,7 @@ echo "Create base Template to be used by others"
 sudo qubesctl --show-output --targets dom0 state.sls sd-workstation-template
 
 echo "Configure packages inside base Template"
-sudo qubesctl --show-output --skip-dom0 --targets securedrop-workstation state.sls sd-workstation-template-files
+sudo qubesctl --show-output --skip-dom0 --targets securedrop-workstation-buster state.sls sd-workstation-template-files
 
 echo "Set up dom0 config files, including RPC policies, and create VMs"
 # The dom0 config runs implicitly via qubesctl (unless `--skip-dom0` is passed), so the VM

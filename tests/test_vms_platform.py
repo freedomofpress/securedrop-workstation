@@ -5,9 +5,8 @@ from qubesadmin import Qubes
 from base import WANTED_VMS
 
 
-SUPPORTED_PLATFORMS = [
-    "Debian GNU/Linux 9 (stretch)",
-]
+PLATFORM_STRETCH = "Debian GNU/Linux 9 (stretch)"
+PLATFORM_BUSTER = "Debian GNU/Linux 10 (buster)"
 
 
 class SD_VM_Platform_Tests(unittest.TestCase):
@@ -34,9 +33,15 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         Asserts that the given AppVM is based on an OS listed in the
         SUPPORTED_PLATFORMS list, as specified in tests.
+        sd-whonix and sd-proxy are based on whonix-14 templates, which are
+        derived from debian stretch. All other workstation-provisioned VMs
+        should be buster based.
         """
         platform = self._get_platform_info(vm)
-        self.assertIn(platform, SUPPORTED_PLATFORMS)
+        if vm.name in ["sd-whonix", "sd-proxy"]:
+            self.assertEqual(platform, PLATFORM_STRETCH)
+        else:
+            self.assertEqual(platform, PLATFORM_BUSTER)
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
