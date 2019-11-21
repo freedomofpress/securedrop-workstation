@@ -48,7 +48,7 @@ echo "Validating RPM signatures..."
 while read -r f; do
     fname="$(basename "$f")"
     sig_results="$(container_run rpm -Kv "$fname")"
-    if ! grep -qP '^\s+V4 RSA/SHA256 Signature, key ID \w+: OK$' <<< "$sig_results"; then
+    if ! grep -qP '^\s+V4 RSA/SHA(256|512) Signature, key ID \w+: OK$' <<< "$sig_results"; then
         echo "Failed to validate signature on $fname"
         echo "Is the RPM signed? rpm -Kv showed:"
         echo "$sig_results"
