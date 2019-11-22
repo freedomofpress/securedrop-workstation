@@ -75,10 +75,10 @@ remove-sd-export: assert-dom0 ## Destroys SD EXPORT VMs
 	@./scripts/destroy-vm sd-export-usb
 	@./scripts/destroy-vm sd-export-usb-dvm
 
-clean: assert-dom0 destroy-all clean-salt ## Destroys all SD VMs
+clean: assert-dom0 prep-salt destroy-all ## Destroys all SD VMs
+	sudo qubesctl --show-output state.sls sd-clean-all
 	sudo dnf -y -q remove securedrop-workstation-dom0-config 2>/dev/null || true
-	sudo rm -f /usr/bin/securedrop-update \
-		/etc/cron.daily/securedrop-update-cron
+	$(MAKE) clean-salt
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python3 -m unittest discover -v tests
@@ -126,7 +126,8 @@ list-vms: ## Prints all Qubes VMs managed by Workstation salt config
 	@./scripts/list-vms
 
 destroy-all: ## Destroys all VMs managed by Workstation salt config
-	@./scripts/list-vms | xargs ./scripts/destroy-vm
+	qubes-prefs default_dispvm fedora-30-dvm
+	./scripts/destroy-vm --all
 
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
