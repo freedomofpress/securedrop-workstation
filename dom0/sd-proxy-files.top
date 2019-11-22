@@ -3,5 +3,5 @@
 
 base:
   sd-proxy-template:
-    - fpf-apt-test-repo
+    - fpf-apt-test-repo-stretch
     - sd-proxy-template-files
