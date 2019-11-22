@@ -14,7 +14,7 @@ if [[ "$(hostname)" != "dom0" ]]; then
 fi
 
 # Support environment variable overrides, but provide sane defaults.
-dev_vm="${SECUREDROP_DEV_VM:-work}"
+dev_vm="${SECUREDROP_DEV_VM:-sd-dev}"
 dev_dir="${SECUREDROP_DEV_DIR:-/home/user/securedrop-workstation}"
 
 # The dest directory in dom0 is not customizable.
