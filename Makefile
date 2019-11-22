@@ -89,7 +89,11 @@ remove-sd-export: assert-dom0 ## Destroys SD EXPORT VMs
 	@./scripts/destroy-vm sd-export-usb
 	@./scripts/destroy-vm sd-export-usb-dvm
 
-clean: assert-dom0 destroy-all clean-salt ## Destroys all SD VMs
+clean: assert-dom0 ## Destroys all SD VMs and reverts configuration
+	## Sets the default dispvm to Qubes default to allow deletion of dvm/template
+	qubes-prefs default_dispvm fedora-30-dvm
+	make destroy-all
+	make clean-salt
 	sudo dnf -y -q remove securedrop-workstation-dom0-config 2>/dev/null || true
 	sudo rm -f /usr/bin/securedrop-update \
 		/etc/cron.daily/securedrop-update-cron
