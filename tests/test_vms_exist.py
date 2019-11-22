@@ -4,7 +4,7 @@ from qubesadmin import Qubes
 from base import WANTED_VMS
 
 
-EXPECTED_KERNEL_VERSION = "4.14.128-grsec"
+EXPECTED_KERNEL_VERSION = "4.14.151-grsec-workstation"
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -30,7 +30,7 @@ class SD_VM_Tests(unittest.TestCase):
         # Check exact kernel version in VM
         stdout, stderr = vm.run("uname -r")
         kernel_version = stdout.decode("utf-8").rstrip()
-        assert kernel_version.endswith("-grsec")
+        assert kernel_version.endswith("-grsec-workstation")
         assert kernel_version == EXPECTED_KERNEL_VERSION
 
     def _check_service_running(self, vm, service):
