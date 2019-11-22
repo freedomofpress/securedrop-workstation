@@ -15,12 +15,9 @@ sys-firewall-rpm-test-key-script:
     - mode: 755
 
 sys-firewall-rpm-test-key-rclocal:
-  file.line:
+  file.append:
     - name: /rw/config/rc.local
-    - mode: insert
-    - location: end
-    - match: "/rw/config/sd-copy-rpm-repo-pubkey.sh"
-    - content: "/rw/config/sd-copy-rpm-repo-pubkey.sh"
+    - text: "/rw/config/sd-copy-rpm-repo-pubkey.sh"
 
 sys-firewall-rpm-test-key-import:
   cmd.run:
