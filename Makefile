@@ -122,9 +122,6 @@ prep-dom0: prep-salt # Copies dom0 config files for VM updates
 	sudo qubesctl top.enable sd-dom0-files
 	sudo qubesctl --show-output --targets dom0 state.highstate
 
-list-vms: ## Prints all Qubes VMs managed by Workstation salt config
-	@./scripts/list-vms
-
 destroy-all: ## Destroys all VMs managed by Workstation salt config
 	qubes-prefs default_dispvm fedora-30-dvm
 	./scripts/destroy-vm --all
