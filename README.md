@@ -238,21 +238,8 @@ qvm-create --template securedrop-workstation test-securedrop-workstation --class
 
 ### Building workstation deb packages
 
-```
-# go to the builder/ directory:
-cd builder/packages
-# build a specific package (e.g, grsecurity metapackage)
-make securedrop-workstation-grsec
-# OR build all the packages
-make all
-# run the tests
-virtualenv --python python3 .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-# install test requirements and run the test
-apt install lintian
-make test
-```
+Debian packages for the SecureDrop Workstation components are maintained in a separate repository:
+https://github.com/freedomofpress/securedrop-debian-packaging/
 
 ### Building workstation rpm packages
 
@@ -531,12 +518,7 @@ For the Debian packages, see https://github.com/freedomofpress/securedrop-debian
 For the RPM packages, such as the `securedrop-workstation` TemplateVM package, first
 build the package (e.g. `make template`), then sign the RPM, as outlined above.
 
-To upload the package to S3, you'll need valid AWS credentials. Talk to a member of the ops team.
-Once you have valid credentials configured, install the dependencies (`pip install -r requirements.txt` in a virtualenv), then run:
-
-```
-./scripts/publish-rpm
-```
+To upload the package, submit a PR to https://github.com/freedomofpress/securedrop-workstation-dev-rpm-packages-lfs/
 
 The RPM will immediately be available in dom0. Provided you've run the Salt configurations,
 find it via:
