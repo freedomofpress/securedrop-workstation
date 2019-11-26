@@ -13,7 +13,7 @@ include:
 
 sd-svs-template:
   qvm.vm:
-    - name: sd-svs-template
+    - name: sd-svs-buster-template
     - clone:
       - source: securedrop-workstation-buster
       - label: yellow
@@ -27,10 +27,11 @@ sd-svs:
   qvm.vm:
     - name: sd-svs
     - present:
-      - template: sd-svs-template
+      - template: sd-svs-buster-template
       - label: yellow
     - prefs:
       - netvm: ""
+      - template: sd-svs-buster-template
     - tags:
       - add:
         - sd-client
@@ -43,11 +44,11 @@ sd-svs:
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.
-sd-svs-template-sync-appmenus:
+sd-svs-buster-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start --skip-if-running sd-svs-template &&
-        qvm-sync-appmenus sd-svs-template
+        qvm-start --skip-if-running sd-svs-buster-template &&
+        qvm-sync-appmenus sd-svs-buster-template
     - require:
       - qvm: sd-svs-template
     - onchanges:

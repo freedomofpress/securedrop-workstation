@@ -13,7 +13,7 @@ declare -a sd_workstation_vm_names=(
   sd-proxy
   sd-proxy-template
   sd-svs
-  sd-svs-template
+  sd-svs-buster-template
   securedrop-workstation-buster
   sd-whonix
   sd-svs-disp
