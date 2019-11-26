@@ -31,28 +31,35 @@ function securedrop-update-feedback() {
         'SecureDrop: $msg'"
 }
 
-# `qubesctl pkg.upgrade` will automatically update dom0 packages, as well,
-# but we *first* want the freshest RPMs from dom0, *then* we'll want to
-# update the VMs themselves.
+function get_sdw_target_vms() {
+    qvm-ls --tags sd-workstation --raw-data --fields NAME,CLASS \
+        | perl -F'\|' -lanE 'say $F[0] if $F[1] eq "TemplateVM"' \
+        | perl -npE 's/\n/,/g' \
+        | perl -npE 's/,$//'
+}
+
 securedrop-update-feedback "Updating dom0 configuration..."
-sudo qubes-dom0-update -y
 
-securedrop-update-feedback "Updating application..."
+# Install latest RPMs inside dom0
+qubesctl state.sls update.qubes-dom0
 
-# update only fedora template: dist_upgrade is required for debian package
-# upgrades and causes fedora template upgrades to fail.
-
-qubesctl --target fedora-30 pkg.upgrade refresh=true
-
-# upgrade all (other) templates
-qubesctl --skip-dom0 --templates \
-    --max-concurrency "$SECUREDROP_MAX_CONCURRENCY" \
-    pkg.upgrade refresh=true dist_upgrade=true
-
+# Configure VM state (network settings, RPC policies)
 securedrop-update-feedback "Updating VM configuration..."
-qubesctl \
+qubesctl state.highstate
+
+securedrop-update-feedback "Installing updates for VM applications..."
+
+qubesctl --skip-dom0 --targets fedora-30 state.sls update.qubes-vm
+
+# Format list of all VMs comma-separated, for use as qubesctl target
+sdw_target_vms="$(get_sdw_target_vms)"
+
+# Use the Qubes-provided "update.qubes-vm" state to upgrade packages
+# Update all SDW templates.
+qubesctl --skip-dom0 \
     --max-concurrency "$SECUREDROP_MAX_CONCURRENCY" \
-    state.highstate
+    --targets "$sdw_target_vms" \
+    state.sls update.qubes-vm
 
 securedrop-update-feedback \
     "Updates installed. Please reboot the workstation \
