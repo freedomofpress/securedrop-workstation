@@ -20,7 +20,7 @@ declare -a sd_workstation_vm_names=(
   sd-svs-disp-buster-template
   sd-export-usb
   sd-export-usb-dvm
-  sd-export-template
+  sd-export-buster-template
 )
 
 for vm in "${sd_workstation_vm_names[@]}" ; do

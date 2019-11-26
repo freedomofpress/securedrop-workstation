@@ -58,7 +58,7 @@ sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 sd-export: prep-salt ## Provisions SD Export VM
 	sudo qubesctl top.enable sd-export
 	sudo qubesctl top.enable sd-export-files
-	sudo qubesctl --show-output --targets sd-export-template state.highstate
+	sudo qubesctl --show-output --targets sd-export-buster-template state.highstate
 	sudo qubesctl --show-output --targets sd-export-export-dvm state.highstate
 
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0

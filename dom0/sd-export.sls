@@ -10,7 +10,7 @@ include:
 
 sd-export-template:
   qvm.vm:
-    - name: sd-export-template
+    - name: sd-export-buster-template
     - clone:
       - source: securedrop-workstation-buster
       - label: red
@@ -24,9 +24,10 @@ sd-export-usb-dvm:
   qvm.vm:
     - name: sd-export-usb-dvm
     - present:
-      - template: sd-export-template
+      - template: sd-export-buster-template
       - label: red
     - prefs:
+      - template: sd-export-buster-template
       - netvm: ""
       - template_for_dispvms: True
     - tags:
@@ -43,8 +44,8 @@ sd-export-usb-dvm:
 sd-export-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start --skip-if-running sd-export-template &&
-        qvm-sync-appmenus sd-export-template
+        qvm-start --skip-if-running sd-export-buster-template &&
+        qvm-sync-appmenus sd-export-buster-template
     - require:
       - qvm: sd-export-template
     - onchanges:
