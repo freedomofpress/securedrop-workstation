@@ -83,7 +83,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-svs-disp"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-svs-disp-template")
+        self.assertTrue(vm.template == "sd-svs-disp-buster-template")
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
         self._check_kernel(vm)
@@ -126,7 +126,7 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_kernel(vm)
 
     def sd_svs_disp_template(self):
-        vm = self.app.domains["sd-svs-disp-template"]
+        vm = self.app.domains["sd-svs-disp-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)

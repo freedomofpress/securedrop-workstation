@@ -52,7 +52,7 @@ sd-whonix: prep-salt ## Provisions SD Whonix VM
 sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
 	sudo qubesctl top.enable sd-svs-disp
 	sudo qubesctl top.enable sd-svs-disp-files
-	sudo qubesctl --show-output --targets sd-svs-disp-template state.highstate
+	sudo qubesctl --show-output --targets sd-svs-disp-buster-template state.highstate
 	sudo qubesctl --show-output --targets sd-svs-disp state.highstate
 
 sd-export: prep-salt ## Provisions SD Export VM
