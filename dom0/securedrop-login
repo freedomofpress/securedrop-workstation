@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+"""
+Utility script for SecureDrop Workstation config. Updates the TemplateVM
+used for SDW DispVMs by installing all available apt packages.
+
+The update process is intended to run at XFCE login, via a desktop file.
+"""
+import os
+import subprocess
+import logging
+import time
+import sys
+
+import qubesadmin
+
+
+SCRIPT_NAME = os.path.basename(__file__)
+logger = logging.getLogger(SCRIPT_NAME)
+logging.basicConfig(level=logging.INFO)
+
+
+SDW_DISPVM_TEMPLATE = "sd-svs-disp-template"
+
+
+if __name__ == "__main__":
+    # Wait for the dom0 GUI widgets to load
+    # If we don't wait, a "Houston, we have a problem..." message is displayed
+    # to the user.
+    time.sleep(5)
+
+    # Ensure target VM exists
+    q = qubesadmin.Qubes()
+    if SDW_DISPVM_TEMPLATE not in q.domains:
+        # Log message isn't logged to syslog, only stderr
+        logger.error("VM does not exist: {}".format(SDW_DISPVM_TEMPLATE))
+        sys.exit(1)
+
+    cmd = [
+        "sudo",
+        "qubesctl",
+        "--skip-dom0",
+        "--targets",
+        SDW_DISPVM_TEMPLATE,
+        "state.sls",
+        "update.qubes-vm",
+    ]
+    subprocess.check_call(cmd)
