@@ -16,7 +16,7 @@ include:
 
 sd-svs-disp-template:
   qvm.vm:
-    - name: sd-svs-disp-template
+    - name: sd-svs-disp-buster-template
     - clone:
       - source: securedrop-workstation-buster
       - label: green
@@ -27,9 +27,10 @@ sd-svs-disp:
   qvm.vm:
     - name: sd-svs-disp
     - present:
-      - template: sd-svs-disp-template
+      - template: sd-svs-disp-buster-template
       - label: green
     - prefs:
+      - template: sd-svs-disp-buster-template
       - netvm: ""
       - template_for_dispvms: True
     - tags:
@@ -40,7 +41,7 @@ sd-svs-disp:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-svs-disp-template
+      - qvm: sd-svs-disp-buster-template
 
 sd-svs-disp-default-dispvm:
   cmd.run:
