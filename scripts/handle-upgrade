@@ -53,7 +53,17 @@ if [[ $TASK == "prepare" ]]; then
 		fi
 	fi
 elif [[ $TASK == "remove" ]]; then
-	echo "placeholder"
+	# For each template, ensure the TemplateVM exists, that it is shut down
+	# before deleting it.
+	for template in sd-svs-template sd-svs-disp-template sd-export-template
+	do
+		if qvm-check "${template}" --quiet; then
+			if qvm-check --running "${template}"; then
+				qvm-shutdown --wait "${template}"
+			fi
+			qvm-remove -f "${template}"
+		fi
+	done
 else
 	echo "Please specify prepare or remove"
 	exit 1

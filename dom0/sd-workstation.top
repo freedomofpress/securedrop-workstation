@@ -14,6 +14,7 @@ base:
     - sd-svs-disp
     - sd-svs
     - sd-whonix
+    - sd-remove-unused-templates
   sd-export-template:
     - sd-export-files
   sd-gpg:

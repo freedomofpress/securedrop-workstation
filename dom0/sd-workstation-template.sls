@@ -14,6 +14,7 @@ sd-workstation-template:
     - tags:
       - add:
         - sd-workstation
+        - buster
     - features:
       - enable:
         - service.paxctld

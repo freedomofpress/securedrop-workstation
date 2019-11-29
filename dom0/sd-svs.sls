@@ -20,6 +20,7 @@ sd-svs-template:
     - tags:
       - add:
         - sd-workstation
+        - buster
     - require:
       - sls: sd-workstation-template
       - sls: sd-upgrade-templates
