@@ -6,6 +6,7 @@ base:
     - sd-sys-vms
     - sd-dom0-files
     - sd-workstation-template
+    - sd-upgrade-templates
     - sd-dom0-qvm-rpc
     - sd-export
     - sd-gpg

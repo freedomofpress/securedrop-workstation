@@ -22,6 +22,7 @@ sd-svs-disp-template:
       - label: green
     - require:
       - sls: sd-workstation-template
+      - sls: sd-upgrade-templates
 
 sd-svs-disp:
   qvm.vm:

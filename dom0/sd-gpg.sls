@@ -27,3 +27,4 @@ sd-gpg:
         - sd-workstation
     - require:
       - sls: sd-workstation-template
+      - sls: sd-upgrade-templates
