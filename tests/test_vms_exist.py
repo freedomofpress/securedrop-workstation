@@ -4,7 +4,7 @@ from qubesadmin import Qubes
 from base import WANTED_VMS
 
 
-EXPECTED_KERNEL_VERSION = "4.14.128-grsec"
+EXPECTED_KERNEL_VERSION = "4.14.151-grsec-workstation"
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -30,7 +30,7 @@ class SD_VM_Tests(unittest.TestCase):
         # Check exact kernel version in VM
         stdout, stderr = vm.run("uname -r")
         kernel_version = stdout.decode("utf-8").rstrip()
-        assert kernel_version.endswith("-grsec")
+        assert kernel_version.endswith("-grsec-workstation")
         assert kernel_version == EXPECTED_KERNEL_VERSION
 
     def _check_service_running(self, vm, service):
@@ -95,7 +95,7 @@ class SD_VM_Tests(unittest.TestCase):
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         # No sd-gpg-template, since keyring is managed in $HOME
-        self.assertTrue(vm.template == "securedrop-workstation")
+        self.assertTrue(vm.template == "securedrop-workstation-buster")
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -103,7 +103,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue('sd-workstation' in vm.tags)
 
     def test_sd_workstation_template(self):
-        vm = self.app.domains["securedrop-workstation"]
+        vm = self.app.domains["securedrop-workstation-buster"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue(vm.virt_mode == "hvm")

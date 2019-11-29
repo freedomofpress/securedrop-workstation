@@ -29,7 +29,7 @@ base:
     - sd-sys-firewall-files
   sd-whonix:
     - sd-whonix-hidserv-key
-  securedrop-workstation:
+  securedrop-workstation-buster:
     - sd-workstation-template-files
 
   # "Placeholder" config to trigger TemplateVM boots,

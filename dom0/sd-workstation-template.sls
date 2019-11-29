@@ -7,7 +7,7 @@ include:
 # Sets virt_mode and kernel to use custom hardened kernel.
 sd-workstation-template:
   qvm.vm:
-    - name: securedrop-workstation
+    - name: securedrop-workstation-buster
     - prefs:
       - virt-mode: hvm
       - kernel: ''

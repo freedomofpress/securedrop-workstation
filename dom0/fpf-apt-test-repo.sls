@@ -23,7 +23,7 @@ install-python-apt-for-repo-config:
 
 configure-apt-test-apt-repo:
   pkgrepo.managed:
-    - name: "deb [arch=amd64] https://apt-test-qubes.freedom.press stretch main"
+    - name: "deb [arch=amd64] https://apt-test-qubes.freedom.press buster main"
     - file: /etc/apt/sources.list.d/securedrop_workstation.list
     - key_url: "salt://sd/sd-workstation/apt-test-pubkey.asc"
     - clean_file: True # squash file to ensure there are no duplicates
