@@ -15,7 +15,7 @@ base:
     - sd-svs
     - sd-whonix
     - sd-remove-unused-templates
-  sd-export-template:
+  sd-export-buster-template:
     - sd-export-files
   sd-gpg:
     - sd-gpg-files
@@ -23,9 +23,9 @@ base:
     - sd-proxy-template-files
   sd-svs:
     - sd-svs-config
-  sd-svs-disp-template:
+  sd-svs-disp-buster-template:
     - sd-svs-disp-files
-  sd-svs-template:
+  sd-svs-buster-template:
     - sd-svs-files
   sys-firewall:
     - sd-sys-firewall-files
