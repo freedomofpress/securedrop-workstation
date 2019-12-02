@@ -1,37 +1,82 @@
-#!/bin/bash
-# Utility to quickly destroy a Qubes VM managed by the Workstation
-# salt config, for use in repeated builds during development.
-#
-# There are a few "sleep"s sprinkled around because the qubes tooling
-# returns very quickly, often before the underlying operation has
-# completed.
-set -e
-set -u
+#!/usr/bin/env python3
+"""
+Utility to quickly destroy a Qubes VM managed by the Workstation
+salt config, for use in repeated builds during development.
+"""
+import argparse
+import subprocess
+import sys
+
+import qubesadmin
 
 
-if [[ $# -lt 1 ]]; then
-    printf "Usage: %s <vm_name> [vm_name ...]\n" "$0"
-    exit 1
-fi
+SDW_DEFAULT_TAG = "sd-workstation"
 
-function destroy-qubes-vm() {
-    local vm_name="$1"
-    printf "Destroying VM '%s'... " "$vm_name"
-    if qvm-check "$vm_name" > /dev/null 2>&1 ; then
-        # Wait a sec, otherwise qubesd may return empty
-        sleep 1
-        if qvm-check --running "$vm_name" > /dev/null 2>&1 ; then
-            sleep 1
-            qvm-kill "$vm_name" > /dev/null 2>&1
-            sleep 1
-        fi
-        qvm-remove -f "$vm_name" > /dev/null 2>&1
-        printf "OK\n"
-    else
-        printf "(absent)\n"
-    fi
-}
 
-for vm_name in $@; do
-    destroy-qubes-vm "$vm_name"
-done
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--all",
+        default=False,
+        required=False,
+        action="store_true",
+        help="Destroys all SDW VMs",
+    )
+    parser.add_argument(
+        "targets",
+        help="List of SDW VMs to destroy",
+        nargs=argparse.REMAINDER,
+    )
+    args = parser.parse_args()
+    if not args.all and len(args.targets) < 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    return args
+
+
+def destroy_vm(vm):
+    """
+    Destroys a single VM instance. Requires arg to be
+    QubesVM object.
+    """
+    assert SDW_DEFAULT_TAG in vm.tags
+    if vm.is_running():
+        vm.kill()
+    print("Destroying VM '{}'... ".format(vm.name), end="")
+    subprocess.check_call(["qvm-remove", "-f", vm.name])
+    print("OK")
+
+
+def destroy_all():
+    """
+    Destroys all VMs marked with the 'sd-workstation' tag, in the following order:
+    DispVMs, AppVMs, then TemplateVMs. Excludes VMs for which
+    installed_by_rpm=true.
+    """
+    # Remove DispVMs first, then AppVMs, then TemplateVMs last.
+    sdw_vms = [vm for vm in q.domains if SDW_DEFAULT_TAG in vm.tags]
+    sdw_template_vms = [vm for vm in sdw_vms
+                        if vm.klass == "TemplateVM" and not
+                        vm.installed_by_rpm]
+    sdw_disp_vms = [vm for vm in sdw_vms if vm.klass == "DispVM"]
+    sdw_app_vms = [vm for vm in sdw_vms if vm.klass == "AppVM"]
+
+    for vm in sdw_disp_vms:
+        destroy_vm(vm)
+
+    for vm in sdw_app_vms:
+        destroy_vm(vm)
+
+    for vm in sdw_template_vms:
+        destroy_vm(vm)
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    q = qubesadmin.Qubes()
+    if args.all:
+        destroy_all()
+    else:
+        for t in args.targets:
+            vm = q.domains[t]
+            destroy_vm(vm)

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: set syntax=yaml ts=2 sw=2 sts=2 et :
+#
 sys-firewall-rpm-test-key:
   file.managed:
     - name: /rw/config/RPM-GPG-KEY-securedrop-workstation-test

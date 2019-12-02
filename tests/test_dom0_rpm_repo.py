@@ -26,7 +26,7 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
             "gpgcheck=1",
             "gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",  # noqa
             "enabled=1",
-            "baseurl=https://dev-bin.ops.securedrop.org/dom0-rpm-repo/",
+            "baseurl=https://yum-test.securedrop.org/workstation/dom0/f25",
             "name=SecureDrop Workstation Qubes dom0 repo",
         ]
         with open(repo_file, "r") as f:

@@ -17,49 +17,35 @@ clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
 
 qubes-rpc: prep-salt ## Places default deny qubes-rpc policies for sd-svs and sd-gpg
-	sudo qubesctl top.enable sd-dom0-qvm-rpc
 	sudo qubesctl --show-output --targets sd-dom0-qvm-rpc state.highstate
 
 sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
-	sudo qubesctl top.enable sd-workstation-template
-	sudo qubesctl top.enable sd-workstation-template-files
-	sudo qubesctl --show-output --targets sd-workstation-template state.highstate
+	sudo qubesctl --show-output state.sls sd-workstation-template
+	sudo qubesctl --show-output --skip-dom0 --targets sd-workstation-template state.highstate
 
 sd-proxy: prep-salt ## Provisions SD Proxy VM
-	sudo qubesctl top.enable sd-proxy
-	sudo qubesctl top.enable sd-proxy-files
-	sudo qubesctl --show-output --targets sd-proxy-template state.highstate
-	sudo qubesctl --show-output --targets sd-proxy state.highstate
+	sudo qubesctl --show-output state.sls sd-proxy
+	sudo qubesctl --show-output --skip-dom0 --targets sd-proxy-template state.highstate
 
 sd-gpg: prep-salt ## Provisions SD GPG keystore VM
-	sudo qubesctl top.enable sd-gpg
-	sudo qubesctl top.enable sd-gpg-files
-	sudo qubesctl --show-output --targets sd-gpg state.highstate
+	sudo qubesctl --show-output state.sls sd-gpg
+	sudo qubesctl --show-output --skip-dom0 --targets sd-gpg state.highstate
 
 sd-svs: prep-salt ## Provisions SD SVS VM
-	sudo qubesctl top.enable sd-svs
-	sudo qubesctl top.enable sd-svs-files
-	sudo qubesctl top.enable sd-svs-config
-	sudo qubesctl --show-output --targets sd-svs-template state.highstate
-	sudo qubesctl --show-output --targets sd-svs state.highstate
+	sudo qubesctl --show-output state.sls sd-svs
+	sudo qubesctl --show-output --skip-dom0 --targets sd-svs-template,sd-svs state.highstate
 
 sd-whonix: prep-salt ## Provisions SD Whonix VM
-	sudo qubesctl top.enable sd-whonix
-	sudo qubesctl top.enable sd-whonix-hidserv-key
-	sudo qubesctl --show-output --targets sd-whonix-template state.highstate
-	sudo qubesctl --show-output --targets sd-whonix state.highstate
+	sudo qubesctl --show-output state.sls sd-whonix
+	sudo qubesctl --show-output --skip-dom0 --targets sd-whonix-template,sd-whonix state.highstate
 
 sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
-	sudo qubesctl top.enable sd-svs-disp
-	sudo qubesctl top.enable sd-svs-disp-files
-	sudo qubesctl --show-output --targets sd-svs-disp-template state.highstate
-	sudo qubesctl --show-output --targets sd-svs-disp state.highstate
+	sudo qubesctl --show-output state.sls sd-svs-disp
+	sudo qubesctl --show-output --skip-dom0 --targets sd-svs-disp-template,sd-svs-disp state.highstate
 
 sd-export: prep-salt ## Provisions SD Export VM
-	sudo qubesctl top.enable sd-export
-	sudo qubesctl top.enable sd-export-files
-	sudo qubesctl --show-output --targets sd-export-template state.highstate
-	sudo qubesctl --show-output --targets sd-export-export-dvm state.highstate
+	sudo qubesctl --show-output state.sls sd-export
+	sudo qubesctl --show-output --skip-dom0 --targets sd-export-template,sd-export-usb,sd-export-usb-dvm state.highstate
 
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
 	@echo "Purging Salt config..."
@@ -89,10 +75,10 @@ remove-sd-export: assert-dom0 ## Destroys SD EXPORT VMs
 	@./scripts/destroy-vm sd-export-usb
 	@./scripts/destroy-vm sd-export-usb-dvm
 
-clean: assert-dom0 destroy-all clean-salt ## Destroys all SD VMs
+clean: assert-dom0 prep-salt destroy-all ## Destroys all SD VMs
+	sudo qubesctl --show-output state.sls sd-clean-all
 	sudo dnf -y -q remove securedrop-workstation-dom0-config 2>/dev/null || true
-	sudo rm -f /usr/bin/securedrop-update \
-		/etc/cron.daily/securedrop-update-cron
+	$(MAKE) clean-salt
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python3 -m unittest discover -v tests
@@ -136,11 +122,9 @@ prep-dom0: prep-salt # Copies dom0 config files for VM updates
 	sudo qubesctl top.enable sd-dom0-files
 	sudo qubesctl --show-output --targets dom0 state.highstate
 
-list-vms: ## Prints all Qubes VMs managed by Workstation salt config
-	@./scripts/list-vms
-
 destroy-all: ## Destroys all VMs managed by Workstation salt config
-	@./scripts/list-vms | xargs ./scripts/destroy-vm
+	qubes-prefs default_dispvm fedora-30-dvm
+	./scripts/destroy-vm --all
 
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
