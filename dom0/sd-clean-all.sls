@@ -31,12 +31,12 @@ sd-cleanup-rpc-mgmt-policy:
     - repl: ''
     - pattern: '^disp-mgmt-sd-\w+\s+sd-\w+\s+allow,user=root'
 
-{% set sdw_customized_rpc_files = salt['cmd.shell']('grep -rl "BEGIN securedrop-workstation" /etc/qubes-rpc/ | cat').splitlines() %}
+{% set sdw_customized_rpc_files = salt['cmd.shell']('grep -rIl "BEGIN securedrop-workstation" /etc/qubes-rpc/ | cat').splitlines() %}
 {% if sdw_customized_rpc_files|length > 0 %}
 sd-cleanup-rpc-policy-grants:
   file.replace:
     - names: {{ sdw_customized_rpc_files }}
-    - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###'
+    - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
     - flags:
       - MULTILINE
       - DOTALL

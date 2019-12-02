@@ -43,7 +43,7 @@ def destroy_vm(vm):
     if vm.is_running():
         vm.kill()
     print("Destroying VM '{}'... ".format(vm.name), end="")
-    subprocess.check_call("qvm-remove -f {}".format(vm.name).split())
+    subprocess.check_call(["qvm-remove", "-f", vm.name])
     print("OK")
 
 

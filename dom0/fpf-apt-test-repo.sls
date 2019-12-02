@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 #
+
+# Import the Qubes-maintained Salt logic for upgrading VM packages.
+# Intelligently handles both Debian & Fedora VMs. For reference, see:
+#
+#   dom0:/srv/formulas/base/update-formula/update/qubes-vm.sls
+#
 include:
   - update.qubes-vm
 
@@ -11,7 +17,8 @@ install-python-apt-for-repo-config:
     - pkgs:
       - python-apt
     - require:
-      # Require that the Qubes update state has run first
+      # Require that the Qubes update state has run first. Doing so
+      # will ensure that apt is sufficiently patched prior to installing.
       - sls: update.qubes-vm
 
 configure-apt-test-apt-repo:
