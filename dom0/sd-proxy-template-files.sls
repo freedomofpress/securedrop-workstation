@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 include:
-  - fpf-apt-test-repo-stretch
+  - fpf-apt-test-repo
 
 sd-proxy-do-not-open-here-script:
   file.managed:
@@ -46,7 +46,7 @@ install-securedrop-proxy-package:
     - pkgs:
       - securedrop-proxy
     - require:
-      - sls: fpf-apt-test-repo-stretch
+      - sls: fpf-apt-test-repo
 
 {% import_json "sd/config.json" as d %}
 
