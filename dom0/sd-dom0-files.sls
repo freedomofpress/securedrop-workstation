@@ -160,3 +160,36 @@ dom0-whonix-ws-14-install-python-futures:
     - require:
       - file: dom0-create-opt-securedrop-directory
       - cmd: dom0-whonix-ws-disable-apt-list
+
+{% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
+
+dom0-login-autostart-directory:
+  file.directory:
+    - name: /home/{{ gui_user }}/.config/autostart
+    - user: {{ gui_user }}
+    - group: {{ gui_user }}
+    - mode: 700
+    - makedirs: True
+
+dom0-login-autostart-desktop-file:
+  file.managed:
+    - name: /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
+    - source: "salt://dom0-xfce-desktop-file.j2"
+    - template: jinja
+    - context:
+        desktop_name: SDWLogin
+        desktop_comment: Updates SecureDrop Workstation DispVMs at login
+        desktop_exec: /usr/bin/securedrop-login
+    - user: {{ gui_user }}
+    - group: {{ gui_user }}
+    - mode: 664
+    - require:
+      - file: dom0-login-autostart-directory
+
+dom0-login-autostart-script:
+  file.managed:
+    - name: /usr/bin/securedrop-login
+    - source: "salt://securedrop-login"
+    - user: root
+    - group: root
+    - mode: 755

@@ -5,6 +5,8 @@ set-fedora-as-default-dispvm:
   cmd.run:
     - name: qubes-prefs default_dispvm fedora-30-dvm
 
+{% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
+
 remove-dom0-sdw-config-files:
   file.absent:
     - names:
@@ -14,6 +16,8 @@ remove-dom0-sdw-config-files:
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
       - /etc/cron.daily/securedrop-update-cron
       - /usr/share/securedrop/icons
+      - /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
+      - /usr/bin/securedrop-login
 
 sd-cleanup-sys-firewall:
   cmd.run:
