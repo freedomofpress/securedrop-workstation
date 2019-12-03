@@ -4,7 +4,7 @@ from qubesadmin import Qubes
 from base import WANTED_VMS
 
 
-EXPECTED_KERNEL_VERSION = "4.14.128-grsec"
+EXPECTED_KERNEL_VERSION = "4.14.151-grsec-workstation"
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -30,7 +30,7 @@ class SD_VM_Tests(unittest.TestCase):
         # Check exact kernel version in VM
         stdout, stderr = vm.run("uname -r")
         kernel_version = stdout.decode("utf-8").rstrip()
-        assert kernel_version.endswith("-grsec")
+        assert kernel_version.endswith("-grsec-workstation")
         assert kernel_version == EXPECTED_KERNEL_VERSION
 
     def _check_service_running(self, vm, service):
@@ -71,7 +71,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-svs"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-svs-template")
+        self.assertTrue(vm.template == "sd-svs-buster-template")
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
@@ -83,7 +83,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-svs-disp"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-svs-disp-template")
+        self.assertTrue(vm.template == "sd-svs-disp-buster-template")
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
         self._check_kernel(vm)
@@ -95,7 +95,7 @@ class SD_VM_Tests(unittest.TestCase):
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         # No sd-gpg-template, since keyring is managed in $HOME
-        self.assertTrue(vm.template == "securedrop-workstation")
+        self.assertTrue(vm.template == "securedrop-workstation-buster")
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -103,7 +103,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue('sd-workstation' in vm.tags)
 
     def test_sd_workstation_template(self):
-        vm = self.app.domains["securedrop-workstation"]
+        vm = self.app.domains["securedrop-workstation-buster"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue(vm.virt_mode == "hvm")
@@ -119,21 +119,21 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue('sd-workstation' in vm.tags)
 
     def sd_svs_template(self):
-        vm = self.app.domains["sd-svs-template"]
+        vm = self.app.domains["sd-svs-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)
         self._check_kernel(vm)
 
     def sd_svs_disp_template(self):
-        vm = self.app.domains["sd-svs-disp-template"]
+        vm = self.app.domains["sd-svs-disp-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)
         self.assertTrue(vm.template_for_dispvms)
 
     def sd_export_template(self):
-        vm = self.app.domains["sd-export-template"]
+        vm = self.app.domains["sd-export-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)

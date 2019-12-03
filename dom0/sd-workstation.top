@@ -6,6 +6,7 @@ base:
     - sd-sys-vms
     - sd-dom0-files
     - sd-workstation-template
+    - sd-upgrade-templates
     - sd-dom0-qvm-rpc
     - sd-export
     - sd-gpg
@@ -13,7 +14,8 @@ base:
     - sd-svs-disp
     - sd-svs
     - sd-whonix
-  sd-export-template:
+    - sd-remove-unused-templates
+  sd-export-buster-template:
     - sd-export-files
   sd-gpg:
     - sd-gpg-files
@@ -21,15 +23,15 @@ base:
     - sd-proxy-template-files
   sd-svs:
     - sd-svs-config
-  sd-svs-disp-template:
+  sd-svs-disp-buster-template:
     - sd-svs-disp-files
-  sd-svs-template:
+  sd-svs-buster-template:
     - sd-svs-files
   sys-firewall:
     - sd-sys-firewall-files
   sd-whonix:
     - sd-whonix-hidserv-key
-  securedrop-workstation:
+  securedrop-workstation-buster:
     - sd-workstation-template-files
 
   # "Placeholder" config to trigger TemplateVM boots,

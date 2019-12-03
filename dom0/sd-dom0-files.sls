@@ -46,7 +46,6 @@ dom0-workstation-rpm-repo:
 dom0-install-securedrop-workstation-template:
   pkg.installed:
     - pkgs:
-      - qubes-template-securedrop-workstation
       - qubes-template-securedrop-workstation-buster
     - require:
       - file: dom0-workstation-rpm-repo

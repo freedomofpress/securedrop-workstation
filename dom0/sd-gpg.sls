@@ -16,9 +16,10 @@ sd-gpg:
   qvm.vm:
     - name: sd-gpg
     - present:
-      - template: securedrop-workstation
+      - template: securedrop-workstation-buster
       - label: purple
     - prefs:
+      - template: securedrop-workstation-buster
       - netvm: ""
       - autostart: true
     - tags:
@@ -26,3 +27,4 @@ sd-gpg:
         - sd-workstation
     - require:
       - sls: sd-workstation-template
+      - sls: sd-upgrade-templates
