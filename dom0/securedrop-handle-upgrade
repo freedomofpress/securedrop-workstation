@@ -47,6 +47,23 @@ if [[ $TASK == "prepare" ]]; then
 		fi
 	fi
 
+    # For the SDW Whonix VMs, shut them down, so we can upate the TemplateVM settings.
+    # We shut down sd-proxy first, since its netvm is sd-whonix, which won't
+    # shutdown if a client is connected.
+	if qvm-check --quiet sd-proxy; then
+		BASE_TEMPLATE=$(qvm-prefs sd-proxy template)
+		if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
+			qvm-shutdown --wait sd-proxy
+		fi
+	fi
+
+	if qvm-check --quiet sd-whonix; then
+		BASE_TEMPLATE=$(qvm-prefs sd-whonix template)
+		if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
+			qvm-shutdown --wait sd-whonix
+		fi
+	fi
+
 	# Finally for sd-gpg, we simply shutdown the machine
 	if qvm-check --quiet sd-gpg; then
 		BASE_TEMPLATE=$(qvm-prefs sd-gpg template)
@@ -57,7 +74,7 @@ if [[ $TASK == "prepare" ]]; then
 elif [[ $TASK == "remove" ]]; then
 	# For each template, ensure the TemplateVM exists, that it is shut down
 	# before deleting it.
-	for template in sd-svs-template sd-svs-disp-template sd-export-template
+	for template in sd-svs-template sd-svs-disp-template sd-export-template sd-proxy-template
 	do
 		if qvm-check "${template}" --quiet; then
 			if qvm-check --running "${template}"; then
