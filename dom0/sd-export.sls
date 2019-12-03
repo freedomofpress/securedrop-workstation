@@ -34,7 +34,7 @@ sd-export-usb-dvm:
     - tags:
       - add:
         - sd-workstation
-        - buster
+        - sd-buster
     - features:
       - enable:
         - service.paxctld

@@ -38,7 +38,7 @@ sd-svs-disp:
       - add:
         - sd-workstation
         - sd-svs-disp-vm
-        - buster
+        - sd-buster
     - features:
       - enable:
         - service.paxctld

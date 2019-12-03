@@ -3,5 +3,5 @@
 
 run-remove-upgrade-scripts:
   cmd.script:
-    - name: salt://handle-upgrade
+    - name: salt://securedrop-handle-upgrade
     - args: remove

@@ -17,8 +17,8 @@ class SD_Qubes_Dom0_Templates_Tests(unittest.TestCase):
     def test_Templates_cleaned_up(self):
         cmd = ["qvm-ls", "--raw-list"]
         contents = subprocess.check_output(cmd).decode("utf-8").strip()
-        for template in contents.split():
-            self.assertTrue(template not in STRETCH_TEMPLATES)
+        for template in STRETCH_TEMPLATES:
+            self.assertTrue(template not in contents)
 
 
 def load_tests(loader, tests, pattern):
