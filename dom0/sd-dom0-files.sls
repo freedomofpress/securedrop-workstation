@@ -6,6 +6,12 @@
 # over time. These scripts should be ported to an RPM package.
 ##
 
+include:
+  # Import the upstream Qubes-maintained anon-whonix settings.
+  # The anon-whoni config pulls in sys-whonix and sys-firewall,
+  # as well as ensures the latest versions of Whonix are installed.
+  - qvm.anon-whonix
+
 dom0-rpm-test-key:
   file.managed:
     # We write the pubkey to the repos config location, because the repos
@@ -92,12 +98,16 @@ dom0-enabled-apparmor-on-whonix-gw-template:
     - name: whonix-gw-15
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
+    - require:
+      - sls: qvm.anon-whonix
 
 dom0-enabled-apparmor-on-whonix-ws-template:
   qvm.vm:
     - name: whonix-ws-15
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
+    - require:
+      - sls: qvm.anon-whonix
 
 dom0-create-opt-securedrop-directory:
   file.directory:

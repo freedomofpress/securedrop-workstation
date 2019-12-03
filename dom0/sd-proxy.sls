@@ -10,7 +10,6 @@
 ##
 
 include:
-  - qvm.template-whonix-ws
   - sd-whonix
 
 sd-proxy-template:

@@ -10,8 +10,10 @@
 ##
 
 include:
-  - qvm.template-whonix-gw
-  - qvm.sys-firewall
+  # Import the upstream Qubes-maintained anon-whonix settings.
+  # The anon-whoni config pulls in sys-whonix and sys-firewall,
+  # as well as ensures the latest versions of Whonix are installed.
+  - qvm.anon-whonix
 
 sd-whonix:
   qvm.vm:
@@ -30,4 +32,4 @@ sd-whonix:
         - sd-workstation
         - sd-buster
     - require:
-      - qvm: sys-firewall
+      - sls: qvm.anon-whonix
