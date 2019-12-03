@@ -49,7 +49,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(nvm.name == "sys-firewall")
         wanted_kernelopts = "nopat apparmor=1 security=apparmor"
         self.assertEqual(vm.kernelopts, wanted_kernelopts)
-        self.assertTrue(vm.template == "whonix-gw-14")
+        self.assertTrue(vm.template == "whonix-gw-15")
         self.assertTrue(vm.provides_network)
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.template_for_dispvms)
@@ -61,7 +61,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(nvm.name == "sd-whonix")
         wanted_kernelopts = "nopat apparmor=1 security=apparmor"
         self.assertEqual(vm.kernelopts, wanted_kernelopts)
-        self.assertTrue(vm.template == "sd-proxy-template")
+        self.assertTrue(vm.template == "sd-proxy-buster-template")
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -113,7 +113,7 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_service_running(vm, "paxctld")
 
     def test_sd_proxy_template(self):
-        vm = self.app.domains["sd-proxy-template"]
+        vm = self.app.domains["sd-proxy-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)

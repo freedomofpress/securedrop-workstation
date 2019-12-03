@@ -5,8 +5,9 @@ from qubesadmin import Qubes
 from base import WANTED_VMS
 
 
-PLATFORM_STRETCH = "Debian GNU/Linux 9 (stretch)"
-PLATFORM_BUSTER = "Debian GNU/Linux 10 (buster)"
+SUPPORTED_PLATFORMS = [
+    "Debian GNU/Linux 10 (buster)",
+]
 
 FPF_APT_SOURCES_STRETCH = "deb [arch=amd64] https://apt-test-qubes.freedom.press stretch main"
 FPF_APT_SOURCES_BUSTER = "deb [arch=amd64] https://apt-test-qubes.freedom.press buster main"
@@ -42,10 +43,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         should be buster based.
         """
         platform = self._get_platform_info(vm)
-        if vm.name in ["sd-whonix", "sd-proxy"]:
-            self.assertEqual(platform, PLATFORM_STRETCH)
-        else:
-            self.assertEqual(platform, PLATFORM_BUSTER)
+        self.assertIn(platform, SUPPORTED_PLATFORMS)
 
     def _validate_apt_sources(self, vm):
         """
@@ -61,12 +59,8 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             stdout, stderr = vm.run(cmd)
             contents = stdout.decode("utf-8").rstrip("\n")
 
-            if vm.name in ["sd-proxy"]:
-                self.assertTrue(FPF_APT_SOURCES_STRETCH in contents)
-                self.assertTrue(FPF_APT_SOURCES_BUSTER not in contents)
-            else:
-                self.assertTrue(FPF_APT_SOURCES_BUSTER in contents)
-                self.assertTrue(FPF_APT_SOURCES_STRETCH not in contents)
+            self.assertTrue(FPF_APT_SOURCES_BUSTER in contents)
+            self.assertFalse(FPF_APT_SOURCES_STRETCH in contents)
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """

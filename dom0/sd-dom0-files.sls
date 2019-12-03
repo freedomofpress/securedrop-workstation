@@ -87,15 +87,15 @@ dom0-securedrop-icon:
     - require:
       - file: dom0-securedrop-icons-directory
 
-dom0-enabled-apparmor-on-whonix-gw-14-template:
+dom0-enabled-apparmor-on-whonix-gw-template:
   qvm.vm:
-    - name: whonix-gw-14
+    - name: whonix-gw-15
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
 
-dom0-enabled-apparmor-on-whonix-ws-14-template:
+dom0-enabled-apparmor-on-whonix-ws-template:
   qvm.vm:
-    - name: whonix-ws-14
+    - name: whonix-ws-15
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
 

@@ -15,27 +15,29 @@ include:
 
 sd-proxy-template:
   qvm.vm:
-    - name: sd-proxy-template
+    - name: sd-proxy-buster-template
     - clone:
-      - source: whonix-ws-14
+      - source: whonix-ws-15
       - label: blue
     - tags:
       - add:
         - sd-workstation
+        - sd-buster
 
 sd-proxy:
   qvm.vm:
     - name: sd-proxy
     - present:
-      - template: sd-proxy-template
       - label: blue
     - prefs:
+      - template: sd-proxy-buster-template
       - netvm: sd-whonix
       - kernelopts: "nopat apparmor=1 security=apparmor"
       - autostart: true
     - tags:
       - add:
         - sd-workstation
+        - sd-buster
     - require:
       - qvm: sd-whonix
       - qvm: sd-proxy-template

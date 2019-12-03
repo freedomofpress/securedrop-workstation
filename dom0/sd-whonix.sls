@@ -17,10 +17,10 @@ sd-whonix:
   qvm.vm:
     - name: sd-whonix
     - present:
-      - template: whonix-gw-14
       - label: purple
       - mem: 500
     - prefs:
+      - template: whonix-gw-15
       - provides-network: true
       - netvm: "sys-firewall"
       - autostart: true
@@ -28,5 +28,6 @@ sd-whonix:
     - tags:
       - add:
         - sd-workstation
+        - sd-buster
     - require:
       - qvm: sys-firewall

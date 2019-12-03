@@ -1,9 +1,12 @@
 import subprocess
 import unittest
 
-STRETCH_TEMPLATES = ["sd-svs-template",
-                     "sd-svs-disp-template",
-                     "sd-export-template"]
+STRETCH_TEMPLATES = [
+    "sd-svs-template",
+    "sd-svs-disp-template",
+    "sd-export-template",
+    "sd-proxy-template",
+]
 
 
 class SD_Qubes_Dom0_Templates_Tests(unittest.TestCase):
