@@ -8,6 +8,10 @@ from base import WANTED_VMS
 PLATFORM_STRETCH = "Debian GNU/Linux 9 (stretch)"
 PLATFORM_BUSTER = "Debian GNU/Linux 10 (buster)"
 
+FPF_APT_SOURCES_STRETCH = "deb [arch=amd64] https://apt-test-qubes.freedom.press stretch main"
+FPF_APT_SOURCES_BUSTER = "deb [arch=amd64] https://apt-test-qubes.freedom.press buster main"
+APT_SOURCES_FILE = "/etc/apt/sources.list.d/securedrop_workstation.list"
+
 
 class SD_VM_Platform_Tests(unittest.TestCase):
     def setUp(self):
@@ -42,6 +46,27 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             self.assertEqual(platform, PLATFORM_STRETCH)
         else:
             self.assertEqual(platform, PLATFORM_BUSTER)
+
+    def _validate_apt_sources(self, vm):
+        """
+        Asserts that the given AppVM has the proper apt sources list in
+        /etc/apt/sources.list.d/securedrop_workstation.list
+        """
+
+        # sd-whonix does not use the fpf-apt-test-repo
+        if vm.name in ["sd-whonix"]:
+            pass
+        else:
+            cmd = "cat {}".format(APT_SOURCES_FILE)
+            stdout, stderr = vm.run(cmd)
+            contents = stdout.decode("utf-8").rstrip("\n")
+
+            if vm.name in ["sd-proxy"]:
+                self.assertTrue(FPF_APT_SOURCES_STRETCH in contents)
+                self.assertTrue(FPF_APT_SOURCES_BUSTER not in contents)
+            else:
+                self.assertTrue(FPF_APT_SOURCES_BUSTER in contents)
+                self.assertTrue(FPF_APT_SOURCES_STRETCH not in contents)
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
@@ -162,6 +187,18 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             wanted_template = "fedora-30"
             found_template = self.app.domains[vm].template.name
             self.assertEqual(wanted_template, found_template)
+
+    def test_all_sd_vm_apt_sources(self):
+        """
+        Test all VMs fpf apt source list iteratively.
+
+        Due to for-loop implementation, the first failure will stop the test.
+        Therefore, even if multiple VMs are NOT running a supported platform,
+        only a single failure will be reported.
+        """
+        for vm_name in WANTED_VMS:
+            vm = self.app.domains[vm_name]
+            self._validate_apt_sources(vm)
 
 
 def load_tests(loader, tests, pattern):
