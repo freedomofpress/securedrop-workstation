@@ -132,17 +132,19 @@ Qubes provisioning is handled by Salt on `dom0`, so this project must be copied 
 
 That process is a little tricky, but here's one way to do it: assuming this code is checked out in your `sd-dev` VM at `/home/user/projects/securedrop-workstation`, run the following in `dom0`:
 
-    qvm-run --pass-io sd-dev 'tar -c -C /home/user/projects securedrop-workstation' | tar xvf -
+    qvm-run --pass-io sd-dev 'tar -c -C /home/user/projects/ securedrop-workstation' | tar xvf -
 
+(Be sure to include the space after `/home/user/projects/`.)
 After that initial manual step, the code in your development VM may be copied into place on `dom0` by setting the `SECUREDROP_DEV_VM` and `SECUREDROP_DEV_DIR` environmental variables to reflect the VM and directory to which you've cloned this repo, and running `make clone` from the root of the project on `dom0`:
 
 ```
-export SECUREDROP_DEV_VM=sd-dev    # set to your dev VM
-export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory
-make clone
+[dom0]$ export SECUREDROP_DEV_VM=sd-dev    # set to your dev VM
+[dom0]$ export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory
+[dom0]$ cd ~/securedrop-workstation/
+[dom0]$ make clone    # copy repo to dom0
 ```
 
-If you plan to work on the [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) code, also run:
+If you plan to work on the [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) code, also run this command in `dom0`:
 
 ```
 qvm-tags sd-dev add sd-client
