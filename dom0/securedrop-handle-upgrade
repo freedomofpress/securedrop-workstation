@@ -47,8 +47,8 @@ if [[ $TASK == "prepare" ]]; then
 		fi
 	fi
 
-    # For the SDW Whonix VMs, shut them down, so we can upate the TemplateVM settings.
-    # We shut down sd-proxy first, since its netvm is sd-whonix, which won't
+    # For Whonix VMs, shut them down, so we can upate the TemplateVM settings.
+    # We shut down sd-proxy before sd-whonix, since its netvm is sd-whonix, which won't
     # shutdown if a client is connected.
 	if qvm-check --quiet sd-proxy; then
 		BASE_TEMPLATE=$(qvm-prefs sd-proxy template)
@@ -61,6 +61,16 @@ if [[ $TASK == "prepare" ]]; then
 		BASE_TEMPLATE=$(qvm-prefs sd-whonix template)
 		if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
 			qvm-shutdown --wait sd-whonix
+		fi
+	fi
+
+    # Kill sys-whonix, to make sure connected clients don't prevent shutdown.
+	if qvm-check --quiet sys-whonix; then
+		BASE_TEMPLATE=$(qvm-prefs sys-whonix template)
+		if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
+            if qvm-check --quiet --running sys-whonix; then
+			    qvm-kill sys-whonix
+            fi
 		fi
 	fi
 

@@ -8,6 +8,7 @@ base:
     - sd-workstation-template
     - sd-upgrade-templates
     - sd-dom0-qvm-rpc
+    - sd-sys-whonix-vms
     - sd-export
     - sd-gpg
     - sd-proxy
