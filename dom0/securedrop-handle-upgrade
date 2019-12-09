@@ -59,7 +59,7 @@ if [[ $TASK == "prepare" ]]; then
 
 	if qvm-check --quiet sd-whonix; then
 		BASE_TEMPLATE=$(qvm-prefs sd-whonix template)
-		if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
+		if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
 			qvm-shutdown --wait sd-whonix
 		fi
 	fi

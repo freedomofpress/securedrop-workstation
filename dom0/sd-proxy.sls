@@ -11,6 +11,7 @@
 
 include:
   - sd-whonix
+  - sd-upgrade-templates
 
 sd-proxy-template:
   qvm.vm:
