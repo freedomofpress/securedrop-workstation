@@ -12,88 +12,88 @@ TASK=${1:-default}
 # 2. The AppVM must not be a DispVM template that used as the default DispVM
 #    for an AppVM, nor the system default DispVM.
 if [[ $TASK == "prepare" ]]; then
-	# sd-svs, we simply shutdown the machine as we want to preserve the data
-	if qvm-check sd-svs --quiet; then
-		BASE_TEMPLATE=$(qvm-prefs sd-svs template)
-		if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
-			if qvm-check --running sd-svs; then
-				qvm-shutdown --wait sd-svs
-			fi
-		fi
-	fi
+    # sd-svs, we simply shutdown the machine as we want to preserve the data
+    if qvm-check sd-svs --quiet; then
+        BASE_TEMPLATE=$(qvm-prefs sd-svs template)
+        if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
+            if qvm-check --running sd-svs; then
+                qvm-shutdown --wait sd-svs
+            fi
+        fi
+    fi
 
-	# For sd-svs-disp and sd-export-usb-dvm, DispVM templates. We can delete both
-	# VMs since they contain no persistent data. The installer will re-create them
-	# as part of the provisioning process.
-	# We set the default DispVM to empty string to ensure nothing is opened in an
-	# insecure (unmanaged or not yet updated) or networked vm, until the
-	# provisioning process runs again and sets that value to sd-svs-disp
-	if qvm-check --quiet sd-svs-disp; then
-		BASE_TEMPLATE=$(qvm-prefs sd-svs-disp template)
-		if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
-			qubes-prefs default_dispvm ''
-			qvm-shutdown --wait sd-svs-disp
-			qvm-remove -f sd-svs-disp
-		fi
-	fi
+    # For sd-svs-disp and sd-export-usb-dvm, DispVM templates. We can delete both
+    # VMs since they contain no persistent data. The installer will re-create them
+    # as part of the provisioning process.
+    # We set the default DispVM to empty string to ensure nothing is opened in an
+    # insecure (unmanaged or not yet updated) or networked vm, until the
+    # provisioning process runs again and sets that value to sd-svs-disp
+    if qvm-check --quiet sd-svs-disp; then
+        BASE_TEMPLATE=$(qvm-prefs sd-svs-disp template)
+        if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
+            qubes-prefs default_dispvm ''
+            qvm-shutdown --wait sd-svs-disp
+            qvm-remove -f sd-svs-disp
+        fi
+    fi
 
-	if qvm-check --quiet sd-export-usb; then
-		BASE_TEMPLATE=$(qvm-prefs sd-export-usb-dvm template)
-		if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
-			qvm-shutdown --wait sd-export-usb
-			qvm-shutdown --wait sd-export-usb-dvm
-			qvm-remove -f sd-export-usb
-			qvm-remove -f sd-export-usb-dvm
-		fi
-	fi
+    if qvm-check --quiet sd-export-usb; then
+        BASE_TEMPLATE=$(qvm-prefs sd-export-usb-dvm template)
+        if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
+            qvm-shutdown --wait sd-export-usb
+            qvm-shutdown --wait sd-export-usb-dvm
+            qvm-remove -f sd-export-usb
+            qvm-remove -f sd-export-usb-dvm
+        fi
+    fi
 
     # For Whonix VMs, shut them down, so we can upate the TemplateVM settings.
     # We shut down sd-proxy before sd-whonix, since its netvm is sd-whonix, which won't
     # shutdown if a client is connected.
-	if qvm-check --quiet sd-proxy; then
-		BASE_TEMPLATE=$(qvm-prefs sd-proxy template)
-		if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
-			qvm-shutdown --wait sd-proxy
-		fi
-	fi
+    if qvm-check --quiet sd-proxy; then
+        BASE_TEMPLATE=$(qvm-prefs sd-proxy template)
+        if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
+            qvm-shutdown --wait sd-proxy
+        fi
+    fi
 
-	if qvm-check --quiet sd-whonix; then
-		BASE_TEMPLATE=$(qvm-prefs sd-whonix template)
-		if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
-			qvm-shutdown --wait sd-whonix
-		fi
-	fi
+    if qvm-check --quiet sd-whonix; then
+        BASE_TEMPLATE=$(qvm-prefs sd-whonix template)
+        if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
+            qvm-shutdown --wait sd-whonix
+        fi
+    fi
 
     # Kill sys-whonix, to make sure connected clients don't prevent shutdown.
-	if qvm-check --quiet sys-whonix; then
-		BASE_TEMPLATE=$(qvm-prefs sys-whonix template)
-		if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
+    if qvm-check --quiet sys-whonix; then
+        BASE_TEMPLATE=$(qvm-prefs sys-whonix template)
+        if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
             if qvm-check --quiet --running sys-whonix; then
-			    qvm-kill sys-whonix
+                qvm-kill sys-whonix
             fi
-		fi
-	fi
+        fi
+    fi
 
-	# Finally for sd-gpg, we simply shutdown the machine
-	if qvm-check --quiet sd-gpg; then
-		BASE_TEMPLATE=$(qvm-prefs sd-gpg template)
-		if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
-			qvm-shutdown --wait sd-gpg
-		fi
-	fi
+    # Finally for sd-gpg, we simply shutdown the machine
+    if qvm-check --quiet sd-gpg; then
+        BASE_TEMPLATE=$(qvm-prefs sd-gpg template)
+        if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
+            qvm-shutdown --wait sd-gpg
+        fi
+    fi
 elif [[ $TASK == "remove" ]]; then
-	# For each template, ensure the TemplateVM exists, that it is shut down
-	# before deleting it.
-	for template in sd-svs-template sd-svs-disp-template sd-export-template sd-proxy-template
-	do
-		if qvm-check "${template}" --quiet; then
-			if qvm-check --running "${template}"; then
-				qvm-shutdown --wait "${template}"
-			fi
-			qvm-remove -f "${template}"
-		fi
-	done
+    # For each template, ensure the TemplateVM exists, that it is shut down
+    # before deleting it.
+    for template in sd-svs-template sd-svs-disp-template sd-export-template sd-proxy-template
+    do
+        if qvm-check "${template}" --quiet; then
+            if qvm-check --running "${template}"; then
+                qvm-shutdown --wait "${template}"
+            fi
+            qvm-remove -f "${template}"
+        fi
+    done
 else
-	echo "Please specify prepare or remove"
-	exit 1
+    echo "Please specify prepare or remove"
+    exit 1
 fi
