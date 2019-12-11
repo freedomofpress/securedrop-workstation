@@ -3,7 +3,7 @@
 
 set-fedora-as-default-dispvm:
   cmd.run:
-    - name: qubes-prefs default_dispvm fedora-30-dvm
+    - name: qvm-check fedora-30-dvm && qubes-prefs default_dispvm fedora-30-dvm || qubes-prefs default_dispvm ''
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
