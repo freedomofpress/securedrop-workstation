@@ -70,6 +70,8 @@ if [[ $TASK == "prepare" ]]; then
         if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
             if qvm-check --quiet --running sys-whonix; then
                 qvm-kill sys-whonix
+                # Wait for machine to stop fully, since qvm-kill doesn't block
+                sleep 5
             fi
         fi
     fi
