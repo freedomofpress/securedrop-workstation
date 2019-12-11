@@ -8,6 +8,7 @@ base:
     - sd-workstation-template
     - sd-upgrade-templates
     - sd-dom0-qvm-rpc
+    - sd-sys-whonix-vms
     - sd-export
     - sd-gpg
     - sd-proxy
@@ -19,7 +20,7 @@ base:
     - sd-export-files
   sd-gpg:
     - sd-gpg-files
-  sd-proxy-template:
+  sd-proxy-buster-template:
     - sd-proxy-template-files
   sd-svs:
     - sd-svs-config
