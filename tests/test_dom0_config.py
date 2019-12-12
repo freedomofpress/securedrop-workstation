@@ -6,6 +6,7 @@ STRETCH_TEMPLATES = [
     "sd-svs-disp-template",
     "sd-export-template",
     "sd-proxy-template",
+    "securedrop-workstation"
 ]
 
 VMS_TO_UPDATE = [
@@ -29,9 +30,10 @@ class SD_Qubes_Dom0_Templates_Tests(unittest.TestCase):
 
     def test_Templates_cleaned_up(self):
         cmd = ["qvm-ls", "--raw-list"]
-        contents = subprocess.check_output(cmd).decode("utf-8").strip()
+        contents = subprocess.check_output(cmd).decode("utf-8").split()
         for template in STRETCH_TEMPLATES:
-            self.assertTrue(template not in contents)
+            for line in contents:
+                self.assertFalse(template == line)
 
     def test_vms_to_update_are_tagged(self):
         cmd = ["qvm-ls",
