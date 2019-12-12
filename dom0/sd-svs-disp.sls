@@ -20,6 +20,10 @@ sd-svs-disp-template:
     - clone:
       - source: securedrop-workstation-buster
       - label: green
+    - tags:
+      - add:
+        - sd-workstation
+        - sd-workstation-updates
     - require:
       - sls: sd-workstation-template
       - sls: sd-upgrade-templates

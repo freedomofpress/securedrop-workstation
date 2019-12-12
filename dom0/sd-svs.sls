@@ -21,6 +21,7 @@ sd-svs-template:
       - add:
         - sd-workstation
         - sd-buster
+        - sd-workstation-updates
     - require:
       - sls: sd-workstation-template
       - sls: sd-upgrade-templates

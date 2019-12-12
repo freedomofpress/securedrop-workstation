@@ -8,6 +8,16 @@ STRETCH_TEMPLATES = [
     "sd-proxy-template",
 ]
 
+VMS_TO_UPDATE = [
+    "sd-svs-buster-template",
+    "sd-svs-disp-buster-template",
+    "sd-proxy-buster-template",
+    "sd-export-buster-template",
+    "whonix-ws-15",
+    "whonix-gw-15",
+    "securedrop-workstation-buster"
+]
+
 
 class SD_Qubes_Dom0_Templates_Tests(unittest.TestCase):
 
@@ -22,6 +32,15 @@ class SD_Qubes_Dom0_Templates_Tests(unittest.TestCase):
         contents = subprocess.check_output(cmd).decode("utf-8").strip()
         for template in STRETCH_TEMPLATES:
             self.assertTrue(template not in contents)
+
+    def test_vms_to_update_are_tagged(self):
+        cmd = ["qvm-ls",
+               "--tags", "sd-workstation-updates",
+               "--raw-data",
+               "--fields", "NAME"]
+        contents = subprocess.check_output(cmd).decode("utf-8").strip()
+        for template in VMS_TO_UPDATE:
+            self.assertTrue(template in contents)
 
 
 def load_tests(loader, tests, pattern):

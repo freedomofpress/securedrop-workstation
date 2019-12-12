@@ -145,3 +145,17 @@ dom0-login-autostart-script:
     - user: root
     - group: root
     - mode: 755
+
+dom0-tag-whonix-ws-15:
+  qvm.vm:
+    - name: whonix-ws-15
+    - tags:
+      - add:
+        - sd-workstation-updates
+
+dom0-tag-whonix-gw-15:
+  qvm.vm:
+    - name: whonix-gw-15
+    - tags:
+      - add:
+        - sd-workstation-updates
