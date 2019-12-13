@@ -32,7 +32,7 @@ function securedrop-update-feedback() {
 }
 
 function get_sdw_target_vms() {
-    qvm-ls --tags sd-workstation --raw-data --fields NAME,CLASS \
+    qvm-ls --tags sd-workstation-updates --raw-data --fields NAME,CLASS \
         | perl -F'\|' -lanE 'say $F[0] if $F[1] eq "TemplateVM"' \
         | perl -npE 's/\n/,/g' \
         | perl -npE 's/,$//'

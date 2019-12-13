@@ -17,6 +17,7 @@ sd-export-template:
     - tags:
       - add:
         - sd-workstation
+        - sd-workstation-updates
     - require:
       - sls: sd-workstation-template
       - sls: sd-upgrade-templates

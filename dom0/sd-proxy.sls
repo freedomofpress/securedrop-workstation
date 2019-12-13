@@ -23,6 +23,7 @@ sd-proxy-template:
       - add:
         - sd-workstation
         - sd-buster
+        - sd-workstation-updates
 
 sd-proxy:
   qvm.vm:

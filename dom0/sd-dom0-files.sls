@@ -49,12 +49,20 @@ dom0-workstation-rpm-repo:
     - require:
       - file: dom0-rpm-test-key
 
+dom0-remove-securedrop-workstation-stretch-template:
+  pkg.removed:
+    - pkgs:
+      - qubes-template-securedrop-workstation
+    - require:
+      - file: dom0-workstation-rpm-repo
+
 dom0-install-securedrop-workstation-template:
   pkg.installed:
     - pkgs:
       - qubes-template-securedrop-workstation-buster
     - require:
       - file: dom0-workstation-rpm-repo
+      - pkg: dom0-remove-securedrop-workstation-stretch-template
 
 # Copy script to system location so admins can run ad-hoc
 dom0-update-securedrop-script:
@@ -145,3 +153,17 @@ dom0-login-autostart-script:
     - user: root
     - group: root
     - mode: 755
+
+dom0-tag-whonix-ws-15:
+  qvm.vm:
+    - name: whonix-ws-15
+    - tags:
+      - add:
+        - sd-workstation-updates
+
+dom0-tag-whonix-gw-15:
+  qvm.vm:
+    - name: whonix-gw-15
+    - tags:
+      - add:
+        - sd-workstation-updates
