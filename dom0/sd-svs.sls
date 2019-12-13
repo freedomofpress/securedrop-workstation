@@ -10,6 +10,7 @@
 ##
 include:
   - sd-workstation-template
+  - sd-upgrade-templates
 
 sd-svs-template:
   qvm.vm:

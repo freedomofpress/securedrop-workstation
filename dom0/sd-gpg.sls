@@ -11,6 +11,7 @@
 
 include:
   - sd-workstation-template
+  - sd-upgrade-templates
 
 sd-gpg:
   qvm.vm:
