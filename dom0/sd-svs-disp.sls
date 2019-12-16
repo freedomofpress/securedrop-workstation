@@ -13,6 +13,7 @@
 
 include:
   - sd-workstation-template
+  - sd-upgrade-templates
 
 sd-svs-disp-template:
   qvm.vm:

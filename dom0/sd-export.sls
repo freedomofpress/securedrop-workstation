@@ -7,6 +7,7 @@
 ##
 include:
   - sd-workstation-template
+  - sd-upgrade-templates
 
 sd-export-template:
   qvm.vm:
