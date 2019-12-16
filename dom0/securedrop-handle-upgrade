@@ -57,9 +57,13 @@ if [[ $TASK == "prepare" ]]; then
         fi
     fi
 
+    # for sd-whonix, we must make sure sd-proxy is shut down as well as sd-whonix
+    # is netvm for sd-proxy. In the unlikely even proxy is updated but whonix
+    # is not, we want to ensure a smooth upgrade.
     if qvm-check --quiet sd-whonix; then
         BASE_TEMPLATE=$(qvm-prefs sd-whonix template)
         if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
+            qvm-shutdown --wait sd-proxy
             qvm-shutdown --wait sd-whonix
         fi
     fi

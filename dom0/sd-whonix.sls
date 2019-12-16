@@ -14,6 +14,7 @@ include:
   # The anon-whoni config pulls in sys-whonix and sys-firewall,
   # as well as ensures the latest versions of Whonix are installed.
   - qvm.anon-whonix
+  - sd-upgrade-templates
 
 sd-whonix:
   qvm.vm:
@@ -33,3 +34,4 @@ sd-whonix:
         - sd-buster
     - require:
       - sls: qvm.anon-whonix
+      - sls: sd-upgrade-templates
