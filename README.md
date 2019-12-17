@@ -567,6 +567,7 @@ The *Display VM* (sd-svs-disp) is disposable, does not have network access, and 
 * An adversary can read the decrypted submission.
 * An adversary can attempt to elevate their privileges and escape the VM.
 * An adversary can attempt to communicate through a side channel to another VM or device in the *SecureDrop Workstation's* environment.
+* An adversary can exhaust storage in the centralized logging VM (`sd-log`).
 
 #### What Compromise of the *Proxy VM* (`sd-proxy`) Can Achieve
 
@@ -576,6 +577,7 @@ The *Display VM* (sd-svs-disp) is disposable, does not have network access, and 
   * Access encrypted messages and submissions.
   * Access plaintext journalist passwords to the *Journalist Interface*.
 * An adversary can attempt to elevate their privileges and escape the VM.
+* An adversary can exhaust storage in the centralized logging VM (`sd-log`).
 
 #### What Compromise of the *Whonix Gateway VM* (`sd-whonix`) Can Achieve
 
@@ -593,6 +595,7 @@ The *SVS VM* is where securedrop-client resides. It does not have network access
 * An adversary can decrypt arbitrary encrypted submissions.
 * An adversary can interact with the SecureDrop *Journalist Interface* or modify SecureDrop client code.
 * An adversary can attempt to elevate their privileges and escape the VM.
+* An adversary can exhaust storage in the centralized logging VM (`sd-log`).
 
 #### What Compromise of the *GPG VM* (`sd-gpg`) Can Achieve
 
