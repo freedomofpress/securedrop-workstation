@@ -6,6 +6,7 @@ include:
   # The anon-whoni config pulls in sys-whonix and sys-firewall,
   # as well as ensures the latest versions of Whonix are installed.
   - qvm.anon-whonix
+  - sd-upgrade-templates
 
 # The Qubes logic is too polite about enforcing template
 # settings, using "present" rather than "prefs". Below
@@ -17,6 +18,7 @@ sys-whonix-template-config:
       - template: whonix-gw-15
     - require:
       - sls: qvm.anon-whonix
+      - sls: sd-upgrade-templates
 
 anon-whonix-template-config:
   qvm.vm:
