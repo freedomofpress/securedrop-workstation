@@ -56,5 +56,5 @@ install-securedrop-proxy-yaml-config:
     - source: salt://sd/sd-proxy/sd-proxy.yaml
     - template: jinja
     - context:
-        hostname: {{ d.hidserv.hostname}}
+        hostname: {{ d.hidserv.hostname }}
     - mode: 0644
