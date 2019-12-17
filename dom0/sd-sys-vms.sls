@@ -27,7 +27,7 @@ set-fedora-default-template-version:
       - pkg: dom0-install-fedora-template
       - sls: qvm.default-dispvm
 
-{% for sys_vm in ['sys-usb', 'sys-net', 'sys-firewall'] %}
+{% for sys_vm in ['sys-usb', 'sys-net', 'sys-firewall', 'default-mgmt-dvm'] %}
 {% if salt['cmd.shell']('qvm-prefs '+sys_vm+' template') != sd_supported_fedora_version %}
 sd-{{ sys_vm }}-fedora-version-halt:
   qvm.kill:

@@ -28,6 +28,7 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
             "sys-firewall",
             "sys-net",
             "sys-usb",
+            "default-mgmt-dvm",
         ]
         for sys_vm in sys_vms:
             vm = self.app.domains[sys_vm]
