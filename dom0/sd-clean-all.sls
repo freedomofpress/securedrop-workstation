@@ -18,6 +18,8 @@ remove-dom0-sdw-config-files:
       - /usr/share/securedrop/icons
       - /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
       - /usr/bin/securedrop-login
+      - /etc/qubes-rpc/policy/securedrop.Log
+      - /etc/qubes-rpc/policy/securedrop.Proxy
 
 sd-cleanup-sys-firewall:
   cmd.run:

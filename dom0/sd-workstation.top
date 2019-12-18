@@ -16,6 +16,7 @@ base:
     - sd-svs
     - sd-whonix
     - sd-remove-unused-templates
+    - sd-log
   sd-export-buster-template:
     - sd-export-files
   sd-gpg:
@@ -32,6 +33,8 @@ base:
     - sd-sys-firewall-files
   sd-whonix:
     - sd-whonix-hidserv-key
+  sd-log-buster-template:
+    - sd-log-template-files
   securedrop-workstation-buster:
     - sd-workstation-template-files
 

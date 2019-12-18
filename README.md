@@ -72,6 +72,7 @@ Currently, the following VMs are provisioned:
 - `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the *Journalist Interface*.
 - `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
 - `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files.
+- `sd-log` is an AppVM used for centralized logging - logs will appear in `~/QubesIncomingLogs` from each AppVM using the centralized logging service.
 
 Submissions are processed in the following steps:
 
@@ -566,6 +567,7 @@ The *Display VM* (sd-svs-disp) is disposable, does not have network access, and 
 * An adversary can read the decrypted submission.
 * An adversary can attempt to elevate their privileges and escape the VM.
 * An adversary can attempt to communicate through a side channel to another VM or device in the *SecureDrop Workstation's* environment.
+* An adversary can exhaust storage in the centralized logging VM (`sd-log`).
 
 #### What Compromise of the *Proxy VM* (`sd-proxy`) Can Achieve
 
@@ -575,6 +577,7 @@ The *Display VM* (sd-svs-disp) is disposable, does not have network access, and 
   * Access encrypted messages and submissions.
   * Access plaintext journalist passwords to the *Journalist Interface*.
 * An adversary can attempt to elevate their privileges and escape the VM.
+* An adversary can exhaust storage in the centralized logging VM (`sd-log`).
 
 #### What Compromise of the *Whonix Gateway VM* (`sd-whonix`) Can Achieve
 
@@ -592,6 +595,7 @@ The *SVS VM* is where securedrop-client resides. It does not have network access
 * An adversary can decrypt arbitrary encrypted submissions.
 * An adversary can interact with the SecureDrop *Journalist Interface* or modify SecureDrop client code.
 * An adversary can attempt to elevate their privileges and escape the VM.
+* An adversary can exhaust storage in the centralized logging VM (`sd-log`).
 
 #### What Compromise of the *GPG VM* (`sd-gpg`) Can Achieve
 
@@ -599,6 +603,14 @@ The *GPG VM* does not have network access, and the Qubes split-gpg mechanism res
 
 * An adversary can decrypt and encrypted message or submission.
 * An adversary can store and view any message that is being decrypted by the *SecureDrop Workstation*.
+* An adversary can attempt to elevate their privileges and escape the VM.
+
+#### What Compromise of the *Log VM* (`sd-log`) Can Achieve
+
+The *Log VM* does not have network access nor does it contain any other secrets.
+
+* An adversary can read log messages from any VM using the centralized logging service.
+* An adversary can tamper with log messages from any VM using the centralized logging service.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
 #### What Compromise of `dom0` Can Achieve

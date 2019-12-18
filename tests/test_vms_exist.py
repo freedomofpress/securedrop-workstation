@@ -102,6 +102,19 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_kernel(vm)
         self.assertTrue('sd-workstation' in vm.tags)
 
+    def test_sd_log_config(self):
+        vm = self.app.domains["sd-log"]
+        nvm = vm.netvm
+        self.assertTrue(nvm is None)
+        self.assertTrue(vm.template == "sd-log-buster-template")
+        self.assertTrue(vm.autostart is True)
+        self.assertFalse(vm.provides_network)
+        self.assertFalse(vm.template_for_dispvms)
+        self._check_kernel(vm)
+        self._check_service_running(vm, "paxctld")
+        self.assertFalse(vm.template_for_dispvms)
+        self.assertTrue('sd-workstation' in vm.tags)
+
     def test_sd_workstation_template(self):
         vm = self.app.domains["securedrop-workstation-buster"]
         nvm = vm.netvm
@@ -154,6 +167,14 @@ class SD_VM_Tests(unittest.TestCase):
         vm_type = vm.klass
         self.assertTrue(vm_type == "DispVM")
         self.assertTrue('sd-workstation' in vm.tags)
+        self._check_kernel(vm)
+
+    def sd_log_template(self):
+        vm = self.app.domains["sd-log-buster-template"]
+        nvm = vm.netvm
+        self.assertTrue(nvm is None)
+        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
 
 
