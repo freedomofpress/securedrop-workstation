@@ -6,7 +6,7 @@ from jinja2 import Template
 from base import SD_VM_Local_Test
 
 
-def skip_if_v3_is_missing():
+def v2_onion_services():
     """
     Returns True if v3 address is not setup
     """
@@ -38,7 +38,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
 
             self.assertFileHasLine("/usr/local/etc/torrc.d/50_user.conf", line)
 
-    @unittest.skipIf(skip_if_v3_is_missing(), "Onion v3 address is not setup")
+    @unittest.skipIf(v2_onion_services(), "Onion v3 address is not setup")
     def test_v3_auth_private_file(self):
         with open("config.json") as c:
             config = json.load(c)

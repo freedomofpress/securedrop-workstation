@@ -25,6 +25,6 @@ install-sd-whonix-tor-private-key:
         hostname: {{ hostname_without_onion }}
         key: {{ d.hidserv.key }}
     - mode: 0600
-    - user: root
-    - group: root
+    - user: debian-tor
+    - group: debian-tor
 {% endif %}
