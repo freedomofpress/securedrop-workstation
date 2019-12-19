@@ -66,7 +66,7 @@ class SD_VM_Local_Test(unittest.TestCase):
 
     def _get_file_contents(self, path):
         cmd = ["qvm-run", "-p", self.vm_name,
-               "/bin/cat {}".format(path)]
+               "sudo /bin/cat {}".format(path)]
         contents = subprocess.check_output(cmd).decode("utf-8")
         return contents
 

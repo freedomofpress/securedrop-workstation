@@ -2,7 +2,20 @@ import unittest
 import json
 from jinja2 import Template
 
+
 from base import SD_VM_Local_Test
+
+
+def v2_onion_services():
+    """
+    Returns True if v3 address is not setup
+    """
+    with open("config.json") as c:
+        config = json.load(c)
+        if len(config["hidserv"]["hostname"]) == 22:
+            return True
+        else:
+            return False
 
 
 class SD_Whonix_Tests(SD_VM_Local_Test):
@@ -14,11 +27,28 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
     def test_accept_sd_xfer_extracted_file(self):
         with open("config.json") as c:
             config = json.load(c)
-            t = Template("HidServAuth {{ d.hidserv.hostname }}"
-                         " {{ d.hidserv.key }}")
-            line = t.render(d=config)
+            if len(config["hidserv"]["hostname"]) == 22:
+                t = Template(
+                    "HidServAuth {{ d.hidserv.hostname }}" " {{ d.hidserv.key }}"
+                )
+                line = t.render(d=config)
+
+            else:
+                line = "ClientOnionAuthDir /var/lib/tor/keys"
 
             self.assertFileHasLine("/usr/local/etc/torrc.d/50_user.conf", line)
+
+    @unittest.skipIf(v2_onion_services(), "Onion v3 address is not setup")
+    def test_v3_auth_private_file(self):
+        with open("config.json") as c:
+            config = json.load(c)
+            hostname = config["hidserv"]["hostname"].split(".")[0]
+            keyvalue = config["hidserv"]["key"]
+            line = "{0}:descriptor:x25519:{1}".format(hostname, keyvalue)
+
+            self.assertFileHasLine(
+                "/var/lib/tor/keys/app-journalist.auth_private", line
+            )
 
     def test_sd_whonix_repo_enabled(self):
         """
