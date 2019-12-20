@@ -29,7 +29,6 @@ class SDWConfigValidator(object):
         self.confirm_config_file_exists()
         self.config = self.read_config_file()
         self.confirm_onion_config_valid()
-        self.confirm_usb_export_device()
         self.confirm_submission_privkey_file()
         self.confirm_submission_privkey_fingerprint()
 
@@ -72,12 +71,6 @@ class SDWConfigValidator(object):
         assert "hidserv" in self.config
         assert "key" in self.config["hidserv"]
         assert re.match(TOR_V2_AUTH_COOKIE_REGEX, self.config["hidserv"]["key"])
-
-    def confirm_usb_export_device(self):
-        assert "usb" in self.config
-        assert "device" in self.config["usb"]
-        usb_config = self.config["usb"]["device"]
-        assert usb_config.startswith("sys-usb")
 
     def confirm_submission_privkey_file(self):
         secret_key_filename = "sd-journalist.sec"
