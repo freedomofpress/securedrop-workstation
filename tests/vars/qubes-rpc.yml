@@ -1,20 +1,20 @@
 - policy: ClipboardPaste
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: FeaturesRequest
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: Filecopy
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    sd-proxy $tag:sd-client allow
-    $anyvm $tag:sd-workstation deny
+    sd-proxy @tag:sd-client allow
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: GetDate
@@ -49,15 +49,15 @@
 - policy: Gpg
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $tag:sd-client sd-gpg allow
-    $anyvm $tag:sd-workstation deny
+    @tag:sd-client sd-gpg allow
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: GpgImportKey
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $tag:sd-client sd-gpg allow
-    $anyvm $tag:sd-workstation deny
+    @tag:sd-client sd-gpg allow
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: InputKeyboard
@@ -90,21 +90,21 @@
 - policy: OpenInVM
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $tag:sd-client $dispvm:sd-svs-disp allow
-    $tag:sd-client sd-export-usb allow
-    $anyvm $tag:sd-workstation deny
+    @tag:sd-client @dispvm:sd-svs-disp allow
+    @tag:sd-client sd-export-usb allow
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: OpenURL
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: PdfConvert
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: ReceiveUpdates
@@ -119,7 +119,7 @@
 - policy: StartApp
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: SyncAppMenus
@@ -155,19 +155,19 @@
 - policy: USB
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: VMRootShell
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: VMShell
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    $anyvm $tag:sd-workstation deny
+    @anyvm @tag:sd-workstation deny
     ### END securedrop-workstation ###
 
 - policy: WindowIconUpdater

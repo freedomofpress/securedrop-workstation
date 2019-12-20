@@ -49,4 +49,4 @@ sd-proxy-dom0-securedrop.Proxy:
     - name: /etc/qubes-rpc/policy/securedrop.Proxy
     - text: |
         sd-svs sd-proxy allow
-        $anyvm $anyvm deny
+        @anyvm @anyvm deny
