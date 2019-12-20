@@ -84,9 +84,10 @@ remove-sd-export: assert-dom0 ## Destroys SD EXPORT VMs
 remove-sd-log: assert-dom0 ## Destroys SD logging VM
 	@./scripts/destroy-vm sd-log
 
-clean: assert-dom0 prep-salt destroy-all ## Destroys all SD VMs
+clean: assert-dom0 prep-salt ## Destroys all SD VMs
 	sudo qubesctl --show-output state.sls sd-clean-all
 	sudo dnf -y -q remove securedrop-workstation-dom0-config 2>/dev/null || true
+	$(MAKE) destroy-all
 	$(MAKE) clean-salt
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
@@ -132,7 +133,6 @@ prep-dom0: prep-salt # Copies dom0 config files for VM updates
 	sudo qubesctl --show-output --targets dom0 state.highstate
 
 destroy-all: ## Destroys all VMs managed by Workstation salt config
-	qubes-prefs default_dispvm fedora-30-dvm
 	./scripts/destroy-vm --all
 
 .PHONY: update-pip-requirements
