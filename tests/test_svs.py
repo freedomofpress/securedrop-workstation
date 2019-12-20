@@ -44,6 +44,11 @@ class SD_SVS_Tests(SD_VM_Local_Test):
         line = '{{"journalist_key_fingerprint": "{}"}}'.format(submission_fpr)
         self.assertFileHasLine("/home/user/.securedrop_client/config.json", line)
 
+    def test_sd_client_apparmor(self):
+        cmd = "sudo aa-status --json"
+        results = json.loads(self._run(cmd))
+        self.assertTrue(results['profiles']['/usr/bin/securedrop-client'] == "enforce")
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_SVS_Tests)

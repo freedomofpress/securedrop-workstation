@@ -4,7 +4,7 @@ from qubesadmin import Qubes
 from base import WANTED_VMS
 
 
-EXPECTED_KERNEL_VERSION = "4.14.151-grsec-workstation"
+EXPECTED_KERNEL_VERSION = "4.14.158-grsec-workstation"
 
 
 class SD_VM_Tests(unittest.TestCase):
