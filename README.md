@@ -109,8 +109,7 @@ After installing Qubes, you must update both dom0 and the base templates to incl
 ```
 sudo qubes-dom0-update
 ```
-
-Finally, update all existing TemplateVMs:
+After dom0 updates complete, reboot your computer to ensure the updates have been properly applied. Finally, update all existing TemplateVMs:
 
 ```
 qubes-update-gui
