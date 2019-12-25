@@ -82,6 +82,17 @@ dom0-update-securedrop-script-cron:
     - name: /etc/cron.daily/securedrop-update-cron
     - target: /usr/bin/securedrop-update
 
+# Copy uptime notification script into cron.hourly
+dom0-uptime-notify-securedrop-script-cron:
+  file.managed:
+    - name: /etc/cron.hourly/securedrop-uptime-notify
+    - source: salt://securedrop-uptime-notify
+    - user: root
+    - group: root
+    - mode: 755
+    - require:
+      - file: dom0-securedrop-icon
+
 # Create directory for storing SecureDrop-specific icons
 dom0-securedrop-icons-directory:
   file.directory:
