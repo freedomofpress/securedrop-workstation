@@ -1,9 +1,9 @@
-import imp
 import json
 import os
 import pytest
 import subprocess
 from datetime import datetime
+from importlib.machinery import SourceFileLoader
 from tempfile import TemporaryDirectory
 from unittest import mock
 from unittest.mock import call
@@ -12,7 +12,7 @@ relpath_updater_script = "../sdw_updater_gui/Updater.py"
 path_to_script = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), relpath_updater_script
 )
-updater = imp.load_source("Updater", path_to_script)
+updater = SourceFileLoader("Updater", path_to_script).load_module()
 from Updater import UpdateStatus  # noqa: E402
 from Updater import current_templates  # noqa: E402
 

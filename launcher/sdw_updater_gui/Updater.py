@@ -7,6 +7,7 @@ is opened by the user when clicking on the desktop, opening sdw-laucher.py
 from the parent directory.
 """
 
+import fcntl
 import json
 import logging
 import os
@@ -15,10 +16,12 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+DEFAULT_HOME = ".securedrop_launcher"
 FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-status"
 FLAG_FILE_LAST_UPDATED_SD_APP = "/home/user/.securedrop_client/sdw-last-updated"
-FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-status"
-FLAG_FILE_LAST_UPDATED_DOM0 = ".securedrop_launcher/sdw-last-updated"
+FLAG_FILE_STATUS_DOM0 = os.path.join(DEFAULT_HOME, "sdw-update-status")
+FLAG_FILE_LAST_UPDATED_DOM0 = os.path.join(DEFAULT_HOME, "sdw-last-updated")
+LOCK_FILE = os.path.join("/run/user", str(os.getuid()), "sdw-launcher.lock")
 
 sdlog = logging.getLogger(__name__)
 
@@ -88,6 +91,32 @@ def apply_updates(vms):
         yield vm, progress_percentage, upgrade_results
 
     _shutdown_and_start_vms()
+
+
+def obtain_lock():
+    """
+    Obtain an exclusive lock to ensure that only one updater can run at a time,
+    and to inform other processes that it is running.
+    """
+    # Attempt to obtain a file handle for the lockfile
+    try:
+        lock_handle = open(LOCK_FILE, 'w')
+    except IOError:
+        sdlog.error("Error obtaining write access to lock file {}\n"
+                    "User may lack required permissions. Exiting."
+                    .format(LOCK_FILE))
+        return None
+
+    # Attempt to obtain an exlusive, nonblocking lock
+    try:
+        fcntl.lockf(lock_handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except IOError:
+        sdlog.error("Error obtaining lock on {}\n"
+                    "Launcher may already be running. Exiting."
+                    .format(LOCK_FILE))
+        return None
+
+    return lock_handle
 
 
 def _check_updates_dom0():
