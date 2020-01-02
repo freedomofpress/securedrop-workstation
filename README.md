@@ -395,7 +395,7 @@ Optionally you can use the `printer-test` device to send a printer test page and
 
 #### Create the transfer device
 
-You can find instructions to create a luks-encrypted transfer device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_device.html).
+You can find instructions to create a luks-encrypted transfer device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_and_export_device.html).
 
 #### Exporting
 
