@@ -122,9 +122,7 @@ flake8: ## Lints all Python files with flake8
 template: ## Builds securedrop-workstation Qube template RPM
 	./builder/build-workstation-template
 
-prep-dom0: prep-salt # Copies dom0 config files for VM updates
-	sudo qubesctl top.enable sd-vm-updates
-	sudo qubesctl top.enable sd-dom0-files
+prep-dom0: prep-salt # Copies dom0 config files
 	sudo qubesctl --show-output --targets dom0 state.highstate
 
 destroy-all: ## Destroys all VMs managed by Workstation salt config
