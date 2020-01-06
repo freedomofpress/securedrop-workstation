@@ -23,6 +23,7 @@ if [[ ! -d "$SDW_SALT_DIR" ]]; then
     sudo cp -r sd-workstation /srv/salt/sd
     sudo cp -r sys-firewall /srv/salt/sd
     sudo cp dom0/* /srv/salt/
+    sudo cp -r launcher /srv/salt/
 fi
 
 # Always copy secrets, these won't be configured as part

@@ -167,3 +167,28 @@ dom0-tag-whonix-gw-15:
     - tags:
       - add:
         - sd-workstation-updates
+
+dom0-securedrop-launcher-directory:
+  file.recurse:
+    - name: /opt/securedrop/launcher
+    - source: "salt://launcher"
+    - user: root
+    - group: root
+    - file_mode: 644
+    - dir_mode: 755
+
+dom0-securedrop-launcher-entrypoint-executable:
+  file.managed:
+    - name: /opt/securedrop/launcher/sdw-launcher.py
+    - user: root
+    - group: root
+    - mode: 755
+    - replace: false
+
+dom0-securedrop-launcher-desktop-shortcut:
+  file.managed:
+    - name: /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
+    - source: "salt://securedrop-launcher.desktop"
+    - user: {{ gui_user }}
+    - group: {{ gui_user }}
+    - mode: 755
