@@ -5,8 +5,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="securedrop-workstation-dom0-config",
-    version="0.0.1",
-    author="Kushal Das",
+    version="0.1.1",
+    author="SecureDrop Team",
     author_email="securedrop@freedom.press",
     description="SecureDrop Workstation",
     long_description=long_description,

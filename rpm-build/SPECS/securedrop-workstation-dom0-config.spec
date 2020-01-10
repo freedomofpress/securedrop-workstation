@@ -1,12 +1,12 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.0.1
+Version:	0.1.1
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.0.1.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.1.1.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -64,6 +64,9 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
+* Fri Jan 10 2020 redshiftzero <jen@freedom.press> - 0.1.1
+- First alpha release.
+
 * Fri Oct 26 2018 Kushal Das <kushal@freedom.press> - 0.0.1-1
 - First release
 
