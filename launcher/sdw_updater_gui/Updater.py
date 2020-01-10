@@ -30,14 +30,25 @@ current_templates = {
 }
 
 
-def check_all_updates():
+def check_all_updates(progress_callback=None):
     """
     Check for updates for all vms listed in current_templates above
     """
 
     update_results = {}
     sdlog.info("Checking for all updates")
+
+    progress_current = 0
+    progress_total = len(current_templates.keys())
+
     for vm in current_templates.keys():
+        # update the progressBar via callback method
+        if progress_callback:
+            sdlog.info(
+                "Updating {} of {}".format(progress_current + 1, progress_total)
+            )
+            progress_callback(int((progress_current / progress_total) * 100))
+            progress_current += 1
         update_results[vm] = check_updates(vm)
 
     return update_results
@@ -55,14 +66,24 @@ def check_updates(vm):
         return _check_updates_debian(vm)
 
 
-def apply_updates(vms):
+def apply_updates(vms, progress_callback=None):
     """
     Apply updates to the TemplateVMs of VM list specified in parameter
     """
     upgrade_results = {}
     sdlog.info("Applying all updates")
 
+    progress_current = 0
+    progress_total = len(vms)
+
     for vm in vms:
+        # update the progressBar via callback method
+        if progress_callback:
+            sdlog.info(
+                "Upgrading {} of {}".format(progress_current + 1, progress_total)
+            )
+            progress_callback(int((progress_current / progress_total) * 100))
+            progress_current += 1
         if vm == "dom0":
             upgrade_results[vm] = _apply_updates_dom0(vm)
         else:
@@ -104,13 +125,9 @@ def _check_updates_fedora():
         return UpdateStatus.UPDATES_REQUIRED
     finally:
         try:
-            subprocess.check_call(
-                ["qvm-shutdown", current_templates["fedora"]]
-            )
+            subprocess.check_call(["qvm-shutdown", current_templates["fedora"]])
         except subprocess.CalledProcessError as e:
-            sdlog.error(
-                "Failed to shut down {}".format(current_templates["fedora"])
-            )
+            sdlog.error("Failed to shut down {}".format(current_templates["fedora"]))
             sdlog.error(str(e))
             return UpdateStatus.UPDATES_FAILED
     sdlog.info("{} is up to date".format(current_templates["fedora"]))
@@ -127,12 +144,8 @@ def _check_updates_debian(vm):
         # updates are required by relying on exit codes.
         # Since we don't want to use --pass-io and parse the output, we have to count
         # the lines on the vm output
-        sdlog.info(
-            "Checking for updates {}:{}".format(vm, current_templates[vm])
-        )
-        subprocess.check_call(
-            ["qvm-run", current_templates[vm], "sudo apt update"]
-        )
+        sdlog.info("Checking for updates {}:{}".format(vm, current_templates[vm]))
+        subprocess.check_call(["qvm-run", current_templates[vm], "sudo apt update"])
         subprocess.check_call(
             [
                 "qvm-run",
@@ -152,9 +165,7 @@ def _check_updates_debian(vm):
         try:
             subprocess.check_call(["qvm-shutdown", current_templates[vm]])
         except subprocess.CalledProcessError as e:
-            sdlog.error(
-                "Failed to shut down {}".format(current_templates[vm])
-            )
+            sdlog.error("Failed to shut down {}".format(current_templates[vm]))
             sdlog.error(str(e))
             return UpdateStatus.UPDATES_FAILED
 
@@ -217,6 +228,7 @@ class UpdateStatus(Enum):
     """
     Standardizes return codes for update/upgrade methods
     """
+
     UPDATES_OK = "UPDATES_OK"
     UPDATES_REQUIRED = "UPDATES_REQUIRED"
     UPDATES_FAILED = "UPDATES_FAILED"
