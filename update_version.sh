@@ -10,10 +10,7 @@ if [ -z "$NEW_VERSION" ]; then
   exit 1
 fi
 
-# Get the old version from setup.py
-old_version_regex="version=\"([0-9a-z.-_+]*)\""
-[[ "$(cat setup.py)" =~ $old_version_regex ]]
-OLD_VERSION=${BASH_REMATCH[1]}
+OLD_VERSION=$(cat VERSION)
 
 if [ -z "$OLD_VERSION" ]; then
   echo "Couldn't find the old version: does this script need to be updated?"
@@ -25,11 +22,11 @@ fi
 # and we don't want to increment those versions.
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # The empty '' after sed -i is required on macOS to indicate no backup file should be saved.
+    sed -i '' "s@$(echo "${OLD_VERSION}" | sed 's/\./\\./g')@$NEW_VERSION@g" VERSION
     sed -i '' -e "/Source0/s/$OLD_VERSION/$NEW_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
     sed -i '' -e "/Version/s/$OLD_VERSION/$NEW_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
-    sed -i '' "s@$(echo "${OLD_VERSION}" | sed 's/\./\\./g')@$NEW_VERSION@g" setup.py
 else
+    sed -i "s@$(echo "${OLD_VERSION}" | sed 's/\./\\./g')@$NEW_VERSION@g" VERSION
     sed -i -e "/Source0/s/$OLD_VERSION/$NEW_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
     sed -i -e "/Version/s/$OLD_VERSION/$NEW_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
-    sed -i "s@$(echo "${OLD_VERSION}" | sed 's/\./\\./g')@$NEW_VERSION@g" setup.py
 fi
