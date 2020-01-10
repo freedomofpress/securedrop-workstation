@@ -1,0 +1,136 @@
+---
+name: SecureDrop Workstation
+description: SecureDrop workstation beta release
+
+nodes:
+  - name: Journalist Interface
+    type: Process
+    id: DFD1
+
+  - name: SecureDrop Dedicated Hardware Firewall
+    type: Element
+    id: DFD2
+
+  - name: NetVM
+    type: Element
+    id: DFD3
+
+  - name: FirewallVM
+    type: Element
+    id: DFD4
+
+  - name: Source Interface
+    type: Process
+    id: DFD5
+  
+  - name: tor
+    type: Process
+    id: DFD6
+
+  - name: HidServAuth/.client_auth
+    type: Datastore
+    id: DFD7
+
+  - name: securedrop-proxy
+    type: Process
+    id: DFD8
+
+  - name: securedrop-client
+    type: Process
+    id: DFD9
+
+  - name: Journalist
+    type: ExternalEntity
+    id: DFD10
+
+  - name: Decrypted submissions (db + files)
+    type: Datastore
+    id: DFD11
+
+boundaries:
+  - name: App Server
+    id: BOUND2
+    #parent: BOUND1
+    members:
+      - DFD1
+      - DFD5
+
+ # - name: SecureDrop Area
+ #   id: BOUND1
+ #   members:
+ #     - BOUND1
+ #     - DFD2
+
+  - name: sd-proxy
+    members:
+      - DFD8
+
+  #- name: sd-log
+
+  - name: sd-svs
+    members:
+      - DFD9
+      - DFD11
+
+  #- name: sd-svs-disp (Disposable)
+
+  #- name: sd-export-usb (Disposable)
+
+  #- name: sd-gpg
+
+  - name: sd-whonix
+    #parent: BOUNDQ
+    members:
+      - DFD6
+      - DFD7
+
+#
+#  - name: SecureDrop Workstation (QubesOS)
+#    parent: BOUNDQ
+#    members:
+#      - DFD3
+#      - DFD4
+#      - DFD6
+
+dataflows:
+  - name: tor
+    first_node: DFD3
+    second_node: DFD2
+    bidirectional: True
+  
+  - name: tor
+    first_node: DFD2
+    second_node: DFD1
+    bidirectional: True
+  
+  - name: tor 
+    first_node: DFD3
+    second_node: DFD4
+    bidirectional: True
+  
+  - name: tor
+    first_node: DFD6
+    second_node: DFD4
+    bidirectional: True
+
+  - name: read
+    first_node: DFD7
+    second_node: DFD6
+
+  - name: http
+    first_node: DFD7
+    second_node: DFD8
+    bidirectional: True
+
+  - name: qrexec
+    first_node: DFD9
+    second_node: DFD8
+    bidirectional: True
+
+  - name: User Input
+    first_node: DFD10
+    second_node: DFD9
+
+  - name: copy/open
+    first_node: DFD9
+    second_node: DFD11
