@@ -4,6 +4,7 @@ include dom0/securedrop-update
 include config.json.example
 include README.md
 include LICENSE
+include VERSION
 include Makefile
 include sd-proxy/*
 include sd-svs/*
