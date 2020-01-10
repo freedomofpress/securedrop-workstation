@@ -307,9 +307,10 @@ def _write_updates_status_flag_sd_svs(status):
 def overall_update_status(results):
     """
     Helper method that returns the worst-case status
+    For now, simple logic for reboot required: If dom0 or fedora updates, a
+    reboot will be required.
     """
     updates_failed = False
-    reboot_required = False
     updates_required = False
 
     for result in results.values():
@@ -317,12 +318,12 @@ def overall_update_status(results):
             updates_failed = True
         elif result == UpdateStatus.UPDATES_REQUIRED:
             updates_required = True
-        elif result == UpdateStatus.REBOOT_REQUIRED:
-            reboot_required = True
 
     if updates_failed:
         return UpdateStatus.UPDATES_FAILED
-    elif reboot_required:
+    elif results["dom0"] == UpdateStatus.UPDATES_REQUIRED:
+        return UpdateStatus.REBOOT_REQUIRED
+    elif results["fedora"] == UpdateStatus.UPDATES_REQUIRED:
         return UpdateStatus.REBOOT_REQUIRED
     elif updates_required:
         return UpdateStatus.UPDATES_REQUIRED
