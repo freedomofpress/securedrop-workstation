@@ -199,26 +199,9 @@ class UpdateThread(QThread):
 
     def run(self):
         results = Updater.check_all_updates(self.progress_callback)
-
-        updates_failed = False
-        updates_required = False
-
-        for result in results.values():
-            if result == UpdateStatus.UPDATES_FAILED:
-                updates_failed = True
-            elif result == UpdateStatus.UPDATES_REQUIRED:
-                updates_required = True
-
         # populate signal contents
         message = results  # copy all the information from updater call
-
-        if updates_failed:
-            message["recommended_action"] = UpdateStatus.UPDATES_FAILED
-        elif updates_required:
-            message["recommended_action"] = UpdateStatus.UPDATES_REQUIRED
-        else:
-            message["recommended_action"] = UpdateStatus.UPDATES_OK
-
+        message["recommended_action"] = Updater.overall_update_status(results)
         self.signal.emit(message)
 
 
@@ -239,26 +222,8 @@ class UpgradeThread(QThread):
 
     def run(self):
         results = Updater.apply_updates(self.vms_to_upgrade, self.progress_callback)
-
-        upgrades_failed = False
-        reboot_required = False
-
-        for result in results.values():
-            if result == UpdateStatus.UPDATES_FAILED:
-                upgrades_failed = True
-            elif result == UpdateStatus.REBOOT_REQUIRED:
-                reboot_required = True
-
         # populate signal results
         message = results  # copy all information from updater call
-
-        if upgrades_failed:
-            message["recommended_action"] = UpdateStatus.UPDATES_FAILED
-        elif reboot_required:
-            message["recommended_action"] = UpdateStatus.REBOOT_REQUIRED
-        else:
-            message["recommended_action"] = UpdateStatus.UPDATES_OK
-
         self.signal.emit(message)
 
 
