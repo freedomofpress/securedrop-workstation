@@ -26,7 +26,7 @@ current_templates = {
     "sd-export": "sd-export-buster-template",
     "sd-proxy": "sd-proxy-buster-template",
     "sd-whonix": "whonix-gw-15",
-    "securedrop-workstation": "securedrop-workstation-buster",
+    "sd-gpg": "securedrop-workstation-buster",
 }
 
 
@@ -221,7 +221,28 @@ def _apply_updates_vm(vm):
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
     sdlog.info("{} update successful".format(current_templates[vm]))
-    return UpdateStatus.UPDATES_OK
+    return _reboot_appvm_after_update(vm)
+
+
+def _reboot_appvm_after_update(vm):
+    """
+    Reboots a given AppVM once its template has been updated. This will ensure the
+    changes are applied to this AppVM.
+    """
+    sdlog.info("Rebooting {} after upgrade of {}".format(vm, current_templates[vm]))
+
+    # Special case, will require a full workstation reboot later
+    if vm == "fedora":
+        pass
+    else:
+        try:
+            subprocess.check_call(["qvm-shutdown", vm])
+            subprocess.check_call(["qvm-start", "--skip-if-running", vm])
+            return UpdateStatus.UPDATES_OK
+        except subprocess.CalledProcessError as e:
+            sdlog.error("Error while rebooting {}".format(vm))
+            sdlog.error(str(e))
+            return UpdateStatus.UPDATES_FAILED
 
 
 class UpdateStatus(Enum):
