@@ -38,11 +38,11 @@ def configure_logging():
 
     handler = TimedRotatingFileHandler(log_file)
     handler.setFormatter(formatter)
-    handler.setLevel(logging.DEBUG)
+    handler.setLevel(logging.INFO)
 
     # set up primary log
     log = logging.getLogger()
-    log.setLevel(logging.DEBUG)
+    log.setLevel(logging.INFO)
     log.addHandler(handler)
 
 

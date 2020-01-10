@@ -7,6 +7,7 @@ from sdw_updater_gui.Updater import UpdateStatus
 import logging
 import subprocess
 import sys
+import time
 
 UPDATE_FLAGFILE = "/home/user/.securedrop_client/securedrop-update-required-flag"
 logger = logging.getLogger(__name__)
@@ -36,10 +37,15 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         self.progressBar.setProperty("value", self.progress)
 
         logger.info("Starting UpdateThread")
-        self.update_thread = UpdateThread()
+        self.update_thread = UpdateThread(self.progress_status)
         self.update_thread.start()
         self.update_thread.signal.connect(self.update_status)
         self.vms_to_update = []
+
+        logger.info("Starting ProgressBarUpdaterThread")
+        self.progress_bar_updater_thread = ProgressBarUpdaterThread()
+        self.progress_bar_updater_thread.start()
+        self.progress_bar_updater_thread.signal.connect(self.update_progress_ui)
 
     def update_status(self, result):
         """
@@ -47,7 +53,8 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         is used to check for TemplateVM updates
         """
         logger.info("Signal: update_status {}".format(str(result)))
-        self.progressBar.setProperty("value", 100)
+        self.progress = 100
+        self.progressBar.setProperty("value", self.progress)
 
         if result["recommended_action"] == UpdateStatus.UPDATES_REQUIRED:
             logger.info("Updates required")
@@ -78,7 +85,8 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         is used to check for TemplateVM upgrades
         """
         logger.info("Signal: upgrade_status {}".format(str(result)))
-        self.progressBar.setProperty("value", 100)
+        self.progress = 100
+        self.progressBar.setProperty("value", self.progress)
 
         if result["recommended_action"] == UpdateStatus.REBOOT_REQUIRED:
             logger.info("Reboot required")
@@ -93,6 +101,14 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
                 strings.description_status_updates_complete
             )
 
+    def update_progress_ui(self, result):
+        """
+        This slot will receive periodic messages from ProgressBarUpdaterThread
+        to update the progress bar with the progress variable.
+        """
+        logger.debug("Signal update_progress_ui: {}".format(result))
+        self.progressBar.setProperty("value", self.progress)
+
     def get_vms_that_need_upgrades(self, results):
         """
         Helper method that returns a list of VMs that need upgrades based
@@ -104,6 +120,19 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
                 if results[vm] == UpdateStatus.UPDATES_REQUIRED:
                     vms_to_upgrade.append(vm)
         return vms_to_upgrade
+
+    def progress_status(self, current_progress):
+        """
+        Helper method that will update the progress bar. It is used as a callback
+        method to both UpdaterThread and UpgraderThread as they have no visibility
+        into the UpdaterApp object.
+        """
+        current_progress = int(current_progress)
+        if current_progress <= 0:
+            current_progress = 5
+        elif current_progress > 100:
+            current_progress = 100
+        self.progress = current_progress
 
     def launch_securedrop_client(self):
         """
@@ -126,14 +155,15 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         UpgradeThread to apply updates to TemplateVMs
         """
         logger.info("Starting UpgradeThread")
-        self.progressBar.setProperty("value", 5)
+        self.progress = 5
+        self.progressBar.setProperty("value", self.progress)
         self.proposedActionLabel.setText(strings.label_status_applying_updates)
         self.proposedActionDescription.setText(
             strings.description_status_applying_updates
         )
         self.applyUpdatesButton.setEnabled(False)
         # Create thread with list of VMs to update
-        self.upgrade_thread = UpgradeThread(self.vms_to_update)
+        self.upgrade_thread = UpgradeThread(self.vms_to_update, self.progress_status)
         self.upgrade_thread.start()
         self.upgrade_thread.signal.connect(self.upgrade_status)
 
@@ -159,13 +189,16 @@ class UpdateThread(QThread):
     """
     This thread will check for TemplateVM updates
     """
-    signal = pyqtSignal("PyQt_PyObject")
 
-    def __init__(self):
+    signal = pyqtSignal("PyQt_PyObject")
+    progress_callback = None
+
+    def __init__(self, callback_method=None):
         QThread.__init__(self)
+        self.progress_callback = callback_method
 
     def run(self):
-        results = Updater.check_all_updates()
+        results = Updater.check_all_updates(self.progress_callback)
 
         updates_failed = False
         updates_required = False
@@ -194,15 +227,18 @@ class UpgradeThread(QThread):
     This thread will apply updates for TemplateVMs based on the VM list
     specified in the object's contructor
     """
+
     signal = pyqtSignal("PyQt_PyObject")
     vms_to_upgrade = []
+    progress_callback = None
 
-    def __init__(self, vms):
+    def __init__(self, vms, callback_method=None):
         QThread.__init__(self)
         self.vms_to_upgrade = vms
+        self.progress_callback = callback_method
 
     def run(self):
-        results = Updater.apply_updates(self.vms_to_upgrade)
+        results = Updater.apply_updates(self.vms_to_upgrade, self.progress_callback)
 
         upgrades_failed = False
         reboot_required = False
@@ -224,3 +260,22 @@ class UpgradeThread(QThread):
             message["recommended_action"] = UpdateStatus.UPDATES_OK
 
         self.signal.emit(message)
+
+
+class ProgressBarUpdaterThread(QThread):
+    """
+    Calling directly progressBar.setProperty will cause segfault because UI
+    elements are accessed from another thread. This will be called by the main
+    application thread and should be safe, it used the progress bar value
+    `progress` updated via the callback method.
+    """
+
+    signal = pyqtSignal("PyQt_PyObject")
+
+    def __init__(self):
+        QThread.__init__(self)
+
+    def run(self):
+        while 1:
+            self.signal.emit("update")
+            time.sleep(10)
