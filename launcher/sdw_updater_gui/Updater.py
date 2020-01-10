@@ -25,6 +25,7 @@ sdlog = logging.getLogger(__name__)
 # as well as their associated TemplateVMs.
 # In the future, we could use qvm-prefs to extract this information.
 current_templates = {
+    "dom0": "dom0",
     "fedora": "fedora-30",
     "sd-svs-disp": "sd-svs-disp-buster-template",
     "sd-svs": "sd-svs-buster-template",
@@ -99,8 +100,11 @@ def apply_updates(vms, progress_callback=None):
         else:
             upgrade_results[vm] = _apply_updates_vm(vm)
 
-    # write the flags to disk
     overall_status = overall_update_status(upgrade_results)
+    # If we are rebooting anyways, no need to cycle the VMs
+    if overall_status != UpdateStatus.REBOOT_REQUIRED:
+        _shutdown_and_start_vms()
+    # write the flags to disk
     _write_updates_status_flag_sd_svs(overall_status)
     if overall_status == UpdateStatus.UPDATES_OK:
         _write_last_updated_flags_to_disk()
@@ -194,7 +198,8 @@ def _check_updates_debian(vm):
 
 def _apply_updates_dom0():
     """
-    Apply updates to dom0
+    Apply updates to dom0. Any update to dom0 will require a reboot after
+    the upgrade.
     """
     sdlog.info("Updating dom0")
     try:
@@ -205,14 +210,14 @@ def _apply_updates_dom0():
         )
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
-    # TODO: check for xen updates here and return REBOOT_REQUIRED
     sdlog.info("dom0 update successful")
-    return UpdateStatus.UPDATES_OK
+    return UpdateStatus.REBOOT_REQUIRED
 
 
 def _apply_updates_vm(vm):
     """
-    Apply updates to a given Debian-based TemplateVM
+    Apply updates to a given TemplateVM. Any update to the base fedora template
+    will require a reboot after the upgrade.
     """
     sdlog.info("Updating {}:{}".format(vm, current_templates[vm]))
     try:
@@ -237,28 +242,10 @@ def _apply_updates_vm(vm):
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
     sdlog.info("{} update successful".format(current_templates[vm]))
-    return _reboot_appvm_after_update(vm)
-
-
-def _reboot_appvm_after_update(vm):
-    """
-    Reboots a given AppVM once its template has been updated. This will ensure the
-    changes are applied to this AppVM.
-    """
-    sdlog.info("Rebooting {} after upgrade of {}".format(vm, current_templates[vm]))
-
-    # Special case, will require a full workstation reboot later
     if vm == "fedora":
-        pass
+        return UpdateStatus.REBOOT_REQUIRED
     else:
-        try:
-            subprocess.check_call(["qvm-shutdown", vm])
-            subprocess.check_call(["qvm-start", "--skip-if-running", vm])
-            return UpdateStatus.UPDATES_OK
-        except subprocess.CalledProcessError as e:
-            sdlog.error("Error while rebooting {}".format(vm))
-            sdlog.error(str(e))
-            return UpdateStatus.UPDATES_FAILED
+        return UpdateStatus.UPDATES_OK
 
 
 def _write_last_updated_flags_to_disk():
@@ -312,23 +299,44 @@ def overall_update_status(results):
     """
     updates_failed = False
     updates_required = False
+    reboot_required = False
 
     for result in results.values():
         if result == UpdateStatus.UPDATES_FAILED:
             updates_failed = True
+        elif result == UpdateStatus.REBOOT_REQUIRED:
+            reboot_required = True
         elif result == UpdateStatus.UPDATES_REQUIRED:
             updates_required = True
 
     if updates_failed:
         return UpdateStatus.UPDATES_FAILED
-    elif results["dom0"] == UpdateStatus.UPDATES_REQUIRED:
-        return UpdateStatus.REBOOT_REQUIRED
-    elif results["fedora"] == UpdateStatus.UPDATES_REQUIRED:
+    if reboot_required:
         return UpdateStatus.REBOOT_REQUIRED
     elif updates_required:
         return UpdateStatus.UPDATES_REQUIRED
     else:
         return UpdateStatus.UPDATES_OK
+
+
+def _shutdown_and_start_vms():
+    """
+    Power cycles the vms to ensure. we should do them all in one shot to reduce complexity
+    and likelihood of failure. Rebooting the VMs will ensure the TemplateVM
+    updates are picked up by the AppVM
+    """
+    vms_in_order = ["sd-proxy", "sd-whonix", "sd-svs", "sd-gpg"]
+    for vm in vms_in_order:
+        _safely_reboot_vm(vm)
+
+
+def _safely_reboot_vm(vm):
+    try:
+        subprocess.check_call(["qvm-shutdown", "--wait", vm])
+        subprocess.check_call(["qvm-start", vm])
+    except subprocess.CalledProcessError as e:
+        sdlog.error("Error while rebooting {}".format(vm))
+        sdlog.error(str(e))
 
 
 class UpdateStatus(Enum):

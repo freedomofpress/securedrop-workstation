@@ -91,8 +91,10 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         if result["recommended_action"] == UpdateStatus.REBOOT_REQUIRED:
             logger.info("Reboot required")
             self.rebootButton.setEnabled(True)
-            self.proposedActionLabel(strings.label_status_reboot_required)
-            self.proposedActionDescription(strings.description_status_reboot_required)
+            self.proposedActionLabel.setText(strings.label_status_reboot_required)
+            self.proposedActionDescription.setText(
+                strings.description_status_reboot_required
+            )
         elif result["recommended_action"] == UpdateStatus.UPDATES_OK:
             logger.info("VMs have been succesfully updated, OK to start client")
             self.clientOpenButton.setEnabled(True)
@@ -224,6 +226,7 @@ class UpgradeThread(QThread):
         results = Updater.apply_updates(self.vms_to_upgrade, self.progress_callback)
         # populate signal results
         message = results  # copy all information from updater call
+        message["recommended_action"] = Updater.overall_update_status(results)
         self.signal.emit(message)
 
 
