@@ -4,7 +4,7 @@ update-pip-requirements: ## Updates all Python requirements files via pip-compil
 
 .PHONY: bandit
 bandit:
-	bandit -v -ll -r .
+	bandit -ll --exclude ./.venv/ -r .
 
 .PHONY: test
 test:
