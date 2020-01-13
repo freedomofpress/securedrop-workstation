@@ -47,3 +47,13 @@ sd-log-dom0-securedrop.Log:
     - text: |
         @tag:sd-workstation sd-log allow
         @anyvm @anyvm deny
+
+{% import_json "sd/config.json" as d %}
+
+# The private volume size should be set in config.json
+sd-log-private-volume-size:
+  cmd.run:
+    - name: >
+        qvm-volume resize sd-log:private {{ d.vmsizes.sd_log }}GiB
+    - require:
+      - qvm: sd-log

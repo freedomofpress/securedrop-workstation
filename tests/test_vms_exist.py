@@ -1,4 +1,5 @@
 import unittest
+import json
 
 from qubesadmin import Qubes
 from base import WANTED_VMS
@@ -10,6 +11,8 @@ EXPECTED_KERNEL_VERSION = "4.14.158-grsec-workstation"
 class SD_VM_Tests(unittest.TestCase):
     def setUp(self):
         self.app = Qubes()
+        with open("config.json") as c:
+            self.config = json.load(c)
 
     def tearDown(self):
         pass
@@ -78,6 +81,12 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_service_running(vm, "paxctld")
         self.assertTrue('sd-workstation' in vm.tags)
         self.assertTrue('sd-client' in vm.tags)
+        # Check the size of the private volume
+        # Should be 10GB
+        # >>> 1024 * 1024 * 10 * 1024
+        size = self.config["vmsizes"]["sd_app"]
+        vol = vm.volumes["private"]
+        self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
     def test_sd_viewer_config(self):
         vm = self.app.domains["sd-viewer"]
@@ -114,6 +123,12 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_service_running(vm, "paxctld")
         self.assertFalse(vm.template_for_dispvms)
         self.assertTrue('sd-workstation' in vm.tags)
+        # Check the size of the private volume
+        # Should be same of config.json
+        # >>> 1024 * 1024 * 5 * 1024
+        size = self.config["vmsizes"]["sd_log"]
+        vol = vm.volumes["private"]
+        self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
     def test_sd_workstation_template(self):
         vm = self.app.domains["securedrop-workstation-buster"]
