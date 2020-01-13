@@ -1,6 +1,6 @@
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
-	pip-compile --generate-hashes --output-file requirements.txt requirements.in
+	pip-compile --allow-unsafe --generate-hashes --output-file=test-requirements.txt test-requirements.in
 
 .PHONY: bandit
 bandit:
@@ -8,7 +8,7 @@ bandit:
 
 .PHONY: test
 test:
-	pytest -v tests/
+	pytest --cov-report term-missing --cov=sdw_updater_gui/ -v tests/
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
