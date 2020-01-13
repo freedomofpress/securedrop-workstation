@@ -189,8 +189,8 @@ def _check_updates_debian(vm):
             sdlog.error(str(e))
             return UpdateStatus.UPDATES_FAILED
 
-    sdlog.info("{} is up to date".format(current_templates[vm]))
     if not updates_required:
+        sdlog.info("{} is up to date".format(current_templates[vm]))
         return UpdateStatus.UPDATES_OK
     else:
         return UpdateStatus.UPDATES_REQUIRED
@@ -252,7 +252,7 @@ def _write_last_updated_flags_to_disk():
     """
     Writes the time of last successful upgrade to dom0 and sd-svs
     """
-    current_date = str(datetime.utcnow())
+    current_date = str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
     try:
         sdlog.info("Setting last updated to {} in sd-svs".format(current_date))
         subprocess.check_call(

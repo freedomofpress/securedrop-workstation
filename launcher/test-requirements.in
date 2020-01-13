@@ -1,0 +1,5 @@
+bandit
+coverage
+pip-tools
+pip
+pytest
