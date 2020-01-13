@@ -13,11 +13,9 @@ import subprocess
 from datetime import datetime
 from enum import Enum
 
-DEFAULT_HOME = os.path.join(os.path.expanduser("~"), ".securedrop_launcher")
-
-FLAG_FILE_STATUS_SD_SVS = "/home/user/sdw-update-flag"
-FLAG_FILE_LAST_UPDATED_SD_SVS = "/home/user/sdw-last-updated"
-FLAG_FILE_LAST_UPDATED_DOM0 = os.path.join(DEFAULT_HOME, "sdw-last-updated")
+FLAG_FILE_STATUS_SD_SVS = "sdw-update-flag"
+FLAG_FILE_LAST_UPDATED_SD_SVS = "sdw-last-updated"
+FLAG_FILE_LAST_UPDATED_DOM0 = ".securedrop_launcher/sdw-last-updated"
 
 sdlog = logging.getLogger(__name__)
 
@@ -35,6 +33,10 @@ current_templates = {
     "sd-whonix": "whonix-gw-15",
     "sd-gpg": "securedrop-workstation-buster",
 }
+
+
+def get_path(folder):
+    return os.path.join(os.path.expanduser("~"), folder)
 
 
 def check_all_updates(progress_callback=None):
@@ -253,22 +255,28 @@ def _write_last_updated_flags_to_disk():
     Writes the time of last successful upgrade to dom0 and sd-svs
     """
     current_date = str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+    # flag_file_sd_svs_status = get_path(FLAG_FILE_LAST_UPDATED_SD_SVS)
+    flag_file_sd_svs_last_updated = get_path(FLAG_FILE_LAST_UPDATED_SD_SVS)
+    flag_file_dom0_last_updated = get_path(FLAG_FILE_LAST_UPDATED_DOM0)
+
     try:
         sdlog.info("Setting last updated to {} in sd-svs".format(current_date))
         subprocess.check_call(
             [
                 "qvm-run",
                 "sd-svs",
-                "echo '{}' > {}".format(current_date, FLAG_FILE_LAST_UPDATED_SD_SVS),
+                "echo '{}' > {}".format(current_date, flag_file_sd_svs_last_updated),
             ]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error("Error writing last updated flag to sd-svs")
-        sdlog.error(e)
+        sdlog.error(str(e))
 
     try:
         sdlog.info("Setting last updated to {} in dom0".format(current_date))
-        f = open(FLAG_FILE_LAST_UPDATED_DOM0, "w")
+        if not os.path.exists(os.path.dirname(flag_file_dom0_last_updated)):
+            os.makedirs(os.path.dirname(flag_file_dom0_last_updated))
+        f = open(flag_file_dom0_last_updated, "w+")
         f.write(current_date)
         f.close()
     except Exception as e:
@@ -277,18 +285,21 @@ def _write_last_updated_flags_to_disk():
 
 
 def _write_updates_status_flag_sd_svs(status):
+
+    flag_file_path = get_path(FLAG_FILE_STATUS_SD_SVS)
+
     try:
         sdlog.info("Setting update flag to {} in sd-svs".format(status.value))
         subprocess.check_call(
             [
                 "qvm-run",
                 "sd-svs",
-                "echo '{}' > {}".format(status.value, FLAG_FILE_STATUS_SD_SVS),
+                "echo '{}' > {}".format(status.value, flag_file_path),
             ]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error("Error writing update status flag to sd-svs")
-        sdlog.error(e)
+        sdlog.error(str(e))
 
 
 def overall_update_status(results):

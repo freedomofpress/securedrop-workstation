@@ -9,7 +9,6 @@ import subprocess
 import sys
 import time
 
-UPDATE_FLAGFILE = "/home/user/.securedrop_client/securedrop-update-required-flag"
 logger = logging.getLogger(__name__)
 
 

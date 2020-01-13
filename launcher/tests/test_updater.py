@@ -3,6 +3,7 @@ import os
 import pytest
 import subprocess
 from datetime import datetime
+from tempfile import TemporaryDirectory
 from unittest import mock
 from unittest.mock import call
 
@@ -13,6 +14,8 @@ path_to_script = os.path.join(
 updater = imp.load_source("Updater", path_to_script)
 from Updater import UpdateStatus  # noqa: E402
 from Updater import current_templates  # noqa: E402
+
+temp_dir = TemporaryDirectory().name
 
 debian_based_vms = [
     "sd-svs",
@@ -43,6 +46,13 @@ TEST_RESULTS_3 = {
     "fedora": UpdateStatus.REBOOT_REQUIRED,
     "sd-svs": UpdateStatus.UPDATES_OK,
     "sd-svs-disp": UpdateStatus.UPDATES_OK,
+}
+
+TEST_RESULTS_4 = {
+    "dom0": UpdateStatus.UPDATES_OK,
+    "fedora": UpdateStatus.UPDATES_OK,
+    "sd-svs": UpdateStatus.UPDATES_OK,
+    "sd-svs-disp": UpdateStatus.UPDATES_REQUIRED,
 }
 
 
@@ -268,23 +278,25 @@ def test_check_updates_calls_correct_commands(
 def test_check_all_updates(
     mocked_info, mocked_error, mocked_call, mocked_check_updates
 ):
+    flag_file_sd_svs_status = os.path.join(
+        os.path.expanduser("~"), updater.FLAG_FILE_STATUS_SD_SVS
+    )
+    flag_file_sd_svs_last_updated = os.path.join(
+        os.path.expanduser("~"), updater.FLAG_FILE_LAST_UPDATED_SD_SVS
+    )
+
     updater.check_all_updates()
     check_updates_call_list = [call(x) for x in current_templates.keys()]
     mocked_check_updates.assert_has_calls(check_updates_call_list)
     mocked_subprocess_calls = [
+        call(["qvm-run", "sd-svs", "echo '0' > {}".format(flag_file_sd_svs_status),]),
         call(
             [
                 "qvm-run",
                 "sd-svs",
-                "echo '0' > {}".format(updater.FLAG_FILE_STATUS_SD_SVS),
-            ]
-        ),
-        call(
-            [
-                "qvm-run",
-                "sd-svs",
-                "echo '{}' > /home/user/sdw-last-updated".format(
-                    str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+                "echo '{}' > {}".format(
+                    str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
+                    flag_file_sd_svs_last_updated,
                 ),
             ]
         ),
@@ -293,41 +305,150 @@ def test_check_all_updates(
     assert not mocked_error.called
 
 
+@mock.patch("Updater._write_updates_status_flag_sd_svs")
+@mock.patch("Updater._write_last_updated_flags_to_disk")
+@mock.patch("Updater._shutdown_and_start_vms")
+@mock.patch("Updater._apply_updates_vm")
+@mock.patch("Updater._apply_updates_dom0", return_value=UpdateStatus.UPDATES_OK)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_apply_updates(
+    mocked_info,
+    mocked_error,
+    apply_dom0,
+    apply_vm,
+    shutdown,
+    write_updated,
+    write_status,
+):
+    results = updater.apply_updates(["dom0"])
+    assert results == UpdateStatus.UPDATES_OK
+    assert updater.overall_update_status(results) == UpdateStatus.UPDATES_OK
+    assert not mocked_error.called
+    apply_dom0.assert_called_once()
+    assert not apply_vm.called
+    shutdown.assert_called_once()
+
+
+@mock.patch("Updater._write_updates_status_flag_sd_svs")
+@mock.patch("Updater._write_last_updated_flags_to_disk")
+@mock.patch("Updater._shutdown_and_start_vms")
+@mock.patch(
+    "Updater._apply_updates_vm",
+    side_effect=[UpdateStatus.UPDATES_OK, UpdateStatus.UPDATES_REQUIRED],
+)
+@mock.patch("Updater._apply_updates_dom0")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_apply_updates_required(
+    mocked_info,
+    mocked_error,
+    apply_dom0,
+    apply_vm,
+    shutdown,
+    write_updated,
+    write_status,
+):
+    results = updater.apply_updates(["fedora", "sd-svs"])
+    assert results == {
+        "fedora": UpdateStatus.UPDATES_OK,
+        "sd-svs": UpdateStatus.UPDATES_REQUIRED,
+    }
+    calls = [call("fedora"), call("sd-svs")]
+    apply_vm.assert_has_calls(calls)
+
+    assert results == {
+        "fedora": UpdateStatus.UPDATES_OK,
+        "sd-svs": UpdateStatus.UPDATES_REQUIRED,
+    }
+
+    assert updater.overall_update_status(results) == UpdateStatus.UPDATES_REQUIRED
+    assert not mocked_error.called
+    assert not apply_dom0.called
+    shutdown.assert_called_once()
+
+
+@mock.patch("Updater._write_updates_status_flag_sd_svs")
+@mock.patch("Updater._write_last_updated_flags_to_disk")
+@mock.patch("Updater._shutdown_and_start_vms")
+@mock.patch("Updater._apply_updates_vm")
+@mock.patch("Updater._apply_updates_dom0")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_apply_updates(
+    mocked_info,
+    mocked_error,
+    apply_dom0,
+    apply_vm,
+    shutdown,
+    write_updated,
+    write_status,
+):
+    updater.apply_updates(["dom0"])
+    assert not mocked_error.called
+    apply_dom0.assert_called_once()
+    assert not apply_vm.called
+    shutdown.assert_called_once()
+
+
 @pytest.mark.parametrize("status", UpdateStatus)
+@mock.patch("os.path.expanduser", return_value=temp_dir)
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_write_updates_status_flag_sd_svs(
-    mocked_info, mocked_error, mocked_call, status
+    mocked_info, mocked_error, mocked_call, mocked_expand, status
 ):
+    flag_file_sd_svs = updater.get_path(updater.FLAG_FILE_STATUS_SD_SVS)
     updater._write_updates_status_flag_sd_svs(status)
     mocked_call.assert_called_once_with(
-        [
-            "qvm-run",
-            "sd-svs",
-            "echo '{}' > {}".format(status.value, updater.FLAG_FILE_STATUS_SD_SVS),
-        ]
+        ["qvm-run", "sd-svs", "echo '{}' > {}".format(status.value, flag_file_sd_svs),]
     )
     assert not mocked_error.called
+    assert "tmp" in flag_file_sd_svs
 
 
+@pytest.mark.parametrize("status", UpdateStatus)
+@mock.patch("os.path.expanduser", return_value=temp_dir)
+@mock.patch(
+    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
+)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_write_updates_status_flag_sd_svs_failure(
+    mocked_info, mocked_error, mocked_call, mocked_expand, status
+):
+
+    error_calls = [
+        call("Error writing update status flag to sd-svs"),
+        call("Command 'check_call' returned non-zero exit status 1."),
+    ]
+    updater._write_updates_status_flag_sd_svs(status)
+    mocked_error.assert_has_calls(error_calls)
+
+
+@mock.patch("os.path.expanduser", return_value=temp_dir)
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_write_last_updated_flags_to_disk(mocked_info, mocked_error, mocked_call):
-    updater._write_last_updated_flags_to_disk()
+def test_write_last_updated_flags_to_disk(
+    mocked_info, mocked_error, mocked_call, mocked_expand
+):
+    flag_file_sd_svs = updater.get_path(updater.FLAG_FILE_LAST_UPDATED_SD_SVS)
+    flag_file_dom0 = updater.get_path(updater.FLAG_FILE_LAST_UPDATED_DOM0)
     current_time_utc = str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+
+    updater._write_last_updated_flags_to_disk()
     subprocess_command = [
         "qvm-run",
         "sd-svs",
-        "echo '{}' > {}".format(
-            current_time_utc, updater.FLAG_FILE_LAST_UPDATED_SD_SVS
-        ),
+        "echo '{}' > {}".format(current_time_utc, flag_file_sd_svs),
     ]
     mocked_call.assert_called_once_with(subprocess_command)
-    assert os.path.exists(updater.FLAG_FILE_LAST_UPDATED_DOM0)
+    assert not mocked_error.called
+    assert os.path.exists(flag_file_dom0)
     try:
-        contents = open(updater.FLAG_FILE_LAST_UPDATED_DOM0, "r").read()
+        contents = open(flag_file_dom0, "r").read()
         assert contents == current_time_utc
     except Exception:
         pytest.fail("Error reading file")
@@ -397,3 +518,54 @@ def test_overall_update_status_2():
 def test_overall_update_status_3():
     result = updater.overall_update_status(TEST_RESULTS_3)
     assert result == UpdateStatus.REBOOT_REQUIRED
+
+
+def test_overall_update_status_4():
+    result = updater.overall_update_status(TEST_RESULTS_4)
+    assert result == UpdateStatus.UPDATES_REQUIRED
+
+
+@pytest.mark.parametrize("vm", current_templates.keys())
+@mock.patch("subprocess.check_call")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_safely_reboot(mocked_info, mocked_error, mocked_call, vm):
+    call_list = [
+        call(["qvm-shutdown", "--wait", "{}".format(vm)]),
+        call(["qvm-start", "{}".format(vm)]),
+    ]
+
+    updater._safely_reboot_vm(vm)
+    mocked_call.assert_has_calls(call_list)
+    assert not mocked_error.called
+
+
+@pytest.mark.parametrize("vm", current_templates.keys())
+@mock.patch(
+    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
+)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_safely_reboot_fails(mocked_info, mocked_error, mocked_call, vm):
+    call_list = [
+        call("Error while rebooting {}".format(vm)),
+        call("Command 'check_call' returned non-zero exit status 1."),
+    ]
+
+    updater._safely_reboot_vm(vm)
+    mocked_error.assert_has_calls(call_list)
+
+
+@mock.patch("Updater._safely_reboot_vm")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_shutdown_and_start_vms(mocked_info, mocked_error, mocked_call):
+    call_list = [
+        call("sd-proxy"),
+        call("sd-whonix"),
+        call("sd-svs"),
+        call("sd-gpg"),
+    ]
+    updater._shutdown_and_start_vms()
+    mocked_call.assert_has_calls(call_list)
+    assert not mocked_error.called
