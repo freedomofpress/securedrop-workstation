@@ -15,6 +15,7 @@ from enum import Enum
 
 FLAG_FILE_STATUS_SD_SVS = "sdw-update-flag"
 FLAG_FILE_LAST_UPDATED_SD_SVS = "sdw-last-updated"
+FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-flag"
 FLAG_FILE_LAST_UPDATED_DOM0 = ".securedrop_launcher/sdw-last-updated"
 
 sdlog = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ def check_all_updates(progress_callback=None):
 
     # write the flags to disk
     overall_status = overall_update_status(update_results)
-    _write_updates_status_flag_sd_svs(overall_status)
+    _write_updates_status_flag_to_disk(overall_status)
     if overall_status == UpdateStatus.UPDATES_OK:
         _write_last_updated_flags_to_disk()
 
@@ -107,7 +108,7 @@ def apply_updates(vms, progress_callback=None):
     if overall_status != UpdateStatus.REBOOT_REQUIRED:
         _shutdown_and_start_vms()
     # write the flags to disk
-    _write_updates_status_flag_sd_svs(overall_status)
+    _write_updates_status_flag_to_disk(overall_status)
     if overall_status == UpdateStatus.UPDATES_OK:
         _write_last_updated_flags_to_disk()
 
@@ -284,9 +285,13 @@ def _write_last_updated_flags_to_disk():
         sdlog.error(str(e))
 
 
-def _write_updates_status_flag_sd_svs(status):
-
-    flag_file_path = get_path(FLAG_FILE_STATUS_SD_SVS)
+def _write_updates_status_flag_to_disk(status):
+    """
+    Writes the latest SecureDrop Workstation update status to disk, on both
+    dom0 and sd-svs for futher processing in the future.
+    """
+    flag_file_path_sd_svs = get_path(FLAG_FILE_STATUS_SD_SVS)
+    flag_file_path_dom0 = get_path(FLAG_FILE_STATUS_DOM0)
 
     try:
         sdlog.info("Setting update flag to {} in sd-svs".format(status.value))
@@ -294,11 +299,22 @@ def _write_updates_status_flag_sd_svs(status):
             [
                 "qvm-run",
                 "sd-svs",
-                "echo '{}' > {}".format(status.value, flag_file_path),
+                "echo '{}' > {}".format(status.value, flag_file_path_sd_svs),
             ]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error("Error writing update status flag to sd-svs")
+        sdlog.error(str(e))
+
+    try:
+        sdlog.info("Setting update flag to {} in dom0".format(status.value))
+        if not os.path.exists(os.path.dirname(flag_file_path_dom0)):
+            os.makedirs(os.path.dirname(flag_file_path_dom0))
+        f = open(flag_file_path_dom0, "w+")
+        f.write(status.value)
+        f.close()
+    except Exception as e:
+        sdlog.error("Error writing update status flag to dom0")
         sdlog.error(str(e))
 
 
