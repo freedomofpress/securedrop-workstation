@@ -19,7 +19,7 @@ logger = logging.getLogger(SCRIPT_NAME)
 logging.basicConfig(level=logging.INFO)
 
 
-SDW_DISPVM_TEMPLATE = "sd-svs-disp-template"
+SDW_DISPVM_TEMPLATE = "sd-viewer-template"
 
 
 if __name__ == "__main__":
