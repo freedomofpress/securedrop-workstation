@@ -13,8 +13,8 @@ import subprocess
 from datetime import datetime
 from enum import Enum
 
-FLAG_FILE_STATUS_SD_SVS = "sdw-update-flag"
-FLAG_FILE_LAST_UPDATED_SD_SVS = "sdw-last-updated"
+FLAG_FILE_STATUS_SD_SVS = "/home/user/sdw-update-flag"
+FLAG_FILE_LAST_UPDATED_SD_SVS = "/home/user/sdw-last-updated"
 FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-flag"
 FLAG_FILE_LAST_UPDATED_DOM0 = ".securedrop_launcher/sdw-last-updated"
 
@@ -36,7 +36,7 @@ current_templates = {
 }
 
 
-def get_path(folder):
+def get_dom0_path(folder):
     return os.path.join(os.path.expanduser("~"), folder)
 
 
@@ -226,9 +226,9 @@ def _write_last_updated_flags_to_disk():
     Writes the time of last successful upgrade to dom0 and sd-svs
     """
     current_date = str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
-    # flag_file_sd_svs_status = get_path(FLAG_FILE_LAST_UPDATED_SD_SVS)
-    flag_file_sd_svs_last_updated = get_path(FLAG_FILE_LAST_UPDATED_SD_SVS)
-    flag_file_dom0_last_updated = get_path(FLAG_FILE_LAST_UPDATED_DOM0)
+
+    flag_file_sd_svs_last_updated = FLAG_FILE_LAST_UPDATED_SD_SVS
+    flag_file_dom0_last_updated = get_dom0_path(FLAG_FILE_LAST_UPDATED_DOM0)
 
     try:
         sdlog.info("Setting last updated to {} in sd-svs".format(current_date))
@@ -260,8 +260,8 @@ def _write_updates_status_flag_to_disk(status):
     Writes the latest SecureDrop Workstation update status to disk, on both
     dom0 and sd-svs for futher processing in the future.
     """
-    flag_file_path_sd_svs = get_path(FLAG_FILE_STATUS_SD_SVS)
-    flag_file_path_dom0 = get_path(FLAG_FILE_STATUS_DOM0)
+    flag_file_path_sd_svs = FLAG_FILE_STATUS_SD_SVS
+    flag_file_path_dom0 = get_dom0_path(FLAG_FILE_STATUS_DOM0)
 
     try:
         sdlog.info("Setting update flag to {} in sd-svs".format(status.value))
@@ -347,7 +347,6 @@ def _safely_start_vm(vm):
     except subprocess.CalledProcessError as e:
         sdlog.error("Error while starting {}".format(vm))
         sdlog.error(str(e))
-
 
 class UpdateStatus(Enum):
     """
