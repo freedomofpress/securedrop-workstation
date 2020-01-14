@@ -40,32 +40,18 @@ def get_path(folder):
     return os.path.join(os.path.expanduser("~"), folder)
 
 
-def check_all_updates(progress_callback=None):
+def check_all_updates():
     """
     Check for updates for all vms listed in current_templates above
     """
 
-    update_results = {}
     sdlog.info("Checking for all updates")
 
-    progress_current = 0
-    progress_total = len(current_templates.keys())
-
-    for vm in current_templates.keys():
-        # update the progressBar via callback method
-        if progress_callback:
-            sdlog.info("Updating {} of {}".format(progress_current + 1, progress_total))
-            progress_callback(int((progress_current / progress_total) * 100))
-            progress_current += 1
-        update_results[vm] = check_updates(vm)
-
-    # write the flags to disk
-    overall_status = overall_update_status(update_results)
-    _write_updates_status_flag_to_disk(overall_status)
-    if overall_status == UpdateStatus.UPDATES_OK:
-        _write_last_updated_flags_to_disk()
-
-    return update_results
+    for progress_current, vm in enumerate(current_templates.keys()):
+        # yield the progress percentage for UI updates
+        progress_percentage = int(((progress_current + 1) / len(current_templates.keys())) * 100)
+        update_results = check_updates(vm)
+        yield vm, progress_percentage, update_results
 
 
 def check_updates(vm):
@@ -84,35 +70,20 @@ def apply_updates(vms, progress_callback=None):
     """
     Apply updates to the TemplateVMs of VM list specified in parameter
     """
-    upgrade_results = {}
     sdlog.info("Applying all updates")
 
-    progress_current = 0
-    progress_total = len(vms)
+    for progress_current, vm in enumerate(vms):
+        upgrade_results = UpdateStatus.UPDATES_FAILED
 
-    for vm in vms:
-        # update the progressBar via callback method
-        if progress_callback:
-            sdlog.info(
-                "Upgrading {} of {}".format(progress_current + 1, progress_total)
-            )
-            progress_callback(int((progress_current / progress_total) * 100))
-            progress_current += 1
         if vm == "dom0":
-            upgrade_results[vm] = _apply_updates_dom0(vm)
+            upgrade_results = _apply_updates_dom0(vm)
         else:
-            upgrade_results[vm] = _apply_updates_vm(vm)
+            upgrade_results = _apply_updates_vm(vm)
 
-    overall_status = overall_update_status(upgrade_results)
-    # If we are rebooting anyways, no need to cycle the VMs
-    if overall_status != UpdateStatus.REBOOT_REQUIRED:
-        _shutdown_and_start_vms()
-    # write the flags to disk
-    _write_updates_status_flag_to_disk(overall_status)
-    if overall_status == UpdateStatus.UPDATES_OK:
-        _write_last_updated_flags_to_disk()
+        progress_percentage = int(((progress_current + 1) / len(vms)) * 100)
+        yield vm, progress_percentage, upgrade_results
 
-    return upgrade_results
+    _shutdown_and_start_vms()
 
 
 def _check_updates_dom0():
