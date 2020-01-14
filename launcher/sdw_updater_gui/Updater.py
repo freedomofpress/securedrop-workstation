@@ -235,7 +235,6 @@ def _apply_updates_vm(vm):
                 "update.qubes-vm",
             ]
         )
-        # subprocess.check_call(["qvm-shutdown", current_templates[vm]])
     except subprocess.CalledProcessError as e:
         sdlog.error(
             "An error has occurred updating {}. Please contact your administrator.".format(
@@ -350,19 +349,32 @@ def _shutdown_and_start_vms():
     """
     Power cycles the vms to ensure. we should do them all in one shot to reduce complexity
     and likelihood of failure. Rebooting the VMs will ensure the TemplateVM
-    updates are picked up by the AppVM
+    updates are picked up by the AppVM. We must first shut all VMs down to ensure
+    correct order of operations, as sd-whonix cannot shutdown if sd-proxy is powered
+    on, for example.
     """
-    vms_in_order = ["sd-proxy", "sd-whonix", "sd-svs", "sd-gpg"]
+    vms_in_order = ["sd-proxy", "sd-whonix", "sd-svs", "sd-gpg", "sd-log"]
+
     for vm in vms_in_order:
-        _safely_reboot_vm(vm)
+        _safely_shutdown_vm(vm)
+
+    for vm in vms_in_order:
+        _safely_start_vm(vm)
 
 
-def _safely_reboot_vm(vm):
+def _safely_shutdown_vm(vm):
     try:
         subprocess.check_call(["qvm-shutdown", "--wait", vm])
+    except subprocess.CalledProcessError as e:
+        sdlog.error("Error while shutting down {}".format(vm))
+        sdlog.error(str(e))
+
+
+def _safely_start_vm(vm):
+    try:
         subprocess.check_call(["qvm-start", vm])
     except subprocess.CalledProcessError as e:
-        sdlog.error("Error while rebooting {}".format(vm))
+        sdlog.error("Error while starting {}".format(vm))
         sdlog.error(str(e))
 
 

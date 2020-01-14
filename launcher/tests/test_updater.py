@@ -618,13 +618,26 @@ def test_overall_update_status_updates_required(mocked_info, mocked_error):
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_safely_reboot(mocked_info, mocked_error, mocked_call, vm):
+def test_safely_shutdown(mocked_info, mocked_error, mocked_call, vm):
     call_list = [
         call(["qvm-shutdown", "--wait", "{}".format(vm)]),
+    ]
+
+    updater._safely_shutdown_vm(vm)
+    mocked_call.assert_has_calls(call_list)
+    assert not mocked_error.called
+
+
+@pytest.mark.parametrize("vm", current_templates.keys())
+@mock.patch("subprocess.check_call")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_safely_start(mocked_info, mocked_error, mocked_call, vm):
+    call_list = [
         call(["qvm-start", "{}".format(vm)]),
     ]
 
-    updater._safely_reboot_vm(vm)
+    updater._safely_start_vm(vm)
     mocked_call.assert_has_calls(call_list)
     assert not mocked_error.called
 
@@ -635,20 +648,39 @@ def test_safely_reboot(mocked_info, mocked_error, mocked_call, vm):
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_safely_reboot_fails(mocked_info, mocked_error, mocked_call, vm):
+def test_safely_start_fails(mocked_info, mocked_error, mocked_call, vm):
     call_list = [
-        call("Error while rebooting {}".format(vm)),
+        call("Error while starting {}".format(vm)),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
 
-    updater._safely_reboot_vm(vm)
+    updater._safely_start_vm(vm)
     mocked_error.assert_has_calls(call_list)
 
 
-@mock.patch("Updater._safely_reboot_vm")
+@pytest.mark.parametrize("vm", current_templates.keys())
+@mock.patch(
+    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
+)
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_shutdown_and_start_vms(mocked_info, mocked_error, mocked_call):
+def test_safely_shutdown_fails(mocked_info, mocked_error, mocked_call, vm):
+    call_list = [
+        call("Error while shutting down {}".format(vm)),
+        call("Command 'check_call' returned non-zero exit status 1."),
+    ]
+
+    updater._safely_shutdown_vm(vm)
+    mocked_error.assert_has_calls(call_list)
+
+
+@mock.patch("Updater._safely_start_vm")
+@mock.patch("Updater._safely_shutdown_vm")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_shutdown_and_start_vms(
+    mocked_info, mocked_error, mocked_shutdown, mocked_start
+):
     call_list = [
         call("sd-proxy"),
         call("sd-whonix"),
@@ -656,5 +688,6 @@ def test_shutdown_and_start_vms(mocked_info, mocked_error, mocked_call):
         call("sd-gpg"),
     ]
     updater._shutdown_and_start_vms()
-    mocked_call.assert_has_calls(call_list)
+    mocked_shutdown.assert_has_calls(call_list)
+    mocked_start.assert_has_calls(call_list)
     assert not mocked_error.called
