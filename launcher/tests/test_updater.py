@@ -271,38 +271,30 @@ def test_check_updates_calls_correct_commands(
     assert not mocked_error.called
 
 
-@mock.patch("Updater.check_updates", return_value=0)
+@mock.patch("Updater.check_updates", return_value={"test": UpdateStatus.UPDATES_OK})
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_check_all_updates(
     mocked_info, mocked_error, mocked_call, mocked_check_updates
 ):
-    flag_file_sd_svs_status = os.path.join(
-        os.path.expanduser("~"), updater.FLAG_FILE_STATUS_SD_SVS
-    )
-    flag_file_sd_svs_last_updated = os.path.join(
-        os.path.expanduser("~"), updater.FLAG_FILE_LAST_UPDATED_SD_SVS
-    )
 
-    updater.check_all_updates()
+    update_generator = updater.check_all_updates()
+    results = {}
+    while True:
+        try:
+            vm, progress, result = next(update_generator)
+            assert progress is not None
+            results[vm] = result
+        except StopIteration:
+            break
+
     check_updates_call_list = [call(x) for x in current_templates.keys()]
     mocked_check_updates.assert_has_calls(check_updates_call_list)
-    mocked_subprocess_calls = [
-        call(["qvm-run", "sd-svs", "echo '0' > {}".format(flag_file_sd_svs_status)]),
-        call(
-            [
-                "qvm-run",
-                "sd-svs",
-                "echo '{}' > {}".format(
-                    str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")),
-                    flag_file_sd_svs_last_updated,
-                ),
-            ]
-        ),
-    ]
-    mocked_call.assert_has_calls(mocked_subprocess_calls)
+
+    assert not mocked_call.called
     assert not mocked_error.called
+    assert updater.overall_update_status(results) == UpdateStatus.UPDATES_OK
 
 
 @mock.patch("Updater._write_updates_status_flag_to_disk")
@@ -321,13 +313,20 @@ def test_apply_updates(
     write_updated,
     write_status,
 ):
-    results = updater.apply_updates(["dom0"])
-    assert results == {"dom0": UpdateStatus.UPDATES_OK}
+    upgrade_generator = updater.apply_updates(["dom0"])
+    results = {}
+    while True:
+        try:
+            vm, progress, result = next(upgrade_generator)
+            assert progress is not None
+            results[vm] = result
+        except StopIteration:
+            break
+
     assert updater.overall_update_status(results) == UpdateStatus.UPDATES_OK
     assert not mocked_error.called
     apply_dom0.assert_called_once()
     assert not apply_vm.called
-    shutdown.assert_called_once()
 
 
 @mock.patch("Updater._write_updates_status_flag_to_disk")
@@ -349,7 +348,16 @@ def test_apply_updates_required(
     write_updated,
     write_status,
 ):
-    results = updater.apply_updates(["fedora", "sd-svs"])
+    upgrade_generator = updater.apply_updates(["fedora", "sd-svs"])
+    results = {}
+    while True:
+        try:
+            vm, progress, result = next(upgrade_generator)
+            assert progress is not None
+            results[vm] = result
+        except StopIteration:
+            break
+
     assert results == {
         "fedora": UpdateStatus.UPDATES_OK,
         "sd-svs": UpdateStatus.UPDATES_REQUIRED,
@@ -365,7 +373,6 @@ def test_apply_updates_required(
     assert updater.overall_update_status(results) == UpdateStatus.UPDATES_REQUIRED
     assert not mocked_error.called
     assert not apply_dom0.called
-    shutdown.assert_called_once()
 
 
 @pytest.mark.parametrize("status", UpdateStatus)
