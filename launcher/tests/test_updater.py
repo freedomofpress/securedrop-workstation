@@ -383,15 +383,14 @@ def test_apply_updates_required(
 def test_write_updates_status_flag_to_disk(
     mocked_info, mocked_error, mocked_call, mocked_expand, status
 ):
-    flag_file_sd_svs = updater.get_path(updater.FLAG_FILE_STATUS_SD_SVS)
-    flag_file_dom0 = updater.get_path(updater.FLAG_FILE_STATUS_DOM0)
+    flag_file_sd_svs = updater.FLAG_FILE_STATUS_SD_SVS
+    flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_STATUS_DOM0)
 
     updater._write_updates_status_flag_to_disk(status)
 
     mocked_call.assert_called_once_with(
         ["qvm-run", "sd-svs", "echo '{}' > {}".format(status.value, flag_file_sd_svs)]
     )
-    assert "tmp" in flag_file_sd_svs
 
     assert os.path.exists(flag_file_dom0)
     try:
@@ -447,8 +446,8 @@ def test_write_updates_status_flag_to_disk_failure_dom0(
 def test_write_last_updated_flags_to_disk(
     mocked_info, mocked_error, mocked_call, mocked_expand
 ):
-    flag_file_sd_svs = updater.get_path(updater.FLAG_FILE_LAST_UPDATED_SD_SVS)
-    flag_file_dom0 = updater.get_path(updater.FLAG_FILE_LAST_UPDATED_DOM0)
+    flag_file_sd_svs = updater.FLAG_FILE_LAST_UPDATED_SD_SVS
+    flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_LAST_UPDATED_DOM0)
     current_time_utc = str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
     updater._write_last_updated_flags_to_disk()
