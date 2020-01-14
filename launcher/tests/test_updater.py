@@ -640,7 +640,7 @@ def test_safely_shutdown(mocked_info, mocked_error, mocked_call, vm):
 @mock.patch("Updater.sdlog.info")
 def test_safely_start(mocked_info, mocked_error, mocked_call, vm):
     call_list = [
-        call(["qvm-start", "{}".format(vm)]),
+        call(["qvm-start", "--skip-if-running", "{}".format(vm)]),
     ]
 
     updater._safely_start_vm(vm)

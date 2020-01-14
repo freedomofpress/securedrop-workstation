@@ -325,7 +325,7 @@ def _shutdown_and_start_vms():
     on, for example.
     """
     vms_in_order = ["sd-proxy", "sd-whonix", "sd-svs", "sd-gpg", "sd-log"]
-
+    sdlog.info("Rebooting all vms for updates")
     for vm in vms_in_order:
         _safely_shutdown_vm(vm)
 
@@ -343,10 +343,11 @@ def _safely_shutdown_vm(vm):
 
 def _safely_start_vm(vm):
     try:
-        subprocess.check_call(["qvm-start", vm])
+        subprocess.check_call(["qvm-start", "--skip-if-running", vm])
     except subprocess.CalledProcessError as e:
         sdlog.error("Error while starting {}".format(vm))
         sdlog.error(str(e))
+
 
 class UpdateStatus(Enum):
     """
