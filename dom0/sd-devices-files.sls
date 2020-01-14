@@ -2,17 +2,17 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 ##
-# sd-export-files
+# sd-devices-files
 # ========
 #
-# Moves files into place on sd-export
+# Moves files into place on sd-devices
 #
 ##
 include:
   - fpf-apt-test-repo
 
 # Libreoffice needs to be installed here to convert to pdf to allow printing
-sd-export-install-libreoffice:
+sd-devices-install-libreoffice:
   pkg.installed:
     - name: libreoffice
     - retry:
@@ -21,6 +21,6 @@ sd-export-install-libreoffice:
     - install_recommends: False
 
 # Install securedrop-export package https://github.com/freedomofpress/securedrop-export
-sd-export-install-package:
+sd-devices-install-package:
   pkg.installed:
     - name: securedrop-export

@@ -2,10 +2,10 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 ##
-# sd-svs-files
+# sd-app-files
 # ========
 #
-# Moves files into place on sd-svs-template
+# Moves files into place on sd-app-template
 #
 ##
 include:

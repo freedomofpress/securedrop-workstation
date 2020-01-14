@@ -7,6 +7,6 @@ include LICENSE
 include VERSION
 include Makefile
 include sd-proxy/*
-include sd-svs/*
+include sd-app/*
 include sd-workstation/*
 include scripts/*

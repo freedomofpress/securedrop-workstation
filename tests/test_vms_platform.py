@@ -164,7 +164,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         cmd = ["qubes-prefs", "default_dispvm"]
         result = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
-        self.assertEqual(result, "sd-svs-disp")
+        self.assertEqual(result, "sd-viewer")
 
     def test_sys_vms_use_supported_fedora(self):
         """

@@ -2,10 +2,10 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 ##
-# sd-svs-disp
+# sd-viewer
 # ========
 #
-# Configures the 'sd-svs-disp' template VM, which will be used as the
+# Configures the 'sd-viewer' template VM, which will be used as the
 # base dispvm for the SVS vm (will be used to open all submissions
 # after processing).
 # This VM has no network configured.
@@ -15,9 +15,9 @@ include:
   - sd-workstation-template
   - sd-upgrade-templates
 
-sd-svs-disp-template:
+sd-viewer-template:
   qvm.vm:
-    - name: sd-svs-disp-buster-template
+    - name: sd-viewer-buster-template
     - clone:
       - source: securedrop-workstation-buster
       - label: green
@@ -29,29 +29,29 @@ sd-svs-disp-template:
       - sls: sd-workstation-template
       - sls: sd-upgrade-templates
 
-sd-svs-disp:
+sd-viewer:
   qvm.vm:
-    - name: sd-svs-disp
+    - name: sd-viewer
     - present:
-      - template: sd-svs-disp-buster-template
+      - template: sd-viewer-buster-template
       - label: green
     - prefs:
-      - template: sd-svs-disp-buster-template
+      - template: sd-viewer-buster-template
       - netvm: ""
       - template_for_dispvms: True
     - tags:
       - add:
         - sd-workstation
-        - sd-svs-disp-vm
+        - sd-viewer-vm
         - sd-buster
     - features:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-svs-disp-buster-template
+      - qvm: sd-viewer-buster-template
 
-sd-svs-disp-default-dispvm:
+sd-viewer-default-dispvm:
   cmd.run:
-    - name: qubes-prefs default_dispvm sd-svs-disp
+    - name: qubes-prefs default_dispvm sd-viewer
     - require:
-      - qvm: sd-svs-disp
+      - qvm: sd-viewer

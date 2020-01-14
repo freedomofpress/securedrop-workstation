@@ -5,16 +5,16 @@
 # qvm.work
 # ========
 #
-# Installs 'sd-svs' AppVM, to persistently store SD data
+# Installs 'sd-app' AppVM, to persistently store SD data
 # This VM has no network configured.
 ##
 include:
   - sd-workstation-template
   - sd-upgrade-templates
 
-sd-svs-template:
+sd-app-template:
   qvm.vm:
-    - name: sd-svs-buster-template
+    - name: sd-app-buster-template
     - clone:
       - source: securedrop-workstation-buster
       - label: yellow
@@ -27,13 +27,13 @@ sd-svs-template:
       - sls: sd-workstation-template
       - sls: sd-upgrade-templates
 
-sd-svs:
+sd-app:
   qvm.vm:
-    - name: sd-svs
+    - name: sd-app
     - present:
       - label: yellow
     - prefs:
-      - template: sd-svs-buster-template
+      - template: sd-app-buster-template
       - netvm: ""
     - tags:
       - add:
@@ -43,16 +43,16 @@ sd-svs:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-svs-buster-template
+      - qvm: sd-app-buster-template
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.
-sd-svs-template-sync-appmenus:
+sd-app-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start --skip-if-running sd-svs-buster-template &&
-        qvm-sync-appmenus sd-svs-buster-template
+        qvm-start --skip-if-running sd-app-buster-template &&
+        qvm-sync-appmenus sd-app-buster-template
     - require:
-      - qvm: sd-svs-buster-template
+      - qvm: sd-app-buster-template
     - onchanges:
-      - qvm: sd-svs-buster-template
+      - qvm: sd-app-buster-template

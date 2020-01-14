@@ -5,7 +5,7 @@ from base import SD_VM_Local_Test
 
 class SD_SVS_Disp_Tests(SD_VM_Local_Test):
     def setUp(self):
-        self.vm_name = "sd-svs-disp"
+        self.vm_name = "sd-viewer"
         super(SD_SVS_Disp_Tests, self).setUp()
 
     def test_sd_svs_disp_config_package_installed(self):

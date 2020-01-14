@@ -16,7 +16,7 @@ dom0-rpm: ## Builds rpm package to be installed on dom0
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
 
-qubes-rpc: prep-salt ## Places default deny qubes-rpc policies for sd-svs and sd-gpg
+qubes-rpc: prep-salt ## Places default deny qubes-rpc policies for sd-app and sd-gpg
 	sudo qubesctl --show-output --targets sd-dom0-qvm-rpc state.highstate
 
 sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
@@ -31,21 +31,21 @@ sd-gpg: prep-salt ## Provisions SD GPG keystore VM
 	sudo qubesctl --show-output state.sls sd-gpg
 	sudo qubesctl --show-output --skip-dom0 --targets sd-workstation-buster-template,sd-gpg state.highstate
 
-sd-svs: prep-salt ## Provisions SD SVS VM
-	sudo qubesctl --show-output state.sls sd-svs
-	sudo qubesctl --show-output --skip-dom0 --targets sd-svs-buster-template,sd-svs state.highstate
+sd-app: prep-salt ## Provisions SD APP VM
+	sudo qubesctl --show-output state.sls sd-app
+	sudo qubesctl --show-output --skip-dom0 --targets sd-app-buster-template,sd-app state.highstate
 
 sd-whonix: prep-salt ## Provisions SD Whonix VM
 	sudo qubesctl --show-output state.sls sd-whonix
 	sudo qubesctl --show-output --skip-dom0 --targets sd-whonix-buster-template,sd-whonix state.highstate
 
-sd-svs-disp: prep-salt ## Provisions SD Submission Viewing VM
-	sudo qubesctl --show-output state.sls sd-svs-disp
-	sudo qubesctl --show-output --skip-dom0 --targets sd-svs-disp-buster-template,sd-svs-disp state.highstate
+sd-viewer: prep-salt ## Provisions SD Submission Viewing VM
+	sudo qubesctl --show-output state.sls sd-viewer
+	sudo qubesctl --show-output --skip-dom0 --targets sd-viewer-buster-template,sd-viewer state.highstate
 
-sd-export: prep-salt ## Provisions SD Export VM
-	sudo qubesctl --show-output state.sls sd-export
-	sudo qubesctl --show-output --skip-dom0 --targets sd-export-buster-template,sd-export-usb,sd-export-usb-dvm state.highstate
+sd-devices: prep-salt ## Provisions SD Export VM
+	sudo qubesctl --show-output state.sls sd-devices
+	sudo qubesctl --show-output --skip-dom0 --targets sd-devices-buster-template,sd-devices,sd-devices-dvm state.highstate
 
 sd-log: prep-salt ## Provisions SD logging VM
 	sudo qubesctl --show-output state.sls sd-log
@@ -65,21 +65,21 @@ prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
 	@./scripts/destroy-vm sd-whonix
 
-remove-sd-svs-disp: assert-dom0 ## Destroys SD Submission reading VM
-	@./scripts/destroy-vm sd-svs-disp
+remove-sd-viewer: assert-dom0 ## Destroys SD Submission reading VM
+	@./scripts/destroy-vm sd-viewer
 
 remove-sd-proxy: assert-dom0 ## Destroys SD Proxy VM
 	@./scripts/destroy-vm sd-proxy
 
-remove-sd-svs: assert-dom0 ## Destroys SD SVS VM
-	@./scripts/destroy-vm sd-svs
+remove-sd-app: assert-dom0 ## Destroys SD APP VM
+	@./scripts/destroy-vm sd-app
 
 remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
 	@./scripts/destroy-vm sd-gpg
 
-remove-sd-export: assert-dom0 ## Destroys SD EXPORT VMs
-	@./scripts/destroy-vm sd-export-usb
-	@./scripts/destroy-vm sd-export-usb-dvm
+remove-sd-devices: assert-dom0 ## Destroys SD EXPORT VMs
+	@./scripts/destroy-vm sd-devices
+	@./scripts/destroy-vm sd-devices-dvm
 
 remove-sd-log: assert-dom0 ## Destroys SD logging VM
 	@./scripts/destroy-vm sd-log
@@ -96,8 +96,8 @@ test: assert-dom0 ## Runs all application tests (no integration tests yet)
 test-base: assert-dom0 ## Runs tests for VMs layout
 	python3 -m unittest -v tests.test_vms_exist.SD_VM_Tests
 
-test-svs: assert-dom0 ## Runs tests for SD SVS VM config
-	python3 -m unittest -v tests.test_svs.SD_SVS_Tests
+test-app: assert-dom0 ## Runs tests for SD APP VM config
+	python3 -m unittest -v tests.test_app.SD_App_Tests
 
 test-proxy: assert-dom0 ## Runs tests for SD Proxy VM
 	python3 -m unittest -v tests.test_proxy_vm

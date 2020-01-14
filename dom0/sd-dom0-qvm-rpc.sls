@@ -45,8 +45,8 @@ dom0-rpc-qubes.OpenInVM:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        @tag:sd-client @dispvm:sd-svs-disp allow
-        @tag:sd-client sd-export-usb allow
+        @tag:sd-client @dispvm:sd-viewer allow
+        @tag:sd-client sd-devices allow
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
 dom0-rpc-qubes.OpenURL:

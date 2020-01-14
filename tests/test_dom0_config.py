@@ -2,18 +2,18 @@ import subprocess
 import unittest
 
 STRETCH_TEMPLATES = [
-    "sd-svs-template",
-    "sd-svs-disp-template",
-    "sd-export-template",
+    "sd-app-template",
+    "sd-viewer-template",
+    "sd-devices-template",
     "sd-proxy-template",
     "securedrop-workstation"
 ]
 
 VMS_TO_UPDATE = [
-    "sd-svs-buster-template",
-    "sd-svs-disp-buster-template",
+    "sd-app-buster-template",
+    "sd-viewer-buster-template",
     "sd-proxy-buster-template",
-    "sd-export-buster-template",
+    "sd-devices-buster-template",
     "whonix-ws-15",
     "whonix-gw-15",
     "securedrop-workstation-buster"
