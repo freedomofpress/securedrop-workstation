@@ -221,6 +221,32 @@ def test_check_debian_updates_failed(mocked_info, mocked_error, mocked_call, cap
     mocked_info.assert_has_calls(info_log)
 
 
+@mock.patch(
+    "subprocess.check_call",
+    side_effect=[subprocess.CalledProcessError(1, "check_call"), "0", "0"],
+)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_check_debian_has_updates(mocked_info, mocked_error, mocked_call, capsys):
+    error_log = [
+        call(
+            "Updates required for {} or cannot check for updates".format(
+                "sd-log-buster-template"
+            )
+        ),
+        call("Command 'check_call' returned non-zero exit status 1."),
+    ]
+    info_log = [
+        call("Checking for updates {}:{}".format("sd-log", "sd-log-buster-template")),
+    ]
+
+    status = updater._check_updates_debian("sd-log")
+    assert status == UpdateStatus.UPDATES_REQUIRED
+
+    mocked_error.assert_has_calls(error_log)
+    mocked_info.assert_has_calls(info_log)
+
+
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
@@ -229,7 +255,7 @@ def test_check_updates_fedora_calls_fedora(mocked_info, mocked_error, mocked_cal
     assert status == UpdateStatus.UPDATES_OK
     subprocess_call_list = [
         call(["qvm-run", current_templates["fedora"], "dnf check-update"]),
-        call(["qvm-shutdown", current_templates["fedora"]]),
+        call(["qvm-shutdown", "--wait", current_templates["fedora"]]),
     ]
 
     mocked_call.assert_has_calls(subprocess_call_list)
@@ -254,12 +280,12 @@ def test_check_updates_calls_correct_commands(
                     "[[ $(apt list --upgradable | wc -l) -eq 1 ]]",
                 ]
             ),
-            call(["qvm-shutdown", current_templates[vm]]),
+            call(["qvm-shutdown", "--wait", current_templates[vm]]),
         ]
     elif vm == "fedora":
         subprocess_call_list = [
             call(["qvm-run", current_templates[vm], "dnf check-update"]),
-            call(["qvm-shutdown", current_templates[vm]]),
+            call(["qvm-shutdown", "--wait", current_templates[vm]]),
         ]
     elif vm == "dom0":
         subprocess_call_list = [
@@ -672,7 +698,7 @@ def test_safely_start_fails(mocked_info, mocked_error, mocked_call, vm):
 @mock.patch("Updater.sdlog.info")
 def test_safely_shutdown_fails(mocked_info, mocked_error, mocked_call, vm):
     call_list = [
-        call("Error while shutting down {}".format(vm)),
+        call("Failed to shut down {}".format(vm)),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
 

@@ -49,7 +49,9 @@ def check_all_updates():
 
     for progress_current, vm in enumerate(current_templates.keys()):
         # yield the progress percentage for UI updates
-        progress_percentage = int(((progress_current + 1) / len(current_templates.keys())) * 100)
+        progress_percentage = int(
+            ((progress_current + 1) / len(current_templates.keys())) * 100
+        )
         update_results = check_updates(vm)
         yield vm, progress_percentage, update_results
 
@@ -118,12 +120,10 @@ def _check_updates_fedora():
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_REQUIRED
     finally:
-        try:
-            subprocess.check_call(["qvm-shutdown", current_templates["fedora"]])
-        except subprocess.CalledProcessError as e:
-            sdlog.error("Failed to shut down {}".format(current_templates["fedora"]))
-            sdlog.error(str(e))
-            return UpdateStatus.UPDATES_FAILED
+        reboot_status = _safely_shutdown_vm(current_templates["fedora"])
+        if reboot_status == UpdateStatus.UPDATES_FAILED:
+            return reboot_status
+
     sdlog.info("{} is up to date".format(current_templates["fedora"]))
     return UpdateStatus.UPDATES_OK
 
@@ -156,12 +156,9 @@ def _check_updates_debian(vm):
         sdlog.error(str(e))
         updates_required = True
     finally:
-        try:
-            subprocess.check_call(["qvm-shutdown", current_templates[vm]])
-        except subprocess.CalledProcessError as e:
-            sdlog.error("Failed to shut down {}".format(current_templates[vm]))
-            sdlog.error(str(e))
-            return UpdateStatus.UPDATES_FAILED
+        reboot_status = _safely_shutdown_vm(current_templates[vm])
+        if reboot_status == UpdateStatus.UPDATES_FAILED:
+            return reboot_status
 
     if not updates_required:
         sdlog.info("{} is up to date".format(current_templates[vm]))
@@ -337,8 +334,9 @@ def _safely_shutdown_vm(vm):
     try:
         subprocess.check_call(["qvm-shutdown", "--wait", vm])
     except subprocess.CalledProcessError as e:
-        sdlog.error("Error while shutting down {}".format(vm))
+        sdlog.error("Failed to shut down {}".format(vm))
         sdlog.error(str(e))
+        return UpdateStatus.UPDATES_FAILED
 
 
 def _safely_start_vm(vm):
