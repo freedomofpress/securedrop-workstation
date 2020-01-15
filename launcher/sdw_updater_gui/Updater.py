@@ -68,7 +68,7 @@ def check_updates(vm):
         return _check_updates_debian(vm)
 
 
-def apply_updates(vms, progress_callback=None):
+def apply_updates(vms):
     """
     Apply updates to the TemplateVMs of VM list specified in parameter
     """
@@ -244,9 +244,8 @@ def _write_last_updated_flags_to_disk():
         sdlog.info("Setting last updated to {} in dom0".format(current_date))
         if not os.path.exists(os.path.dirname(flag_file_dom0_last_updated)):
             os.makedirs(os.path.dirname(flag_file_dom0_last_updated))
-        f = open(flag_file_dom0_last_updated, "w+")
-        f.write(current_date)
-        f.close()
+        with open(flag_file_dom0_last_updated, "w") as f:
+            f.write(current_date)
     except Exception as e:
         sdlog.error("Error writing last updated flag to dom0")
         sdlog.error(str(e))
@@ -277,9 +276,8 @@ def _write_updates_status_flag_to_disk(status):
         sdlog.info("Setting update flag to {} in dom0".format(status.value))
         if not os.path.exists(os.path.dirname(flag_file_path_dom0)):
             os.makedirs(os.path.dirname(flag_file_path_dom0))
-        f = open(flag_file_path_dom0, "w+")
-        f.write(status.value)
-        f.close()
+        with open(flag_file_path_dom0, "w") as f:
+            f.write(status.value)
     except Exception as e:
         sdlog.error("Error writing update status flag to dom0")
         sdlog.error(str(e))

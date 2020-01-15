@@ -186,21 +186,17 @@ class UpdateThread(QThread):
 
     update_signal = pyqtSignal("PyQt_PyObject")
     progress_signal = pyqtSignal("int")
-    progress_callback = None
 
     def __init__(self):
         QThread.__init__(self)
 
     def run(self):
-        update_iterator = Updater.check_all_updates()
+        update_generator = Updater.check_all_updates()
         results = {}
-        while True:
-            try:
-                vm, progress, result = next(update_iterator)
-                results[vm] = result
-                self.progress_signal.emit(progress)
-            except StopIteration:
-                break
+
+        for vm, progress, result in update_generator:
+            results[vm] = result
+            self.progress_signal.emit(progress)
 
         # write the flags to disk
         run_results = Updater.overall_update_status(results)
@@ -208,7 +204,7 @@ class UpdateThread(QThread):
         if run_results == UpdateStatus.UPDATES_OK:
             Updater._write_last_updated_flags_to_disk()
         # populate signal contents
-        message = results  # copy all the information from results generator
+        message = results  # copy all the information from results
         message["recommended_action"] = run_results
         self.update_signal.emit(message)
 
@@ -222,7 +218,6 @@ class UpgradeThread(QThread):
     upgrade_signal = pyqtSignal("PyQt_PyObject")
     progress_signal = pyqtSignal("int")
     vms_to_upgrade = []
-    progress_callback = None
 
     def __init__(self, vms):
         QThread.__init__(self)
@@ -231,13 +226,11 @@ class UpgradeThread(QThread):
     def run(self):
         upgrade_generator = Updater.apply_updates(self.vms_to_upgrade)
         results = {}
-        while True:
-            try:
-                vm, progress, result = next(upgrade_generator)
-                results[vm] = results
-                self.progress_signal.emit(progress)
-            except StopIteration:
-                break
+
+        for vm, progress, result in upgrade_generator:
+            results[vm] = results
+            self.progress_signal.emit(progress)
+
         # write flags to disk
         run_results = Updater.overall_update_status(results)
         Updater._write_updates_status_flag_to_disk(run_results)
