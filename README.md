@@ -306,114 +306,39 @@ Closing the client application will sign you out of the server. If you manually 
 
 After you have completed your session, we strongly recommend shutting down the workstation (as opposed to sleeping the system) and storing it in a secure location.
 
-Replies and Source Deletion will be added in the next major release of the *SecureDrop Workstation*.
+### Print and export
 
-### Exporting documents
+You can print or export documents directly from the graphical client in `sd-app`, which sends print or export jobs to the `sd-devices` disposable VM. This is done  using a `qvm-open-in-vm` command for opening a file in the gzipped tar archive following the specification [here](https://github.com/freedomofpress/securedrop-export).
 
-**WARNING:** Opening files from an unknown origin presents certain risks (malware, fingerprinting). While the workstation helps reduce these risks by offering VM-level isolation, transferring documents to another host without the same level of isolation may expose you to these risks. Using tools to sanitize submitted documents, such as right-clicking a .pdf and selecting "Convert to trusted PDF" in Qubes OS, may help mitigate some of these risks. Further mitigating these risks will be a focus of future development.
+Currently, the following operations are supported from the client:
+- print to a supported printer (e.g., Brother HL-L2320D)
+- export to a LUKS-encrypted USB device.
 
-### Manual export flow
+### Preparing a USB export device
 
-Exporting documents directly from within the *SecureDrop Client* is not currently supported, but you can export documents manually via USB by following these steps:
-
-1. Start the `sd-devices` VM. Again from the Qubes menu:
-   1. Select "Domain: sd-devices"
-   2. Click "export: Files". This will launch the file manager in the export VM.
-   3. Insert your USB drive into the workstation. A notification will pop up indicating the name of your USB device, e.g. "Innostor_PenDrive".
-   4. In the upper right hand side of your screen, there is a small icon in the system tray with a USB drive. Click that icon.
-   5. Select the name of your USB drive.
-   6. Click the **+** icon next to the `sd-devices` VM.
-3. You can use the command line in `sd-app` to manually move selected files:
-
-```
-qvm-copy-to-vm sd-devices ~/.securedrop_client/data/name-of-file
-```
-
-4. You may now use the File manager that you opened in `sd-devices` to move files from `~/QubesIncoming/sd-app` to the USB drive. Delete the original file from `~/QubesIncoming/sd-app` once it has been moved. Note that the drive and files are not encrypted, so ensure that the key is properly erased and/or destroyed after use.
-
-The development plan is to provide functionality in the *SecureDrop Client* that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
-
-### Automated export flows
-
-The `sd-devices` disposable VM handles exports to USB devices through `qvm-open-in-vm`.
-
-#### Automated encrypted USB export flow (Work in progress, client integration TBD)
-
-The SecureDrop Workstation can automatically export to a luks-encrypted USB device provided the correct format. The file extension of the tar archive must be `.sd-devices`, containing the following structure:
-
-```
-.
-├── metadata.json
-└── export_data
-    ├── file-to-export-1.txt
-    ├── file-to-export-2.pdf
-    ├── file-to-export-3.doc
-    [...]
-```
-
-The folder `export_data` contains all the files that will be exported to the disk, and the file `metadata.json` contains the encryption passphrase and method for the USB Transfer Device (only LUKS is supported at the moment). The file should be formatted as follows:
-
-```
-{
-  "device": "disk",
-  "encryption_method": "luks",
-  "encryption_key": "Your encryption passhrase goes here"
-}
-```
-
-#### Automated printing flow (Work in progress, client integration TBD)
-
-The SecureDrop Workstation can automatically print files to a USB-connected printer provided the correct format. The file extension of the tar archive must be `.sd-devices`, containing the following structure:
-
-Note that only Brother printers are supported now (tested with HL-L2320D)
-
-```
-.
-├── metadata.json
-└── export_data
-    ├── file-to-export-1.txt
-    ├── file-to-export-2.pdf
-    ├── file-to-export-3.doc
-    [...]
-```
-
-The folder `export_data` contains all the files that will be printed, and the file `metadata.json` contains an instruction indicating that the archive will be printed:
-
-```
-{
-  "device": "printer"
-}
-```
-
-Optionally you can use the `printer-test` device to send a printer test page and ensure the printer is functional
-
-```
-{
-  "device": "printer-test"
-}
-```
-
-#### Create the transfer device
-
-You can find instructions to create a luks-encrypted transfer device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_and_export_device.html).
-
-#### Exporting
+You can find instructions to create a LUKS-encrypted export device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_and_export_device.html).
 
 Your export devices should be labeled, and used for nothing else.
+
+#### Printing and exporting from the client
+
+**WARNING:** Opening files from an unknown origin presents certain risks (malware, fingerprinting). While the workstation helps reduce these risks by offering VM-level isolation, transferring documents to another host without the same level of isolation may expose you to these risks. Using tools to sanitize submitted documents, such as right-clicking a .pdf and selecting "Convert to trusted PDF" in Qubes OS, may help mitigate some of these risks. Further mitigating these risks will be a focus of future development.
 
 1. Attach the USB device to your workstation.
 2. Use the Qube Manager to start the `sd-devices` VM.
 3. Use the Qubes Devices tool to attach the device to the `sd-devices` VM.
-4. In `sd-app`, run the following command:
-
-```
-qvm-open-in-vm sd-devices <export-archive-filename>
-```
+4. In `sd-app`, launch the SecureDrop Client.
+5. Select the source in the source list.
+6. Download the document you wish to print or export.
+7. Click "Export" or "Print" next to the file name once the document has been
+   downloaded.
 
 #### Troubleshooting
 
 - Verify your export device is attached to `sd-devices`, either
   with Qubes Devices or by running `qvm-usb` in dom0.
+- Ensure you are using a LUKS-encrypted USB storage device, or a supported
+  printer.
 
 ### Transferring files via OnionShare
 
@@ -446,9 +371,6 @@ qvm-copy-to-vm sd-onionshare ~/.securedrop_client/data/name-of-file
 6. On the target machine, navigate to the Tor onion service URL provided by OnionShare using the Tor Browser to retrieve the file.
 7. Close OnionShare and delete the decrypted submission on `sd-onionshare` from `~/QubesIncoming/sd-app`
 
-### Printing
-
-Printing directly from the `sd-app` AppVM or the disposable VMs will not be supported. The development plan is to instruct admins to install printer drivers in a template associated with a new printing VM. This template will not be shared with any other VMs.
 
 ## Distributing and Releasing
 
