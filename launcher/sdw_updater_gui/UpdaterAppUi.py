@@ -32,9 +32,16 @@ except AttributeError:
 class Ui_UpdaterDialog(object):
     def setupUi(self, UpdaterDialog):
         UpdaterDialog.setObjectName(_fromUtf8("UpdaterDialog"))
-        UpdaterDialog.resize(520, 330)
+        UpdaterDialog.resize(520, 450)
         self.layoutWidget = QtGui.QWidget(UpdaterDialog)
-        self.layoutWidget.setGeometry(QtCore.QRect(20, 20, 480, 300))
+        self.layoutWidget.setGeometry(QtCore.QRect(20, 20, 480, 410))
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.layoutWidget.sizePolicy().hasHeightForWidth())
+        self.layoutWidget.setSizePolicy(sizePolicy)
+        self.layoutWidget.setMinimumSize(QtCore.QSize(480, 410))
+        self.layoutWidget.setMaximumSize(QtCore.QSize(480, 410))
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.gridLayout = QtGui.QGridLayout(self.layoutWidget)
         self.gridLayout.setMargin(0)
@@ -46,9 +53,6 @@ class Ui_UpdaterDialog(object):
         self.proposedActionLabel.setFont(font)
         self.proposedActionLabel.setObjectName(_fromUtf8("proposedActionLabel"))
         self.gridLayout.addWidget(self.proposedActionLabel, 3, 0, 1, 3)
-        self.label = QtGui.QLabel(self.layoutWidget)
-        self.label.setObjectName(_fromUtf8("label"))
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 3)
         self.progressBar = QtGui.QProgressBar(self.layoutWidget)
         self.progressBar.setProperty("value", 0)
         self.progressBar.setObjectName(_fromUtf8("progressBar"))
@@ -74,13 +78,12 @@ class Ui_UpdaterDialog(object):
 
     def retranslateUi(self, UpdaterDialog):
         UpdaterDialog.setWindowTitle(
-            _translate("UpdaterDialog", "SecureDrop Workstation Launcher", None)
+            _translate(
+                "UpdaterDialog", "SecureDrop Workstation preflight updater", None
+            )
         )
         self.proposedActionLabel.setText(
             _translate("UpdaterDialog", "User Notifications go here", None)
-        )
-        self.label.setText(
-            _translate("UpdaterDialog", "SecureDrop Workstation Launcher", None)
         )
         self.clientOpenButton.setText(_translate("UpdaterDialog", "Open Client", None))
         self.rebootButton.setText(_translate("UpdaterDialog", "Reboot", None))
