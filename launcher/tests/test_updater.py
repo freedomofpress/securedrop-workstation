@@ -307,13 +307,11 @@ def test_check_all_updates(
 
     update_generator = updater.check_all_updates()
     results = {}
-    while True:
-        try:
-            vm, progress, result = next(update_generator)
-            assert progress is not None
-            results[vm] = result
-        except StopIteration:
-            break
+
+    for vm, progress, result in update_generator:
+        results[vm] = result
+        assert progress is not None
+        results[vm] = result
 
     check_updates_call_list = [call(x) for x in current_templates.keys()]
     mocked_check_updates.assert_has_calls(check_updates_call_list)
@@ -341,13 +339,10 @@ def test_apply_updates(
 ):
     upgrade_generator = updater.apply_updates(["dom0"])
     results = {}
-    while True:
-        try:
-            vm, progress, result = next(upgrade_generator)
-            assert progress is not None
-            results[vm] = result
-        except StopIteration:
-            break
+
+    for vm, progress, result in upgrade_generator:
+        results[vm] = result
+        assert progress is not None
 
     assert updater.overall_update_status(results) == UpdateStatus.UPDATES_OK
     assert not mocked_error.called
@@ -376,13 +371,10 @@ def test_apply_updates_required(
 ):
     upgrade_generator = updater.apply_updates(["fedora", "sd-svs"])
     results = {}
-    while True:
-        try:
-            vm, progress, result = next(upgrade_generator)
-            assert progress is not None
-            results[vm] = result
-        except StopIteration:
-            break
+
+    for vm, progress, result in upgrade_generator:
+        results[vm] = result
+        assert progress is not None
 
     assert results == {
         "fedora": UpdateStatus.UPDATES_OK,
