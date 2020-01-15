@@ -1,9 +1,9 @@
 # checking for updates
 label_status_checking_updates = "Checking for updates"
-description_status_checking_updates = "Checking for workstation updates"
+description_status_checking_updates = "Checking for <b>workstation </b>updates"
 
 # Results of update search
-label_status_updates_available = "Security updates required."
+label_status_updates_available = "Security <b>updates</b> required."
 description_status_updates_available = (
     "Before you use SecureDrop on this computer, "
     "we need to apply available security updates "

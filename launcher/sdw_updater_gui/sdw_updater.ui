@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>520</width>
-    <height>330</height>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>SecureDrop Workstation Launcher</string>
+   <string>SecureDrop Workstation preflight updater</string>
   </property>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
@@ -19,8 +19,26 @@
      <x>20</x>
      <y>20</y>
      <width>480</width>
-     <height>300</height>
+     <height>410</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>480</width>
+     <height>410</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>480</width>
+     <height>410</height>
+    </size>
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="3" column="0" colspan="3">
@@ -33,13 +51,6 @@
       </property>
       <property name="text">
        <string>User Notifications go here</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="3">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>SecureDrop Workstation Launcher</string>
       </property>
      </widget>
     </item>

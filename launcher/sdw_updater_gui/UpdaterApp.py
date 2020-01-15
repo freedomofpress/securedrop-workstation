@@ -18,10 +18,13 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         self.progress = 0
         self.setupUi(self)
         self.clientOpenButton.setEnabled(False)
+        self.clientOpenButton.hide()
         self.clientOpenButton.clicked.connect(self.launch_securedrop_client)
         self.rebootButton.setEnabled(False)
+        self.rebootButton.hide()
         self.rebootButton.clicked.connect(self.reboot_workstation)
         self.applyUpdatesButton.setEnabled(False)
+        self.applyUpdatesButton.hide()
         self.applyUpdatesButton.clicked.connect(self.apply_all_updates)
 
         self.show()
@@ -54,6 +57,7 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             logger.info("Updates required")
             self.vms_to_update = self.get_vms_that_need_upgrades(result)
             self.applyUpdatesButton.setEnabled(True)
+            self.applyUpdatesButton.show()
             self.proposedActionLabel.setText(strings.label_status_updates_available)
             self.proposedActionDescription.setText(
                 strings.description_status_updates_available
@@ -61,6 +65,7 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         elif result["recommended_action"] == UpdateStatus.UPDATES_OK:
             logger.info("VMs up-to-date, OK to start client")
             self.clientOpenButton.setEnabled(True)
+            self.clientOpenButton.show()
             self.proposedActionLabel.setText(strings.label_status_up_to_date)
             self.proposedActionDescription.setText(
                 strings.description_status_up_to_date
@@ -86,6 +91,7 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         if result["recommended_action"] == UpdateStatus.REBOOT_REQUIRED:
             logger.info("Reboot required")
             self.rebootButton.setEnabled(True)
+            self.rebootButton.show()
             self.proposedActionLabel.setText(strings.label_status_reboot_required)
             self.proposedActionDescription.setText(
                 strings.description_status_reboot_required
@@ -93,6 +99,7 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         elif result["recommended_action"] == UpdateStatus.UPDATES_OK:
             logger.info("VMs have been succesfully updated, OK to start client")
             self.clientOpenButton.setEnabled(True)
+            self.clientOpenButton.show()
             self.proposedActionLabel.setText(strings.label_status_updates_complete)
             self.proposedActionDescription.setText(
                 strings.description_status_updates_complete
@@ -155,6 +162,7 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             strings.description_status_applying_updates
         )
         self.applyUpdatesButton.setEnabled(False)
+        self.applyUpdatesButton.hide()
         # Create thread with list of VMs to update
         self.upgrade_thread = UpgradeThread(self.vms_to_update)
         self.upgrade_thread.start()
