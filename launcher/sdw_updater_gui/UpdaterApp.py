@@ -29,7 +29,6 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
 
         self.show()
 
-        self.proposedActionLabel.setText(strings.label_status_checking_updates)
         self.proposedActionDescription.setText(
             strings.description_status_checking_updates
         )
@@ -58,7 +57,6 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             self.vms_to_update = self.get_vms_that_need_upgrades(result)
             self.applyUpdatesButton.setEnabled(True)
             self.applyUpdatesButton.show()
-            self.proposedActionLabel.setText(strings.label_status_updates_available)
             self.proposedActionDescription.setText(
                 strings.description_status_updates_available
             )
@@ -66,14 +64,12 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             logger.info("VMs up-to-date, OK to start client")
             self.clientOpenButton.setEnabled(True)
             self.clientOpenButton.show()
-            self.proposedActionLabel.setText(strings.label_status_up_to_date)
             self.proposedActionDescription.setText(
                 strings.description_status_up_to_date
             )
         else:
             logger.error("Error checking for updates")
             logger.error(str(result))
-            self.proposedActionLabel.setText(strings.label_error_check_update_failed)
             self.proposedActionDescription.setText(
                 strings.description_error_check_updates_failed
             )
@@ -92,7 +88,6 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             logger.info("Reboot required")
             self.rebootButton.setEnabled(True)
             self.rebootButton.show()
-            self.proposedActionLabel.setText(strings.label_status_reboot_required)
             self.proposedActionDescription.setText(
                 strings.description_status_reboot_required
             )
@@ -100,7 +95,6 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             logger.info("VMs have been succesfully updated, OK to start client")
             self.clientOpenButton.setEnabled(True)
             self.clientOpenButton.show()
-            self.proposedActionLabel.setText(strings.label_status_updates_complete)
             self.proposedActionDescription.setText(
                 strings.description_status_updates_complete
             )
@@ -139,11 +133,9 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         Helper method to launch the SecureDrop Client
         """
         try:
-            self.proposedActionLabel.setText(strings.label_status_launching_client)
             logger.info("Launching SecureDrop client")
             subprocess.Popen(["qvm-run", "sd-svs", "gtk-launch securedrop-client"])
         except subprocess.CalledProcessError as e:
-            self.proposedActionLabel.setText(strings.label_error_launching_client)
             self.proposedActionDescription.setText(strings.descri)
             logger.error("Error while launching SecureDrop client")
             logger.error(str(e))
@@ -157,7 +149,6 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         logger.info("Starting UpgradeThread")
         self.progress = 5
         self.progressBar.setProperty("value", self.progress)
-        self.proposedActionLabel.setText(strings.label_status_applying_updates)
         self.proposedActionDescription.setText(
             strings.description_status_applying_updates
         )
@@ -176,9 +167,8 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         try:
             logger.info("Rebooting the workstation")
             subprocess.check_call(["sudo", "reboot"])
-            self.proposedActionLabel.setText(strings.label_status_rebooting)
+            self.proposedActionDescription.setText(strings.description_status_rebooting)
         except subprocess.CalledProcessError as e:
-            self.proposedActionLabel.setText(strings.label_error_reboot)
             self.proposedActionDescription.setText(strings.description_error_reboot)
             logger.error("Error while rebooting the workstation")
             logger.error(str(e))

@@ -303,7 +303,7 @@ def overall_update_status(results):
 
     if updates_failed:
         return UpdateStatus.UPDATES_FAILED
-    if reboot_required:
+    elif reboot_required:
         return UpdateStatus.REBOOT_REQUIRED
     elif updates_required:
         return UpdateStatus.UPDATES_REQUIRED
