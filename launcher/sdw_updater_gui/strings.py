@@ -1,62 +1,55 @@
 # checking for updates
-label_status_checking_updates = "Checking for updates"
-description_status_checking_updates = "Checking for <b>workstation </b>updates"
+description_status_checking_updates = (
+    "<h3> Checking for Updates... </h3> <p>This should take around 3 to 5 minutes.</p>"
+)
 
 # Results of update search
-label_status_updates_available = "Security <b>updates</b> required."
 description_status_updates_available = (
-    "Before you use SecureDrop on this computer, "
-    "we need to apply available security updates "
-    "to the system component used to open submitted "
-    "documents. This typically takes less than 5 "
-    "minutes, but can take longer if many updates "
-    "are available."
-    "Please save your work before clicking the button"
-    "below as VMs will be rebooted in the process."
+    "<h3> Security updates required. </h3><p>Before you can safely use the SecureDrop "
+    "app on your workstation, Qubes needs to download and run critical security updates. "
+    "<b> Updates should take around 5 to 10 minutes, depending on when was the last "
+    "time you updated. </b> Any interruption in the update process may break the "
+    "Workstation. Please close this window if now is a bad time.</p><p><b>The "
+    "workstation may need to be restarted after the updates are complete.</p>"
+    "<p>If you decide not to continue, please keep in mind that the updates will still "
+    "need to download and run before the SecureDrop app is opened again.</p>"
 )
-label_status_up_to_date = "System is already up-to-date"
-description_status_up_to_date = "No updates are required at this time."
-label_error_check_update_failed = "Error retrieving updates"
+description_status_up_to_date = (
+    "<h3> No updates, today !</h3>"
+    "<p>Click continue to launch the SecureDrop application.</p>"
+)
 description_error_check_updates_failed = (
-    "There was an error retrieving updates. Please contact your administrator"
+    "<h3> Cannot check for updates </h3> There was an error retrieving updates. "
+    "Please check your Internet connection. If this problem persists, "
+    "please contact your administrator"
 )
-
 # Applying updates
-label_status_applying_updates = "Security updates are being applied"
 description_status_applying_updates = (
-    "You will see system notifications while the "
-    "update is underway. Please do not shut down "
-    "the computer while the update is in progress."
+    "<h3> Downloading and installing updates... </h3>"
+    "<p>VMs will be opening and closing as part of this progress, and you will see "
+    "a flood of notifications as part of this process.</p>"
+    "<h2>Please do not shutdown the Workstation at this time!<h2>"
 )
-label_status_updates_complete = "Updates have been applied, system is now up-to-date."
 description_status_updates_complete = (
-    "Updates to critical system components have "
-    "been applied. It is now safe to use SecureDrop "
-    "on this computer."
+    "<h3> All updates complete!</h3>"
+    "Click continue to safely launch and use the SecureDrop app. No reboot is necessary."
 )
-label_status_security_updates_failed = "Security updates failed"
 description_status_security_updates_failed = (
-    "There was a problem applying security "
-    "updates. Please do not use SecureDrop "
-    "on this computer for now, and contact "
-    "your administrator for assistance."
+    "<h3> Security updates cannot be applied at this time</h3>"
+    "There was an error downloading or installing updates for your workstation. "
+    "The SecureDrop app cannot be started at this time. Please contact your administrator."
 )
-
 # Post-update actions (launching client, reboot)
-label_status_reboot_required = "A reboot is required"
 description_status_reboot_required = (
-    "A reboot is required to complete critical system updates"
+    "<h3> All updates complete!</h3>"
+    "A reboot will be required for security updates to be applied. "
+    "Please click the Reboot button below to reboot your workstation"
 )
-label_status_rebooting = "Rebooting workstation"
-label_error_reboot = "Error rebooting workstation"
+description_status_rebooting = "<h3> Rebooting workstation</h3>"
 description_error_reboot = (
-    "Cannot reboot the current system, please contact your administrator"
+    "<h3> Error rebooting workstation</h3>" "<p>Please contact your administrator.</p>"
 )
-label_status_launching_client = "Launching SecureDrop client"
-label_error_launching_client = "Error launching SecureDrop client"
 description_error_lauching_client = (
-    "An error has occurred when trying to launch "
-    "the SecureDrop Client. Please contact your "
-    "administrator."
+    "<h3> Error launching the SecureDrop application<h3>"
+    "Please contact your administrator."
 )
-label_error_writing_flag = "Error writing file to sd-svs."
