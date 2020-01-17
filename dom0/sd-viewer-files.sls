@@ -16,7 +16,7 @@ include:
 sd-viewer-install-mimetype-handler-package:
   pkg.installed:
     - pkgs:
-      - securedrop-workstation-svs-disp
+      - securedrop-workstation-viewer
       - evince
     - require:
       - sls: fpf-apt-test-repo
