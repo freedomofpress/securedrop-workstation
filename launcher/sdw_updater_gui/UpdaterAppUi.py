@@ -51,29 +51,43 @@ class Ui_UpdaterDialog(object):
         self.layoutWidget.setMaximumSize(QtCore.QSize(480, 410))
         self.layoutWidget.setObjectName(_fromUtf8("layoutWidget"))
         self.gridLayout = QtGui.QGridLayout(self.layoutWidget)
-        self.gridLayout.setMargin(0)
+        self.gridLayout.setContentsMargins(0, 35, 0, 15)
         self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        spacerItem = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum
+        )
+        self.gridLayout.addItem(spacerItem, 5, 0, 1, 1)
         self.rebootButton = QtGui.QPushButton(self.layoutWidget)
         self.rebootButton.setObjectName(_fromUtf8("rebootButton"))
-        self.gridLayout.addWidget(self.rebootButton, 4, 2, 1, 1)
+        self.gridLayout.addWidget(self.rebootButton, 5, 2, 1, 1)
+        self.applyUpdatesButton = QtGui.QPushButton(self.layoutWidget)
+        self.applyUpdatesButton.setObjectName(_fromUtf8("applyUpdatesButton"))
+        self.gridLayout.addWidget(self.applyUpdatesButton, 5, 1, 1, 1)
+        self.cancelButton = QtGui.QPushButton(self.layoutWidget)
+        self.cancelButton.setObjectName(_fromUtf8("cancelButton"))
+        self.gridLayout.addWidget(self.cancelButton, 5, 4, 1, 1)
+        self.clientOpenButton = QtGui.QPushButton(self.layoutWidget)
+        self.clientOpenButton.setObjectName(_fromUtf8("clientOpenButton"))
+        self.gridLayout.addWidget(self.clientOpenButton, 5, 3, 1, 1)
         self.progressBar = QtGui.QProgressBar(self.layoutWidget)
         self.progressBar.setProperty("value", 0)
         self.progressBar.setObjectName(_fromUtf8("progressBar"))
-        self.gridLayout.addWidget(self.progressBar, 1, 0, 1, 3)
-        self.applyUpdatesButton = QtGui.QPushButton(self.layoutWidget)
-        self.applyUpdatesButton.setObjectName(_fromUtf8("applyUpdatesButton"))
-        self.gridLayout.addWidget(self.applyUpdatesButton, 4, 0, 1, 1)
-        self.clientOpenButton = QtGui.QPushButton(self.layoutWidget)
-        self.clientOpenButton.setObjectName(_fromUtf8("clientOpenButton"))
-        self.gridLayout.addWidget(self.clientOpenButton, 4, 1, 1, 1)
+        self.gridLayout.addWidget(self.progressBar, 1, 0, 1, 5)
         self.proposedActionDescription = QtGui.QLabel(self.layoutWidget)
+        self.proposedActionDescription.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop
+        )
         self.proposedActionDescription.setWordWrap(True)
         self.proposedActionDescription.setObjectName(
             _fromUtf8("proposedActionDescription")
         )
-        self.gridLayout.addWidget(
-            self.proposedActionDescription, 2, 0, 1, 3, QtCore.Qt.AlignTop
-        )
+        self.gridLayout.addWidget(self.proposedActionDescription, 3, 0, 1, 5)
+        self.label = QtGui.QLabel(self.layoutWidget)
+        self.label.setMinimumSize(QtCore.QSize(0, 20))
+        self.label.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.label.setText(_fromUtf8(""))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout.addWidget(self.label, 2, 0, 1, 5)
 
         self.retranslateUi(UpdaterDialog)
         QtCore.QMetaObject.connectSlotsByName(UpdaterDialog)
@@ -88,6 +102,7 @@ class Ui_UpdaterDialog(object):
         self.applyUpdatesButton.setText(
             _translate("UpdaterDialog", "Start Updates", None)
         )
+        self.cancelButton.setText(_translate("UpdaterDialog", "Cancel", None))
         self.clientOpenButton.setText(_translate("UpdaterDialog", "Continue", None))
         self.proposedActionDescription.setText(
             _translate("UpdaterDialog", "Description goes here", None)
