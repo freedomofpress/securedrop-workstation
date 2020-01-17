@@ -59,41 +59,89 @@
     </size>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="4" column="2">
+    <property name="topMargin">
+     <number>35</number>
+    </property>
+    <property name="bottomMargin">
+     <number>15</number>
+    </property>
+    <item row="5" column="0">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="5" column="2">
      <widget class="QPushButton" name="rebootButton">
       <property name="text">
        <string>Reboot</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="0" colspan="3">
-     <widget class="QProgressBar" name="progressBar">
-      <property name="value">
-       <number>0</number>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
+    <item row="5" column="1">
      <widget class="QPushButton" name="applyUpdatesButton">
       <property name="text">
        <string>Start Updates</string>
       </property>
      </widget>
     </item>
-    <item row="4" column="1">
+    <item row="5" column="4">
+     <widget class="QPushButton" name="cancelButton">
+      <property name="text">
+       <string>Cancel</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="3">
      <widget class="QPushButton" name="clientOpenButton">
       <property name="text">
        <string>Continue</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="0" colspan="3" alignment="Qt::AlignTop">
+    <item row="1" column="0" colspan="5">
+     <widget class="QProgressBar" name="progressBar">
+      <property name="value">
+       <number>0</number>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="5">
      <widget class="QLabel" name="proposedActionDescription">
       <property name="text">
        <string>Description goes here</string>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+      </property>
       <property name="wordWrap">
        <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="5">
+     <widget class="QLabel" name="label">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>20</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>20</height>
+       </size>
+      </property>
+      <property name="text">
+       <string/>
       </property>
      </widget>
     </item>

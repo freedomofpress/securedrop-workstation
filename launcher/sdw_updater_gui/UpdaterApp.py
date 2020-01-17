@@ -27,6 +27,10 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         self.applyUpdatesButton.hide()
         self.applyUpdatesButton.clicked.connect(self.apply_all_updates)
 
+        self.cancelButton.setEnabled(False)
+        self.cancelButton.hide()
+        self.cancelButton.clicked.connect(self.exit_launcher)
+
         self.show()
 
         self.proposedActionDescription.setText(
@@ -57,6 +61,8 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             self.vms_to_update = self.get_vms_that_need_upgrades(result)
             self.applyUpdatesButton.setEnabled(True)
             self.applyUpdatesButton.show()
+            self.cancelButton.setEnabled(True)
+            self.cancelButton.show()
             self.proposedActionDescription.setText(
                 strings.description_status_updates_available
             )
@@ -64,6 +70,8 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             logger.info("VMs up-to-date, OK to start client")
             self.clientOpenButton.setEnabled(True)
             self.clientOpenButton.show()
+            self.cancelButton.setEnabled(True)
+            self.cancelButton.show()
             self.proposedActionDescription.setText(
                 strings.description_status_up_to_date
             )
@@ -88,6 +96,8 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             logger.info("Reboot required")
             self.rebootButton.setEnabled(True)
             self.rebootButton.show()
+            self.cancelButton.setEnabled(True)
+            self.cancelButton.show()
             self.proposedActionDescription.setText(
                 strings.description_status_reboot_required
             )
@@ -95,8 +105,17 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             logger.info("VMs have been succesfully updated, OK to start client")
             self.clientOpenButton.setEnabled(True)
             self.clientOpenButton.show()
+            self.cancelButton.setEnabled(True)
+            self.cancelButton.show()
             self.proposedActionDescription.setText(
                 strings.description_status_updates_complete
+            )
+        else:
+            logger.info("Error upgrading VMs")
+            self.cancelButton.setEnabled(True)
+            self.cancelButton.show()
+            self.proposedActionDescription.setText(
+                strings.description_status_security_updates_failed
             )
 
     @pyqtSlot(int)
@@ -154,6 +173,8 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         )
         self.applyUpdatesButton.setEnabled(False)
         self.applyUpdatesButton.hide()
+        self.cancelButton.setEnabled(False)
+        self.cancelButton.hide()
         # Create thread with list of VMs to update
         self.upgrade_thread = UpgradeThread(self.vms_to_update)
         self.upgrade_thread.start()
@@ -173,8 +194,11 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             logger.error("Error while rebooting the workstation")
             logger.error(str(e))
 
-    def run_unit_tests(self):
-        pass
+    def exit_launcher(self):
+        """
+        Exits the launcher if the user clicks cancel
+        """
+        sys.exit()
 
 
 class UpdateThread(QThread):
@@ -228,7 +252,6 @@ class UpgradeThread(QThread):
         for vm, progress, result in upgrade_generator:
             results[vm] = result
             self.progress_signal.emit(progress)
-
         # write flags to disk
         run_results = Updater.overall_update_status(results)
         Updater._write_updates_status_flag_to_disk(run_results)
