@@ -226,7 +226,7 @@ class UpgradeThread(QThread):
         results = {}
 
         for vm, progress, result in upgrade_generator:
-            results[vm] = results
+            results[vm] = result
             self.progress_signal.emit(progress)
 
         # write flags to disk

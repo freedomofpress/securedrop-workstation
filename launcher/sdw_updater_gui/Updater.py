@@ -13,8 +13,8 @@ import subprocess
 from datetime import datetime
 from enum import Enum
 
-FLAG_FILE_STATUS_SD_SVS = "/home/user/sdw-update-flag"
-FLAG_FILE_LAST_UPDATED_SD_SVS = "/home/user/sdw-last-updated"
+FLAG_FILE_STATUS_SD_SVS = "/home/user/.securedrop_client/sdw-update-flag"
+FLAG_FILE_LAST_UPDATED_SD_SVS = "/home/user/.securedrop_client/sdw-last-updated"
 FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-flag"
 FLAG_FILE_LAST_UPDATED_DOM0 = ".securedrop_launcher/sdw-last-updated"
 
