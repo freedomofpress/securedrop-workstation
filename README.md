@@ -67,8 +67,8 @@ The current architecture replaces the *Journalist Workstation* and *Secure Viewi
 
 Currently, the following VMs are provisioned:
 
-- `sd-proxy` is where the SecureDrop proxy resides, which allows the non-networked `sd-svs` vm to communicate with the *Journalist Interface* over Tor.
-- `sd-svs` is a non-networked VM in which the *SecureDrop Client* runs used to store and explore submissions after they're unarchived and decrypted. Any files opened in this VM are opened in a disposable VM.
+- `sd-proxy` is where the SecureDrop proxy resides, which allows the non-networked `sd-app` vm to communicate with the *Journalist Interface* over Tor.
+- `sd-app` is a non-networked VM in which the *SecureDrop Client* runs used to store and explore submissions after they're unarchived and decrypted. Any files opened in this VM are opened in a disposable VM.
 - `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the *Journalist Interface*.
 - `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
 - `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files.
@@ -79,7 +79,7 @@ Submissions are processed in the following steps:
 1. Journalist uses the *SecureDrop Client* to access the *Journalist Interface* via the Journalist API. After logging in, the journalist clicks
 on any submission of interest.
 2. The *SecureDrop Client* will use `sd-gpg` to decrypt the submission using Qubes' split-GPG functionality (decryption is done in a trusted, isolated VM, keeping GPG keys off of the system-wide DispVM).
-5. The decrypted submission is stored on the `sd-svs` *Secure Viewing Station VM*, where it's placed in a local database.
+5. The decrypted submission is stored on the `sd-app` *Secure Viewing Station VM*, where it's placed in a local database.
 6. Any file opened by the *SecureDrop Client* in the *Secure Viewing Station VM* is opened in a Disposable VM, largely mitigating attacks from malicious content.
 
 See below for a closer examination of this process, and see `docs/images` for screenshots related to the steps above.
@@ -90,9 +90,9 @@ This project can be broken neatly into two parts: 1) a set of salt states and `t
 
 Qubes uses SaltStack internally for VM provisionining and configuration management (see https://www.qubes-os.org/doc/salt/), so it's natural for us to use it as well. The `dom0` directory contains salt `.top` and `.sls` files used to provision the VMs noted above.
 - `Makefile` is used with the `make` command on `dom0` to build the Qubes/SecureDrop installation, and also contains some development and testing features.
-- The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) is installed in `sd-svs` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
+- The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) is installed in `sd-app` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
 - The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-proxy) is installed in `sd-proxy` to communicate to the SecureDrop server *Journalist Interface* via `sd-whonix`.
-- Within `sd-svs`, the *SecureDrop Client* will open all submissions in the `sd-svs-disp` disposable VM.
+- Within `sd-app`, the *SecureDrop Client* will open all submissions in the `sd-viewer` disposable VM.
 - `config.json.example` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
 - `sd-journalist.sec.example` is an example GPG private key for use in decrypting submissions. It must match the public key set on a SecureDrop server used for testing. Before use, you should copy it to `sd-journalist.sec`, or store the submission key used with your SecureDrop server as `sd-journalist.sec`.
 
@@ -150,7 +150,7 @@ If you plan to work on the [SecureDrop Client](https://github.com/freedomofpress
 qvm-tags sd-dev add sd-client
 ```
 
-Doing so will permit the `sd-dev` AppVM to make RPC calls with the same privileges as the `sd-svs` AppVM.
+Doing so will permit the `sd-dev` AppVM to make RPC calls with the same privileges as the `sd-app` AppVM.
 
 **NOTE:** The destination directory on `dom0` is not customizable; it must be `securedrop-workstation` in your home directory.
 
@@ -183,7 +183,7 @@ For developing submission processing scripts, work is done directly in the virtu
 
 ### Testing
 
-Tests should cover two broad domains. First, we should assert that all the expected VMs exist and are configured as we expect (with the correct NetVM, with the expected files in the correct place). Second, we should end-to-end test the document handling scripts, asserting that files present in the `sd-proxy` VM correctly make their way to the `sd-svs` AppVM, and are opened correctly in disposable VMs.
+Tests should cover two broad domains. First, we should assert that all the expected VMs exist and are configured as we expect (with the correct NetVM, with the expected files in the correct place). Second, we should end-to-end test the document handling scripts, asserting that files present in the `sd-proxy` VM correctly make their way to the `sd-app` AppVM, and are opened correctly in disposable VMs.
 
 #### Configuration Tests
 
@@ -193,7 +193,7 @@ These tests assert that expected scripts and configuration files are in the corr
 
 Note that since tests confirm the states of provisioned VMs, they should be run _after_ all the VMs have been built with `make all`.
 
-Individual tests can be run with `make <test-name>`, where `test-name` is one of `test-svs`, `test-journalist`, `test-whonix`, or `test-disp`.
+Individual tests can be run with `make <test-name>`, where `test-name` is one of `test-app`, `test-journalist`, `test-whonix`, or `test-disp`.
 
 Be aware that running tests *will* power down running SecureDrop VMs, and may result in *data loss*. Only run tests in a development / testing environment.
 
@@ -260,7 +260,7 @@ Once your workstation environment is set up, you will be able to manage messages
 
 First, power on the workstation. When prompted, enter the *Disk Password* and press Enter to unlock the workstation. Then, when the login dialog box appears, enter the *Login Password* and click **Log in**.
 
-To launch the *SecureDrop Client*, temporarily until [this issue](https://github.com/freedomofpress/securedrop-workstation/issues/198) is resolved, you should from a `dom0` terminal `qvm-run sd-svs securedrop-client`. This will start the *SecureDrop Client* in the `sd-svs` AppVM.
+To launch the *SecureDrop Client*, temporarily until [this issue](https://github.com/freedomofpress/securedrop-workstation/issues/198) is resolved, you should from a `dom0` terminal `qvm-run sd-app securedrop-client`. This will start the *SecureDrop Client* in the `sd-app` AppVM.
 
 ### Signing in
 
@@ -274,7 +274,7 @@ If the sign-in fails, make sure to wait for another Two-Factor Code before tryin
 
 ### Viewing messages and documents
 
-After the sign-in or the next time you attempt to view encrypted content, you will be prompted by a dialog asking “Do you allow VM ‘sd-svs’ to access your GPG keys (now and for the following 28800 seconds)?”. Click **Yes**.
+After the sign-in or the next time you attempt to view encrypted content, you will be prompted by a dialog asking “Do you allow VM ‘sd-app’ to access your GPG keys (now and for the following 28800 seconds)?”. Click **Yes**.
 
 Once you are successfully signed in, you should see a screen similar to the following:
 
@@ -306,114 +306,39 @@ Closing the client application will sign you out of the server. If you manually 
 
 After you have completed your session, we strongly recommend shutting down the workstation (as opposed to sleeping the system) and storing it in a secure location.
 
-Replies and Source Deletion will be added in the next major release of the *SecureDrop Workstation*.
+### Print and export
 
-### Exporting documents
+You can print or export documents directly from the graphical client in `sd-app`, which sends print or export jobs to the `sd-devices` disposable VM. This is done  using a `qvm-open-in-vm` command for opening a file in the gzipped tar archive following the specification [here](https://github.com/freedomofpress/securedrop-export).
 
-**WARNING:** Opening files from an unknown origin presents certain risks (malware, fingerprinting). While the workstation helps reduce these risks by offering VM-level isolation, transferring documents to another host without the same level of isolation may expose you to these risks. Using tools to sanitize submitted documents, such as right-clicking a .pdf and selecting "Convert to trusted PDF" in Qubes OS, may help mitigate some of these risks. Further mitigating these risks will be a focus of future development.
+Currently, the following operations are supported from the client:
+- print to a supported printer (e.g., Brother HL-L2320D)
+- export to a LUKS-encrypted USB device.
 
-### Manual export flow
+### Preparing a USB export device
 
-Exporting documents directly from within the *SecureDrop Client* is not currently supported, but you can export documents manually via USB by following these steps:
-
-1. Start the `sd-export-usb` VM. Again from the Qubes menu:
-   1. Select "Domain: sd-export"
-   2. Click "export: Files". This will launch the file manager in the export VM.
-   3. Insert your USB drive into the workstation. A notification will pop up indicating the name of your USB device, e.g. "Innostor_PenDrive".
-   4. In the upper right hand side of your screen, there is a small icon in the system tray with a USB drive. Click that icon.
-   5. Select the name of your USB drive.
-   6. Click the **+** icon next to the `sd-export-usb` VM.
-3. You can use the command line in `sd-svs` to manually move selected files:
-
-```
-qvm-copy-to-vm sd-export-usb ~/.securedrop_client/data/name-of-file
-```
-
-4. You may now use the File manager that you opened in `sd-export-usb` to move files from `~/QubesIncoming/sd-svs` to the USB drive. Delete the original file from `~/QubesIncoming/sd-svs` once it has been moved. Note that the drive and files are not encrypted, so ensure that the key is properly erased and/or destroyed after use.
-
-The development plan is to provide functionality in the *SecureDrop Client* that automates step 3, and assists the user in taking these steps via GUI prompts. Eventually we plan to provide other methods for export, such as [OnionShare](https://onionshare.org/) (this will require the attachment of a NetVM), using a dedicated export VM template with tools such as OnionShare and Veracrypt. The next section includes instructions to approximate the OnionShare sharing flow.
-
-### Automated export flows
-
-The `sd-export-usb` disposable VM handles exports to USB devices through `qvm-open-in-vm`.
-
-#### Automated encrypted USB export flow (Work in progress, client integration TBD)
-
-The SecureDrop Workstation can automatically export to a luks-encrypted USB device provided the correct format. The file extension of the tar archive must be `.sd-export`, containing the following structure:
-
-```
-.
-├── metadata.json
-└── export_data
-    ├── file-to-export-1.txt
-    ├── file-to-export-2.pdf
-    ├── file-to-export-3.doc
-    [...]
-```
-
-The folder `export_data` contains all the files that will be exported to the disk, and the file `metadata.json` contains the encryption passphrase and method for the USB Transfer Device (only LUKS is supported at the moment). The file should be formatted as follows:
-
-```
-{
-  "device": "disk",
-  "encryption_method": "luks",
-  "encryption_key": "Your encryption passhrase goes here"
-}
-```
-
-#### Automated printing flow (Work in progress, client integration TBD)
-
-The SecureDrop Workstation can automatically print files to a USB-connected printer provided the correct format. The file extension of the tar archive must be `.sd-export`, containing the following structure:
-
-Note that only Brother printers are supported now (tested with HL-L2320D)
-
-```
-.
-├── metadata.json
-└── export_data
-    ├── file-to-export-1.txt
-    ├── file-to-export-2.pdf
-    ├── file-to-export-3.doc
-    [...]
-```
-
-The folder `export_data` contains all the files that will be printed, and the file `metadata.json` contains an instruction indicating that the archive will be printed:
-
-```
-{
-  "device": "printer"
-}
-```
-
-Optionally you can use the `printer-test` device to send a printer test page and ensure the printer is functional
-
-```
-{
-  "device": "printer-test"
-}
-```
-
-#### Create the transfer device
-
-You can find instructions to create a luks-encrypted transfer device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_and_export_device.html).
-
-#### Exporting
+You can find instructions to create a LUKS-encrypted export device in the [SecureDrop docs](https://docs.securedrop.org/en/latest/set_up_transfer_and_export_device.html).
 
 Your export devices should be labeled, and used for nothing else.
 
-1. Attach the USB device to your workstation.
-2. Use the Qube Manager to start the `sd-export-usb` VM.
-3. Use the Qubes Devices tool to attach the device to the `sd-export-usb` VM.
-4. In `sd-svs`, run the following command:
+#### Printing and exporting from the client
 
-```
-qvm-open-in-vm sd-export-usb <export-archive-filename>
-```
+**WARNING:** Opening files from an unknown origin presents certain risks (malware, fingerprinting). While the workstation helps reduce these risks by offering VM-level isolation, transferring documents to another host without the same level of isolation may expose you to these risks. Using tools to sanitize submitted documents, such as right-clicking a .pdf and selecting "Convert to trusted PDF" in Qubes OS, may help mitigate some of these risks. Further mitigating these risks will be a focus of future development.
+
+1. Attach the USB device to your workstation.
+2. Use the Qube Manager to start the `sd-devices` VM.
+3. Use the Qubes Devices tool to attach the device to the `sd-devices` VM.
+4. In `sd-app`, launch the SecureDrop Client.
+5. Select the source in the source list.
+6. Download the document you wish to print or export.
+7. Click "Export" or "Print" next to the file name once the document has been
+   downloaded.
 
 #### Troubleshooting
 
-- Verify your export device is attached to `sd-export-usb`, either
+- Verify your export device is attached to `sd-devices`, either
   with Qubes Devices or by running `qvm-usb` in dom0.
+- Ensure you are using a LUKS-encrypted USB storage device, or a supported
+  printer.
 
 ### Transferring files via OnionShare
 
@@ -436,19 +361,16 @@ qvm-open-in-vm sd-export-usb <export-archive-filename>
 3. Start the `sd-onionshare` VM and open OnionShare
    1. In the Qubes menu on the top-left, select "Domain: sd-onionshare" and click on "OnionShare"
    2. Click the settings gear on the bottom right of the OnionShare window and de-select "Stop sharing after first download" (this due to a [known bug in OnionShare](https://github.com/micahflee/onionshare/issues/812))
-4. You can use the command line in `sd-svs` to manually move selected files (this part will be replaced by functionality in the `sd-svs` client):
+4. You can use the command line in `sd-app` to manually move selected files (this part will be replaced by functionality in the `sd-app` client):
 
 ```
 qvm-copy-to-vm sd-onionshare ~/.securedrop_client/data/name-of-file
 ```
 
-5. You may now return to the OnionShare window, click on add and select the file you transferred from `sd-svs` by browsing to `~/QubesIncoming/sd-svs`.
+5. You may now return to the OnionShare window, click on add and select the file you transferred from `sd-app` by browsing to `~/QubesIncoming/sd-app`.
 6. On the target machine, navigate to the Tor onion service URL provided by OnionShare using the Tor Browser to retrieve the file.
-7. Close OnionShare and delete the decrypted submission on `sd-onionshare` from `~/QubesIncoming/sd-svs`
+7. Close OnionShare and delete the decrypted submission on `sd-onionshare` from `~/QubesIncoming/sd-app`
 
-### Printing
-
-Printing directly from the `sd-svs` AppVM or the disposable VMs will not be supported. The development plan is to instruct admins to install printer drivers in a template associated with a new printing VM. This template will not be shared with any other VMs.
 
 ## Distributing and Releasing
 
@@ -559,9 +481,9 @@ This section outlines the threat model for the *SecureDrop Workstation*, and sho
 
 As the *SecureDrop Workstation* is not Internet-reachable, an attacker must first obtain code execution on a virtual machine. This can be achieved through a malicious SecureDrop submission, websites visited by a journalist or a vulnerability in the provisioning code and its dependencies. The Virtual Machine in which the adversary obtains code execution will dictate what information is potentially compromised, as well as the attack surface exposed for lateral movement or escalation of privilege.
 
-#### What Compromise of the *Display VM* (`sd-svs-disp`) Can Achieve
+#### What Compromise of the *Display VM* (`sd-viewer`) Can Achieve
 
-The *Display VM* (sd-svs-disp) is disposable, does not have network access, and is used to display only one submission before being destroyed.
+The *Display VM* (sd-viewer) is disposable, does not have network access, and is used to display only one submission before being destroyed.
 
 * An adversary can read the decrypted submission.
 * An adversary can attempt to elevate their privileges and escape the VM.
@@ -588,8 +510,8 @@ The *Display VM* (sd-svs-disp) is disposable, does not have network access, and 
   * Access plaintext journalist passwords to the *Journalist Interface*.
 * An adversary can attempt to elevate their privileges and escape the VM.
 
-#### What compromise of the *SVS VM* (`sd-svs`) can achieve
-The *SVS VM* is where securedrop-client resides. It does not have network access, and the Qubes split-gpg mechanism permits access to GPG keys from this VM.
+#### What compromise of the *App VM* (`sd-app`) can achieve
+The *App VM* is where securedrop-client resides. It does not have network access, and the Qubes split-gpg mechanism permits access to GPG keys from this VM.
 * An adversary can view all decrypted submissions.
 * An adversary can decrypt arbitrary encrypted submissions.
 * An adversary can interact with the SecureDrop *Journalist Interface* or modify SecureDrop client code.

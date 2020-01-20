@@ -12,38 +12,38 @@ TASK=${1:-default}
 # 2. The AppVM must not be a DispVM template that used as the default DispVM
 #    for an AppVM, nor the system default DispVM.
 if [[ $TASK == "prepare" ]]; then
-    # sd-svs, we simply shutdown the machine as we want to preserve the data
-    if qvm-check sd-svs --quiet; then
-        BASE_TEMPLATE=$(qvm-prefs sd-svs template)
+    # sd-app, we simply shutdown the machine as we want to preserve the data
+    if qvm-check sd-app --quiet; then
+        BASE_TEMPLATE=$(qvm-prefs sd-app template)
         if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
-            if qvm-check --running sd-svs; then
-                qvm-shutdown --wait sd-svs
+            if qvm-check --running sd-app; then
+                qvm-shutdown --wait sd-app
             fi
         fi
     fi
 
-    # For sd-svs-disp and sd-export-usb-dvm, DispVM templates. We can delete both
+    # For sd-viewer and sd-devices-dvm, DispVM templates. We can delete both
     # VMs since they contain no persistent data. The installer will re-create them
     # as part of the provisioning process.
     # We set the default DispVM to empty string to ensure nothing is opened in an
     # insecure (unmanaged or not yet updated) or networked vm, until the
-    # provisioning process runs again and sets that value to sd-svs-disp
-    if qvm-check --quiet sd-svs-disp; then
-        BASE_TEMPLATE=$(qvm-prefs sd-svs-disp template)
+    # provisioning process runs again and sets that value to sd-viewer
+    if qvm-check --quiet sd-viewer; then
+        BASE_TEMPLATE=$(qvm-prefs sd-viewer template)
         if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
             qubes-prefs default_dispvm ''
-            qvm-shutdown --wait sd-svs-disp
-            qvm-remove -f sd-svs-disp
+            qvm-shutdown --wait sd-viewer
+            qvm-remove -f sd-viewer
         fi
     fi
 
-    if qvm-check --quiet sd-export-usb; then
-        BASE_TEMPLATE=$(qvm-prefs sd-export-usb-dvm template)
+    if qvm-check --quiet sd-devices; then
+        BASE_TEMPLATE=$(qvm-prefs sd-devices-dvm template)
         if [[ ! $BASE_TEMPLATE =~ "buster" ]]; then
-            qvm-shutdown --wait sd-export-usb
-            qvm-shutdown --wait sd-export-usb-dvm
-            qvm-remove -f sd-export-usb
-            qvm-remove -f sd-export-usb-dvm
+            qvm-shutdown --wait sd-devices
+            qvm-shutdown --wait sd-devices-dvm
+            qvm-remove -f sd-devices
+            qvm-remove -f sd-devices-dvm
         fi
     fi
 
@@ -90,7 +90,7 @@ if [[ $TASK == "prepare" ]]; then
 elif [[ $TASK == "remove" ]]; then
     # For each template, ensure the TemplateVM exists, that it is shut down
     # before deleting it.
-    for template in sd-svs-template sd-svs-disp-template sd-export-template sd-proxy-template
+    for template in sd-app-template sd-viewer-template sd-devices-template sd-proxy-template
     do
         if qvm-check "${template}" --quiet; then
             if qvm-check --running "${template}"; then

@@ -3,11 +3,11 @@ import unittest
 from base import SD_VM_Local_Test
 
 
-class SD_Export_Tests(SD_VM_Local_Test):
+class SD_Devices_Tests(SD_VM_Local_Test):
 
     def setUp(self):
-        self.vm_name = "sd-export-usb-dvm"
-        super(SD_Export_Tests, self).setUp()
+        self.vm_name = "sd-devices-dvm"
+        super(SD_Devices_Tests, self).setUp()
 
     def test_files_are_properly_copied(self):
         self.assertTrue(self._fileExists("/usr/bin/send-to-usb"))
@@ -21,5 +21,5 @@ class SD_Export_Tests(SD_VM_Local_Test):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Export_Tests)
+    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Devices_Tests)
     return suite

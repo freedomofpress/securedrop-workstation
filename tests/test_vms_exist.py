@@ -67,11 +67,11 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.template_for_dispvms)
         self.assertTrue('sd-workstation' in vm.tags)
 
-    def test_sd_svs_config(self):
-        vm = self.app.domains["sd-svs"]
+    def test_sd_app_config(self):
+        vm = self.app.domains["sd-app"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-svs-buster-template")
+        self.assertTrue(vm.template == "sd-app-buster-template")
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
@@ -79,11 +79,11 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue('sd-workstation' in vm.tags)
         self.assertTrue('sd-client' in vm.tags)
 
-    def test_sd_svs_disp_config(self):
-        vm = self.app.domains["sd-svs-disp"]
+    def test_sd_viewer_config(self):
+        vm = self.app.domains["sd-viewer"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-svs-disp-buster-template")
+        self.assertTrue(vm.template == "sd-viewer-buster-template")
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
         self._check_kernel(vm)
@@ -131,29 +131,29 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)
 
-    def sd_svs_template(self):
-        vm = self.app.domains["sd-svs-buster-template"]
+    def sd_app_template(self):
+        vm = self.app.domains["sd-app-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)
         self._check_kernel(vm)
 
-    def sd_svs_disp_template(self):
-        vm = self.app.domains["sd-svs-disp-buster-template"]
+    def sd_viewer_template(self):
+        vm = self.app.domains["sd-viewer-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)
         self.assertTrue(vm.template_for_dispvms)
 
     def sd_export_template(self):
-        vm = self.app.domains["sd-export-buster-template"]
+        vm = self.app.domains["sd-devices-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)
         self._check_kernel(vm)
 
     def sd_export_dvm(self):
-        vm = self.app.domains["sd-export-usb-dvm"]
+        vm = self.app.domains["sd-devices-dvm"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue('sd-workstation' in vm.tags)
@@ -161,7 +161,7 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_kernel(vm)
 
     def sd_export(self):
-        vm = self.app.domains["sd-export-usb"]
+        vm = self.app.domains["sd-devices"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         vm_type = vm.klass

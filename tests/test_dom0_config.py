@@ -1,19 +1,22 @@
 import subprocess
 import unittest
 
-STRETCH_TEMPLATES = [
+DEPRECATED_TEMPLATES = [
     "sd-svs-template",
     "sd-svs-disp-template",
     "sd-export-template",
     "sd-proxy-template",
-    "securedrop-workstation"
+    "securedrop-workstation",
+    "sd-svs-buster-template",
+    "sd-export-buster-template",
+    "sd-svs-disp-buster-template"
 ]
 
 VMS_TO_UPDATE = [
-    "sd-svs-buster-template",
-    "sd-svs-disp-buster-template",
+    "sd-app-buster-template",
+    "sd-viewer-buster-template",
     "sd-proxy-buster-template",
-    "sd-export-buster-template",
+    "sd-devices-buster-template",
     "whonix-ws-15",
     "whonix-gw-15",
     "securedrop-workstation-buster"
@@ -31,7 +34,7 @@ class SD_Qubes_Dom0_Templates_Tests(unittest.TestCase):
     def test_Templates_cleaned_up(self):
         cmd = ["qvm-ls", "--raw-list"]
         contents = subprocess.check_output(cmd).decode("utf-8").split()
-        for template in STRETCH_TEMPLATES:
+        for template in DEPRECATED_TEMPLATES:
             for line in contents:
                 self.assertFalse(template == line)
 

@@ -2,16 +2,16 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 #
-# Installs 'sd-export' AppVM, to persistently store SD data
+# Installs 'sd-devices' AppVM, to persistently store SD data
 # This VM has no network configured.
 ##
 include:
   - sd-workstation-template
   - sd-upgrade-templates
 
-sd-export-template:
+sd-devices-template:
   qvm.vm:
-    - name: sd-export-buster-template
+    - name: sd-devices-buster-template
     - clone:
       - source: securedrop-workstation-buster
       - label: red
@@ -23,14 +23,14 @@ sd-export-template:
       - sls: sd-workstation-template
       - sls: sd-upgrade-templates
 
-sd-export-usb-dvm:
+sd-devices-dvm:
   qvm.vm:
-    - name: sd-export-usb-dvm
+    - name: sd-devices-dvm
     - present:
-      - template: sd-export-buster-template
+      - template: sd-devices-buster-template
       - label: red
     - prefs:
-      - template: sd-export-buster-template
+      - template: sd-devices-buster-template
       - netvm: ""
       - template_for_dispvms: True
     - tags:
@@ -41,29 +41,29 @@ sd-export-usb-dvm:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-export-buster-template
+      - qvm: sd-devices-buster-template
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.
-sd-export-template-sync-appmenus:
+sd-devices-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start --skip-if-running sd-export-buster-template &&
-        qvm-sync-appmenus sd-export-buster-template
+        qvm-start --skip-if-running sd-devices-buster-template &&
+        qvm-sync-appmenus sd-devices-buster-template
     - require:
-      - qvm: sd-export-buster-template
+      - qvm: sd-devices-buster-template
     - onchanges:
-      - qvm: sd-export-buster-template
+      - qvm: sd-devices-buster-template
 
-sd-export-create-named-dispvm:
+sd-devices-create-named-dispvm:
   qvm.vm:
-    - name: sd-export-usb
+    - name: sd-devices
     - present:
-      - template: sd-export-usb-dvm
+      - template: sd-devices-dvm
       - class: DispVM
       - label: red
     - tags:
       - add:
         - sd-workstation
     - require:
-      - qvm: sd-export-usb-dvm
+      - qvm: sd-devices-dvm

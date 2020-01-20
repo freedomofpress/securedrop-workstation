@@ -9,26 +9,26 @@ base:
     - sd-upgrade-templates
     - sd-dom0-qvm-rpc
     - sd-sys-whonix-vms
-    - sd-export
+    - sd-devices
     - sd-gpg
     - sd-proxy
-    - sd-svs-disp
-    - sd-svs
+    - sd-viewer
+    - sd-app
     - sd-whonix
     - sd-remove-unused-templates
     - sd-log
-  sd-export-buster-template:
-    - sd-export-files
+  sd-devices-buster-template:
+    - sd-devices-files
   sd-gpg:
     - sd-gpg-files
   sd-proxy-buster-template:
     - sd-proxy-template-files
-  sd-svs:
-    - sd-svs-config
-  sd-svs-disp-buster-template:
-    - sd-svs-disp-files
-  sd-svs-buster-template:
-    - sd-svs-files
+  sd-app:
+    - sd-app-config
+  sd-viewer-buster-template:
+    - sd-viewer-files
+  sd-app-buster-template:
+    - sd-app-files
   sys-firewall:
     - sd-sys-firewall-files
   sd-whonix:

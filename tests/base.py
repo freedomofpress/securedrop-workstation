@@ -10,10 +10,10 @@ WANTED_VMS = [
     "sd-gpg",
     "sd-log",
     "sd-proxy",
-    "sd-svs",
-    "sd-svs-disp",
+    "sd-app",
+    "sd-viewer",
     "sd-whonix",
-    "sd-export-usb"
+    "sd-devices"
 ]
 
 

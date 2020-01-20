@@ -95,8 +95,8 @@
 - policy: OpenInVM
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    @tag:sd-client @dispvm:sd-svs-disp allow
-    @tag:sd-client sd-export-usb allow
+    @tag:sd-client @dispvm:sd-viewer allow
+    @tag:sd-client sd-devices allow
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###

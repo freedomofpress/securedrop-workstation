@@ -26,7 +26,7 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
             "host: {}".format(hostname),
             "scheme: http",
             "port: 80",
-            "target_vm: sd-svs",
+            "target_vm: sd-app",
             "dev: False",
         ]
         for line in wanted_lines:
