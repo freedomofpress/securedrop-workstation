@@ -18,41 +18,41 @@ from Updater import current_templates  # noqa: E402
 temp_dir = TemporaryDirectory().name
 
 debian_based_vms = [
-    "sd-svs",
+    "sd-app",
     "sd-log",
-    "sd-svs-disp",
+    "sd-viewer",
     "sd-gpg",
     "sd-proxy",
     "sd-whonix",
-    "sd-export",
+    "sd-devices",
 ]
 
 TEST_RESULTS_OK = {
     "dom0": UpdateStatus.UPDATES_OK,
     "fedora": UpdateStatus.UPDATES_OK,
-    "sd-svs": UpdateStatus.UPDATES_OK,
-    "sd-svs-disp": UpdateStatus.UPDATES_OK,
+    "sd-app": UpdateStatus.UPDATES_OK,
+    "sd-viewer": UpdateStatus.UPDATES_OK,
 }
 
 TEST_RESULTS_FAILED = {
     "dom0": UpdateStatus.UPDATES_OK,
     "fedora": UpdateStatus.UPDATES_FAILED,
-    "sd-svs": UpdateStatus.UPDATES_OK,
-    "sd-svs-disp": UpdateStatus.UPDATES_OK,
+    "sd-app": UpdateStatus.UPDATES_OK,
+    "sd-viewer": UpdateStatus.UPDATES_OK,
 }
 
 TEST_RESULTS_REBOOT = {
     "dom0": UpdateStatus.UPDATES_OK,
     "fedora": UpdateStatus.REBOOT_REQUIRED,
-    "sd-svs": UpdateStatus.UPDATES_OK,
-    "sd-svs-disp": UpdateStatus.UPDATES_OK,
+    "sd-app": UpdateStatus.UPDATES_OK,
+    "sd-viewer": UpdateStatus.UPDATES_OK,
 }
 
 TEST_RESULTS_UPDATES = {
     "dom0": UpdateStatus.UPDATES_OK,
     "fedora": UpdateStatus.UPDATES_OK,
-    "sd-svs": UpdateStatus.UPDATES_OK,
-    "sd-svs-disp": UpdateStatus.UPDATES_REQUIRED,
+    "sd-app": UpdateStatus.UPDATES_OK,
+    "sd-viewer": UpdateStatus.UPDATES_REQUIRED,
 }
 
 
@@ -160,11 +160,11 @@ def test_check_updates_dom0_needs_updates(
 def test_check_debian_updates_up_to_date(
     mocked_info, mocked_error, mocked_call, capsys
 ):
-    status = updater._check_updates_debian("sd-svs")
+    status = updater._check_updates_debian("sd-app")
     assert status == UpdateStatus.UPDATES_OK
     info_log = [
-        call("Checking for updates {}:{}".format("sd-svs", "sd-svs-buster-template")),
-        call("{} is up to date".format("sd-svs-buster-template")),
+        call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template")),
+        call("{} is up to date".format("sd-app-buster-template")),
     ]
     mocked_info.assert_has_calls(info_log)
     assert not mocked_error.called
@@ -179,18 +179,18 @@ def test_check_debian_updates_up_to_date(
 def test_check_updates_debian_updates_required(
     mocked_info, mocked_error, mocked_call, capsys
 ):
-    status = updater._check_updates_debian("sd-svs")
+    status = updater._check_updates_debian("sd-app")
     assert status == UpdateStatus.UPDATES_REQUIRED
     error_log = [
         call(
             "Updates required for {} or cannot check for updates".format(
-                "sd-svs-buster-template"
+                "sd-app-buster-template"
             )
         ),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     info_log = [
-        call("Checking for updates {}:{}".format("sd-svs", "sd-svs-buster-template")),
+        call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template")),
     ]
     mocked_error.assert_has_calls(error_log)
     mocked_info.assert_has_calls(info_log)
@@ -202,20 +202,20 @@ def test_check_updates_debian_updates_required(
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_check_debian_updates_failed(mocked_info, mocked_error, mocked_call, capsys):
-    status = updater._check_updates_debian("sd-svs")
+    status = updater._check_updates_debian("sd-app")
     assert status == UpdateStatus.UPDATES_FAILED
     error_log = [
         call(
             "Updates required for {} or cannot check for updates".format(
-                "sd-svs-buster-template"
+                "sd-app-buster-template"
             )
         ),
         call("Command 'check_call' returned non-zero exit status 1."),
-        call("Failed to shut down {}".format("sd-svs-buster-template")),
+        call("Failed to shut down {}".format("sd-app-buster-template")),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     info_log = [
-        call("Checking for updates {}:{}".format("sd-svs", "sd-svs-buster-template")),
+        call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template")),
     ]
     mocked_error.assert_has_calls(error_log)
     mocked_info.assert_has_calls(info_log)
@@ -369,7 +369,7 @@ def test_apply_updates_required(
     write_updated,
     write_status,
 ):
-    upgrade_generator = updater.apply_updates(["fedora", "sd-svs"])
+    upgrade_generator = updater.apply_updates(["fedora", "sd-app"])
     results = {}
 
     for vm, progress, result in upgrade_generator:
@@ -378,14 +378,14 @@ def test_apply_updates_required(
 
     assert results == {
         "fedora": UpdateStatus.UPDATES_OK,
-        "sd-svs": UpdateStatus.UPDATES_REQUIRED,
+        "sd-app": UpdateStatus.UPDATES_REQUIRED,
     }
-    calls = [call("fedora"), call("sd-svs")]
+    calls = [call("fedora"), call("sd-app")]
     apply_vm.assert_has_calls(calls)
 
     assert results == {
         "fedora": UpdateStatus.UPDATES_OK,
-        "sd-svs": UpdateStatus.UPDATES_REQUIRED,
+        "sd-app": UpdateStatus.UPDATES_REQUIRED,
     }
 
     assert updater.overall_update_status(results) == UpdateStatus.UPDATES_REQUIRED
@@ -401,13 +401,13 @@ def test_apply_updates_required(
 def test_write_updates_status_flag_to_disk(
     mocked_info, mocked_error, mocked_call, mocked_expand, status
 ):
-    flag_file_sd_svs = updater.FLAG_FILE_STATUS_SD_SVS
+    flag_file_sd_app = updater.FLAG_FILE_STATUS_SD_APP
     flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_STATUS_DOM0)
 
     updater._write_updates_status_flag_to_disk(status)
 
     mocked_call.assert_called_once_with(
-        ["qvm-run", "sd-svs", "echo '{}' > {}".format(status.value, flag_file_sd_svs)]
+        ["qvm-run", "sd-app", "echo '{}' > {}".format(status.value, flag_file_sd_app)]
     )
 
     assert os.path.exists(flag_file_dom0)
@@ -427,12 +427,12 @@ def test_write_updates_status_flag_to_disk(
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_write_updates_status_flag_to_disk_failure_svs(
+def test_write_updates_status_flag_to_disk_failure_app(
     mocked_info, mocked_error, mocked_call, mocked_expand, status
 ):
 
     error_calls = [
-        call("Error writing update status flag to sd-svs"),
+        call("Error writing update status flag to sd-app"),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     updater._write_updates_status_flag_to_disk(status)
@@ -464,15 +464,15 @@ def test_write_updates_status_flag_to_disk_failure_dom0(
 def test_write_last_updated_flags_to_disk(
     mocked_info, mocked_error, mocked_call, mocked_expand
 ):
-    flag_file_sd_svs = updater.FLAG_FILE_LAST_UPDATED_SD_SVS
+    flag_file_sd_app = updater.FLAG_FILE_LAST_UPDATED_SD_APP
     flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_LAST_UPDATED_DOM0)
     current_time_utc = str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
     updater._write_last_updated_flags_to_disk()
     subprocess_command = [
         "qvm-run",
-        "sd-svs",
-        "echo '{}' > {}".format(current_time_utc, flag_file_sd_svs),
+        "sd-app",
+        "echo '{}' > {}".format(current_time_utc, flag_file_sd_app),
     ]
     mocked_call.assert_called_once_with(subprocess_command)
     assert not mocked_error.called
@@ -494,7 +494,7 @@ def test_write_last_updated_flags_to_disk_fails(
     mocked_info, mocked_error, mocked_call, mocked_expand
 ):
     error_log = [
-        call("Error writing last updated flag to sd-svs"),
+        call("Error writing last updated flag to sd-app"),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     updater._write_last_updated_flags_to_disk()
@@ -513,7 +513,7 @@ def test_write_last_updated_flags_dom0_folder_creation_fail(
     mocked_info, mocked_error, mocked_call, mocked_expand, mocked_path_exists
 ):
     error_log = [
-        call("Error writing last updated flag to sd-svs"),
+        call("Error writing last updated flag to sd-app"),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     updater._write_last_updated_flags_to_disk()
@@ -708,7 +708,7 @@ def test_shutdown_and_start_vms(
     call_list = [
         call("sd-proxy"),
         call("sd-whonix"),
-        call("sd-svs"),
+        call("sd-app"),
         call("sd-gpg"),
     ]
     updater._shutdown_and_start_vms()

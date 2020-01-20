@@ -153,7 +153,7 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         """
         try:
             logger.info("Launching SecureDrop client")
-            subprocess.Popen(["qvm-run", "sd-svs", "gtk-launch securedrop-client"])
+            subprocess.Popen(["qvm-run", "sd-app", "gtk-launch securedrop-client"])
         except subprocess.CalledProcessError as e:
             self.proposedActionDescription.setText(strings.descri)
             logger.error("Error while launching SecureDrop client")
