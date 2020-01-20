@@ -13,8 +13,8 @@ import subprocess
 from datetime import datetime
 from enum import Enum
 
-FLAG_FILE_STATUS_SD_SVS = "/home/user/.securedrop_client/sdw-update-flag"
-FLAG_FILE_LAST_UPDATED_SD_SVS = "/home/user/.securedrop_client/sdw-last-updated"
+FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-flag"
+FLAG_FILE_LAST_UPDATED_SD_APP = "/home/user/.securedrop_client/sdw-last-updated"
 FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-flag"
 FLAG_FILE_LAST_UPDATED_DOM0 = ".securedrop_launcher/sdw-last-updated"
 
@@ -26,10 +26,10 @@ sdlog = logging.getLogger(__name__)
 current_templates = {
     "dom0": "dom0",
     "fedora": "fedora-30",
-    "sd-svs-disp": "sd-svs-disp-buster-template",
-    "sd-svs": "sd-svs-buster-template",
+    "sd-viewer": "sd-viewer-buster-template",
+    "sd-app": "sd-app-buster-template",
     "sd-log": "sd-log-buster-template",
-    "sd-export": "sd-export-buster-template",
+    "sd-devices": "sd-devices-buster-template",
     "sd-proxy": "sd-proxy-buster-template",
     "sd-whonix": "whonix-gw-15",
     "sd-gpg": "securedrop-workstation-buster",
@@ -220,24 +220,24 @@ def _apply_updates_vm(vm):
 
 def _write_last_updated_flags_to_disk():
     """
-    Writes the time of last successful upgrade to dom0 and sd-svs
+    Writes the time of last successful upgrade to dom0 and sd-app
     """
     current_date = str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
 
-    flag_file_sd_svs_last_updated = FLAG_FILE_LAST_UPDATED_SD_SVS
+    flag_file_sd_app_last_updated = FLAG_FILE_LAST_UPDATED_SD_APP
     flag_file_dom0_last_updated = get_dom0_path(FLAG_FILE_LAST_UPDATED_DOM0)
 
     try:
-        sdlog.info("Setting last updated to {} in sd-svs".format(current_date))
+        sdlog.info("Setting last updated to {} in sd-app".format(current_date))
         subprocess.check_call(
             [
                 "qvm-run",
-                "sd-svs",
-                "echo '{}' > {}".format(current_date, flag_file_sd_svs_last_updated),
+                "sd-app",
+                "echo '{}' > {}".format(current_date, flag_file_sd_app_last_updated),
             ]
         )
     except subprocess.CalledProcessError as e:
-        sdlog.error("Error writing last updated flag to sd-svs")
+        sdlog.error("Error writing last updated flag to sd-app")
         sdlog.error(str(e))
 
     try:
@@ -254,22 +254,22 @@ def _write_last_updated_flags_to_disk():
 def _write_updates_status_flag_to_disk(status):
     """
     Writes the latest SecureDrop Workstation update status to disk, on both
-    dom0 and sd-svs for futher processing in the future.
+    dom0 and sd-app for futher processing in the future.
     """
-    flag_file_path_sd_svs = FLAG_FILE_STATUS_SD_SVS
+    flag_file_path_sd_app = FLAG_FILE_STATUS_SD_APP
     flag_file_path_dom0 = get_dom0_path(FLAG_FILE_STATUS_DOM0)
 
     try:
-        sdlog.info("Setting update flag to {} in sd-svs".format(status.value))
+        sdlog.info("Setting update flag to {} in sd-app".format(status.value))
         subprocess.check_call(
             [
                 "qvm-run",
-                "sd-svs",
-                "echo '{}' > {}".format(status.value, flag_file_path_sd_svs),
+                "sd-app",
+                "echo '{}' > {}".format(status.value, flag_file_path_sd_app),
             ]
         )
     except subprocess.CalledProcessError as e:
-        sdlog.error("Error writing update status flag to sd-svs")
+        sdlog.error("Error writing update status flag to sd-app")
         sdlog.error(str(e))
 
     try:
@@ -319,7 +319,7 @@ def _shutdown_and_start_vms():
     correct order of operations, as sd-whonix cannot shutdown if sd-proxy is powered
     on, for example.
     """
-    vms_in_order = ["sd-proxy", "sd-whonix", "sd-svs", "sd-gpg", "sd-log"]
+    vms_in_order = ["sd-proxy", "sd-whonix", "sd-app", "sd-gpg", "sd-log"]
     sdlog.info("Rebooting all vms for updates")
     for vm in vms_in_order:
         _safely_shutdown_vm(vm)

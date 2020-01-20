@@ -47,8 +47,7 @@ description_status_reboot_required = (
 )
 description_status_rebooting = "<h3> Rebooting workstation</h3>"
 description_error_reboot = (
-    "<h3> Error rebooting workstation</h3>"
-    "<p>Please contact your administrator.</p>"
+    "<h3> Error rebooting workstation</h3>" "<p>Please contact your administrator.</p>"
 )
 description_error_lauching_client = (
     "<h3> Error launching the SecureDrop application</h3>"
