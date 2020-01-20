@@ -33,7 +33,7 @@ configuration over time.
 %{__python3} setup.py install --skip-build --root %{buildroot}
 install -m 755 -d %{buildroot}/srv
 install -m 755 -d %{buildroot}/srv/salt/sd
-install -m 755 -d %{buildroot}/srv/salt/sd/sd-svs
+install -m 755 -d %{buildroot}/srv/salt/sd/sd-app
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-journalist
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-workstation
 install -m 755 -d %{buildroot}/usr/share/securedrop-workstation-dom0-config/scripts
@@ -42,7 +42,7 @@ install -m 644 dom0/*.sls %{buildroot}/srv/salt/
 install -m 644 dom0/*.top %{buildroot}/srv/salt/
 # The next file should get installed via RPM not via salt
 install -m 755 dom0/securedrop-update %{buildroot}/srv/salt/securedrop-update
-install sd-svs/* %{buildroot}/srv/salt/sd/sd-svs/
+install sd-app/* %{buildroot}/srv/salt/sd/sd-app/
 install sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
 install -m 644 sd-proxy/logo-small.png %{buildroot}/usr/share/securedrop/icons/sd-logo.png
 install -m 644 Makefile %{buildroot}/usr/share/%{name}/Makefile
