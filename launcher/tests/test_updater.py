@@ -1,4 +1,5 @@
 import imp
+import json
 import os
 import pytest
 import subprocess
@@ -412,8 +413,9 @@ def test_write_updates_status_flag_to_disk(
 
     assert os.path.exists(flag_file_dom0)
     try:
-        contents = open(flag_file_dom0, "r").read()
-        assert contents == status.value
+        with open(flag_file_dom0, "r") as f:
+            contents = json.load(f)
+            assert contents["status"] == status.value
     except Exception:
         pytest.fail("Error reading file")
     assert "tmp" in flag_file_dom0
@@ -466,20 +468,20 @@ def test_write_last_updated_flags_to_disk(
 ):
     flag_file_sd_app = updater.FLAG_FILE_LAST_UPDATED_SD_APP
     flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_LAST_UPDATED_DOM0)
-    current_time_utc = str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+    current_time = str(datetime.now().strftime(updater.DATE_FORMAT))
 
     updater._write_last_updated_flags_to_disk()
     subprocess_command = [
         "qvm-run",
         "sd-app",
-        "echo '{}' > {}".format(current_time_utc, flag_file_sd_app),
+        "echo '{}' > {}".format(current_time, flag_file_sd_app),
     ]
     mocked_call.assert_called_once_with(subprocess_command)
     assert not mocked_error.called
     assert os.path.exists(flag_file_dom0)
     try:
         contents = open(flag_file_dom0, "r").read()
-        assert contents == current_time_utc
+        assert contents == current_time
     except Exception:
         pytest.fail("Error reading file")
 
@@ -638,6 +640,28 @@ def test_overall_update_status_updates_required(mocked_info, mocked_error):
     assert not mocked_error.called
 
 
+@mock.patch("Updater.last_required_reboot_performed", return_value=True)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_overall_update_status_reboot_was_done_previously(
+    mocked_info, mocked_error, mocked_reboot_performed
+):
+    result = updater.overall_update_status(TEST_RESULTS_UPDATES)
+    assert result == UpdateStatus.UPDATES_REQUIRED
+    assert not mocked_error.called
+
+
+@mock.patch("Updater.last_required_reboot_performed", return_value=False)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_overall_update_status_reboot_not_done_previously(
+    mocked_info, mocked_error, mocked_reboot_performed
+):
+    result = updater.overall_update_status(TEST_RESULTS_UPDATES)
+    assert result == UpdateStatus.REBOOT_REQUIRED
+    assert not mocked_error.called
+
+
 @pytest.mark.parametrize("vm", current_templates.keys())
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater.sdlog.error")
@@ -714,4 +738,104 @@ def test_shutdown_and_start_vms(
     updater._shutdown_and_start_vms()
     mocked_shutdown.assert_has_calls(call_list)
     mocked_start.assert_has_calls(call_list)
+    assert not mocked_error.called
+
+
+@pytest.mark.parametrize("status", UpdateStatus)
+@mock.patch("subprocess.check_call")
+@mock.patch("os.path.expanduser", return_value=temp_dir)
+@mock.patch("Updater.sdlog.error")
+def test_read_dom0_update_flag_from_disk(
+    mocked_error, mocked_expanduser, mocked_subprocess, status
+):
+    updater._write_updates_status_flag_to_disk(status)
+
+    flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_STATUS_DOM0)
+
+    assert os.path.exists(flag_file_dom0)
+    try:
+        with open(flag_file_dom0, "r") as f:
+            contents = json.load(f)
+            assert contents["status"] == status.value
+    except Exception:
+        pytest.fail("Error reading file")
+    assert "tmp" in flag_file_dom0
+
+    assert updater.read_dom0_update_flag_from_disk() == status
+    json_values = updater.read_dom0_update_flag_from_disk(with_timestamp=True)
+    assert json_values["status"] == status.value
+
+    assert not mocked_error.called
+
+
+@mock.patch("subprocess.check_call")
+@mock.patch("os.path.expanduser", return_value=temp_dir)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_read_dom0_update_flag_from_disk_fails(
+    mocked_info, mocked_error, mocked_expanduser, mocked_subprocess
+):
+
+    flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_STATUS_DOM0)
+    try:
+        with open(flag_file_dom0, "w") as f:
+            f.write("something")
+    except Exception:
+        pytest.fail("Error writing file")
+
+    info_calls = [
+        call("Cannot read dom0 status flag, assuming first run"),
+    ]
+
+    assert updater.read_dom0_update_flag_from_disk() is None
+    assert not mocked_error.called
+    mocked_info.assert_has_calls(info_calls)
+
+
+@mock.patch(
+    "Updater.read_dom0_update_flag_from_disk",
+    return_value={
+        "last_updated": "1999-09-09 14:12:12",
+        "status": UpdateStatus.REBOOT_REQUIRED.value,
+    },
+)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_last_required_reboot_performed_successful(
+    mocked_info, mocked_error, mocked_read
+):
+    result = updater.last_required_reboot_performed()
+    assert result is True
+    assert not mocked_error.called
+
+
+@mock.patch(
+    "Updater.read_dom0_update_flag_from_disk",
+    return_value={
+        "last_updated": str(datetime.now().strftime(updater.DATE_FORMAT)),
+        "status": UpdateStatus.REBOOT_REQUIRED.value,
+    },
+)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_last_required_reboot_performed_failed(mocked_info, mocked_error, mocked_read):
+    result = updater.last_required_reboot_performed()
+    assert result is False
+    assert not mocked_error.called
+
+
+@mock.patch(
+    "Updater.read_dom0_update_flag_from_disk",
+    return_value={
+        "last_updated": str(datetime.now().strftime(updater.DATE_FORMAT)),
+        "status": UpdateStatus.UPDATES_OK.value,
+    },
+)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_last_required_reboot_performed_not_required(
+    mocked_info, mocked_error, mocked_read
+):
+    result = updater.last_required_reboot_performed()
+    assert result is True
     assert not mocked_error.called
