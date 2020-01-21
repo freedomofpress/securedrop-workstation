@@ -7,12 +7,14 @@ is opened by the user when clicking on the desktop, opening sdw-laucher.py
 from the parent directory.
 """
 
+import json
 import logging
 import os
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-flag"
 FLAG_FILE_LAST_UPDATED_SD_APP = "/home/user/.securedrop_client/sdw-last-updated"
 FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-flag"
@@ -222,7 +224,7 @@ def _write_last_updated_flags_to_disk():
     """
     Writes the time of last successful upgrade to dom0 and sd-app
     """
-    current_date = str(datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+    current_date = str(datetime.now().strftime(DATE_FORMAT))
 
     flag_file_sd_app_last_updated = FLAG_FILE_LAST_UPDATED_SD_APP
     flag_file_dom0_last_updated = get_dom0_path(FLAG_FILE_LAST_UPDATED_DOM0)
@@ -276,11 +278,85 @@ def _write_updates_status_flag_to_disk(status):
         sdlog.info("Setting update flag to {} in dom0".format(status.value))
         if not os.path.exists(os.path.dirname(flag_file_path_dom0)):
             os.makedirs(os.path.dirname(flag_file_path_dom0))
+
+        current_date = str(datetime.now().strftime(DATE_FORMAT))
+
         with open(flag_file_path_dom0, "w") as f:
-            f.write(status.value)
+            flag_contents = {"last_updated": current_date, "status": status.value}
+            json.dump(flag_contents, f)
     except Exception as e:
         sdlog.error("Error writing update status flag to dom0")
         sdlog.error(str(e))
+
+
+def last_required_reboot_performed():
+    """
+        Checks if the dom0 flag file indicates that a reboot is required, and
+        if so, will check current uptime with the data at which the reboot
+        was requested. This will be used by the _write_updates_status_flag_to_disk
+        function to preserve the status UPDATES_REQUIRED instead of updating.
+        """
+    flag_contents = read_dom0_update_flag_from_disk(with_timestamp=True)
+
+    # No flag exists on disk (yet)
+    if flag_contents is None:
+        return True
+
+    if int(flag_contents["status"]) == int(UpdateStatus.REBOOT_REQUIRED.value):
+        reboot_time = datetime.strptime(flag_contents["last_updated"], DATE_FORMAT)
+        boot_time = datetime.now() - _get_uptime()
+
+        # The session was started *before* the reboot was requested by
+        # the launcher, system was not rebooted after previous run
+        if boot_time < reboot_time:
+            return False
+        # system was rebooted after flag was written to disk
+        else:
+            return True
+    # previous run did not require reboot
+    else:
+        return True
+
+
+def _get_uptime():
+    """
+    Returns timedelta containing system (dom0) uptime.
+    """
+    uptime = None
+    with open("/proc/uptime", "r") as f:
+        uptime = f.read().split(" ")[0].strip()
+    uptime = int(float(uptime))
+    uptime_hours = uptime // 3600
+    uptime_minutes = (uptime % 3600) // 60
+    uptime_seconds = uptime % 60
+
+    delta = timedelta(
+        hours=uptime_hours, minutes=uptime_minutes, seconds=uptime_seconds
+    )
+
+    return delta
+
+
+def read_dom0_update_flag_from_disk(with_timestamp=False):
+    """
+    Read the last updated SecureDrop Workstation update status from disk
+    in dom0, and returns the corresponding UpdateStatus. If ivoked the
+    parameter `with_timestamp=True`, this function will return the full json.
+    """
+    flag_file_path_dom0 = get_dom0_path(FLAG_FILE_STATUS_DOM0)
+
+    try:
+        with open(flag_file_path_dom0, "r") as f:
+            contents = json.load(f)
+            for status in UpdateStatus:
+                if int(contents["status"]) == int(status.value):
+                    if with_timestamp:
+                        return contents
+                    else:
+                        return status
+    except Exception:
+        sdlog.info("Cannot read dom0 status flag, assuming first run")
+        return None
 
 
 def overall_update_status(results):
@@ -292,6 +368,10 @@ def overall_update_status(results):
     updates_failed = False
     updates_required = False
     reboot_required = False
+
+    # Ensure the user has rebooted after the previous installer run required a reboot
+    if not last_required_reboot_performed():
+        return UpdateStatus.REBOOT_REQUIRED
 
     for result in results.values():
         if result == UpdateStatus.UPDATES_FAILED:
