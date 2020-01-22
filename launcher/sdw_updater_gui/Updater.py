@@ -80,7 +80,7 @@ def apply_updates(vms):
         upgrade_results = UpdateStatus.UPDATES_FAILED
 
         if vm == "dom0":
-            upgrade_results = _apply_updates_dom0(vm)
+            upgrade_results = _apply_updates_dom0()
         else:
             upgrade_results = _apply_updates_vm(vm)
 
