@@ -84,7 +84,7 @@ def apply_updates(vms):
         else:
             upgrade_results = _apply_updates_vm(vm)
 
-        progress_percentage = int(((progress_current + 1) / len(vms)) * 100)
+        progress_percentage = int(((progress_current + 1) / len(vms)) * 100 - 5)
         yield vm, progress_percentage, upgrade_results
 
     _shutdown_and_start_vms()
