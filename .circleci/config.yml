@@ -13,6 +13,20 @@ jobs:
     steps:
       - checkout
       - run: make dom0-rpm
+  launcher-tests-buster:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies and run Python tests for launcher
+          command: |
+            cd launcher/
+            set -e
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install --require-hashes -r test-requirements.txt
+            make test && make bandit
 
 workflows:
   version: 2
@@ -20,3 +34,4 @@ workflows:
     jobs:
       - lint
       - buildrpm
+      - launcher-tests-buster

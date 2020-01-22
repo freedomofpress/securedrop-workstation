@@ -1,0 +1,5 @@
+bandit
+pip-tools
+pip
+pytest
+pytest-cov
