@@ -45,6 +45,16 @@ sd-app:
     - require:
       - qvm: sd-app-buster-template
 
+{% import_json "sd/config.json" as d %}
+
+# The private volume size should be defined in the config.json
+sd-app-private-volume-size:
+  cmd.run:
+    - name: >
+        qvm-volume resize sd-app:private {{ d.vmsizes.sd_app }}GiB
+    - require:
+      - qvm: sd-app
+
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.
 sd-app-template-sync-appmenus:

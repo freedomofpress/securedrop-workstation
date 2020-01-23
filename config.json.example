@@ -3,5 +3,9 @@
   "hidserv": {
     "hostname": "avgfxawdn6c3coe3.onion",
     "key": "Il8Xas7uf6rjtc0LxYwhrx"
-  }
+  },
+  "vmsizes": {
+        "sd_app": 10,
+        "sd_log": 5
+      }
 }

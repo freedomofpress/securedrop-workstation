@@ -61,6 +61,7 @@ clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
 
 prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./scripts/prep-salt
+	@./scripts/validate-config
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
 	@./scripts/destroy-vm sd-whonix
