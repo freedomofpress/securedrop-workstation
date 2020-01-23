@@ -11,6 +11,9 @@ include:
   # The anon-whoni config pulls in sys-whonix and sys-firewall,
   # as well as ensures the latest versions of Whonix are installed.
   - qvm.anon-whonix
+  # import vars
+  - sd-default-config
+
 
 dom0-rpm-test-key:
   file.managed:
@@ -19,7 +22,7 @@ dom0-rpm-test-key:
     # we must place the GPG key inside the fedora-30 TemplateVM, then
     # restart sys-firewall.
     - name: /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
-    - source: "salt://sd/sd-workstation/apt-test-pubkey.asc"
+    - source: "salt://sd/sd-workstation/{{ sdvars.signing_key_filename }}"
     - user: root
     - group: root
     - mode: 644
@@ -44,7 +47,7 @@ dom0-workstation-rpm-repo:
         gpgcheck=1
         gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
         enabled=1
-        baseurl=https://yum-test.securedrop.org/workstation/dom0/f25
+        baseurl={{ sdvars.dom0_yum_repo_url }}
         name=SecureDrop Workstation Qubes dom0 repo
     - require:
       - file: dom0-rpm-test-key
