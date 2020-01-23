@@ -38,6 +38,7 @@ install -m 755 -d %{buildroot}/srv/salt/sd
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-app
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-proxy
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-journalist
+install -m 755 -d %{buildroot}/srv/salt/sd/sd-whonix
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-workstation
 install -m 755 -d %{buildroot}/srv/salt/sd/sys-firewall
 install -m 755 -d %{buildroot}/usr/share/%{name}/scripts
@@ -50,10 +51,11 @@ install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
 install -m 655 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 # The next file should get installed via RPM not via salt
 install -m 755 dom0/securedrop-update %{buildroot}/srv/salt/securedrop-update
-install sd-app/* %{buildroot}/srv/salt/sd/sd-app/
-install sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
-install sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
-install sys-firewall/* %{buildroot}/srv/salt/sd/sys-firewall/
+install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
+install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
+install -m 644 sd-whonix/* %{buildroot}/srv/salt/sd/sd-whonix/
+install -m 644 sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
+install -m 644 sys-firewall/* %{buildroot}/srv/salt/sd/sys-firewall/
 install -m 644 Makefile %{buildroot}/usr/share/%{name}/Makefile
 install -m 755 scripts/* %{buildroot}/usr/share/%{name}/scripts/
 install -m 644 launcher/*.py %{buildroot}/opt/securedrop/launcher/
