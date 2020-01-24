@@ -32,6 +32,7 @@ class SDWConfigValidator(object):
         self.confirm_onion_config_valid()
         self.confirm_submission_privkey_file()
         self.confirm_submission_privkey_fingerprint()
+        self.confirm_environment_valid()
         self.validate_existing_size()
 
     def confirm_config_file_exists(self):
@@ -41,6 +42,14 @@ class SDWConfigValidator(object):
             msg = "Config file does not exist: {}".format(self.config_filepath)
             msg += "Create from config.json.example"
             raise AssertionError(msg)
+
+    def confirm_environment_valid(self):
+        """
+        The 'target' config item is required to determine
+        whether prod or dev URLs are used for installing packages.
+        """
+        assert "target" in self.config
+        assert self.config["target"] in ("prod", "dev")
 
     def confirm_onion_config_valid(self):
         """

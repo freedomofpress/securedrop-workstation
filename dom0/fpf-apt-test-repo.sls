@@ -9,7 +9,9 @@
 #
 include:
   - update.qubes-vm
-  - sd-default-config
+#  - sd-default-config
+
+{% from 'sd-default-config.sls' import sdvars with context %}
 
 # That's right, we need to install a package in order to
 # configure a repo to install another package

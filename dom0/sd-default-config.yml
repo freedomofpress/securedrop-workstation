@@ -1,10 +1,9 @@
 ---
-securedrop_defaults:
-  prod:
-    dom0_yum_repo_url: "https://yum.securedrop.org/workstation/dom0/f25"
-    apt_repo_url: "https://apt.freedom.press"
-    signing_key_filename: "securedrop-release-signing-pubkey.asc"
-  dev:
-    dom0_yum_repo_url: "https://yum-test.securedrop.org/workstation/dom0/f25"
-    apt_repo_url: "https://apt-test-qubes.freedom.press"
-    signing_key_filename: "apt-test-pubkey.asc"
+prod:
+  dom0_yum_repo_url: "https://yum.securedrop.org/workstation/dom0/f25"
+  apt_repo_url: "https://apt.freedom.press"
+  signing_key_filename: "securedrop-release-signing-pubkey.asc"
+dev:
+  dom0_yum_repo_url: "https://yum-test.securedrop.org/workstation/dom0/f25"
+  apt_repo_url: "https://apt-test-qubes.freedom.press"
+  signing_key_filename: "apt-test-pubkey.asc"
