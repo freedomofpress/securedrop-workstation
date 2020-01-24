@@ -5,21 +5,28 @@ Displays a warning to the user if the workstation has been running
 continuously for more than 5 days.
 """
 
-import subprocess
+import sys
+from PyQt4 import QtGui
+from PyQt4.QtGui import QMessageBox
+
+
+def uptime_warning():
+    application = QtGui.QApplication(sys.argv)
+    QMessageBox.warning(None, 'Security check recommended',
+        'The workstation has been running continuously for a long time. '
+        'We recommend that you launch or restart the SecureDrop app to '
+        'check for security updates.',
+                        QMessageBox.Ok,
+                        QMessageBox.Ok)
+
 
 uptime_threshold = 432000  # 432000 seconds = 5 days
+uptime_threshold = 0  # 432000 seconds = 5 days
 
 # get system uptime
 with open('/proc/uptime', 'r') as f:
     uptime_seconds = float(f.readline().split()[0])
 
-cmd = [
-    "notify-send",
-    "--expire-time=60000",  # show notification for 60 seconds
-    "--icon=/usr/share/securedrop/icons/sd-logo.png",
-    "This SecureDrop Workstation has been operating for more than 5 days.",
-    "For security reasons, we recommend restarting the system now.",
-]
 
-if uptime_seconds >= uptime_threshold:
-    subprocess.check_call(cmd)
+if uptime_seconds > uptime_threshold:
+    uptime_warning()
