@@ -9,8 +9,8 @@ SUPPORTED_PLATFORMS = [
     "Debian GNU/Linux 10 (buster)",
 ]
 
-FPF_APT_SOURCES_STRETCH = "deb [arch=amd64] https://apt-test-qubes.freedom.press stretch main"
-FPF_APT_SOURCES_BUSTER = "deb [arch=amd64] https://apt-test-qubes.freedom.press buster main"
+FPF_APT_SOURCES_STRETCH = "deb [arch=amd64] https://apt-test.freedom.press stretch main"
+FPF_APT_SOURCES_BUSTER = "deb [arch=amd64] https://apt-test.freedom.press buster main"
 APT_SOURCES_FILE = "/etc/apt/sources.list.d/securedrop_workstation.list"
 
 
@@ -61,6 +61,8 @@ class SD_VM_Platform_Tests(unittest.TestCase):
 
             self.assertTrue(FPF_APT_SOURCES_BUSTER in contents)
             self.assertFalse(FPF_APT_SOURCES_STRETCH in contents)
+            # Old alpha URL for apt repo should be absent
+            self.assertFalse("apt-test-qubes.freedom.press" in contents)
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
