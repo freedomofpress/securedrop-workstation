@@ -14,25 +14,16 @@
 # Example loading taking from Qubes /srv/salt/top.sls
 
 
-{% load_yaml as sdvars_defaults %}
-{% include "sd-default-config.yml" %}
-{% endload %}
-
-{% import_json "sd/config.json" as d %}
-
-{% if d.target == "dev" %}
-  {% set sdvars = sdvars_defaults['dev'] %}
-{% else %}
-  {% set sdvars = sdvars_defaults['prod'] %}
-{% endif %}
-
 include:
   # Import the upstream Qubes-maintained anon-whonix settings.
   # The anon-whoni config pulls in sys-whonix and sys-firewall,
   # as well as ensures the latest versions of Whonix are installed.
   - qvm.anon-whonix
   # import vars
-  - sd-default-config
+#
+#  - sd-default-config
+
+{% from 'sd-default-config.sls' import sdvars with context %}
 
 
 dom0-rpm-test-key:
