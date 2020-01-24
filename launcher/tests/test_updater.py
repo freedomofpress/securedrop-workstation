@@ -347,7 +347,8 @@ def test_apply_updates(
 
     assert updater.overall_update_status(results) == UpdateStatus.UPDATES_OK
     assert not mocked_error.called
-    apply_dom0.assert_called_once()
+    # Ensure _apply_updates_dom0 is not called with a parameter
+    apply_dom0.assert_called_once_with()
     assert not apply_vm.called
 
 
