@@ -10,7 +10,7 @@ class SD_Sys_Firewall_Tests(SD_VM_Local_Test):
         super(SD_Sys_Firewall_Tests, self).setUp()
 
     def test_rpm_repo_public_key(self):
-        self.assertFilesMatch("/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",  # noqa
+        self.assertFilesMatch("/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation",  # noqa
                               "sd-workstation/apt-test-pubkey.asc")
 
     def test_rpm_repo_public_key_script(self):

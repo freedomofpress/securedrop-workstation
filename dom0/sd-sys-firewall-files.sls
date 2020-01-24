@@ -3,7 +3,7 @@
 #
 sys-firewall-rpm-test-key:
   file.managed:
-    - name: /rw/config/RPM-GPG-KEY-securedrop-workstation-test
+    - name: /rw/config/RPM-GPG-KEY-securedrop-workstation
     - source: "salt://sd/sd-workstation/apt-test-pubkey.asc"
     - user: root
     - group: root

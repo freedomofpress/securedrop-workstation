@@ -16,6 +16,7 @@ remove-dom0-sdw-config-files:
       - /opt/securedrop
       - /etc/yum.repos.d/securedrop-workstation-dom0.repo
       - /usr/bin/securedrop-update
+      - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
       - /etc/cron.daily/securedrop-update-cron
       - /usr/share/securedrop/icons
@@ -29,8 +30,10 @@ remove-dom0-sdw-config-files:
 sd-cleanup-sys-firewall:
   cmd.run:
     - names:
+      - qvm-run sys-firewall 'sudo rm -f /rw/config/RPM-GPG-KEY-securedrop-workstation'
       - qvm-run sys-firewall 'sudo rm -f /rw/config/RPM-GPG-KEY-securedrop-workstation-test'
       - qvm-run sys-firewall 'sudo rm -f /rw/config/sd-copy-rpm-repo-pubkey.sh'
+      - qvm-run sys-firewall 'sudo rm -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation'
       - qvm-run sys-firewall 'sudo rm -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
       - qvm-run sys-firewall 'sudo perl -pi -E "s#^/rw/config/sd-copy-rpm-repo-pubkey.sh##" /rw/config/rc.local'
 

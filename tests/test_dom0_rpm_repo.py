@@ -8,7 +8,7 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
         self.maxDiff = None
 
     def test_rpm_repo_public_key(self):
-        pubkey_actual = "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test"  # noqa
+        pubkey_actual = "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation"  # noqa
         pubkey_wanted = "sd-workstation/apt-test-pubkey.asc"
 
         with open(pubkey_actual, "r") as f:
@@ -24,7 +24,7 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
         wanted_lines = [
             "[securedrop-workstation-dom0]",
             "gpgcheck=1",
-            "gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",  # noqa
+            "gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation",  # noqa
             "enabled=1",
             "baseurl=https://yum-test.securedrop.org/workstation/dom0/f25",
             "name=SecureDrop Workstation Qubes dom0 repo",

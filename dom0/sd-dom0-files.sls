@@ -32,7 +32,7 @@ dom0-rpm-test-key:
     # config location is automatically sent to dom0's UpdateVM. Otherwise,
     # we must place the GPG key inside the fedora-30 TemplateVM, then
     # restart sys-firewall.
-    - name: /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
+    - name: /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
     - source: "salt://sd/sd-workstation/{{ sdvars.signing_key_filename }}"
     - user: root
     - group: root
@@ -40,7 +40,7 @@ dom0-rpm-test-key:
 
 dom0-rpm-test-key-import:
   cmd.run:
-    - name: sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
+    - name: sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
     - require:
       - file: dom0-rpm-test-key
 
@@ -56,7 +56,7 @@ dom0-workstation-rpm-repo:
     - contents: |
         [securedrop-workstation-dom0]
         gpgcheck=1
-        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
         enabled=1
         baseurl={{ sdvars.dom0_yum_repo_url }}
         name=SecureDrop Workstation Qubes dom0 repo
