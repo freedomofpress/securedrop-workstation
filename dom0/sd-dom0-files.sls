@@ -5,6 +5,26 @@
 # Installs dom0 config scripts specific to tracking updates
 # over time. These scripts should be ported to an RPM package.
 ##
+# See references:
+#
+#   - https://docs.saltstack.com/en/latest/topics/tutorials/states_pt3.html
+#
+
+
+# Example loading taking from Qubes /srv/salt/top.sls
+
+
+{% load_yaml as sdvars_defaults %}
+{% include "sd-default-config.yml" %}
+{% endload %}
+
+{% import_json "sd/config.json" as d %}
+
+{% if d.target == "dev" %}
+  {% set sdvars = sdvars_defaults['dev'] %}
+{% else %}
+  {% set sdvars = sdvars_defaults['prod'] %}
+{% endif %}
 
 include:
   # Import the upstream Qubes-maintained anon-whonix settings.
