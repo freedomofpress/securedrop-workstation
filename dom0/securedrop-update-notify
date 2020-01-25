@@ -5,6 +5,7 @@ Displays a warning to the user if the workstation has been running
 continuously for more than 5 days.
 """
 
+from datetime import datetime
 import fcntl
 import logging
 import os
@@ -38,14 +39,24 @@ def show_update_notification():
                         QMessageBox.Ok)
 
 
-# Get for timestamp from last update 
 LAST_UPDATED = os.path.join(os.path.expanduser("~"), 
                  ".securedrop_launcher/sdw-last-updated")
+# Get for timestamp from last update 
+if os.path.exists(LAST_UPDATED):
+    with open(LAST_UPDATED, 'r') as f:
+        last_update_time = f.readline().splitlines()[0]
+        last_update_time = datetime.strptime(last_update_time, "%Y-%m-%d %H:%M:%S")
+        now = datetime.now()
+        update_time_diff = abs((last_update_time-now).total_seconds())
+
 
 # Set uptime values: threshold and current 
-uptime_threshold = 0  # 432000 seconds = 5 days
+uptime_threshold = 432000  # 432000 seconds = 5 days
 with open('/proc/uptime', 'r') as f:
     uptime_seconds = float(f.readline().split()[0])
 
+# main logic
 if not os.path.exists(LAST_UPDATED) and uptime_seconds > uptime_threshold:
-   show_update_notification() 
+    show_update_notification()
+if os.path.exists(LAST_UPDATED) and update_time_diff > uptime_threshold:
+    print("update")
