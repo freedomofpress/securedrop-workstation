@@ -85,8 +85,8 @@ dom0-update-securedrop-script-cron:
 # Copy uptime notification script into cron.hourly
 dom0-uptime-notify-securedrop-script-cron:
   file.managed:
-    - name: /etc/cron.hourly/securedrop-uptime-notify
-    - source: salt://securedrop-uptime-notify
+    - name: /etc/cron.hourly/securedrop-update-notify
+    - source: salt://securedrop-update-notify
     - user: root
     - group: root
     - mode: 755

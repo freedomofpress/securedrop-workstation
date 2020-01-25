@@ -5,12 +5,28 @@ Displays a warning to the user if the workstation has been running
 continuously for more than 5 days.
 """
 
+import fcntl
+import logging
 import sys
 from PyQt4 import QtGui
 from PyQt4.QtGui import QMessageBox
 
+sdlog = logging.getLogger(__name__)
 
-def uptime_warning():
+# This will create a lock file in /run, which is a temporary filesystem that
+# does not persist upon reboots
+LOCK_FILE = "/run/lock/securedrop-update-notify.lock"
+
+lf = open(LOCK_FILE, 'w')
+try:
+    # Obtain an exclusive, nonblocking lock
+    fcntl.lockf(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except IOError:
+    sdlog.error('Error obtaining lock on ' + LOCK_FILE +
+        '\nNotification may already be displaying. Exiting.')
+    sys.exit(0)
+
+def show_update_notification():
     application = QtGui.QApplication(sys.argv)
     QMessageBox.warning(None, 'Security check recommended',
         'The workstation has been running continuously for a long time. '
@@ -20,12 +36,11 @@ def uptime_warning():
                         QMessageBox.Ok)
 
 
-uptime_threshold = 28800  # 28800 seconds = 8 hours
+uptime_threshold = 432000  # 432000 seconds = 5 days
 
 # get system uptime
 with open('/proc/uptime', 'r') as f:
     uptime_seconds = float(f.readline().split()[0])
 
-
 if uptime_seconds > uptime_threshold:
-    uptime_warning()
+    show_update_notification()
