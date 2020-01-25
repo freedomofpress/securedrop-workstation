@@ -6,8 +6,20 @@ ifneq ($(HOST),dom0)
 	exit 1
 endif
 
-## Builds and provisions all VMs required for testing workstation
-all: assert-dom0 validate prep-salt
+all: ## Builds and provisions all VMs required for testing workstation
+	$(MAKE) assert-dom0
+	./scripts/configure-environment --env dev
+	$(MAKE) validate
+	$(MAKE) prep-salt
+	./scripts/provision-all
+
+dev: all ## Builds and provisions all VMs required for testing workstation
+
+prod: ## Configures a PRODUCTION install for pilot use
+	$(MAKE) assert-dom0
+	./scripts/configure-environment --env prod
+	$(MAKE) validate
+	$(MAKE) prep-salt
 	./scripts/provision-all
 
 dom0-rpm: ## Builds rpm package to be installed on dom0
