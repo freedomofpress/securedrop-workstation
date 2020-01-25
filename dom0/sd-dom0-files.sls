@@ -90,8 +90,6 @@ dom0-uptime-notify-securedrop-script-cron:
     - user: root
     - group: root
     - mode: 755
-    - require:
-      - file: dom0-securedrop-icon
 
 # Create directory for storing SecureDrop-specific icons
 dom0-securedrop-icons-directory:

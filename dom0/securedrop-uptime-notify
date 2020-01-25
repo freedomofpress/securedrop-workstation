@@ -20,8 +20,7 @@ def uptime_warning():
                         QMessageBox.Ok)
 
 
-uptime_threshold = 432000  # 432000 seconds = 5 days
-uptime_threshold = 0  # 432000 seconds = 5 days
+uptime_threshold = 28800  # 28800 seconds = 8 hours
 
 # get system uptime
 with open('/proc/uptime', 'r') as f:
