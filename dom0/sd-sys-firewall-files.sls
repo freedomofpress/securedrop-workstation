@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 #
+
+{% from 'sd-default-config.sls' import sdvars with context %}
+
 sys-firewall-rpm-test-key:
   file.managed:
     - name: /rw/config/RPM-GPG-KEY-securedrop-workstation
-    - source: "salt://sd/sd-workstation/apt-test-pubkey.asc"
+    - source: "salt://sd/sd-workstation/{{ sdvars.signing_key_filename }}"
     - user: root
     - group: root
     - mode: 644
