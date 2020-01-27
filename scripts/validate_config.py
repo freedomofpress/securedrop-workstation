@@ -18,6 +18,7 @@ TOR_V2_AUTH_COOKIE_REGEX = r'^[a-zA-z0-9+/]{22}$'
 
 # CONFIG_FILEPATH = "/srv/salt/sd/config.json"
 CONFIG_FILEPATH = "config.json"
+SECRET_KEY_FILEPATH = "sd-journalist.sec"
 
 
 class ValidationError(Exception):
@@ -25,15 +26,20 @@ class ValidationError(Exception):
 
 
 class SDWConfigValidator(object):
-    def __init__(self):
-        self.config_filepath = CONFIG_FILEPATH
+    def __init__(self, config_base_dir=None):
+        if config_base_dir:
+            self.config_filepath = os.path.join(config_base_dir, CONFIG_FILEPATH)
+            self.secret_key_filepath = os.path.join(config_base_dir, SECRET_KEY_FILEPATH)
+        else:
+            self.config_filepath = CONFIG_FILEPATH
+            self.secret_key_filepath = SECRET_KEY_FILEPATH
         self.confirm_config_file_exists()
         self.config = self.read_config_file()
         self.confirm_onion_config_valid()
         self.confirm_submission_privkey_file()
         self.confirm_submission_privkey_fingerprint()
         self.confirm_environment_valid()
-        self.validate_existing_size()
+        # self.validate_existing_size()
 
     def confirm_config_file_exists(self):
         try:
@@ -84,9 +90,8 @@ class SDWConfigValidator(object):
         assert re.match(TOR_V2_AUTH_COOKIE_REGEX, self.config["hidserv"]["key"])
 
     def confirm_submission_privkey_file(self):
-        secret_key_filename = "sd-journalist.sec"
-        assert os.path.exists(secret_key_filename)
-        gpg_cmd = ["gpg", secret_key_filename]
+        assert os.path.exists(self.secret_key_filepath)
+        gpg_cmd = ["gpg", self.secret_key_filepath]
         # Call out to gpg to confirm it's a valid keyfile
         subprocess.check_call(gpg_cmd, stdout=subprocess.DEVNULL)
 

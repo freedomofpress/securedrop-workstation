@@ -1,6 +1,7 @@
 include dom0/*.sls
 include dom0/*.top
 include dom0/*.j2
+include dom0/securedrop-admin
 include dom0/securedrop-update
 include dom0/securedrop-login
 include dom0/securedrop-launcher.desktop

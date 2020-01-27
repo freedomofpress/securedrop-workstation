@@ -52,6 +52,7 @@ install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
 install -m 655 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 # The next file should get installed via RPM not via salt
 install -m 755 dom0/securedrop-update %{buildroot}/srv/salt/securedrop-update
+install -m 755 dom0/securedrop-admin %{buildroot}/%{_bindir}/securedrop-admin
 install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
 install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
 install -m 644 sd-whonix/* %{buildroot}/srv/salt/sd/sd-whonix/
@@ -68,6 +69,7 @@ install -m 644 launcher/sdw_updater_gui/*.py %{buildroot}/opt/securedrop/launche
 %{python3_sitelib}/securedrop_workstation_dom0_config*
 %{_datadir}/%{name}
 %{_bindir}/securedrop-update
+%{_bindir}/securedrop-admin
 /srv/salt/sd*
 /srv/salt/dom0-xfce-desktop-file.j2
 /srv/salt/securedrop-*
