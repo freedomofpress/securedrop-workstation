@@ -206,3 +206,15 @@ dom0-securedrop-launcher-desktop-shortcut:
     - user: {{ gui_user }}
     - group: {{ gui_user }}
     - mode: 755
+
+{% import_json "sd/config.json" as d %}
+{% if sdvars.target != "dev" %}
+
+dom0-install-securedrop-workstation-dom0-config:
+  pkg.installed:
+    - pkgs:
+      - securedrop-workstation-dom0-config
+    - require:
+      - file: dom0-workstation-rpm-repo
+
+{% endif %}
