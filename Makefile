@@ -79,7 +79,7 @@ clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
 
 prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./scripts/prep-salt
-	@./scripts/validate-config
+	@./scripts/validate_config.py
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
 	@./scripts/destroy-vm sd-whonix
@@ -128,7 +128,7 @@ test-gpg: assert-dom0 ## Runs tests for SD GPG functionality
 	python3 -m unittest -v tests.test_gpg
 
 validate: assert-dom0 ## Checks for local requirements in dev env
-	@./scripts/validate-config
+	@./scripts/validate_config.py
 
 .PHONY: flake8
 flake8: ## Lints all Python files with flake8
