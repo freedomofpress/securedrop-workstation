@@ -15,9 +15,9 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-flag"
+FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-status"
 FLAG_FILE_LAST_UPDATED_SD_APP = "/home/user/.securedrop_client/sdw-last-updated"
-FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-flag"
+FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-status"
 FLAG_FILE_LAST_UPDATED_DOM0 = ".securedrop_launcher/sdw-last-updated"
 
 sdlog = logging.getLogger(__name__)
