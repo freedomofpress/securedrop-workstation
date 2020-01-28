@@ -1,3 +1,4 @@
+import json
 import unittest
 import subprocess
 
@@ -9,14 +10,27 @@ SUPPORTED_PLATFORMS = [
     "Debian GNU/Linux 10 (buster)",
 ]
 
-FPF_APT_SOURCES_STRETCH = "deb [arch=amd64] https://apt-test.freedom.press stretch main"
-FPF_APT_SOURCES_BUSTER = "deb [arch=amd64] https://apt-test.freedom.press buster main"
+apt_url = ""
+FPF_APT_SOURCES_STRETCH_DEV = "deb [arch=amd64] https://apt-test.freedom.press stretch main"
+FPF_APT_SOURCES_BUSTER_DEV = "deb [arch=amd64] https://apt-test.freedom.press buster main"
+FPF_APT_SOURCES_STRETCH = "deb [arch=amd64] https://apt.freedom.press stretch main"
+FPF_APT_SOURCES_BUSTER = "deb [arch=amd64] https://apt.freedom.press buster main"
 APT_SOURCES_FILE = "/etc/apt/sources.list.d/securedrop_workstation.list"
 
 
 class SD_VM_Platform_Tests(unittest.TestCase):
     def setUp(self):
         self.app = Qubes()
+        with open("config.json") as c:
+            config = json.load(c)
+            # default to prod
+            if 'target' not in config:
+                config['target'] = 'prod'
+
+            if config['target'] == 'prod':
+                self.apt_url = FPF_APT_SOURCES_BUSTER
+            else:
+                self.apt_url = FPF_APT_SOURCES_BUSTER_DEV
 
     def tearDown(self):
         pass
@@ -59,7 +73,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             stdout, stderr = vm.run(cmd)
             contents = stdout.decode("utf-8").rstrip("\n")
 
-            self.assertTrue(FPF_APT_SOURCES_BUSTER in contents)
+            self.assertTrue(self.apt_url in contents)
             self.assertFalse(FPF_APT_SOURCES_STRETCH in contents)
             # Old alpha URL for apt repo should be absent
             self.assertFalse("apt-test-qubes.freedom.press" in contents)
