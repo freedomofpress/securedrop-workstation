@@ -8,7 +8,7 @@
 
 {% import_json "sd/config.json" as d %}
 
-{% if d.target == "dev" %}
+{% if d.target == "dev" or d.target == "staging" %}
   {% set sdvars = sdvars_defaults['dev'] %}
 {% else %}
   {% set sdvars = sdvars_defaults['prod'] %}

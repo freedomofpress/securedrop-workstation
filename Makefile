@@ -22,6 +22,13 @@ prod: ## Configures a PRODUCTION install for pilot use
 	$(MAKE) prep-salt
 	./scripts/provision-all
 
+staging: ## Configures a STAGING install. To be used on test hardware ONLY
+	$(MAKE) assert-dom0
+	./scripts/configure-environment --env staging
+	$(MAKE) validate
+	$(MAKE) prep-salt
+	./scripts/provision-all
+
 dom0-rpm: ## Builds rpm package to be installed on dom0
 	@./scripts/build-dom0-rpm
 

@@ -25,7 +25,7 @@ def parse_args():
         default="prod",
         required=False,
         action="store",
-        help="Target deploy strategy, e.g. 'prod' or 'dev'",
+        help="Target deploy strategy, e.g. 'prod', 'dev', or 'staging'",
     )
     args = parser.parse_args()
     if not os.path.exists(args.config):
@@ -34,7 +34,7 @@ def parse_args():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    if args.environment not in ("prod", "dev"):
+    if args.environment not in ("prod", "dev", "staging"):
         parser.print_help(sys.stderr)
         sys.exit(2)
     return args

@@ -55,7 +55,7 @@ class SDWConfigValidator(object):
         whether prod or dev URLs are used for installing packages.
         """
         assert "target" in self.config
-        assert self.config["target"] in ("prod", "dev")
+        assert self.config["target"] in ("prod", "dev", "staging")
 
     def confirm_onion_config_valid(self):
         """
