@@ -282,7 +282,7 @@ def _write_updates_status_flag_to_disk(status):
         current_date = str(datetime.now().strftime(DATE_FORMAT))
 
         with open(flag_file_path_dom0, "w") as f:
-            flag_contents = {"last_updated": current_date, "status": status.value}
+            flag_contents = {"last_status_update": current_date, "status": status.value}
             json.dump(flag_contents, f)
     except Exception as e:
         sdlog.error("Error writing update status flag to dom0")
@@ -303,7 +303,7 @@ def last_required_reboot_performed():
         return True
 
     if int(flag_contents["status"]) == int(UpdateStatus.REBOOT_REQUIRED.value):
-        reboot_time = datetime.strptime(flag_contents["last_updated"], DATE_FORMAT)
+        reboot_time = datetime.strptime(flag_contents["last_status_update"], DATE_FORMAT)
         boot_time = datetime.now() - _get_uptime()
 
         # The session was started *before* the reboot was requested by

@@ -796,7 +796,7 @@ def test_read_dom0_update_flag_from_disk_fails(
 @mock.patch(
     "Updater.read_dom0_update_flag_from_disk",
     return_value={
-        "last_updated": "1999-09-09 14:12:12",
+        "last_status_update": "1999-09-09 14:12:12",
         "status": UpdateStatus.REBOOT_REQUIRED.value,
     },
 )
@@ -813,7 +813,7 @@ def test_last_required_reboot_performed_successful(
 @mock.patch(
     "Updater.read_dom0_update_flag_from_disk",
     return_value={
-        "last_updated": str(datetime.now().strftime(updater.DATE_FORMAT)),
+        "last_status_update": str(datetime.now().strftime(updater.DATE_FORMAT)),
         "status": UpdateStatus.REBOOT_REQUIRED.value,
     },
 )
@@ -828,7 +828,7 @@ def test_last_required_reboot_performed_failed(mocked_info, mocked_error, mocked
 @mock.patch(
     "Updater.read_dom0_update_flag_from_disk",
     return_value={
-        "last_updated": str(datetime.now().strftime(updater.DATE_FORMAT)),
+        "last_status_update": str(datetime.now().strftime(updater.DATE_FORMAT)),
         "status": UpdateStatus.UPDATES_OK.value,
     },
 )
