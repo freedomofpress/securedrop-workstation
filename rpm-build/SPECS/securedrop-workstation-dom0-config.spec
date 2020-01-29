@@ -42,7 +42,7 @@ install -m 755 -d %{buildroot}/srv/salt/sd/sd-whonix
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-workstation
 install -m 755 -d %{buildroot}/srv/salt/sd/sys-firewall
 install -m 755 -d %{buildroot}/usr/share/%{name}/scripts
-install -m 755 -d %{buildroot}/srv/salt/sd/sys-usb
+install -m 755 -d %{buildroot}/srv/salt/sd/usb-autoattach
 install -m 644 dom0/*.sls %{buildroot}/srv/salt/
 install -m 644 dom0/*.top %{buildroot}/srv/salt/
 install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
@@ -57,7 +57,8 @@ install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
 install -m 644 sd-whonix/* %{buildroot}/srv/salt/sd/sd-whonix/
 install -m 644 sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
 install -m 644 sys-firewall/* %{buildroot}/srv/salt/sd/sys-firewall/
-install sys-usb/* %{buildroot}/srv/salt/sd/sys-usb/
+install -m 644 usb-autoattach/99-sd-devices.rules %{buildroot}/srv/salt/sd/usb-autoattach/
+install -m 755 usb-autoattach/sd-attach-export-device %{buildroot}/srv/salt/sd/usb-autoattach/
 install -m 644 Makefile %{buildroot}/usr/share/%{name}/Makefile
 install -m 755 scripts/* %{buildroot}/usr/share/%{name}/scripts/
 install -m 644 launcher/*.py %{buildroot}/opt/securedrop/launcher/
