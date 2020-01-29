@@ -7,6 +7,9 @@ set-fedora-as-default-dispvm:
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
+include:
+  - sd-usb-autoattach-remove
+
 remove-dom0-sdw-config-files:
   file.absent:
     - names:

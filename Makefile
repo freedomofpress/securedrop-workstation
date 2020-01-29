@@ -19,9 +19,11 @@ clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 qubes-rpc: prep-salt ## Places default deny qubes-rpc policies for sd-app and sd-gpg
 	sudo qubesctl --show-output --targets sd-dom0-qvm-rpc state.highstate
 
-sys-usb: prep-salt ## Adds udev rules and scripts to sys-usb
-	sudo qubesctl --show-output state.sls sys-usb
+add-usb-autoattach: prep-salt ## Adds udev rules and scripts to sys-usb
 	sudo qubesctl --show-output --skip-dom0 --targets sys-usb state.highstate
+
+remove-usb-autoattach: prep-salt ## Removes udev rules and scripts from sys-usb
+	sudo qubesctl --show-output state.sls sd-usb-autoattach-remove
 
 sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
 	sudo qubesctl --show-output state.sls sd-workstation-buster-template

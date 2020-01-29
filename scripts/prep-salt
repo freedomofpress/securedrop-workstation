@@ -22,7 +22,7 @@ if [[ ! -d "$SDW_SALT_DIR" ]]; then
     sudo cp -r sd-whonix /srv/salt/sd
     sudo cp -r sd-workstation /srv/salt/sd
     sudo cp -r sys-firewall /srv/salt/sd
-    sudo cp -r sys-usb /srv/salt/sd
+    sudo cp -r usb-autoattach /srv/salt/sd
     sudo cp dom0/* /srv/salt/
     sudo cp -r launcher /srv/salt/
 fi

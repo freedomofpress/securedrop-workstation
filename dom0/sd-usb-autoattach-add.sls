@@ -2,14 +2,14 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 ##
-# Installs udev configuration in sys-usb for automatically attaching
+# Installs udev configuration in a USB Qube for automatically attaching
 # USB devices to sd-devices.
 ##
 
 sd-udev-rules:
   file.managed:
     - name: /rw/config/sd/etc/udev/rules.d/99-sd-devices.rules
-    - source: salt://sd/sys-usb/99-sd-devices.rules
+    - source: salt://sd/usb-autoattach/99-sd-devices.rules
     - user: root
     - group: root
     - mode: 0444
@@ -35,7 +35,7 @@ sd-rc-local-udev-rules:
 sd-attach-export-device:
   file.managed:
     - name: /usr/local/bin/sd-attach-export-device
-    - source: salt://sd/sys-usb/sd-attach-export-device
+    - source: salt://sd/usb-autoattach/sd-attach-export-device
     - user: root
     - group: root
     - mode: 0555
