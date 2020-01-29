@@ -62,7 +62,7 @@ with open('/proc/uptime', 'r') as f:
     uptime_hours = uptime_seconds / 60 / 60
 
 # If we do not have the timestamp file, and the system has been running for
-# a long time, we should show the notification.
+# a long time, we should show the warning.
 if not LAST_UPDATED_FILE_EXISTS and uptime_seconds > WARNING_THRESHOLD:
     sdlog.warning("The SecureDrop Workstation has been running for {0:.1f} "
                   "hours without checking for updates. Showing security warning."
