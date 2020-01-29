@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-Displays a warning to the user if the workstation has been running
-continuously for more than 5 days.
+Displays a warning to the user if the workstation has been running continuously
+for too long without checking for security updates
 """
 
 from datetime import datetime
@@ -15,50 +15,64 @@ from PyQt4.QtGui import QMessageBox
 
 sdlog = logging.getLogger(__name__)
 
-
 # This will create a lock file in /run, which is a temporary filesystem that
 # does not persist upon reboots
 LOCK_FILE = "/run/lock/securedrop-update-notify.lock"
+LAST_UPDATED_FILE = os.path.join(os.path.expanduser("~"), ".securedrop_launcher/sdw-last-updated")
+LAST_UPDATED_FILE_EXISTS = os.path.exists(LAST_UPDATED_FILE)
+WARNING_THRESHOLD = 432000  # 5 days (specified in seconds)
+UPTIME_GRACE_PERIOD = 1800  # 30 minutes (specified in seconds)
 
 lf = open(LOCK_FILE, 'w')
 try:
     # Obtain an exclusive, nonblocking lock
     fcntl.lockf(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
 except IOError:
-    sdlog.error('Error obtaining lock on ' + LOCK_FILE +
-        '\nNotification may already be displaying. Exiting.')
+    sdlog.error("Error obtaining lock on " + LOCK_FILE +
+                "\nNotification may already be displaying. Exiting.")
     sys.exit(0)
 
 
 def show_update_notification():
-    application = QtGui.QApplication(sys.argv)
-    QMessageBox.warning(None, 'Security check recommended',
-        'The workstation has been running continuously for a long time. '
-        'We recommend that you launch or restart the SecureDrop app to '
-        'check for security updates.',
+    app = QtGui.QApplication([])  # noqa: F841
+
+    QMessageBox.warning(None,
+                        'Security check recommended',
+                        'The workstation has been running continuously for a long time. '
+                        'We recommend that you launch or restart the SecureDrop app to '
+                        'check for security updates.',
                         QMessageBox.Ok,
                         QMessageBox.Ok)
 
 
-LAST_UPDATED = os.path.join(os.path.expanduser("~"), 
-                 ".securedrop_launcher/sdw-last-updated")
 # Get timestamp from last update (if it exists)
-if os.path.exists(LAST_UPDATED):
-    with open(LAST_UPDATED, 'r') as f:
+# TODO: Exception handling
+if LAST_UPDATED_FILE_EXISTS:
+    with open(LAST_UPDATED_FILE, 'r') as f:
         last_update_time = f.readline().splitlines()[0]
         last_update_time = datetime.strptime(last_update_time, "%Y-%m-%d %H:%M:%S")
         now = datetime.now()
-        update_time_diff = (now - last_update_time).total_seconds()
+        updated_seconds_ago = (now - last_update_time).total_seconds()
+        updated_hours_ago = updated_seconds_ago / 60 / 60
 
-
-# Set uptime values: threshold and current 
-uptime_threshold = 432000  # 432000 seconds = 5 days
+# Obtain current uptime
 with open('/proc/uptime', 'r') as f:
     uptime_seconds = float(f.readline().split()[0])
+    uptime_hours = uptime_seconds / 60 / 60
 
-
-# main logic
-if not os.path.exists(LAST_UPDATED) and uptime_seconds > uptime_threshold:
+# If we do not have the timestamp file, and the system has been running for
+# a long time, we should show the notification.
+if LAST_UPDATED_FILE_EXISTS and uptime_seconds > WARNING_THRESHOLD:
+    sdlog.warning("The SecureDrop Workstation has been running for {0:.1f} "
+                  "hours without checking for updates. Showing security warning."
+                  .format(updated_hours_ago))
     show_update_notification()
-if os.path.exists(LAST_UPDATED) and update_time_diff > uptime_threshold:
-    print("update")
+
+# If the last successful update has been a long time ago, and we have not just
+# started the system, we should show the warning.
+elif updated_seconds_ago > WARNING_THRESHOLD and uptime_seconds > UPTIME_GRACE_PERIOD:
+    sdlog.warning("The last successful update of the SecureDrop Workstation was completed "
+                  "{0:.1f} hours ago, and the system has been up for {1:.1f} hours. "
+                  "Showing security warning."
+                  .format(updated_hours_ago, uptime_hours))
+    show_update_notification()
