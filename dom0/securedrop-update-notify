@@ -28,8 +28,9 @@ try:
     # Obtain an exclusive, nonblocking lock
     fcntl.lockf(lf, fcntl.LOCK_EX | fcntl.LOCK_NB)
 except IOError:
-    sdlog.error("Error obtaining lock on " + LOCK_FILE +
-                "\nNotification may already be displaying. Exiting.")
+    sdlog.error("Error obtaining lock on {}\n"
+                "Notification may already be displaying. Exiting."
+                .format(LOCK_FILE))
     sys.exit(0)
 
 
