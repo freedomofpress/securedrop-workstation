@@ -75,6 +75,30 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             self.proposedActionDescription.setText(
                 strings.description_status_up_to_date
             )
+        elif result["recommended_action"] == UpdateStatus.REBOOT_REQUIRED:
+            logger.info("Reboot will be required")
+            # We also have further updates to do, let's apply updates and reboot
+            # once those are done
+            if len(self.get_vms_that_need_upgrades(result)) > 0:
+                logger.info("Reboot will be after applying upgrades")
+                self.vms_to_update = self.get_vms_that_need_upgrades(result)
+                self.applyUpdatesButton.setEnabled(True)
+                self.applyUpdatesButton.show()
+                self.cancelButton.setEnabled(True)
+                self.cancelButton.show()
+                self.proposedActionDescription.setText(
+                    strings.description_status_updates_available
+                )
+            # No updates required, show reboot button.
+            else:
+                logger.info("Reboot required")
+                self.rebootButton.setEnabled(True)
+                self.rebootButton.show()
+                self.cancelButton.setEnabled(True)
+                self.cancelButton.show()
+                self.proposedActionDescription.setText(
+                    strings.description_status_reboot_required
+                )
         else:
             logger.error("Error checking for updates")
             logger.error(str(result))
