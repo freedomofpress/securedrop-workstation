@@ -21,6 +21,7 @@ remove-dom0-sdw-config-files:
       - /etc/qubes-rpc/policy/securedrop.Log
       - /etc/qubes-rpc/policy/securedrop.Proxy
       - /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
+      - /home/{{ gui_user }}/.securedrop_launcher
 
 sd-cleanup-sys-firewall:
   cmd.run:
