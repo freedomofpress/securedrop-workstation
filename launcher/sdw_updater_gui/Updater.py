@@ -15,9 +15,9 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-flag"
+FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-status"
 FLAG_FILE_LAST_UPDATED_SD_APP = "/home/user/.securedrop_client/sdw-last-updated"
-FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-flag"
+FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-status"
 FLAG_FILE_LAST_UPDATED_DOM0 = ".securedrop_launcher/sdw-last-updated"
 
 sdlog = logging.getLogger(__name__)
@@ -282,7 +282,7 @@ def _write_updates_status_flag_to_disk(status):
         current_date = str(datetime.now().strftime(DATE_FORMAT))
 
         with open(flag_file_path_dom0, "w") as f:
-            flag_contents = {"last_updated": current_date, "status": status.value}
+            flag_contents = {"last_status_update": current_date, "status": status.value}
             json.dump(flag_contents, f)
     except Exception as e:
         sdlog.error("Error writing update status flag to dom0")
@@ -303,7 +303,7 @@ def last_required_reboot_performed():
         return True
 
     if int(flag_contents["status"]) == int(UpdateStatus.REBOOT_REQUIRED.value):
-        reboot_time = datetime.strptime(flag_contents["last_updated"], DATE_FORMAT)
+        reboot_time = datetime.strptime(flag_contents["last_status_update"], DATE_FORMAT)
         boot_time = datetime.now() - _get_uptime()
 
         # The session was started *before* the reboot was requested by
