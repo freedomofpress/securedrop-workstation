@@ -83,8 +83,27 @@ dom0-rpc-qubes.USB:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
+        sd-devices sys-usb allow
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
+dom0-rpc-qubes.ensure.USBAttach:
+  file.managed:
+    - name: /etc/qubes-rpc/policy/qubes.USBAttach
+    - contents: |
+        @anyvm @anyvm ask
+    - replace: false
+dom0-rpc-qubes.USBAttach:
+  file.blockreplace:
+    - name: /etc/qubes-rpc/policy/qubes.USBAttach
+    - prepend_if_not_found: True
+    - marker_start: "### BEGIN securedrop-workstation ###"
+    - marker_end: "### END securedrop-workstation ###"
+    - content: |
+        sys-usb sd-devices allow,user=root
+        @anyvm @tag:sd-workstation deny
+        @tag:sd-workstation @anyvm deny
+    - require:
+      - file: dom0-rpc-qubes.ensure.USBAttach
 dom0-rpc-qubes.VMRootShell:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.VMRootShell

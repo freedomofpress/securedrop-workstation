@@ -37,6 +37,8 @@ base:
     - sd-log-template-files
   securedrop-workstation-buster:
     - sd-workstation-template-files
+  sys-usb:
+    - sd-usb-autoattach-add
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.

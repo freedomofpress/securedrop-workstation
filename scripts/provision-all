@@ -24,3 +24,6 @@ all_sdw_vms_target="$(qvm-ls --tags sd-workstation --raw-list | perl -npE 's/\n/
 # We skip dom0 in the task below, since dom0 highstate was enforced in the previous command.
 echo "Provision all SecureDrop Workstation VMs with service-specific configs"
 sudo qubesctl --show-output --max-concurrency "$max_concurrency" --skip-dom0 --targets "$all_sdw_vms_target" state.highstate
+
+echo "Add SecureDrop export device handling to sys-usb"
+sudo qubesctl --show-output --skip-dom0 --targets sys-usb state.highstate

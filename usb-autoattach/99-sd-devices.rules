@@ -1,0 +1,6 @@
+# Class 08 == storage, subclass 06 == SCSI
+# Class 07 == printer, subclass 01 == printer
+# https://www.usb.org/defined-class-codes
+# https://www.usb.org/document-library/mass-storage-class-specification-overview-14
+# https://www.usb.org/document-library/printer-device-class-document-11
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{ID_USB_INTERFACES}=="*:0806??:*|*:0701??:*", RUN+="/usr/local/bin/sd-attach-export-device"
