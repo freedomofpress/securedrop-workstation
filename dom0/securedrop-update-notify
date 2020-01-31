@@ -120,7 +120,7 @@ def show_update_notification():
 
 
 def get_gui_user():
-    group = "sudo"
+    group = "qubes"
     cmd = ['getent', 'group', group]
     try:
         group = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
