@@ -30,7 +30,7 @@ rm -rf "${qubes_builder_dir}" "${sd_template_dir}"
 #   git clone -b test-branch https://github.com/freedomofpress/qubes-template-securedrop-workstation "${sd_template_dir}"
 # Make sure to add the corresponding pubkey for the signed tag to the gpg import tasks below.
 git clone https://github.com/qubesos/qubes-builder "${build_dir}/qubes-builder"
-git clone https://github.com/freedomofpress/qubes-template-securedrop-workstation "${sd_template_dir}"
+git clone -b prod-builds https://github.com/freedomofpress/qubes-template-securedrop-workstation "${sd_template_dir}"
 
 cd "${qubes_builder_dir}"
 
