@@ -7,7 +7,9 @@ import logging
 import os
 import sys
 
-LOCK_FILE = "/run/lock/sdw-launcher.lock"
+# This script is run as a user, so it does not use /run, which requires root
+# access
+LOCK_FILE = "/tmp/sdw-launcher.lock"
 DEFAULT_HOME = os.path.join(os.path.expanduser("~"), ".securedrop_launcher")
 
 logger = ""  # Global logger object, configured later

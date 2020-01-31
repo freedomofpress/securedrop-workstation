@@ -31,7 +31,7 @@ LOCK_FILE = "/run/lock/securedrop-update-notify.lock"
 # The lockfile used by the updater script itself. We use it here to avoid
 # conflicts with the updater running at the same time as the security
 # notification
-UPDATER_LOCK_FILE = "/run/lock/sdw-launcher.lock"
+UPDATER_LOCK_FILE = "/tmp/sdw-launcher.lock"
 
 # The amount of time without updates (specified in seconds) which this script
 # should permit before showing a warning to the user
