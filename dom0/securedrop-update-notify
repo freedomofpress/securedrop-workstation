@@ -95,7 +95,8 @@ def locate_last_updated_file():
 
 def run_checks():
     # Get timestamp from last update (if it exists)
-    # TODO: Exception handling
+    # TODO: Exception handling and validation. This should be up here, in case
+    # the file exists but is not valid
     if last_updated_file_exists:
         with open(last_updated_file, 'r') as f:
             last_update_time = f.readline().splitlines()[0]
@@ -109,22 +110,21 @@ def run_checks():
         uptime_seconds = float(f.readline().split()[0])
         uptime_hours = uptime_seconds / 60 / 60
 
-    # If we do not have the timestamp file, and the system has been running for
-    # a long time, we should show the warning.
-    if not last_updated_file_exists and uptime_seconds > WARNING_THRESHOLD:
-        sdlog.warning("The SecureDrop Workstation has been running for {0:.1f} "
-                      "hours without checking for updates. Showing security warning."
-                      .format(uptime_hours))
-        show_update_notification()
-
-    # If the last successful update has been a long time ago, and we have not just
-    # started the system, we should show the warning.
-    elif updated_seconds_ago > WARNING_THRESHOLD and uptime_seconds > UPTIME_GRACE_PERIOD:
-        sdlog.warning("The last successful update of the SecureDrop Workstation was completed "
-                      "{0:.1f} hours ago, and the system has been up for {1:.1f} hours. "
-                      "Showing security warning."
-                      .format(updated_hours_ago, uptime_hours))
-        show_update_notification()
+    if not last_updated_file_exists:
+        # If we do not have the timestamp file, and the system has been running
+        # for a long time, we should show the warning.
+        if uptime_seconds > WARNING_THRESHOLD:
+            sdlog.warning("The SecureDrop Workstation has been running for {0:.1f} "
+                          "hours without checking for updates. Showing security warning."
+                          .format(uptime_hours))
+            show_update_notification()
+    else:
+        if updated_seconds_ago > WARNING_THRESHOLD and uptime_seconds > UPTIME_GRACE_PERIOD:
+            sdlog.warning("The last successful update of the SecureDrop Workstation was completed "
+                          "{0:.1f} hours ago, and the system has been up for {1:.1f} hours. "
+                          "Showing security warning."
+                          .format(updated_hours_ago, uptime_hours))
+            show_update_notification()
 
 
 def show_update_notification():
