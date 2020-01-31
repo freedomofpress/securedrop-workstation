@@ -39,7 +39,7 @@ class SDWConfigValidator(object):
         self.confirm_submission_privkey_file()
         self.confirm_submission_privkey_fingerprint()
         self.confirm_environment_valid()
-        # self.validate_existing_size()
+        self.validate_existing_size()
 
     def confirm_config_file_exists(self):
         try:
@@ -51,11 +51,11 @@ class SDWConfigValidator(object):
 
     def confirm_environment_valid(self):
         """
-        The 'target' config item is required to determine
+        The 'environment' config item is required to determine
         whether prod or dev URLs are used for installing packages.
         """
-        assert "target" in self.config
-        assert self.config["target"] in ("prod", "dev", "staging")
+        assert "environment" in self.config
+        assert self.config["environment"] in ("prod", "dev", "staging")
 
     def confirm_onion_config_valid(self):
         """

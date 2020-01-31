@@ -45,10 +45,10 @@ def set_env_in_config(args):
         old_config = json.load(f)
 
     new_config = dict(old_config)
-    new_config["target"] = args.environment
+    new_config["environment"] = args.environment
 
     if new_config != old_config:
-        msg = "Updated config target to '{}'...\n".format(args.environment)
+        msg = "Updated config environment to '{}'...\n".format(args.environment)
         sys.stderr.write(msg)
 
         with open(args.config, 'w') as f:

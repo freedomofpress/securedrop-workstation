@@ -4,8 +4,12 @@
     "hostname": "avgfxawdn6c3coe3.onion",
     "key": "Il8Xas7uf6rjtc0LxYwhrx"
   },
+  "usb": {
+    "device": "sys-usb:1-2"
+  },
+  "environment": "prod",
   "vmsizes": {
-        "sd_app": 10,
-        "sd_log": 5
-      }
+     "sd_app": 10,
+     "sd_log": 5
+  }
 }

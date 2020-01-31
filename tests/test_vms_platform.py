@@ -24,10 +24,10 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         with open("config.json") as c:
             config = json.load(c)
             # default to prod
-            if 'target' not in config:
-                config['target'] = 'prod'
+            if 'environment' not in config:
+                config['environment'] = 'prod'
 
-            if config['target'] == 'prod':
+            if config['environment'] == 'prod':
                 self.apt_url = FPF_APT_SOURCES_BUSTER
             else:
                 self.apt_url = FPF_APT_SOURCES_BUSTER_DEV
