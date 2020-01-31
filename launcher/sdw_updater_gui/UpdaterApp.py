@@ -55,6 +55,8 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         is used to check for TemplateVM updates
         """
         logger.info("Signal: update_status {}".format(str(result)))
+        self.progress = 100
+        self.progressBar.setProperty("value", self.progress)
 
         if result["recommended_action"] == UpdateStatus.UPDATES_REQUIRED:
             logger.info("Updates required")
