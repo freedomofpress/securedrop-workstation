@@ -2,22 +2,54 @@
 from logging.handlers import TimedRotatingFileHandler
 from PyQt4 import QtGui
 from sdw_updater_gui.UpdaterApp import UpdaterApp
+import fcntl
 import logging
 import os
 import sys
 
+LOCK_FILE = "/run/lock/sdw-launcher.lock"
 DEFAULT_HOME = os.path.join(os.path.expanduser("~"), ".securedrop_launcher")
-logger = ""
+
+logger = ""  # Global logger object, configured later
+lock_handle = ""  # File handle for lockfile, must be kept open during execution
 
 
 def main():
-    configure_logging()
+    global logger
     logger = logging.getLogger(__name__)
+    obtain_lock()
     logger.info("Starting SecureDrop Launcher")
+    configure_logging()
     app = QtGui.QApplication(sys.argv)
     form = UpdaterApp()
     form.show()
     sys.exit(app.exec_())
+
+
+def obtain_lock():
+    """
+    Obtain an exclusive lock to ensure that only one updater can run at a time,
+    and to inform other processes that it is running.
+    """
+    global lock_handle
+
+    # Attempt to obtain a file handle for the lockfile
+    try:
+        lock_handle = open(LOCK_FILE, 'w')
+    except IOError:
+        logger.error("Error obtaining write access to lock file {}\n"
+                     "User may lack required permissions. Exiting."
+                     .format(LOCK_FILE))
+        sys.exit(0)
+
+    # Attempt to obtain an exlusive, nonblocking lock
+    try:
+        fcntl.lockf(lock_handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except IOError:
+        logger.error("Error obtaining lock on {}\n"
+                     "Launcher may already be running. Exiting."
+                     .format(LOCK_FILE))
+        sys.exit(0)
 
 
 def configure_logging():
