@@ -197,7 +197,13 @@ dom0-securedrop-launcher-desktop-shortcut:
     - mode: 755
 
 {% import_json "sd/config.json" as d %}
-{% if d.target != "dev" %}
+{% if d.environment == "dev" %}
+dom0-remove-securedrop-workstation-dom0-config:
+  pkg.removed:
+    - pkgs:
+      - securedrop-workstation-dom0-config
+
+{% else %}
 
 dom0-install-securedrop-workstation-dom0-config:
   pkg.installed:
