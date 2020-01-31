@@ -126,8 +126,11 @@ flake8: ## Lints all Python files with flake8
 		--entrypoint /code/scripts/flake8-linting \
 		python:3.5.7-slim-stretch
 
-template: ## Builds securedrop-workstation Qube template RPM
-	./builder/build-workstation-template
+template: ## Builds prod securedrop-workstation Qube template RPM
+	SD_WORKSTATION_TEMPLATE_ENV=prod ./builder/build-workstation-template
+
+template-dev: ## Builds securedrop-workstation Qube template RPM
+	SD_WORKSTATION_TEMPLATE_ENV=dev ./builder/build-workstation-template
 
 prep-dom0: prep-salt # Copies dom0 config files
 	sudo qubesctl --show-output --targets dom0 state.highstate
