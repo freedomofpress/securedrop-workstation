@@ -16,12 +16,31 @@ from PyQt4.QtGui import QMessageBox
 
 sdlog = logging.getLogger(__name__)
 
-# This will create a lock file in /run, which is a temporary filesystem that
-# does not persist upon reboots
+# The directory where updater status files and logs are stored. We assume
+# this is in the Qubes GUI user's home directory.
+UPDATER_DIRECTORY = ".securedrop_launcher"
+
+# The file that contains the timestamp of the last successful update
+LAST_UPDATED_FILENAME = "sdw-last-updated"
+
+# The lockfile that is used to ensure that this script can only be executed
+# once. It is stored in /run, which is a temporary filesystem that does
+# persist across boots.
 LOCK_FILE = "/run/lock/securedrop-update-notify.lock"
+
+# The lockfile used by the updater script itself. We use it here to avoid
+# conflicts with the updater running at the same time as the security
+# notification
 UPDATER_LOCK_FILE = "/run/lock/sdw-launcher.lock"
-WARNING_THRESHOLD = 432000  # 5 days (specified in seconds)
-UPTIME_GRACE_PERIOD = 1800  # 30 minutes (specified in seconds)
+
+# The amount of time without updates (specified in seconds) which this script
+# should permit before showing a warning to the user
+WARNING_THRESHOLD = 432000  # 5 days
+
+# The maximum uptime this script should permit (specified in seconds) before
+# showing a warning. This is to avoid situations where the user boots the
+# computer after several days and immediately sees a warning.
+UPTIME_GRACE_PERIOD = 1800  # 30 minutes
 
 lock_handle = ''  # Global handle to hold on to exclusive lock during execution
 last_updated_file = ''  # Location of timestamp file, dependent on GUI user name
@@ -69,7 +88,8 @@ def locate_last_updated_file():
     global last_updated_file, last_updated_file_exists
     gui_user = get_gui_user()
     last_updated_file = os.path.join(os.path.expanduser("~" + gui_user),
-                                     ".securedrop_launcher/sdw-last-updated")
+                                     UPDATER_DIRECTORY,
+                                     LAST_UPDATED_FILENAME)
     last_updated_file_exists = os.path.exists(last_updated_file)
 
 
@@ -94,7 +114,7 @@ def run_checks():
     if not last_updated_file_exists and uptime_seconds > WARNING_THRESHOLD:
         sdlog.warning("The SecureDrop Workstation has been running for {0:.1f} "
                       "hours without checking for updates. Showing security warning."
-                      .format(updated_hours_ago))
+                      .format(uptime_hours))
         show_update_notification()
 
     # If the last successful update has been a long time ago, and we have not just
