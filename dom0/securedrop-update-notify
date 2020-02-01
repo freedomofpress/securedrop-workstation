@@ -2,108 +2,153 @@
 
 """
 Displays a warning to the user if the workstation has been running continuously
-for too long without checking for security updates
+for too long without checking for security updates. Writes output to a logfile,
+not stdout.
 """
 
-from datetime import datetime
 import fcntl
 import logging
 import os
 import subprocess
 import sys
+
+from datetime import datetime
+from logging.handlers import TimedRotatingFileHandler
 from PyQt4 import QtGui
 from PyQt4.QtGui import QMessageBox
 
 sdlog = logging.getLogger(__name__)
 
+# Name of the Unix user group we use to identify the GUI user
+GUI_USER_GROUP = "qubes"
+
+# The file and format that contains the timestamp of the last successful update
+LAST_UPDATED_FILENAME = "sdw-last-updated"
+LAST_UPDATED_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+# The lockfile used to ensure this script can only be executed once
+LOCK_FILE = "/run/lock/securedrop-update-notify.lock"  # /run is tmpfs in fedora-25
+
+# Logs for this notification script and format for these logs
+LOG_FILE = "securedrop-update-notify.log"
+LOG_FORMAT = "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
+
 # The directory where updater status files and logs are stored. We assume
 # this is in the Qubes GUI user's home directory.
 UPDATER_DIRECTORY = ".securedrop_launcher"
 
-# The file that contains the timestamp of the last successful update
-LAST_UPDATED_FILENAME = "sdw-last-updated"
-
-# The lockfile that is used to ensure that this script can only be executed
-# once. It is stored in /run, which is a temporary filesystem that does
-# persist across boots.
-LOCK_FILE = "/run/lock/securedrop-update-notify.lock"
+# Where in the updater directory logs can be found
+UPDATER_LOGS_DIRECTORY = "logs"
 
 # The lockfile used by the updater script itself. We use it here to avoid
 # conflicts with the updater running at the same time as the security
 # notification
 UPDATER_LOCK_FILE = "/tmp/sdw-launcher.lock"
 
-# The amount of time without updates (specified in seconds) which this script
-# should permit before showing a warning to the user
-WARNING_THRESHOLD = 432000  # 5 days
-
 # The maximum uptime this script should permit (specified in seconds) before
 # showing a warning. This is to avoid situations where the user boots the
 # computer after several days and immediately sees a warning.
 UPTIME_GRACE_PERIOD = 1800  # 30 minutes
 
-lock_handle = ''  # Global handle to hold on to exclusive lock during execution
-last_updated_file = ''  # Location of timestamp file, dependent on GUI user name
-last_updated_file_exists = ''  # Convenience global
+# The amount of time without updates (specified in seconds) which this script
+# should permit before showing a warning to the user
+WARNING_THRESHOLD = 432000  # 5 days
 
 
 def main():
-    obtain_updater_lock()
-    obtain_notify_lock()
-    locate_last_updated_file()
-    run_checks()
+    """
+    Show security warning, if and only if a warning is not already displayed,
+    the preflight updater is running, and certain checks suggest that the
+    system has not been updated for a specified period
+    """
+
+    global gui_user            # Qubes GUI user, obtained via group membership
+    global lock_handle         # Global handle to hold on to exclusive lock during execution
+    global last_updated_file   # path to timestamp file, requires GUI user
+
+    gui_user = get_gui_user()
+    configure_logging()
+    obtain_and_release_updater_lock()
+    lock_handle = obtain_notify_lock()
+    last_updated_file = os.path.join(os.path.expanduser("~" + gui_user),
+                                     UPDATER_DIRECTORY,
+                                     LAST_UPDATED_FILENAME)
+    if warning_should_be_shown():
+        show_update_warning()
 
 
-def obtain_updater_lock():
-    # We do not need to hold on to this lock, as we only want to verify if
-    # the updater is already running
+def obtain_and_release_updater_lock():
+    """
+    We temporarily obtain a shared, nonblocking lock to the updater's lock
+    file to determine whether it is currently running. We do not need to
+    hold on to this lock.
+    """
 
-    # TODO: Exception handling
-    lh = open(UPDATER_LOCK_FILE, 'r')
+    try:
+        lh = open(UPDATER_LOCK_FILE, 'r')
+    except FileNotFoundError:  # noqa: F821
+        # Updater may not have run yet during this session
+        return
+
     try:
         # Obtain a nonblocking, shared lock
         fcntl.lockf(lh, fcntl.LOCK_SH | fcntl.LOCK_NB)
     except IOError:
-        sdlog.error("Error obtaining lock on {}\n"
+        sdlog.error("Error obtaining lock on '{}'. "
                     "Preflight updater may already be running. Exiting."
                     .format(LOCK_FILE))
         sys.exit(1)
 
 
 def obtain_notify_lock():
-    global lock_handle
-    # TODO: Exception handling
-    lock_handle = open(LOCK_FILE, 'w')
+    """
+    Obtain an exclusive lock during the execution of this sprint. Must be held
+    while program is running.
+    """
+
     try:
-        # Obtain an exclusive, nonblocking lock
-        fcntl.lockf(lock_handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except IOError:
-        sdlog.error("Error obtaining lock on {}\n"
-                    "Notification may already be displaying. Exiting."
+        lh = open(LOCK_FILE, 'w')
+    except PermissionError:  # noqa: F821
+        sdlog.error("Error writing to lock file '{}'. User may lack the "
+                    "required permissions."
                     .format(LOCK_FILE))
         sys.exit(1)
 
+    try:
+        # Obtain an exclusive, nonblocking lock
+        fcntl.lockf(lh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except IOError:
+        sdlog.error("Error obtaining lock on '{}'. "
+                    "Notification may already be displaying. Exiting."
+                    .format(LOCK_FILE))
+        sys.exit(1)
+    return lh
 
-def locate_last_updated_file():
-    global last_updated_file, last_updated_file_exists
-    gui_user = get_gui_user()
-    last_updated_file = os.path.join(os.path.expanduser("~" + gui_user),
-                                     UPDATER_DIRECTORY,
-                                     LAST_UPDATED_FILENAME)
+
+def warning_should_be_shown():
+    """
+    Perform a series of checks to determine if a security warning should be
+    shown to the user, reminding them to check for available software updates
+    using the preflight updater.
+    """
+
     last_updated_file_exists = os.path.exists(last_updated_file)
 
-
-def run_checks():
     # Get timestamp from last update (if it exists)
-    # TODO: Exception handling and validation. This should be up here, in case
-    # the file exists but is not valid
     if last_updated_file_exists:
         with open(last_updated_file, 'r') as f:
             last_update_time = f.readline().splitlines()[0]
-            last_update_time = datetime.strptime(last_update_time, "%Y-%m-%d %H:%M:%S")
-            now = datetime.now()
-            updated_seconds_ago = (now - last_update_time).total_seconds()
-            updated_hours_ago = updated_seconds_ago / 60 / 60
+        try:
+            last_update_time = datetime.strptime(last_update_time, LAST_UPDATED_FORMAT)
+        except ValueError:
+            sdlog.error("Data in {} not in the expected format. "
+                        "Expecting a timestamp in format '{}'."
+                        .format(LAST_UPDATED_FILENAME, LAST_UPDATED_FORMAT))
+            sys.exit(1)
+
+        now = datetime.now()
+        updated_seconds_ago = (now - last_update_time).total_seconds()
+        updated_hours_ago = updated_seconds_ago / 60 / 60
 
     # Obtain current uptime
     with open('/proc/uptime', 'r') as f:
@@ -117,17 +162,21 @@ def run_checks():
             sdlog.warning("The SecureDrop Workstation has been running for {0:.1f} "
                           "hours without checking for updates. Showing security warning."
                           .format(uptime_hours))
-            show_update_notification()
+            return True
     else:
         if updated_seconds_ago > WARNING_THRESHOLD and uptime_seconds > UPTIME_GRACE_PERIOD:
             sdlog.warning("The last successful update of the SecureDrop Workstation was completed "
                           "{0:.1f} hours ago, and the system has been up for {1:.1f} hours. "
                           "Showing security warning."
                           .format(updated_hours_ago, uptime_hours))
-            show_update_notification()
+            return True
 
 
-def show_update_notification():
+def show_update_warning():
+    """
+    Show a graphical warning reminding the user to check for security updates
+    using the preflight updater.
+    """
     app = QtGui.QApplication([])  # noqa: F841
 
     QMessageBox.warning(None,
@@ -140,15 +189,18 @@ def show_update_notification():
 
 
 def get_gui_user():
-    group = "qubes"
-    cmd = ['getent', 'group', group]
+    """
+    Determine the name of the primary user account used on a Qubes system, which
+    can be configured at OS install time.
+    """
+    cmd = ['getent', 'group', GUI_USER_GROUP]
     try:
         group = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
     except subprocess.CalledProcessError as e:
         if e.returncode == 2:
             sdlog.error("Unable to identify Qubes GUI user; no system user with "
                         "membership in group {}."
-                        .format(group))
+                        .format(GUI_USER_GROUP))
             sys.exit(1)
         else:
             raise
@@ -161,6 +213,30 @@ def get_gui_user():
                       "is meant to have a single GUI user. Defaulting to first "
                       "GUI user in list.")
     return users[0]
+
+
+def configure_logging():
+    """
+    All logging related settings are set up by this function.
+    """
+
+    log_folder = os.path.join(os.path.expanduser("~" + gui_user),
+                              UPDATER_DIRECTORY,
+                              UPDATER_LOGS_DIRECTORY)
+
+    if not os.path.exists(log_folder):
+        os.makedirs(log_folder)
+
+    log_file = os.path.join(log_folder, LOG_FILE)
+    formatter = logging.Formatter((LOG_FORMAT))
+
+    handler = TimedRotatingFileHandler(log_file)
+    handler.setFormatter(formatter)
+    handler.setLevel(logging.INFO)
+
+    log = logging.getLogger()
+    log.setLevel(logging.INFO)
+    log.addHandler(handler)
 
 
 if __name__ == "__main__":

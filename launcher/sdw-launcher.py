@@ -42,7 +42,7 @@ def obtain_lock():
         logger.error("Error obtaining write access to lock file {}\n"
                      "User may lack required permissions. Exiting."
                      .format(LOCK_FILE))
-        sys.exit(0)
+        sys.exit(1)
 
     # Attempt to obtain an exlusive, nonblocking lock
     try:
@@ -51,7 +51,7 @@ def obtain_lock():
         logger.error("Error obtaining lock on {}\n"
                      "Launcher may already be running. Exiting."
                      .format(LOCK_FILE))
-        sys.exit(0)
+        sys.exit(1)
 
 
 def configure_logging():
