@@ -9,6 +9,7 @@ import json
 import sys
 import argparse
 import os
+from distutils.util import strtobool
 
 
 def parse_args():
@@ -40,6 +41,22 @@ def parse_args():
     return args
 
 
+def confirm_staging():
+    """Prompt for confirmation if staging selected.
+    We only want to use staging on test machines.
+    """
+    print("WARNING: Config environment 'staging' was requested.")
+    print("WARNING: The staging env should only be used on TEST HARDWARE.")
+    print("WARNING: If you are on a primary laptop for work/production use, ")
+    print("WARNING: please update your config.json with environment=prod.")
+    confirmation = input("WARNING: Are you sure you wish to continue? [y/N] ")
+    try:
+        assert strtobool(confirmation)
+    except (AssertionError, ValueError):
+        print("Confirmation declined, exiting...")
+        sys.exit(1)
+
+
 def set_env_in_config(args):
     with open(args.config, 'r') as f:
         old_config = json.load(f)
@@ -57,4 +74,8 @@ def set_env_in_config(args):
 
 if __name__ == "__main__":
     args = parse_args()
+
+    if args.environment == "staging":
+        confirm_staging()
+
     set_env_in_config(args)
