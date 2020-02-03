@@ -46,9 +46,8 @@ def copy_config():
         subprocess.check_call(
             ["sudo", "cp", os.path.join(SCRIPTS_PATH, "sd-journalist.sec"), SALT_PATH]
         )
-    except subprocess.CalledProcessError as e:
-        print(str(e))
-        sys.exit(1)
+    except subprocess.CalledProcessError:
+        raise SDAdminException("Error copying configuration")
 
 
 def provision_all():
@@ -56,10 +55,9 @@ def provision_all():
     Runs provision-all to apply the salt state.highstate on dom0 and all VMs
     """
     try:
-        subprocess.check_call([os.path.join("./scripts/provision-all")])
-    except subprocess.CalledProcessError as e:
-        print(str(e))
-        sys.exit(1)
+        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/provision-all")])
+    except subprocess.CalledProcessError:
+        raise SDAdminException("Error during provision-all")
 
 
 def validate_config(path):
@@ -68,9 +66,8 @@ def validate_config(path):
     """
     try:
         validator = SDWConfigValidator(path)  # noqa: F841
-    except ValidationError as e:
-        print(str(e))
-        sys.exit(1)
+    except ValidationError:
+        raise SDAdminException("Error while validating configuration")
 
 
 def main():
@@ -85,6 +82,10 @@ def main():
         provision_all()
     else:
         sys.exit(0)
+
+
+class SDAdminException(Exception):
+    pass
 
 
 if __name__ == "__main__":

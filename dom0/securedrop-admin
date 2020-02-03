@@ -1,7 +1,0 @@
-#!/bin/bash
-
-set -e
-set -u
-set -o pipefail
-
-python3 /usr/share/securedrop-workstation-dom0-config/scripts/securedrop-admin.py "$@"
