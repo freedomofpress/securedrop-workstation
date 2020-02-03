@@ -53,7 +53,7 @@ install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
 install -m 655 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 # The next file should get installed via RPM not via salt
 install -m 755 dom0/securedrop-update %{buildroot}/srv/salt/securedrop-update
-install -m 755 dom0/securedrop-admin %{buildroot}/%{_bindir}/securedrop-admin
+install -m 755 scripts/securedrop-admin.py %{buildroot}/%{_bindir}/securedrop-admin
 install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
 install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
 install -m 644 sd-whonix/* %{buildroot}/srv/salt/sd/sd-whonix/
