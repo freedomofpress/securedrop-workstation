@@ -93,8 +93,7 @@ def obtain_and_release_updater_lock():
 
 def obtain_notify_lock():
     """
-    Obtain an exclusive lock during the execution of this sprint. Must be held
-    while program is running.
+    Obtain an exclusive lock during the execution of this process.
     """
 
     try:
