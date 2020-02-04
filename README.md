@@ -16,8 +16,8 @@ This project aims to improve journalists' experience working with SecureDrop whi
 3. [What's In This Repo?](#whats-in-this-repo)
 2. [Installation](#installation)
    - [Install Qubes](#install-qubes)
-   - [Download, Configure, Copy to `dom0`](#download-configure-copy-to-dom0)
-   - [Provision the VMs](#provision-the-vms)
+   - [Production and Staging Environments](#production-and-staging-environments)
+   - [Developement Environment](#development-environment)
 3. [Development](#development)
    - [Testing](#testing)
    - [Automatic Updates](#automatic-updates)
@@ -117,7 +117,78 @@ qubes-update-gui
 
 Select all VMs marked as **updates available**, then click **Next**. Once all updates have been applied, you're ready to proceed.
 
-### Download, Configure, Copy to `dom0`
+### Production and Staging Environments
+
+** THE STAGING ENVIRONMENT SHOULD NOT BE USED FOR PRODUCTION PURPOSES **
+If would still like to use staging, replace the keys, fingerprint, URLs and `config.json` in the following instructions to their staging-specific values.
+
+#### Download and install securedrop-workstation-dom0-config package
+
+Since `dom0` does not have network access, we will need to download it in a Fedora-based VM. We can use the default Qubes-provisioned `work` VM. If using an AppVM, these changes won't persist reboots (recommended).
+
+In a terminal in `work`, run the following commands:
+
+1. Download the signing key:
+
+```
+# Receive and import the key
+[user@work ~]$ gpg --keyserver hkps://keys.openpgp.org --recv-key "2224 5C81 E3BA EB41 38B3 6061 310F 5612 00F4 AD77"
+```
+
+2. Configure the RPM package repository:
+
+```
+[user@work ~]$ gpg --armor --export 22245C81E3BAEB4138B36061310F561200F4AD77 | sudo tee /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
+```
+
+Populate `/etc/yum/repos.d/securedrop-temp.repo` with the following contents:
+```
+[securedrop-workstation-temporary]
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
+enabled=1
+baseurl=https://yum.securedrop.org/workstation/dom0/f25
+name=SecureDrop Workstation Qubes initial install bootstrap
+```
+
+3. Download the RPM package
+```
+[user@work ~]$ sudo dnf download securedrop-workstation-dom0-config
+```
+
+The RPM file will be downloaded to your current working directory.
+
+4. Transfer and install RPM package in `dom0`
+
+*Understand that [copying data to dom0](https://www.qubes-os.org/doc/copy-from-dom0/#copying-to-dom0) goes against the grain of the Qubes security philosophy, and should only done with trusted code and for very specific purposes. Still, be aware of the risks, especially if you rely on your Qubes installation for other sensitive work.*
+
+In `dom0`, run:
+
+```
+[dom0]$ qvm-run --pass-io work '/home/user/securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm' > securedrop-workstation.rpm
+sudo dnf install securedrop-workstation.rpm
+```
+
+The provisioning scrips and tools should now be in place, you are now ready to proceed to the workstation configuration step.
+
+#### Configure the Workstation
+
+Your workstation configuration will reside in `/usr/share/securedrop-workstation-dom0-config/` and will contain configuration information specific to your SecureDrop instance:
+
+1. Populate `config.json` with your instance-specific variables. Set `environment` to `staging`
+2. Move your submission private key as `sd-journalist.sec`
+
+#### Provision the VMs
+
+In a terminal in `dom0`, run the following commands:
+
+```
+[dom0]$ securedrop-admin --apply
+```
+
+### Development environment
+
+#### Download, Configure, Copy to `dom0`
 
 Decide on a VM to use for development. We suggest creating a standalone VM called `sd-dev`. Clone this repo to your preferred location on that VM.
 
@@ -154,8 +225,9 @@ Doing so will permit the `sd-dev` AppVM to make RPC calls with the same privileg
 
 **NOTE:** The destination directory on `dom0` is not customizable; it must be `securedrop-workstation` in your home directory.
 
-### Provision the VMs
+#### Provision the VMs
 
+Before provisioning the VMs, ensure your `environment` key is set to `dev` in `config.json`.
 Once the configuration is done and this directory is copied to `dom0`, you must update existing Qubes templates and use `make` to handle all provisioning and configuration by your unprivileged user:
 
 ```
