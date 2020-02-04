@@ -8,10 +8,12 @@ import sys
 import argparse
 import subprocess
 import os
-from validate_config import SDWConfigValidator, ValidationError
 
 SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
 SALT_PATH = "/srv/salt/sd/"
+
+sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
+from validate_config import SDWConfigValidator, ValidationError  # noqa: E402
 
 
 def parse_args():
@@ -78,7 +80,7 @@ def main():
     elif args.apply:
         print("Applying configuration...")
         validate_config(SCRIPTS_PATH)
-        copy_config
+        copy_config()
         provision_all()
     else:
         sys.exit(0)
