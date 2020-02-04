@@ -30,7 +30,7 @@ remove-dom0-sdw-config-files:
 
 sd-cleanup-crontab:
   file.replace:
-    - names: /etc/crontab
+    - name: /etc/crontab
     - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
     - flags:
       - MULTILINE
