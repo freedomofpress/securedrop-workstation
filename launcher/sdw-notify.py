@@ -33,12 +33,12 @@ LOCK_DIRECTORY = os.path.join("/run/user", str(os.getuid()))
 LOCK_FILE_LAUNCHER = os.path.join(LOCK_DIRECTORY, "sdw-launcher.lock")
 
 # The lockfile used to ensure this script can only be executed once
-LOCK_FILE_NOTIFIER = os.path.join(LOCK_DIRECTORY, "securedrop-update-notify.lock")
+LOCK_FILE_NOTIFIER = os.path.join(LOCK_DIRECTORY, "sdw-notify.lock")
 
 # Folder where logs are stored
 LOG_DIRECTORY = os.path.join(BASE_DIRECTORY, "logs")
 # Full path to logfile
-LOG_FILE = os.path.join(LOG_DIRECTORY, "securedrop-update-notify.log")
+LOG_FILE = os.path.join(LOG_DIRECTORY, "sdw-notify.log")
 # Format for those logs
 LOG_FORMAT = "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
 

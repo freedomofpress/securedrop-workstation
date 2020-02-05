@@ -19,7 +19,6 @@ remove-dom0-sdw-config-files:
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
       - /etc/cron.daily/securedrop-update-cron
-      - /usr/bin/securedrop-update-notify
       - /usr/share/securedrop/icons
       - /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
       - /usr/bin/securedrop-login

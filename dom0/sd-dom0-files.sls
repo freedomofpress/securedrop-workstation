@@ -82,15 +82,6 @@ dom0-update-securedrop-script-cron:
     - name: /etc/cron.daily/securedrop-update-cron
     - target: /usr/bin/securedrop-update
 
-# Copy update notifier script to /usr/bin, run via crontab
-dom0-uptime-notify-securedrop-script:
-  file.managed:
-    - name: /usr/bin/securedrop-update-notify
-    - source: salt://securedrop-update-notify
-    - user: root
-    - group: root
-    - mode: 755
-
 # Create directory for storing SecureDrop-specific icons
 dom0-securedrop-icons-directory:
   file.directory:
@@ -189,9 +180,11 @@ dom0-securedrop-launcher-directory:
     - file_mode: 644
     - dir_mode: 755
 
-dom0-securedrop-launcher-entrypoint-executable:
+dom0-securedrop-launcher-executables:
   file.managed:
-    - name: /opt/securedrop/launcher/sdw-launcher.py
+    - names:
+      - /opt/securedrop/launcher/sdw-launcher.py
+      - /opt/securedrop/launcher/sdw-notify.py
     - user: root
     - group: root
     - mode: 755
