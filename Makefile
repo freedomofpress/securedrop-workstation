@@ -6,8 +6,27 @@ ifneq ($(HOST),dom0)
 	exit 1
 endif
 
-## Builds and provisions all VMs required for testing workstation
-all: assert-dom0 validate prep-salt
+all: ## Builds and provisions all VMs required for testing workstation
+	$(MAKE) assert-dom0
+	./scripts/configure-environment --env dev
+	$(MAKE) validate
+	$(MAKE) prep-salt
+	./scripts/provision-all
+
+dev: all ## Builds and provisions all VMs required for testing workstation
+
+prod: ## Configures a PRODUCTION install for pilot use
+	$(MAKE) assert-dom0
+	./scripts/configure-environment --env prod
+	$(MAKE) validate
+	$(MAKE) prep-salt
+	./scripts/provision-all
+
+staging: ## Configures a STAGING install. To be used on test hardware ONLY
+	$(MAKE) assert-dom0
+	./scripts/configure-environment --env staging
+	$(MAKE) validate
+	$(MAKE) prep-salt
 	./scripts/provision-all
 
 dom0-rpm: ## Builds rpm package to be installed on dom0
@@ -67,7 +86,7 @@ clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
 
 prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./scripts/prep-salt
-	@./scripts/validate-config
+	@./scripts/validate_config.py
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
 	@./scripts/destroy-vm sd-whonix
@@ -116,7 +135,7 @@ test-gpg: assert-dom0 ## Runs tests for SD GPG functionality
 	python3 -m unittest -v tests.test_gpg
 
 validate: assert-dom0 ## Checks for local requirements in dev env
-	@./scripts/validate-config
+	@./scripts/validate_config.py
 
 .PHONY: flake8
 flake8: ## Lints all Python files with flake8

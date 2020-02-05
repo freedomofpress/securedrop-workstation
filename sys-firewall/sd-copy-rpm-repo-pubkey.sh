@@ -6,5 +6,5 @@ set -e
 set -u
 set -o pipefail
 
-cp /rw/config/RPM-GPG-KEY-securedrop-workstation-test /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
-rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
+cp /rw/config/RPM-GPG-KEY-securedrop-workstation /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
+rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation

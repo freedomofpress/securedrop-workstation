@@ -12,21 +12,24 @@ include:
   # as well as ensures the latest versions of Whonix are installed.
   - qvm.anon-whonix
 
+# Imports "sdvars" for environment config
+{% from 'sd-default-config.sls' import sdvars with context %}
+
 dom0-rpm-test-key:
   file.managed:
     # We write the pubkey to the repos config location, because the repos
     # config location is automatically sent to dom0's UpdateVM. Otherwise,
     # we must place the GPG key inside the fedora-30 TemplateVM, then
     # restart sys-firewall.
-    - name: /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
-    - source: "salt://sd/sd-workstation/apt-test-pubkey.asc"
+    - name: /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
+    - source: "salt://sd/sd-workstation/{{ sdvars.signing_key_filename }}"
     - user: root
     - group: root
     - mode: 644
 
 dom0-rpm-test-key-import:
   cmd.run:
-    - name: sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
+    - name: sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
     - require:
       - file: dom0-rpm-test-key
 
@@ -42,9 +45,9 @@ dom0-workstation-rpm-repo:
     - contents: |
         [securedrop-workstation-dom0]
         gpgcheck=1
-        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
         enabled=1
-        baseurl=https://yum-test.securedrop.org/workstation/dom0/f25
+        baseurl={{ sdvars.dom0_yum_repo_url }}
         name=SecureDrop Workstation Qubes dom0 repo
     - require:
       - file: dom0-rpm-test-key
@@ -192,3 +195,21 @@ dom0-securedrop-launcher-desktop-shortcut:
     - user: {{ gui_user }}
     - group: {{ gui_user }}
     - mode: 755
+
+{% import_json "sd/config.json" as d %}
+{% if d.environment == "dev" %}
+dom0-remove-securedrop-workstation-dom0-config:
+  pkg.removed:
+    - pkgs:
+      - securedrop-workstation-dom0-config
+
+{% else %}
+
+dom0-install-securedrop-workstation-dom0-config:
+  pkg.installed:
+    - pkgs:
+      - securedrop-workstation-dom0-config
+    - require:
+      - file: dom0-workstation-rpm-repo
+
+{% endif %}

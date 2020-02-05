@@ -9,6 +9,9 @@
 #
 include:
   - update.qubes-vm
+#  - sd-default-config
+
+{% from 'sd-default-config.sls' import sdvars with context %}
 
 # That's right, we need to install a package in order to
 # configure a repo to install another package
@@ -23,9 +26,9 @@ install-python-apt-for-repo-config:
 
 configure-apt-test-apt-repo:
   pkgrepo.managed:
-    - name: "deb [arch=amd64] https://apt-test-qubes.freedom.press {{ grains['oscodename'] }} main"
+    - name: "deb [arch=amd64] {{ sdvars.apt_repo_url }} {{ grains['oscodename'] }} main"
     - file: /etc/apt/sources.list.d/securedrop_workstation.list
-    - key_url: "salt://sd/sd-workstation/apt-test-pubkey.asc"
+    - key_url: "salt://sd/sd-workstation/{{ sdvars.signing_key_filename }}"
     - clean_file: True # squash file to ensure there are no duplicates
     - require:
       - pkg: install-python-apt-for-repo-config
