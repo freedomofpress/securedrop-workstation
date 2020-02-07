@@ -147,7 +147,7 @@ def test_warning_shown_if_warning_threshold_exceeded(
     Primary use case for the notifier: are we showing the warning if the
     system hasn't been (successfully) updated for longer than the warning
     threshold? Expected result varies based on whether system uptime exceeds
-    a grace period (for the uesr to launch the app on their own).
+    a grace period (for the user to launch the app on their own).
     """
     with TemporaryDirectory() as tmpdir:
         # Write a "last successfully updated" date well in the past for check
