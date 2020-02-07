@@ -17,10 +17,14 @@ def test_notify_lock():
         notify.LOCK_FILE_NOTIFIER = os.path.join(tmpdir, "sdw-launcher.lock")
         pid = os.getpid()
         lh = notify.obtain_notify_lock()  # noqa: F841
-        full_cmd = ["lslocks", "-n", "-p", str(pid), "-o", "MODE,PATH"]
-        lock_data = subprocess.check_output(full_cmd).decode("utf-8").strip().split()
-
-        # Validate basic output matches the expected format
-        assert len(lock_data) == 2
-        # Validate that we have a write lock on the notifier lock file
-        assert lock_data[0] == 'WRITE'
+        cmd = ['lsof', '-w', notify.LOCK_FILE_NOTIFIER]
+        output_lines = subprocess.check_output(cmd).decode("utf-8").strip().split('\n')
+        # We expect exactly one process to be accessing this file, plus output header
+        assert len(output_lines) == 2
+        lsof_data = output_lines[1].split()
+        # We expect the output to have the standard number of fields
+        assert len(lsof_data) == 9
+        # We expect the PID column to contain the ID of this process
+        assert lsof_data[1] == str(pid)
+        # We expect an exclusive write lock to be set for this process
+        assert lsof_data[3].find('W') != -1
