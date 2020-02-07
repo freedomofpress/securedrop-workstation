@@ -430,6 +430,63 @@ def _safely_start_vm(vm):
         sdlog.error(str(e))
 
 
+def should_launch_updater(interval):
+    sdlog.info("Starting SecureDrop Launcher")
+
+    status = read_dom0_update_flag_from_disk(with_timestamp=True)
+
+    if _valid_status(status):
+        if _interval_expired(interval, status):
+            sdlog.info("Update interval expired: launching updater.")
+            return True
+        else:
+            if _status_ok_or_rebooted(status):
+                sdlog.info("Update interval not expired, launching client.")
+                return False
+            else:
+                sdlog.info("Updates or reboot required, launching updater.")
+                return True
+    else:
+        sdlog.info("Update status not available, launching updater.")
+        return True
+
+
+def _valid_status(status):
+    """
+    status should contain 2 items, the update flag and a timestamp.
+    """
+    if isinstance(status, dict) and len(status) == 2:
+        return True
+    return False
+
+
+def _interval_expired(interval, status):
+    """
+    Check if specified update interval has expired.
+    """
+
+    try:
+        update_time = datetime.strptime(status['last_status_update'], DATE_FORMAT)
+    except ValueError:
+        # Broken timestamp? run the updater.
+        return True
+    if ((datetime.now() - update_time) < timedelta(seconds=interval)):
+        return False
+    return True
+
+
+def _status_ok_or_rebooted(status):
+    """
+    Check if update status is OK or post-reboot.
+    """
+
+    if (status['status'] == UpdateStatus.UPDATES_OK.value or # noqa W504
+        (status['status'] == UpdateStatus.REBOOT_REQUIRED.value and # noqa W504
+        last_required_reboot_performed())):
+        return True
+    return False
+
+
 class UpdateStatus(Enum):
     """
     Standardizes return codes for update/upgrade methods
