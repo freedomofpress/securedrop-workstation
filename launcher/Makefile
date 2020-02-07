@@ -8,7 +8,7 @@ bandit:
 
 .PHONY: test
 test:
-	pytest --cov-report term-missing --cov=sdw_updater_gui/ -v tests/
+	pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ -v tests/
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
