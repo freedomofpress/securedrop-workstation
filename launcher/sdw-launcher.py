@@ -9,7 +9,7 @@ import sys
 def main():
     sdlog = logging.getLogger(__name__)
     configure_logging()
-    lock_handle = obtain_lock()  # noqa: F841
+    lock_handle = obtain_lock()
     if lock_handle is None:
         # Preflight updater already running or problems accessing lockfile.
         # Logged.

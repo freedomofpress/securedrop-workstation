@@ -25,7 +25,7 @@ def main():
         sys.exit(1)
 
     # Hold on to lock handle during execution
-    lock_handle = Notify.obtain_notify_lock()  # noqa: F841
+    lock_handle = Notify.obtain_notify_lock()
     if lock_handle is None:
         # Can't write to lockfile or notifier already running. Logged.
         sys.exit(1)
