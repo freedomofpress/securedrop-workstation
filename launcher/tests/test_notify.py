@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import subprocess
@@ -17,6 +18,10 @@ updater = SourceFileLoader("Updater", path_to_updater).load_module()
 
 # Regex for uptime-only warning (if we don't have a timestamp yet)
 UPTIME_WARNING_REGEX = "^Uptime \(.* hours\) is above warning threshold \(.* hours\)."
+
+# Regex for warning when we've updated too long ago, and grace period has elapsed
+UPDATER_WARNING_REGEX = "^Last successful update \(.* hours ago\) is above warning threshold "
+"\(.* hours\). Uptime grace period of .* hours has elapsed (uptime: .* hours)."
 
 
 @mock.patch("Notify.sdlog.error")
@@ -99,6 +104,10 @@ def test_no_updater_lock_has_no_effect(
 def test_warning_shown_if_uptime_exceeded_and_updater_never_ran(
         mocked_info, mocked_warning, mocked_error, mocked_uptime
 ):
+    """
+    Test whether we're correctly going to show a warning if the uptime exceeds
+    the warning threshold and the updater has never run
+    """
     with TemporaryDirectory() as tmpdir:
         # We're going to look for a nonexistent file in an existing tmpdir
         notify.LAST_UPDATED_FILE = os.path.join(tmpdir, "file-does-not-exist")
@@ -109,5 +118,36 @@ def test_warning_shown_if_uptime_exceeded_and_updater_never_ran(
         assert not mocked_error.called
         # A warning should also be logged
         mocked_warning.assert_called_once()
+        # Ensure warning matches expected output
         warning_string = mocked_warning.call_args[0][0]
         assert re.search(UPTIME_WARNING_REGEX, warning_string) is not None
+
+
+@mock.patch("Notify.get_uptime_seconds", return_value=notify.UPTIME_GRACE_PERIOD + 1)
+@mock.patch("Notify.sdlog.error")
+@mock.patch("Notify.sdlog.warning")
+@mock.patch("Notify.sdlog.info")
+def test_warning_shown_if_warning_threshold_exceeded_and_grace_period_elapsed(
+        mocked_info, mocked_warning, mocked_error, mocked_uptime
+):
+    """
+    Primary use case for the notifier: are we showing the warning if the
+    system hasn't been (successfully) updated for longer than the warning
+    threshold, and the uptime grace period has elapsed?
+    """
+    with TemporaryDirectory() as tmpdir:
+        # Write a "last successfully updated" date well in the past for check
+        notify.LAST_UPDATED_FILE = os.path.join(tmpdir, "sdw-last-updated")
+        historic_date = datetime.date(2013, 6, 5).strftime(updater.DATE_FORMAT)
+        with open(notify.LAST_UPDATED_FILE, "w") as f:
+            f.write(historic_date)
+
+        warning_should_be_shown = notify.is_update_check_necessary()
+        assert warning_should_be_shown is True
+        # No handled errors should occur
+        assert not mocked_error.called
+        # A warning should also be logged
+        mocked_warning.assert_called_once()
+        # Ensure warning matches expected output
+        warning_string = mocked_warning.call_args[0][0]
+        assert re.search(UPDATER_WARNING_REGEX, warning_string) is not None
