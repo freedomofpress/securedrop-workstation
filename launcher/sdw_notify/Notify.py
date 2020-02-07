@@ -73,7 +73,6 @@ def obtain_notify_lock():
     """
     Obtain an exclusive lock during the execution of this process.
     """
-
     try:
         lh = open(LOCK_FILE_NOTIFIER, 'w')
     except PermissionError:  # noqa: F821
