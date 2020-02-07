@@ -1,5 +1,6 @@
 import datetime
 import os
+import pytest
 import re
 import subprocess
 
@@ -17,11 +18,16 @@ path_to_updater = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpa
 updater = SourceFileLoader("Updater", path_to_updater).load_module()
 
 # Regex for uptime-only warning (if we don't have a timestamp yet)
-UPTIME_WARNING_REGEX = "^Uptime \(.* hours\) is above warning threshold \(.* hours\)."
+UPTIME_WARNING_REGEX = r"^Uptime \(.* hours\) is above warning threshold \(.* hours\)."
 
 # Regex for warning when we've updated too long ago, and grace period has elapsed
-UPDATER_WARNING_REGEX = "^Last successful update \(.* hours ago\) is above warning threshold "
-"\(.* hours\). Uptime grace period of .* hours has elapsed (uptime: .* hours)."
+UPDATER_WARNING_REGEX = r"^Last successful update \(.* hours ago\) is above warning threshold "
+r"\(.* hours\). Uptime grace period of .* hours has elapsed (uptime: .* hours)."
+
+# Regex for info log when warning is due, but grace period not elapsed
+GRACE_PERIOD_REGEX = r"Last successful update \(.* hours ago\) is above "
+r"warning threshold \(.* hours\). Uptime grace period of .* hours has not elapsed "
+r"yet \(uptime: .* hours\)."
 
 
 @mock.patch("Notify.sdlog.error")
@@ -123,17 +129,21 @@ def test_warning_shown_if_uptime_exceeded_and_updater_never_ran(
         assert re.search(UPTIME_WARNING_REGEX, warning_string) is not None
 
 
-@mock.patch("Notify.get_uptime_seconds", return_value=notify.UPTIME_GRACE_PERIOD + 1)
+@pytest.mark.parametrize("uptime,warning_expected", [
+                        (notify.UPTIME_GRACE_PERIOD + 1, True),
+                        (notify.UPTIME_GRACE_PERIOD - 1, False)
+])
 @mock.patch("Notify.sdlog.error")
 @mock.patch("Notify.sdlog.warning")
 @mock.patch("Notify.sdlog.info")
-def test_warning_shown_if_warning_threshold_exceeded_and_grace_period_elapsed(
-        mocked_info, mocked_warning, mocked_error, mocked_uptime
+def test_warning_shown_if_warning_threshold_exceeded(
+        mocked_info, mocked_warning, mocked_error, uptime, warning_expected
 ):
     """
     Primary use case for the notifier: are we showing the warning if the
     system hasn't been (successfully) updated for longer than the warning
-    threshold, and the uptime grace period has elapsed?
+    threshold? Expected result varies based on whether system uptime exceeds
+    a grace period (for the uesr to launch the app on their own).
     """
     with TemporaryDirectory() as tmpdir:
         # Write a "last successfully updated" date well in the past for check
@@ -142,12 +152,19 @@ def test_warning_shown_if_warning_threshold_exceeded_and_grace_period_elapsed(
         with open(notify.LAST_UPDATED_FILE, "w") as f:
             f.write(historic_date)
 
-        warning_should_be_shown = notify.is_update_check_necessary()
-        assert warning_should_be_shown is True
+        with mock.patch("Notify.get_uptime_seconds") as mocked_uptime:
+            mocked_uptime.return_value = uptime
+            warning_should_be_shown = notify.is_update_check_necessary()
+        assert warning_should_be_shown is warning_expected
         # No handled errors should occur
         assert not mocked_error.called
         # A warning should also be logged
-        mocked_warning.assert_called_once()
-        # Ensure warning matches expected output
-        warning_string = mocked_warning.call_args[0][0]
-        assert re.search(UPDATER_WARNING_REGEX, warning_string) is not None
+        if warning_expected is True:
+            mocked_warning.assert_called_once()
+            warning_string = mocked_warning.call_args[0][0]
+            assert re.search(UPDATER_WARNING_REGEX, warning_string) is not None
+        else:
+            assert not mocked_warning.called
+            mocked_info.assert_called_once()
+            info_string = mocked_info.call_args[0][0]
+            assert re.search(GRACE_PERIOD_REGEX, info_string) is not None
