@@ -5,7 +5,6 @@ in some time.
 import fcntl
 import logging
 import os
-import sys
 
 from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
@@ -95,7 +94,7 @@ def obtain_notify_lock():
     return lh
 
 
-def warning_should_be_shown():
+def is_update_check_necessary():
     """
     Perform a series of checks to determine if a security warning should be
     shown to the user, reminding them to check for available software updates
@@ -117,16 +116,14 @@ def warning_should_be_shown():
             sdlog.error("Data in {} not in the expected format. "
                         "Expecting a timestamp in format '{}'."
                         .format(LAST_UPDATED_FILE, LAST_UPDATED_FORMAT))
-            sys.exit(1)
+            return None
 
         now = datetime.now()
         updated_seconds_ago = (now - last_update_time).total_seconds()
         updated_hours_ago = updated_seconds_ago / 60 / 60
 
-    # Obtain current uptime
-    with open('/proc/uptime', 'r') as f:
-        uptime_seconds = float(f.readline().split()[0])
-        uptime_hours = uptime_seconds / 60 / 60
+    uptime_seconds = get_uptime_seconds()
+    uptime_hours = uptime_seconds / 60 / 60
 
     if not last_updated_file_exists:
         sdlog.info("Timestamp file '{}' does not exist. "
@@ -195,3 +192,10 @@ def configure_logging():
     log = logging.getLogger()
     log.setLevel(logging.INFO)
     log.addHandler(handler)
+
+
+def get_uptime_seconds():
+    # Obtain current uptime
+    with open('/proc/uptime', 'r') as f:
+        uptime_seconds = float(f.readline().split()[0])
+    return uptime_seconds

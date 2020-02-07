@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 
 from unittest import mock
@@ -14,10 +15,16 @@ relpath_updater = "../sdw_updater_gui/Updater.py"
 path_to_updater = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updater)
 updater = SourceFileLoader("Updater", path_to_updater).load_module()
 
+# Regex for uptime-only warning (if we don't have a timestamp yet)
+UPTIME_WARNING_REGEX = "^Uptime \(.* hours\) is above warning threshold \(.* hours\)."
+
 
 @mock.patch("Notify.sdlog.error")
+@mock.patch("Notify.sdlog.warning")
 @mock.patch("Notify.sdlog.info")
-def test_notify_lock(mocked_info, mocked_error):
+def test_notify_lock(
+        mocked_info, mocked_warning, mocked_error
+):
     """
     Test whether we can successfully obtain an exclusive lock for the notifier
     script
@@ -45,8 +52,11 @@ def test_notify_lock(mocked_info, mocked_error):
 
 
 @mock.patch("Notify.sdlog.error")
+@mock.patch("Notify.sdlog.warning")
 @mock.patch("Notify.sdlog.info")
-def test_updater_lock_prevents_notifier(mocked_info, mocked_error):
+def test_updater_lock_prevents_notifier(
+    mocked_info, mocked_warning, mocked_error
+):
     """
     Test whether an exlusive lock on the updater lock file prevents the notifier
     from launching (so it does not come up when the user is in the process of
@@ -67,8 +77,11 @@ def test_updater_lock_prevents_notifier(mocked_info, mocked_error):
 
 
 @mock.patch("Notify.sdlog.error")
+@mock.patch("Notify.sdlog.warning")
 @mock.patch("Notify.sdlog.info")
-def test_no_updater_lock_has_no_effect(mocked_info, mocked_error):
+def test_no_updater_lock_has_no_effect(
+        mocked_info, mocked_warning, mocked_error
+):
     """
     Test whether we _can_ run the notifier when we don't have a lock
     on the updater.
@@ -77,3 +90,24 @@ def test_no_updater_lock_has_no_effect(mocked_info, mocked_error):
         notify.LOCK_FILE_LAUNCHER = os.path.join(tmpdir, "sdw-launcher.lock")
         lock_result = notify.can_obtain_updater_lock()
         assert lock_result is True
+
+
+@mock.patch("Notify.get_uptime_seconds", return_value=notify.WARNING_THRESHOLD + 1)
+@mock.patch("Notify.sdlog.error")
+@mock.patch("Notify.sdlog.warning")
+@mock.patch("Notify.sdlog.info")
+def test_warning_shown_if_uptime_exceeded_and_updater_never_ran(
+        mocked_info, mocked_warning, mocked_error, mocked_uptime
+):
+    with TemporaryDirectory() as tmpdir:
+        # We're going to look for a nonexistent file in an existing tmpdir
+        notify.LAST_UPDATED_FILE = os.path.join(tmpdir, "file-does-not-exist")
+        warning_should_be_shown = notify.is_update_check_necessary()
+
+        assert warning_should_be_shown is True
+        # No handled errors should occur
+        assert not mocked_error.called
+        # A warning should also be logged
+        mocked_warning.assert_called_once()
+        warning_string = mocked_warning.call_args[0][0]
+        assert re.search(UPTIME_WARNING_REGEX, warning_string) is not None

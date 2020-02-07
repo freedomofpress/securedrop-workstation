@@ -30,7 +30,11 @@ def main():
         # Can't write to lockfile or notifier already running. Logged.
         sys.exit(1)
 
-    if Notify.warning_should_be_shown():
+    warning_should_be_shown = Notify.is_update_check_necessary()
+    if warning_should_be_shown is None:
+        # Data integrity issue with update timestamp. Logged.
+        sys.exit(1)
+    elif warning_should_be_shown is True:
         show_update_warning()
 
 
