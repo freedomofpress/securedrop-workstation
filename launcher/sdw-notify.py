@@ -5,6 +5,8 @@ for too long without checking for security updates. Writes output to a logfile,
 not stdout. All settings are in Notify utility module.
 """
 
+import sys
+
 from sdw_notify import Notify
 from PyQt4 import QtGui
 from PyQt4.QtGui import QMessageBox
@@ -18,9 +20,16 @@ def main():
     """
 
     Notify.configure_logging()
-    Notify.obtain_and_release_updater_lock()
+    if(Notify.can_obtain_updater_lock() is False):
+        # Preflight updater is already running. Logged.
+        sys.exit(1)
+
     # Hold on to lock handle during execution
     lock_handle = Notify.obtain_notify_lock()  # noqa: F841
+    if lock_handle is None:
+        # Can't write to lockfile or notifier already running. Logged.
+        sys.exit(1)
+
     if Notify.warning_should_be_shown():
         show_update_warning()
 

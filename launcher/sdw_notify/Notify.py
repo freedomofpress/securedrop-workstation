@@ -46,27 +46,29 @@ UPTIME_GRACE_PERIOD = 1800  # 30 minutes
 WARNING_THRESHOLD = 432000  # 5 days
 
 
-def obtain_and_release_updater_lock():
+def can_obtain_updater_lock():
     """
     We temporarily obtain a shared, nonblocking lock to the updater's lock
     file to determine whether it is currently running. We do not need to
-    hold on to this lock.
+    hold on to this lock. Returns True if it is safe to continue execution,
+    False if not.
     """
-
     try:
         lh = open(LOCK_FILE_LAUNCHER, 'r')
     except FileNotFoundError:  # noqa: F821
         # Updater may not have run yet during this session
-        return
+        return True
 
     try:
         # Obtain a nonblocking, shared lock
         fcntl.lockf(lh, fcntl.LOCK_SH | fcntl.LOCK_NB)
     except IOError:
         sdlog.error("Error obtaining lock on '{}'. "
-                    "Preflight updater may already be running. Exiting."
+                    "Preflight updater may already be running."
                     .format(LOCK_FILE_LAUNCHER))
-        sys.exit(1)
+        return False
+
+    return True
 
 
 def obtain_notify_lock():
@@ -79,16 +81,17 @@ def obtain_notify_lock():
         sdlog.error("Error writing to lock file '{}'. User may lack the "
                     "required permissions."
                     .format(LOCK_FILE_NOTIFIER))
-        sys.exit(1)
+        return None
 
     try:
         # Obtain an exclusive, nonblocking lock
         fcntl.lockf(lh, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except IOError:
         sdlog.error("Error obtaining lock on '{}'. "
-                    "Notification may already be displaying. Exiting."
+                    "Notification may already be displaying."
                     .format(LOCK_FILE_NOTIFIER))
-        sys.exit(1)
+        return None
+
     return lh
 
 
