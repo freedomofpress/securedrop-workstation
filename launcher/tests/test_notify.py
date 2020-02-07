@@ -28,6 +28,9 @@ def test_notify_lock(mocked_info, mocked_error):
         lh = notify.obtain_notify_lock()  # noqa: F841
         # No handled exception should occur
         assert not mocked_error.called
+        # We should be getting a lock handle back
+        assert lh is not None
+
         cmd = ['lsof', '-w', notify.LOCK_FILE_NOTIFIER]
         output_lines = subprocess.check_output(cmd).decode("utf-8").strip().split('\n')
         # We expect exactly one process to be accessing this file, plus output header
