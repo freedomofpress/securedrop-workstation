@@ -4,7 +4,8 @@
     "hostname": "avgfxawdn6c3coe3.onion",
     "key": "Il8Xas7uf6rjtc0LxYwhrx"
   },
-  "environment": "prod",
+ "environment": "prod",
+ "update_skip_delta": 28800,
   "vmsizes": {
      "sd_app": 10,
      "sd_log": 5
