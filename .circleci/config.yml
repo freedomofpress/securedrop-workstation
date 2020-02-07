@@ -26,6 +26,7 @@ jobs:
             virtualenv .venv
             source .venv/bin/activate
             pip install --require-hashes -r test-requirements.txt
+            sudo apt install lsof
             make test && make bandit
 
 workflows:
