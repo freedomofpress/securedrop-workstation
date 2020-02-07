@@ -17,17 +17,21 @@ relpath_updater = "../sdw_updater_gui/Updater.py"
 path_to_updater = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updater)
 updater = SourceFileLoader("Updater", path_to_updater).load_module()
 
-# Regex for uptime-only warning (if we don't have a timestamp yet)
+# Regex for warning log if we have no successful update, but uptime is below threshold
 UPTIME_WARNING_REGEX = r"^Uptime \(.* hours\) is above warning threshold \(.* hours\)."
 
-# Regex for warning when we've updated too long ago, and grace period has elapsed
+# Regex for warning log if we've updated too long ago, and grace period has elapsed
 UPDATER_WARNING_REGEX = r"^Last successful update \(.* hours ago\) is above warning threshold "
 r"\(.* hours\). Uptime grace period of .* hours has elapsed (uptime: .* hours)."
 
-# Regex for info log when warning is due, but grace period not elapsed
+# Regex for info log if we've updated too long ago, but grace period still ticking
 GRACE_PERIOD_REGEX = r"Last successful update \(.* hours ago\) is above "
 r"warning threshold \(.* hours\). Uptime grace period of .* hours has not elapsed "
 r"yet \(uptime: .* hours\)."
+
+# Regex for info log if we've updated recently enough
+NO_WARNING_REGEX = r"Last successful update \(.* hours ago\) is below the warning threshold "
+r"\(.* hours\)."
 
 
 @mock.patch("Notify.sdlog.error")
@@ -168,3 +172,23 @@ def test_warning_shown_if_warning_threshold_exceeded(
             mocked_info.assert_called_once()
             info_string = mocked_info.call_args[0][0]
             assert re.search(GRACE_PERIOD_REGEX, info_string) is not None
+
+
+@mock.patch("Notify.sdlog.error")
+@mock.patch("Notify.sdlog.warning")
+@mock.patch("Notify.sdlog.info")
+def test_warning_not_shown_if_warning_threshold_not_exceeded(
+    mocked_info, mocked_warning, mocked_error
+):
+    with TemporaryDirectory() as tmpdir:
+        # Write current timestamp into the file
+        notify.LAST_UPDATED_FILE = os.path.join(tmpdir, "sdw-last-updated")
+        just_now = datetime.datetime.now().strftime(updater.DATE_FORMAT)
+        with open(notify.LAST_UPDATED_FILE, "w") as f:
+            f.write(just_now)
+        warning_should_be_shown = notify.is_update_check_necessary()
+        assert warning_should_be_shown is False
+        assert not mocked_error.called
+        assert not mocked_warning.called
+        info_string = mocked_info.call_args[0][0]
+        assert re.search(NO_WARNING_REGEX, info_string) is not None
