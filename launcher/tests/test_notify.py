@@ -33,6 +33,8 @@ r"yet \(uptime: .* hours\)."
 NO_WARNING_REGEX = r"Last successful update \(.* hours ago\) is below the warning threshold "
 r"\(.* hours\)."
 
+BAD_TIMESTAMP_REGEX = r"Data in .* not in the expected format."
+
 
 @mock.patch("Notify.sdlog.error")
 @mock.patch("Notify.sdlog.warning")
@@ -192,3 +194,21 @@ def test_warning_not_shown_if_warning_threshold_not_exceeded(
         assert not mocked_warning.called
         info_string = mocked_info.call_args[0][0]
         assert re.search(NO_WARNING_REGEX, info_string) is not None
+
+
+@mock.patch("Notify.sdlog.error")
+@mock.patch("Notify.sdlog.warning")
+@mock.patch("Notify.sdlog.info")
+def test_corrupt_timestamp_file_handled(
+    mocked_info, mocked_warning, mocked_error
+):
+    with TemporaryDirectory() as tmpdir:
+        notify.LAST_UPDATED_FILE = os.path.join(tmpdir, "sdw-last-updated")
+        with open(notify.LAST_UPDATED_FILE, "w") as f:
+            # With apologies to HAL 9000
+            f.write("daisy, daisy, give me your answer do")
+        warning_should_be_shown = notify.is_update_check_necessary()
+        assert warning_should_be_shown is None
+        mocked_error.assert_called_once()
+        error_string = mocked_error.call_args[0][0]
+        assert re.search(BAD_TIMESTAMP_REGEX, error_string) is not None
