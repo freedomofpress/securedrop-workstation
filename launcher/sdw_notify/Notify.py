@@ -7,11 +7,10 @@ import logging
 import os
 
 from datetime import datetime
-from logging.handlers import TimedRotatingFileHandler
 
 sdlog = logging.getLogger(__name__)
 
-# The directory where status files andlogs are stored
+# The directory where status files and logs are stored
 BASE_DIRECTORY = os.path.join(os.path.expanduser("~"), ".securedrop_launcher")
 
 # The file and format that contains the timestamp of the last successful update
@@ -27,13 +26,6 @@ LOCK_FILE_LAUNCHER = os.path.join(LOCK_DIRECTORY, "sdw-launcher.lock")
 
 # The lockfile used to ensure this script can only be executed once
 LOCK_FILE_NOTIFIER = os.path.join(LOCK_DIRECTORY, "sdw-notify.lock")
-
-# Folder where logs are stored
-LOG_DIRECTORY = os.path.join(BASE_DIRECTORY, "logs")
-# Full path to logfile
-LOG_FILE = os.path.join(LOG_DIRECTORY, "sdw-notify.log")
-# Format for those logs
-LOG_FORMAT = "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
 
 # The maximum uptime this script should permit (specified in seconds) before
 # showing a warning. This is to avoid situations where the user boots the
@@ -173,25 +165,6 @@ def is_update_check_necessary():
                        .format(updated_hours_ago,
                                warning_threshold_hours))
             return False
-
-
-def configure_logging():
-    """
-    All logging related settings are set up by this function.
-    """
-
-    if not os.path.exists(LOG_DIRECTORY):
-        os.makedirs(LOG_DIRECTORY)
-
-    formatter = logging.Formatter((LOG_FORMAT))
-
-    handler = TimedRotatingFileHandler(LOG_FILE)
-    handler.setFormatter(formatter)
-    handler.setLevel(logging.INFO)
-
-    log = logging.getLogger()
-    log.setLevel(logging.INFO)
-    log.addHandler(handler)
 
 
 def get_uptime_seconds():

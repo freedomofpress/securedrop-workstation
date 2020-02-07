@@ -182,6 +182,10 @@ def test_warning_shown_if_warning_threshold_exceeded(
 def test_warning_not_shown_if_warning_threshold_not_exceeded(
     mocked_info, mocked_warning, mocked_error
 ):
+    """
+    Another high priority case: we don't want to warn the user if they've
+    recently run the updater successfully.
+    """
     with TemporaryDirectory() as tmpdir:
         # Write current timestamp into the file
         notify.LAST_UPDATED_FILE = os.path.join(tmpdir, "sdw-last-updated")
@@ -202,6 +206,10 @@ def test_warning_not_shown_if_warning_threshold_not_exceeded(
 def test_corrupt_timestamp_file_handled(
     mocked_info, mocked_warning, mocked_error
 ):
+    """
+    The LAST_UPDATED_FILE must contain a timestamp in a specified format;
+    if it doesn't, we return None and log the error.
+    """
     with TemporaryDirectory() as tmpdir:
         notify.LAST_UPDATED_FILE = os.path.join(tmpdir, "sdw-last-updated")
         with open(notify.LAST_UPDATED_FILE, "w") as f:
@@ -212,3 +220,12 @@ def test_corrupt_timestamp_file_handled(
         mocked_error.assert_called_once()
         error_string = mocked_error.call_args[0][0]
         assert re.search(BAD_TIMESTAMP_REGEX, error_string) is not None
+
+
+def test_uptime_is_sane():
+    """
+    Even in a CI container this should be greater than zero :-)
+    """
+    seconds = notify.get_uptime_seconds()
+    assert isinstance(seconds, float)
+    assert seconds > 0

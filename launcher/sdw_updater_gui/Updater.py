@@ -14,7 +14,6 @@ import os
 import subprocess
 from datetime import datetime, timedelta
 from enum import Enum
-from logging.handlers import TimedRotatingFileHandler
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_HOME = ".securedrop_launcher"
@@ -92,32 +91,6 @@ def apply_updates(vms):
         yield vm, progress_percentage, upgrade_results
 
     _shutdown_and_start_vms()
-
-
-def configure_logging():
-    """
-    All logging related settings are set up by this function.
-    """
-    log_folder = os.path.join(get_dom0_path(DEFAULT_HOME), "logs")
-    if not os.path.exists(log_folder):
-        os.makedirs(log_folder)
-
-    log_file = os.path.join(get_dom0_path(DEFAULT_HOME), "logs", "launcher.log")
-
-    # set logging format
-    log_fmt = (
-        "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
-    )
-    formatter = logging.Formatter(log_fmt)
-
-    handler = TimedRotatingFileHandler(log_file)
-    handler.setFormatter(formatter)
-    handler.setLevel(logging.INFO)
-
-    # set up primary log
-    log = logging.getLogger()
-    log.setLevel(logging.INFO)
-    log.addHandler(handler)
 
 
 def obtain_lock():
