@@ -20,6 +20,9 @@ updater = SourceFileLoader("Updater", path_to_updater).load_module()
 # Regex for warning log if we have no successful update, but uptime is below threshold
 UPTIME_WARNING_REGEX = r"^Uptime \(.* hours\) is above warning threshold \(.* hours\)."
 
+# Regex for info log if we have no successful update, but uptime treshold not reached
+UPTIME_NO_WARNING_REGEX = r"Uptime \(.* hours\) is below warning threshold \(.* hours\)."
+
 # Regex for warning log if we've updated too long ago, and grace period has elapsed
 UPDATER_WARNING_REGEX = r"^Last successful update \(.* hours ago\) is above warning threshold "
 r"\(.* hours\). Uptime grace period of .* hours has elapsed (uptime: .* hours)."
@@ -109,12 +112,15 @@ def test_no_updater_lock_has_no_effect(
         assert lock_result is True
 
 
-@mock.patch("Notify.get_uptime_seconds", return_value=notify.WARNING_THRESHOLD + 1)
+@pytest.mark.parametrize("uptime,warning_expected", [
+                        (notify.WARNING_THRESHOLD + 1, True),
+                        (notify.WARNING_THRESHOLD - 1, False)
+])
 @mock.patch("Notify.sdlog.error")
 @mock.patch("Notify.sdlog.warning")
 @mock.patch("Notify.sdlog.info")
 def test_warning_shown_if_uptime_exceeded_and_updater_never_ran(
-        mocked_info, mocked_warning, mocked_error, mocked_uptime
+        mocked_info, mocked_warning, mocked_error, uptime, warning_expected
 ):
     """
     Test whether we're correctly going to show a warning if the uptime exceeds
@@ -123,16 +129,26 @@ def test_warning_shown_if_uptime_exceeded_and_updater_never_ran(
     with TemporaryDirectory() as tmpdir:
         # We're going to look for a nonexistent file in an existing tmpdir
         notify.LAST_UPDATED_FILE = os.path.join(tmpdir, "file-does-not-exist")
-        warning_should_be_shown = notify.is_update_check_necessary()
+        with mock.patch("Notify.get_uptime_seconds") as mocked_uptime:
+            mocked_uptime.return_value = uptime
+            warning_should_be_shown = notify.is_update_check_necessary()
 
-        assert warning_should_be_shown is True
         # No handled errors should occur
         assert not mocked_error.called
-        # A warning should also be logged
-        mocked_warning.assert_called_once()
-        # Ensure warning matches expected output
-        warning_string = mocked_warning.call_args[0][0]
-        assert re.search(UPTIME_WARNING_REGEX, warning_string) is not None
+
+        if warning_expected is True:
+            assert warning_should_be_shown is True
+            # A warning should also be logged
+            mocked_warning.assert_called_once()
+            # Ensure warning matches expected output
+            warning_string = mocked_warning.call_args[0][0]
+            assert re.search(UPTIME_WARNING_REGEX, warning_string) is not None
+        else:
+            assert warning_should_be_shown is False
+            # Info log entry should be added after "no timestamp" log entry
+            assert mocked_info.call_count == 2
+            info_string = mocked_info.call_args[0][0]
+            assert re.search(UPTIME_NO_WARNING_REGEX, info_string) is not None
 
 
 @pytest.mark.parametrize("uptime,warning_expected", [
