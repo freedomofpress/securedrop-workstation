@@ -1,12 +1,12 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.1.2
+Version:	0.1.3
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.1.2.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.1.3.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -33,6 +33,8 @@ configuration over time.
 %{__python3} setup.py install --no-compile --skip-build --root %{buildroot}
 install -m 755 -d %{buildroot}/opt/securedrop/launcher
 install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_updater_gui
+install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_notify
+install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_util
 install -m 755 -d %{buildroot}/srv
 install -m 755 -d %{buildroot}/srv/salt/sd
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-app
@@ -65,6 +67,8 @@ install -m 644 Makefile %{buildroot}/usr/share/%{name}/Makefile
 install -m 755 scripts/* %{buildroot}/usr/share/%{name}/scripts/
 install -m 644 launcher/*.py %{buildroot}/opt/securedrop/launcher/
 install -m 644 launcher/sdw_updater_gui/*.py %{buildroot}/opt/securedrop/launcher/sdw_updater_gui/
+install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw_notify/
+install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
 %files
 %doc README.md LICENSE
 %{python3_sitelib}/securedrop_workstation_dom0_config*
@@ -84,6 +88,9 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
+* Fri Feb 07 2020 SecureDrop Team <securedrop@freedom.press> - 0.1.3
+- Adds sdw-notify script
+
 * Mon Feb 03 2020 Mickael E. <mickae@freedom.press> - 0.1.2
 - Provides dev/staging/prod split logic.
 
