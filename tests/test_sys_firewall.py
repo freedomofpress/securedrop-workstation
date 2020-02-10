@@ -13,7 +13,6 @@ class SD_Sys_Firewall_Tests(SD_VM_Local_Test):
         super(SD_Sys_Firewall_Tests, self).setUp()
         with open("config.json") as c:
             config = json.load(c)
-            # default to prod
             if 'environment' not in config:
                 config['environment'] = 'dev'
 
