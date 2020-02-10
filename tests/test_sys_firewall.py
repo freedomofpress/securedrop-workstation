@@ -13,9 +13,8 @@ class SD_Sys_Firewall_Tests(SD_VM_Local_Test):
         super(SD_Sys_Firewall_Tests, self).setUp()
         with open("config.json") as c:
             config = json.load(c)
-            # default to prod
             if 'environment' not in config:
-                config['environment'] = 'prod'
+                config['environment'] = 'dev'
 
             if config['environment'] == 'prod':
                 self.pubkey_wanted = SD_Dom0_Rpm_Repo_Tests.pubkey_wanted_prod

@@ -17,9 +17,8 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
         self.maxDiff = None
         with open("config.json") as c:
             config = json.load(c)
-            # default to prod
             if 'environment' not in config:
-                config['environment'] = 'prod'
+                config['environment'] = 'dev'
 
             if config['environment'] == 'prod':
                 self.pubkey_wanted = self.pubkey_wanted_prod
