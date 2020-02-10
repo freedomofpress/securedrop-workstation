@@ -40,6 +40,9 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         """
         assert self._fileExists(self.whonix_apt_list)
 
+    def test_logging_configured(self):
+        self.logging_configured()
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Proxy_Tests)

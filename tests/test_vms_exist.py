@@ -121,6 +121,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
+        self._check_service_running(vm, "securedrop-log")
         self.assertFalse(vm.template_for_dispvms)
         self.assertTrue('sd-workstation' in vm.tags)
         # Check the size of the private volume

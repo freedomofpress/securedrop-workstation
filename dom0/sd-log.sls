@@ -57,3 +57,11 @@ sd-log-private-volume-size:
         qvm-volume resize sd-log:private {{ d.vmsizes.sd_log }}GiB
     - require:
       - qvm: sd-log
+
+# Permit the SecureDrop Proxy to manage Client connections
+sd-dom-dom0-securedrop.Log:
+  file.prepend:
+    - name: /etc/qubes-rpc/policy/securedrop.Log
+    - text: |
+        @tag:sd-workstation sd-log allow
+        @anyvm @anyvm deny

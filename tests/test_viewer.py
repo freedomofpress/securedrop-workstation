@@ -19,6 +19,9 @@ class SD_Viewer_Tests(SD_VM_Local_Test):
     def test_sd_viewer_libreoffice_installed(self):
         self.assertTrue(self._package_is_installed("libreoffice"))
 
+    def test_logging_configured(self):
+        self.logging_configured()
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Viewer_Tests)

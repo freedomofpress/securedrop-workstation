@@ -62,7 +62,7 @@ sd-app: prep-salt ## Provisions SD APP VM
 
 sd-whonix: prep-salt ## Provisions SD Whonix VM
 	sudo qubesctl --show-output state.sls sd-whonix
-	sudo qubesctl --show-output --skip-dom0 --targets sd-whonix-buster-template,sd-whonix state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets whonix-gw-15,sd-whonix state.highstate
 
 sd-viewer: prep-salt ## Provisions SD Submission Viewing VM
 	sudo qubesctl --show-output state.sls sd-viewer
@@ -111,9 +111,10 @@ remove-sd-log: assert-dom0 ## Destroys SD logging VM
 	@./scripts/destroy-vm sd-log
 
 clean: assert-dom0 prep-salt ## Destroys all SD VMs
+	sudo qubesctl --show-output state.sls sd-clean-default-dispvm
+	$(MAKE) destroy-all
 	sudo qubesctl --show-output state.sls sd-clean-all
 	sudo dnf -y -q remove securedrop-workstation-dom0-config 2>/dev/null || true
-	$(MAKE) destroy-all
 	$(MAKE) clean-salt
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)

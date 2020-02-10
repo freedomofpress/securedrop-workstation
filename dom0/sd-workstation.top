@@ -10,6 +10,7 @@ base:
     - sd-upgrade-templates
     - sd-dom0-qvm-rpc
     - sd-sys-whonix-vms
+    - sd-log
     - sd-devices
     - sd-gpg
     - sd-proxy
@@ -17,7 +18,9 @@ base:
     - sd-app
     - sd-whonix
     - sd-remove-unused-templates
-    - sd-log
+
+  sd-log-buster-template:
+    - sd-log-template-files
   sd-devices-buster-template:
     - sd-devices-files
   sd-gpg:
@@ -34,12 +37,13 @@ base:
     - sd-sys-firewall-files
   sd-whonix:
     - sd-whonix-hidserv-key
-  sd-log-buster-template:
-    - sd-log-template-files
+    - sd-whonix-rsyslog-enable
   securedrop-workstation-buster:
     - sd-workstation-template-files
   sys-usb:
     - sd-usb-autoattach-add
+  whonix-gw-15:
+    - sd-whonix-template-files
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.
