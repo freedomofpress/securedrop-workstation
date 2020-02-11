@@ -842,6 +842,7 @@ def test_last_required_reboot_performed_not_required(
     assert result is True
     assert not mocked_error.called
 
+
 @pytest.mark.parametrize("status, expected, rebooted", [
                         (UpdateStatus.UPDATES_OK, True, True),
                         (UpdateStatus.UPDATES_REQUIRED, True, True),
@@ -852,19 +853,18 @@ def test_last_required_reboot_performed_not_required(
                         (UpdateStatus.REBOOT_REQUIRED, True, False),
                         (UpdateStatus.UPDATES_FAILED, True, False)
 ])
-
 # @mock.patch("Updater.last_required_reboot_performed", return_value=True)
 def test_should_run_updater_status_interval_expired(
-   status, expected, rebooted
+    status, expected, rebooted
 ):
-    TEST_INTERVAL=3600 
+    TEST_INTERVAL = 3600
     with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
         mocked_last.return_value = rebooted
         with mock.patch("Updater.read_dom0_update_flag_from_disk") as mocked_read:
-            mocked_read.return_value={
-                "last_status_update": str((
-                    datetime.now() - timedelta(seconds=(TEST_INTERVAL+10)
-                    )).strftime(updater.DATE_FORMAT)),
+            mocked_read.return_value = {
+                "last_status_update": str(
+                    (datetime.now() - timedelta(seconds=(TEST_INTERVAL + 10)))
+                    .strftime(updater.DATE_FORMAT)),
                 "status": status.value,
             }
             # assuming that the tests won't take an hour to run!
@@ -881,38 +881,39 @@ def test_should_run_updater_status_interval_expired(
                         (UpdateStatus.REBOOT_REQUIRED, True, False),
                         (UpdateStatus.UPDATES_FAILED, True, False)
 ])
-
 def test_should_run_updater_status_interval_not_expired(
-   status, expected, rebooted
+    status, expected, rebooted
 ):
-    TEST_INTERVAL=3600 
+    TEST_INTERVAL = 3600
     with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
         mocked_last.return_value = rebooted
         with mock.patch("Updater.read_dom0_update_flag_from_disk") as mocked_read:
-            mocked_read.return_value={
+            mocked_read.return_value = {
                 "last_status_update": str(datetime.now().strftime(updater.DATE_FORMAT)),
                 "status": status.value,
             }
             # assuming that the tests won't take an hour to run!
             assert expected == updater.should_launch_updater(TEST_INTERVAL)
 
+
 def test_should_run_updater_invalid_status():
-    TEST_INTERVAL=3600 
+    TEST_INTERVAL = 3600
     with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
         mocked_last.return_value = True
         with mock.patch("Updater.read_dom0_update_flag_from_disk") as mocked_read:
-            mocked_read.return_value={}
+            mocked_read.return_value = {}
             # assuming that the tests won't take an hour to run!
-            assert updater.should_launch_updater(TEST_INTERVAL) == True
+            assert updater.should_launch_updater(TEST_INTERVAL) is True
+
 
 def test_should_run_updater_invalid_timestamp():
-    TEST_INTERVAL=3600 
+    TEST_INTERVAL = 3600
     with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
         mocked_last.return_value = True
         with mock.patch("Updater.read_dom0_update_flag_from_disk") as mocked_read:
-            mocked_read.return_value={
+            mocked_read.return_value = {
                 "last_status_update": "time to die",
                 "status": UpdateStatus.UPDATES_OK.value,
-            }  
+            }
             # assuming that the tests won't take an hour to run!
-            assert updater.should_launch_updater(TEST_INTERVAL) == True
+            assert updater.should_launch_updater(TEST_INTERVAL) is True
