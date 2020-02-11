@@ -4,4 +4,4 @@ Type=Application
 Terminal=false
 Icon=/usr/share/securedrop/icons/sd-logo.png
 Name=SecureDrop
-Exec=/opt/securedrop/launcher/sdw-launcher.py --skip-delta={{ update_skip_delta }}
+Exec=/opt/securedrop/launcher/sdw-launcher.py --skip-delta=28800

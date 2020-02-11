@@ -5,6 +5,7 @@ include dom0/*.yml
 include dom0/securedrop-admin
 include dom0/securedrop-update
 include dom0/securedrop-login
+include dom0/securedrop-launcher.desktop
 include dom0/securedrop-handle-upgrade
 include config.json.example
 include README.md

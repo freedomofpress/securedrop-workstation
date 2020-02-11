@@ -190,6 +190,14 @@ dom0-securedrop-launcher-executables:
     - mode: 755
     - replace: false
 
+dom0-securedrop-launcher-desktop-shortcut:
+  file.managed:
+    - name: /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
+    - source: "salt://securedrop-launcher.desktop"
+    - user: {{ gui_user }}
+    - group: {{ gui_user }}
+    - mode: 755
+
 {% import_json "sd/config.json" as d %}
 {% if d.environment == "dev" %}
 dom0-remove-securedrop-workstation-dom0-config:
@@ -207,14 +215,3 @@ dom0-install-securedrop-workstation-dom0-config:
       - file: dom0-workstation-rpm-repo
 
 {% endif %}
-
-dom0-securedrop-launcher-desktop-shortcut:
-  file.managed:
-    - name: /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
-    - source: "salt://securedrop-launcher.desktop.j2"
-    - template: jinja
-    - context:
-        update_skip_delta: {{ d.update_skip_delta }}
-    - user: {{ gui_user }}
-    - group: {{ gui_user }}
-    - mode: 755
