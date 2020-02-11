@@ -22,6 +22,11 @@ SecureDrop Workstation project. The package should be installed
 in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
 
+# To ensure forward-compatibility of RPMs regardless of updates to the system
+# Python, we disable the creation of bytecode at build time via the build
+# root policy.
+%undefine py_auto_byte_compile
+
 %prep
 %setup -q
 
@@ -77,10 +82,6 @@ install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_u
 %{python3_sitelib}/securedrop_workstation_dom0_config*
 %{_datadir}/%{name}
 /opt/securedrop/launcher/**/*.py
-/opt/securedrop/launcher/**/*.pyc
-/opt/securedrop/launcher/**/*.pyo
-/opt/securedrop/launcher/*.pyc
-/opt/securedrop/launcher/*.pyo
 /srv/salt/sd*
 /srv/salt/dom0-xfce-desktop-file.j2
 /srv/salt/securedrop-*
