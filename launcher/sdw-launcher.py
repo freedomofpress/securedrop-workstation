@@ -9,7 +9,7 @@ import logging
 import sys
 import argparse
 
-DEFAULT_INTERVAL = 0
+DEFAULT_INTERVAL = 28800
 
 
 
