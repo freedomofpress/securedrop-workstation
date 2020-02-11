@@ -320,7 +320,7 @@ https://github.com/freedomofpress/securedrop-debian-packaging/
 ### Building workstation rpm packages
 
 ```
-make build-dom0-rpm
+make dom0-rpm
 ```
 
 This uses a base docker image as defined in https://github.com/freedomofpress/containers/.
