@@ -6,7 +6,6 @@ import subprocess
 
 from unittest import mock
 from importlib.machinery import SourceFileLoader
-from multiprocessing import Pool
 from tempfile import TemporaryDirectory
 
 relpath_notify = "../sdw_notify/Notify.py"
@@ -36,7 +35,11 @@ r"yet \(uptime: .* hours\)."
 NO_WARNING_REGEX = r"Last successful update \(.* hours ago\) is below the warning threshold "
 r"\(.* hours\)."
 
+# Regex for bad contents in `sdw-last-updated` file
 BAD_TIMESTAMP_REGEX = r"Data in .* not in the expected format."
+
+# Regex for lock conflict with updater when launching notifier
+BUSY_LOCK_REGEX = r"Error obtaining lock on '.*'."
 
 
 @mock.patch("Notify.sdlog.error")
@@ -87,13 +90,14 @@ def test_updater_lock_prevents_notifier(
         updater.LOCK_FILE = os.path.join(tmpdir, "sdw-launcher.lock")
         lh = updater.obtain_lock()  # noqa: F841
 
-        # We're in the same process, so obtaining an additional lock would
-        # always succeed. We use the multiprocessing module to run the function
-        # as a separate process.
-        p = Pool(processes=1)
-        lock_result = p.apply(notify.can_obtain_updater_lock)
-        p.close()
-        assert lock_result is False
+        # We're running in the same process, so obtaining a lock will succeed.
+        # Instead we're mocking the IOError lockf would raise.
+        with mock.patch("fcntl.lockf", side_effect=IOError()) as mocked_lockf:
+            can_get_lock = notify.can_obtain_updater_lock()
+            mocked_lockf.assert_called_once()
+            assert can_get_lock is False
+            error_string = mocked_error.call_args[0][0]
+            assert re.search(BUSY_LOCK_REGEX, error_string) is not None
 
 
 @mock.patch("Notify.sdlog.error")
