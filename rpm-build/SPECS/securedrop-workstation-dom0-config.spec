@@ -25,7 +25,6 @@ configuration over time.
 %prep
 %setup -q
 
-
 %build
 %{__python3} setup.py build
 
@@ -71,15 +70,21 @@ install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw
 install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
 %files
 %doc README.md LICENSE
+%attr(755, root, root) /opt/securedrop/launcher/sdw-launcher.py
+%attr(755, root, root) /opt/securedrop/launcher/sdw-notify.py
+%attr(755, root, root) %{_bindir}/securedrop-update
+%attr(755, root, root) %{_bindir}/securedrop-admin
 %{python3_sitelib}/securedrop_workstation_dom0_config*
 %{_datadir}/%{name}
-%{_bindir}/securedrop-update
-%{_bindir}/securedrop-admin
+/opt/securedrop/launcher/**/*.py
+/opt/securedrop/launcher/**/*.pyc
+/opt/securedrop/launcher/**/*.pyo
+/opt/securedrop/launcher/*.pyc
+/opt/securedrop/launcher/*.pyo
 /srv/salt/sd*
 /srv/salt/dom0-xfce-desktop-file.j2
 /srv/salt/securedrop-*
 /srv/salt/fpf*
-/opt/securedrop/*
 
 %post
 find /srv/salt -maxdepth 1 -type f -iname '*.top' \
@@ -88,8 +93,9 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
-* Fri Feb 07 2020 SecureDrop Team <securedrop@freedom.press> - 0.1.3
+* Mon Feb 10 2020 SecureDrop Team <securedrop@freedom.press> - 0.1.3
 - Adds sdw-notify script
+- Sets executable bits within package specification
 
 * Mon Feb 03 2020 Mickael E. <mickae@freedom.press> - 0.1.2
 - Provides dev/staging/prod split logic.
