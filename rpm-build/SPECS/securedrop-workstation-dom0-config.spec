@@ -94,9 +94,10 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
-* Mon Feb 10 2020 SecureDrop Team <securedrop@freedom.press> - 0.1.3
+* Tue Feb 11 2020 SecureDrop Team <securedrop@freedom.press> - 0.1.3
 - Adds sdw-notify script
 - Sets executable bits within package specification
+- Disable build root policy for bytecode generation in package spec
 
 * Mon Feb 03 2020 Mickael E. <mickae@freedom.press> - 0.1.2
 - Provides dev/staging/prod split logic.
