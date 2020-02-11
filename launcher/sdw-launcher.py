@@ -9,6 +9,9 @@ import logging
 import sys
 import argparse
 
+DEFAULT_INTERVAL = 0
+
+
 
 
 def parse_argv(argv):
@@ -50,6 +53,7 @@ def main(argv):
         launch_updater()
     else:
         launch_securedrop_client()
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

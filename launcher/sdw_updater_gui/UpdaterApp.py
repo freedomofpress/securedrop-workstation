@@ -10,6 +10,7 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+
 def launch_securedrop_client():
     """
     Helper function to launch the SecureDrop Client
@@ -18,10 +19,10 @@ def launch_securedrop_client():
         logger.info("Launching SecureDrop client")
         subprocess.Popen(["qvm-run", "sd-app", "gtk-launch securedrop-client"])
     except subprocess.CalledProcessError as e:
-        self.proposedActionDescription.setText(strings.descri)
         logger.error("Error while launching SecureDrop client")
         logger.error(str(e))
     sys.exit(0)
+
 
 class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
     def __init__(self, parent=None):
