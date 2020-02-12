@@ -186,19 +186,6 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
                     vms_to_upgrade.append(vm)
         return vms_to_upgrade
 
-    def launch_securedrop_client(self):
-        """
-        Helper method to launch the SecureDrop Client
-        """
-        try:
-            logger.info("Launching SecureDrop client")
-            subprocess.Popen(["qvm-run", "sd-app", "gtk-launch securedrop-client"])
-        except subprocess.CalledProcessError as e:
-            self.proposedActionDescription.setText(strings.descri)
-            logger.error("Error while launching SecureDrop client")
-            logger.error(str(e))
-        sys.exit(0)
-
     def apply_all_updates(self):
         """
         Method used by the applyUpdatesButton that will create and start an
