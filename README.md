@@ -16,8 +16,8 @@ This project aims to improve journalists' experience working with SecureDrop whi
 3. [What's In This Repo?](#whats-in-this-repo)
 2. [Installation](#installation)
    - [Install Qubes](#install-qubes)
+   - [Development Environment](#development-environment)
    - [Production and Staging Environments](#production-and-staging-environments)
-   - [Developement Environment](#development-environment)
 3. [Development](#development)
    - [Testing](#testing)
    - [Automatic Updates](#automatic-updates)
@@ -117,76 +117,7 @@ qubes-update-gui
 
 Select all VMs marked as **updates available**, then click **Next**. Once all updates have been applied, you're ready to proceed.
 
-### Production and Staging Environments
-
-** THE STAGING ENVIRONMENT SHOULD NOT BE USED FOR PRODUCTION PURPOSES **
-If would still like to use staging, replace the keys, fingerprint, URLs and `config.json` in the following instructions to their staging-specific values.
-
-#### Download and install securedrop-workstation-dom0-config package
-
-Since `dom0` does not have network access, we will need to download it in a Fedora-based VM. We can use the default Qubes-provisioned `work` VM. If using an AppVM, these changes won't persist reboots (recommended).
-
-In a terminal in `work`, run the following commands:
-
-1. Download the signing key:
-
-```
-# Receive and import the key
-[user@work ~]$ gpg --keyserver hkps://keys.openpgp.org --recv-key "2224 5C81 E3BA EB41 38B3 6061 310F 5612 00F4 AD77"
-```
-
-2. Configure the RPM package repository:
-
-```
-[user@work ~]$ gpg --armor --export 22245C81E3BAEB4138B36061310F561200F4AD77 | sudo tee /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
-```
-
-Populate `/etc/yum/repos.d/securedrop-temp.repo` with the following contents:
-```
-[securedrop-workstation-temporary]
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
-enabled=1
-baseurl=https://yum.securedrop.org/workstation/dom0/f25
-name=SecureDrop Workstation Qubes initial install bootstrap
-```
-
-3. Download the RPM package
-```
-[user@work ~]$ sudo dnf download securedrop-workstation-dom0-config
-```
-
-The RPM file will be downloaded to your current working directory.
-
-4. Transfer and install RPM package in `dom0`
-
-*Understand that [copying data to dom0](https://www.qubes-os.org/doc/copy-from-dom0/#copying-to-dom0) goes against the grain of the Qubes security philosophy, and should only done with trusted code and for very specific purposes. Still, be aware of the risks, especially if you rely on your Qubes installation for other sensitive work.*
-
-In `dom0`, run:
-
-```
-[dom0]$ qvm-run --pass-io work '/home/user/securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm' > securedrop-workstation.rpm
-sudo dnf install securedrop-workstation.rpm
-```
-
-The provisioning scrips and tools should now be in place, you are now ready to proceed to the workstation configuration step.
-
-#### Configure the Workstation
-
-Your workstation configuration will reside in `/usr/share/securedrop-workstation-dom0-config/` and will contain configuration information specific to your SecureDrop instance:
-
-1. Populate `config.json` with your instance-specific variables. Set `environment` to `staging`
-2. Move your submission private key as `sd-journalist.sec`
-
-#### Provision the VMs
-
-In a terminal in `dom0`, run the following commands:
-
-```
-[dom0]$ securedrop-admin --apply
-```
-
-### Development environment
+### Development Environment
 
 #### Download, Configure, Copy to `dom0`
 
@@ -244,6 +175,77 @@ qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (err
 ```
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
+
+
+### Production and Staging Environments
+
+As of February 2020, the production and staging environments are experimental. If you are interested in becoming involved in development, we recommend you follow the instructions for setting up the [development environment](#development-environment) instead.
+
+**IMPORTANT: THE STAGING ENVIRONMENT SHOULD NEVER BE USED FOR PRODUCTION PURPOSES.**
+
+#### Download and install securedrop-workstation-dom0-config package
+
+Since `dom0` does not have network access, we will need to download the `securedrop-workstation-dom0-config` package in a Fedora-based VM. We can use the default Qubes-provisioned `work` VM. If you perform these changes in the `work` VM or another AppVM, they won't persist across reboots (recommended).
+
+In a terminal in `work`, run the following commands:
+
+1. Download the signing key:
+
+```
+# Receive and import the key
+[user@work ~]$ gpg --keyserver hkps://keys.openpgp.org --recv-key "2224 5C81 E3BA EB41 38B3 6061 310F 5612 00F4 AD77"
+```
+
+2. Configure the RPM package repository:
+
+```
+[user@work ~]$ gpg --armor --export 22245C81E3BAEB4138B36061310F561200F4AD77 | sudo tee /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
+```
+
+Populate `/etc/yum/repos.d/securedrop-temp.repo` with the following contents:
+```
+[securedrop-workstation-temporary]
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
+enabled=1
+baseurl=https://yum.securedrop.org/workstation/dom0/f25
+name=SecureDrop Workstation Qubes initial install bootstrap
+```
+
+3. Download the RPM package
+```
+[user@work ~]$ sudo dnf download securedrop-workstation-dom0-config
+```
+
+The RPM file will be downloaded to your current working directory.
+
+4. Transfer and install RPM package in `dom0`
+
+*Understand that [copying data to dom0](https://www.qubes-os.org/doc/copy-from-dom0/#copying-to-dom0) goes against the grain of the Qubes security philosophy, and should only done with trusted code and for very specific purposes. Still, be aware of the risks, especially if you rely on your Qubes installation for other sensitive work.*
+
+In `dom0`, run the following commands (changing the version number to its current value):
+
+```
+[dom0]$ qvm-run --pass-io work '/home/user/securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm' > securedrop-workstation.rpm
+sudo dnf install securedrop-workstation.rpm
+```
+
+The provisioning scripts and tools should now be in place, and you can proceed to the workstation configuration step.
+
+#### Configure the Workstation
+
+Your workstation configuration will reside in `/usr/share/securedrop-workstation-dom0-config/` and will contain configuration information specific to your SecureDrop instance:
+
+1. Populate `config.json` with your instance-specific variables. Set `environment` to `staging`
+2. Move your submission private key to `sd-journalist.sec`
+
+#### Provision the VMs
+
+In a terminal in `dom0`, run the following commands:
+
+```
+[dom0]$ securedrop-admin --apply
+```
 
 ## Development
 
@@ -318,7 +320,7 @@ https://github.com/freedomofpress/securedrop-debian-packaging/
 ### Building workstation rpm packages
 
 ```
-make build-dom0-rpm
+make dom0-rpm
 ```
 
 This uses a base docker image as defined in https://github.com/freedomofpress/containers/.
@@ -338,7 +340,7 @@ To launch the *SecureDrop Client*, temporarily until [this issue](https://github
 
 You should see a login prompt similar to the following:
 
-![Sign-in Prompt](docs/images/signin.png)
+![Sign-in Prompt](docs/images/client-01-login.png)
 
 In the background, you will see any previously downloaded messages. This is intended behavior: You do not have to sign into the server to browse the messages and files you have downloaded using the client. To work offline, press Esc to close the sign-in dialog.
 
@@ -350,7 +352,7 @@ After the sign-in or the next time you attempt to view encrypted content, you wi
 
 Once you are successfully signed in, you should see a screen similar to the following:
 
-![Client with Messages](docs/images/client-with-messages.png)
+![Client with Messages](docs/images/client-02-loaded.png)
 
 On the left-hand side, you will see a list of sources who have submitted messages or documents to your SecureDrop instance. Each source is represented by a two word designation like “controlled gate”. You can display the messages and documents associated with a source by clicking its entry in the list.
 
@@ -442,7 +444,6 @@ qvm-copy-to-vm sd-onionshare ~/.securedrop_client/data/name-of-file
 5. You may now return to the OnionShare window, click on add and select the file you transferred from `sd-app` by browsing to `~/QubesIncoming/sd-app`.
 6. On the target machine, navigate to the Tor onion service URL provided by OnionShare using the Tor Browser to retrieve the file.
 7. Close OnionShare and delete the decrypted submission on `sd-onionshare` from `~/QubesIncoming/sd-app`
-
 
 ## Distributing and Releasing
 
