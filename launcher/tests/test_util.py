@@ -20,9 +20,7 @@ util = SourceFileLoader("Util", path_to_util).load_module()
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_obtain_lock(
-        mocked_info, mocked_warning, mocked_error
-):
+def test_obtain_lock(mocked_info, mocked_warning, mocked_error):
     """
     Test whether we can successfully obtain an exclusive lock
     """
@@ -36,8 +34,8 @@ def test_obtain_lock(
         # We should be getting a lock handle back
         assert lh is not None
 
-        cmd = ['lsof', '-w', os.path.join(util.LOCK_DIRECTORY, basename)]
-        output_lines = subprocess.check_output(cmd).decode("utf-8").strip().split('\n')
+        cmd = ["lsof", "-w", os.path.join(util.LOCK_DIRECTORY, basename)]
+        output_lines = subprocess.check_output(cmd).decode("utf-8").strip().split("\n")
         # We expect exactly one process to be accessing this file, plus output header
         assert len(output_lines) == 2
         lsof_data = output_lines[1].split()
@@ -46,7 +44,7 @@ def test_obtain_lock(
         # We expect the PID column to contain the ID of this process
         assert lsof_data[1] == str(pid)
         # We expect an exclusive write lock to be set for this process
-        assert lsof_data[3].find('W') != -1
+        assert lsof_data[3].find("W") != -1
 
 
 @mock.patch("Util.sdlog.error")
@@ -80,9 +78,7 @@ def test_cannot_obtain_exclusive_lock_when_busy(
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_cannot_obtain_shared_lock_when_busy(
-    mocked_info, mocked_warning, mocked_error
-):
+def test_cannot_obtain_shared_lock_when_busy(mocked_info, mocked_warning, mocked_error):
     """
     Test whether an exlusive lock on a lock file is successfully detected
     by means of attempting to obtain a shared, nonexclusive lock on the same
@@ -109,9 +105,7 @@ def test_cannot_obtain_shared_lock_when_busy(
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_no_lockfile_no_problems(
-        mocked_info, mocked_warning, mocked_error
-):
+def test_no_lockfile_no_problems(mocked_info, mocked_warning, mocked_error):
     """
     Test whether our shared lock test succeeds even when there's no lockfile
     (which means the process has not run recently, or ever, and it's safe to
@@ -125,13 +119,13 @@ def test_no_lockfile_no_problems(
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_permission_error_is_handled(
-        mocked_info, mocked_warning, mocked_error
-):
+def test_permission_error_is_handled(mocked_info, mocked_warning, mocked_error):
     """
     Test whether permission errors obtaining a lock are handled correctly
     """
-    with mock.patch("builtins.open", side_effect=PermissionError()) as mocked_open:  # noqa: F821
+    with mock.patch(
+        "builtins.open", side_effect=PermissionError()
+    ) as mocked_open:  # noqa: F821
         lock = util.obtain_lock("test-open-error.lock")
         assert lock is None
         mocked_open.assert_called_once()
@@ -143,9 +137,7 @@ def test_permission_error_is_handled(
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_stale_lockfile_has_no_effect(
-        mocked_info, mocked_warning, mocked_error
-):
+def test_stale_lockfile_has_no_effect(mocked_info, mocked_warning, mocked_error):
     """
     Test whether we can get a shared lock when a lockfile exists, but nobody
     is accessing it.
