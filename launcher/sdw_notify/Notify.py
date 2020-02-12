@@ -17,12 +17,12 @@ BASE_DIRECTORY = os.path.join(os.path.expanduser("~"), ".securedrop_launcher")
 LAST_UPDATED_FILE = os.path.join(BASE_DIRECTORY, "sdw-last-updated")
 LAST_UPDATED_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-# Lock files are created to avoid contention issues or multiple instantiation.
-# /run is used because it is cleaned out at the end of the user's session
-LOCK_DIRECTORY = os.path.join("/run/user", str(os.getuid()))
+# The lockfile basename used to ensure this script can only be executed once.
+# Default path for lockfiles is specified in sdw_util
+LOCK_FILE = "sdw-notify.lock"
 
-# The lockfile used to ensure this script can only be executed once
-LOCK_FILE_NOTIFIER = os.path.join(LOCK_DIRECTORY, "sdw-notify.lock")
+# Log file name, base directories defined in sdw_util
+LOG_FILE = "sdw-notify.log"
 
 # The maximum uptime this script should permit (specified in seconds) before
 # showing a warning. This is to avoid situations where the user boots the
@@ -32,58 +32,6 @@ UPTIME_GRACE_PERIOD = 1800  # 30 minutes
 # The amount of time without updates (specified in seconds) which this script
 # should permit before showing a warning to the user
 WARNING_THRESHOLD = 432000  # 5 days
-
-
-def can_obtain_updater_lock(lockfile):
-    """
-    We temporarily obtain a shared, nonblocking lock to the updater's lock
-    file to determine whether it is currently running. We do not need to
-    hold on to this lock. Returns True if it is safe to continue execution,
-    False if not.
-
-    `lockfile` is a fully qualified path to the lockfile used by the preflight
-    updater.
-    """
-    try:
-        lh = open(lockfile, 'r')
-    except FileNotFoundError:  # noqa: F821
-        # Updater may not have run yet during this session
-        return True
-
-    try:
-        # Obtain a nonblocking, shared lock
-        fcntl.lockf(lh, fcntl.LOCK_SH | fcntl.LOCK_NB)
-    except IOError:
-        sdlog.error("Error obtaining lock on '{}'. "
-                    "Preflight updater may already be running."
-                    .format(lockfile))
-        return False
-
-    return True
-
-
-def obtain_notify_lock():
-    """
-    Obtain an exclusive lock during the execution of this process.
-    """
-    try:
-        lh = open(LOCK_FILE_NOTIFIER, 'w')
-    except PermissionError:  # noqa: F821
-        sdlog.error("Error writing to lock file '{}'. User may lack the "
-                    "required permissions."
-                    .format(LOCK_FILE_NOTIFIER))
-        return None
-
-    try:
-        # Obtain an exclusive, nonblocking lock
-        fcntl.lockf(lh, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except IOError:
-        sdlog.error("Error obtaining lock on '{}'. "
-                    "Notification may already be displaying."
-                    .format(LOCK_FILE_NOTIFIER))
-        return None
-
-    return lh
 
 
 def is_update_check_necessary():
