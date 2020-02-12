@@ -1,4 +1,5 @@
 bandit
+black
 pip-tools
 pip
 pytest
