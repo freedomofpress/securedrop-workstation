@@ -16,7 +16,7 @@ DEFAULT_INTERVAL = 28800
 
 def parse_argv(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument("--skip-delta", type=int, default=0)
+    parser.add_argument("--skip-delta", type=int)
     return parser.parse_args(argv)
 
 
@@ -44,10 +44,17 @@ def main(argv):
     configure_logging()
     sdlog.info("Starting SecureDrop Launcher")
 
-    interval = DEFAULT_INTERVAL
     args = parse_argv(argv)
-    if args.skip_delta:
-        interval = int(args.skip_delta)
+
+    try:
+        args.skip_delta
+    except NameError:
+        args.skip_delta = DEFAULT_INTERVAL
+
+    if args.skip_delta is None:
+        args.skip_delta = DEFAULT_INTERVAL
+
+    interval = int(args.skip_delta)
 
     if should_launch_updater(interval):
         launch_updater()

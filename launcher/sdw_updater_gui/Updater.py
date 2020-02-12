@@ -444,7 +444,11 @@ def should_launch_updater(interval):
                 sdlog.info("Update interval not expired, launching client.")
                 return False
             else:
-                sdlog.info("Updates or reboot required, launching updater.")
+                sdlog.info(
+                    "Update status is {}, launching updater.".format(
+                        str(status["status"])
+                    )
+                )
                 return True
     else:
         sdlog.info("Update status not available, launching updater.")
@@ -466,11 +470,11 @@ def _interval_expired(interval, status):
     """
 
     try:
-        update_time = datetime.strptime(status['last_status_update'], DATE_FORMAT)
+        update_time = datetime.strptime(status["last_status_update"], DATE_FORMAT)
     except ValueError:
         # Broken timestamp? run the updater.
         return True
-    if ((datetime.now() - update_time) < timedelta(seconds=interval)):
+    if (datetime.now() - update_time) < timedelta(seconds=interval):
         return False
     return True
 
@@ -480,9 +484,10 @@ def _status_ok_or_rebooted(status):
     Check if update status is OK or post-reboot.
     """
 
-    if (status['status'] == UpdateStatus.UPDATES_OK.value or # noqa W504
-        (status['status'] == UpdateStatus.REBOOT_REQUIRED.value and # noqa W504
-        last_required_reboot_performed())):
+    if status["status"] == UpdateStatus.UPDATES_OK.value or (  # noqa W504
+        status["status"] == UpdateStatus.REBOOT_REQUIRED.value
+        and last_required_reboot_performed()  # noqa W504
+    ):
         return True
     return False
 
