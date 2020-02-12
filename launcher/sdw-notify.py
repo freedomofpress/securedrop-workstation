@@ -8,6 +8,7 @@ not stdout. All settings are in Notify utility module.
 import sys
 
 from sdw_notify import Notify
+from sdw_updater import Updater
 from sdw_util import Util
 from PyQt4 import QtGui
 from PyQt4.QtGui import QMessageBox
@@ -24,7 +25,7 @@ def main():
     """
 
     Util.configure_logging(LOG_FILE)
-    if(Notify.can_obtain_updater_lock() is False):
+    if(Notify.can_obtain_updater_lock(Updater.LOCK_FILE) is False):
         # Preflight updater is already running. Logged.
         sys.exit(1)
 

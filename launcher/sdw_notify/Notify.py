@@ -21,9 +21,6 @@ LAST_UPDATED_FORMAT = "%Y-%m-%d %H:%M:%S"
 # /run is used because it is cleaned out at the end of the user's session
 LOCK_DIRECTORY = os.path.join("/run/user", str(os.getuid()))
 
-# The lockfile used by the launcher script
-LOCK_FILE_LAUNCHER = os.path.join(LOCK_DIRECTORY, "sdw-launcher.lock")
-
 # The lockfile used to ensure this script can only be executed once
 LOCK_FILE_NOTIFIER = os.path.join(LOCK_DIRECTORY, "sdw-notify.lock")
 
@@ -37,15 +34,18 @@ UPTIME_GRACE_PERIOD = 1800  # 30 minutes
 WARNING_THRESHOLD = 432000  # 5 days
 
 
-def can_obtain_updater_lock():
+def can_obtain_updater_lock(lockfile):
     """
     We temporarily obtain a shared, nonblocking lock to the updater's lock
     file to determine whether it is currently running. We do not need to
     hold on to this lock. Returns True if it is safe to continue execution,
     False if not.
+
+    `lockfile` is a fully qualified path to the lockfile used by the preflight
+    updater.
     """
     try:
-        lh = open(LOCK_FILE_LAUNCHER, 'r')
+        lh = open(lockfile, 'r')
     except FileNotFoundError:  # noqa: F821
         # Updater may not have run yet during this session
         return True
@@ -56,7 +56,7 @@ def can_obtain_updater_lock():
     except IOError:
         sdlog.error("Error obtaining lock on '{}'. "
                     "Preflight updater may already be running."
-                    .format(LOCK_FILE_LAUNCHER))
+                    .format(lockfile))
         return False
 
     return True
@@ -92,7 +92,6 @@ def is_update_check_necessary():
     shown to the user, reminding them to check for available software updates
     using the preflight updater.
     """
-
     last_updated_file_exists = os.path.exists(LAST_UPDATED_FILE)
     # For consistent logging
     grace_period_hours = UPTIME_GRACE_PERIOD / 60 / 60
