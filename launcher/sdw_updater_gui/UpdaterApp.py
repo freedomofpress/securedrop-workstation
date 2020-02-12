@@ -249,7 +249,7 @@ class UpdateThread(QThread):
         # write the flags to disk
         run_results = Updater.overall_update_status(results)
         Updater._write_updates_status_flag_to_disk(run_results)
-        if run_results == UpdateStatus.UPDATES_OK:
+        if run_results in {UpdateStatus.UPDATES_OK, UpdateStatus.REBOOT_REQUIRED}:
             Updater._write_last_updated_flags_to_disk()
         # populate signal contents
         message = results  # copy all the information from results
