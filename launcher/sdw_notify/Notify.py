@@ -52,9 +52,10 @@ def is_update_check_necessary():
             last_update_time = datetime.strptime(last_update_time, LAST_UPDATED_FORMAT)
         except ValueError:
             sdlog.error("Data in {} not in the expected format. "
-                        "Expecting a timestamp in format '{}'."
+                        "Expecting a timestamp in format '{}'. "
+                        "Showing security warning."
                         .format(LAST_UPDATED_FILE, LAST_UPDATED_FORMAT))
-            return None
+            return True
 
         now = datetime.now()
         updated_seconds_ago = (now - last_update_time).total_seconds()
@@ -64,24 +65,10 @@ def is_update_check_necessary():
     uptime_hours = uptime_seconds / 60 / 60
 
     if not last_updated_file_exists:
-        sdlog.info("Timestamp file '{}' does not exist. "
-                   "Preflight updater may not have been run yet."
-                   .format(LAST_UPDATED_FILE))
-
-        # If we do not have the timestamp file, and the system has been running
-        # for a long time, we should show the warning.
-        if uptime_seconds > WARNING_THRESHOLD:
-            sdlog.warning("Uptime ({0:.1f} hours) is above warning threshold "
-                          "({1:.1f} hours). Showing security warning."
-                          .format(uptime_hours,
-                                  warning_threshold_hours))
-            return True
-        else:
-            sdlog.info("Uptime ({0:.1f} hours) is below warning threshold "
-                       "({1:.1f} hours). Exiting without warning."
-                       .format(uptime_hours,
-                               warning_threshold_hours))
-            return False
+        sdlog.warning("Timestamp file '{}' does not exist. "
+                      "Updater may never have run. Showing security warning."
+                      .format(LAST_UPDATED_FILE))
+        return True
     else:
         if updated_seconds_ago > WARNING_THRESHOLD:
             if uptime_seconds > UPTIME_GRACE_PERIOD:

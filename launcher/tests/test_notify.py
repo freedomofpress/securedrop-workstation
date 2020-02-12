@@ -15,11 +15,10 @@ relpath_updater = "../sdw_updater_gui/Updater.py"
 path_to_updater = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updater)
 updater = SourceFileLoader("Updater", path_to_updater).load_module()
 
-# Regex for warning log if we have no successful update, but uptime is below threshold
-UPTIME_WARNING_REGEX = r"^Uptime \(.* hours\) is above warning threshold \(.* hours\)."
 
-# Regex for info log if we have no successful update, but uptime treshold not reached
-UPTIME_NO_WARNING_REGEX = r"Uptime \(.* hours\) is below warning threshold \(.* hours\)."
+# Regex for warning log if the last-updated timestamp does not exist (updater
+# has never run)
+NO_TIMESTAMP_REGEX = r"Timestamp file '.*' does not exist."
 
 # Regex for warning log if we've updated too long ago, and grace period has elapsed
 UPDATER_WARNING_REGEX = r"^Last successful update \(.* hours ago\) is above warning threshold "
@@ -38,45 +37,35 @@ r"\(.* hours\)."
 BAD_TIMESTAMP_REGEX = r"Data in .* not in the expected format."
 
 
-@pytest.mark.parametrize("uptime,warning_expected", [
-                        (notify.WARNING_THRESHOLD + 1, True),
-                        (notify.WARNING_THRESHOLD - 1, False)
-])
 @mock.patch("Notify.sdlog.error")
 @mock.patch("Notify.sdlog.warning")
 @mock.patch("Notify.sdlog.info")
-def test_warning_shown_if_uptime_exceeded_and_updater_never_ran(
-        mocked_info, mocked_warning, mocked_error, uptime, warning_expected
+def test_warning_shown_if_updater_never_ran(
+        mocked_info, mocked_warning, mocked_error
 ):
     """
-    Test whether we're correctly going to show a warning if the uptime exceeds
-    the warning threshold and the updater has never run
+    Test whether we're correctly going to show a warning if the updater has
+    never run.
     """
     # We're going to look for a nonexistent file in an existing tmpdir
     with TemporaryDirectory() as tmpdir, \
             mock.patch("Notify.LAST_UPDATED_FILE",
                        os.path.join(tmpdir, "not-a-file")):
 
-        with mock.patch("Notify.get_uptime_seconds") as mocked_uptime:
-            mocked_uptime.return_value = uptime
-            warning_should_be_shown = notify.is_update_check_necessary()
+        warning_should_be_shown = notify.is_update_check_necessary()
 
         # No handled errors should occur
         assert not mocked_error.called
 
-        if warning_expected is True:
-            assert warning_should_be_shown is True
-            # A warning should also be logged
-            mocked_warning.assert_called_once()
-            # Ensure warning matches expected output
-            warning_string = mocked_warning.call_args[0][0]
-            assert re.search(UPTIME_WARNING_REGEX, warning_string) is not None
-        else:
-            assert warning_should_be_shown is False
-            # Info log entry should be added after "no timestamp" log entry
-            assert mocked_info.call_count == 2
-            info_string = mocked_info.call_args[0][0]
-            assert re.search(UPTIME_NO_WARNING_REGEX, info_string) is not None
+        # We display a warning, because this file should always exist
+        assert warning_should_be_shown is True
+
+        # A warning should also be logged
+        mocked_warning.assert_called_once()
+
+        # Ensure warning matches expected output
+        warning_string = mocked_warning.call_args[0][0]
+        assert re.search(NO_TIMESTAMP_REGEX, warning_string) is not None
 
 
 @pytest.mark.parametrize("uptime,warning_expected", [
@@ -154,7 +143,7 @@ def test_corrupt_timestamp_file_handled(
 ):
     """
     The LAST_UPDATED_FILE must contain a timestamp in a specified format;
-    if it doesn't, we return None and log the error.
+    if it doesn't, we show the warning and log the error.
     """
     with TemporaryDirectory() as tmpdir, \
             mock.patch("Notify.LAST_UPDATED_FILE",
@@ -163,7 +152,7 @@ def test_corrupt_timestamp_file_handled(
             # With apologies to HAL 9000
             f.write("daisy, daisy, give me your answer do")
         warning_should_be_shown = notify.is_update_check_necessary()
-        assert warning_should_be_shown is None
+        assert warning_should_be_shown is True
         mocked_error.assert_called_once()
         error_string = mocked_error.call_args[0][0]
         assert re.search(BAD_TIMESTAMP_REGEX, error_string) is not None
