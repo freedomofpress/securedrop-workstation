@@ -50,7 +50,7 @@ def show_update_warning():
     QMessageBox.warning(
         None,
         "Security check recommended",
-        "The workstation has been running continuously for a long time. "
+        "This computer has not been checked for security updates recently. "
         "We recommend that you launch or restart the SecureDrop app to "
         "check for security updates.",
         QMessageBox.Ok,
