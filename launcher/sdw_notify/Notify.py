@@ -2,7 +2,6 @@
 Utility library for warning the user that security updates have not been applied
 in some time.
 """
-import fcntl
 import logging
 import os
 
