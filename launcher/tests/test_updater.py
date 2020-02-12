@@ -840,7 +840,10 @@ def test_last_required_reboot_performed_not_required(
         (UpdateStatus.UPDATES_FAILED, True, False),
     ],
 )
-def test_should_run_updater_status_interval_expired(status, expected, rebooted):
+@mock.patch("Updater._write_updates_status_flag_to_disk")
+def test_should_run_updater_status_interval_expired(
+    mocked_write, status, expected, rebooted
+):
     TEST_INTERVAL = 3600
     with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
         mocked_last.return_value = rebooted
@@ -870,7 +873,10 @@ def test_should_run_updater_status_interval_expired(status, expected, rebooted):
         (UpdateStatus.UPDATES_FAILED, True, False),
     ],
 )
-def test_should_run_updater_status_interval_not_expired(status, expected, rebooted):
+@mock.patch("Updater._write_updates_status_flag_to_disk")
+def test_should_run_updater_status_interval_not_expired(
+    mocked_write, status, expected, rebooted
+):
     TEST_INTERVAL = 3600
     with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
         mocked_last.return_value = rebooted
@@ -883,7 +889,8 @@ def test_should_run_updater_status_interval_not_expired(status, expected, reboot
             assert expected == updater.should_launch_updater(TEST_INTERVAL)
 
 
-def test_should_run_updater_invalid_status():
+@mock.patch("Updater._write_updates_status_flag_to_disk")
+def test_should_run_updater_invalid_status(mocked_write):
     TEST_INTERVAL = 3600
     with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
         mocked_last.return_value = True
@@ -893,7 +900,8 @@ def test_should_run_updater_invalid_status():
             assert updater.should_launch_updater(TEST_INTERVAL) is True
 
 
-def test_should_run_updater_invalid_timestamp():
+@mock.patch("Updater._write_updates_status_flag_to_disk")
+def test_should_run_updater_invalid_timestamp(mocked_write):
     TEST_INTERVAL = 3600
     with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
         mocked_last.return_value = True

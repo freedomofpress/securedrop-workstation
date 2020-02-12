@@ -440,9 +440,19 @@ def should_launch_updater(interval):
             sdlog.info("Update interval expired: launching updater.")
             return True
         else:
-            if _status_ok_or_rebooted(status):
-                sdlog.info("Update interval not expired, launching client.")
+            if status["status"] == UpdateStatus.UPDATES_OK.value:
+                sdlog.info("Updates OK and interval not expired, launching client.")
                 return False
+            elif status["status"] == UpdateStatus.REBOOT_REQUIRED.value:
+                if last_required_reboot_performed():
+                    sdlog.info(
+                        "Required reboot performed, updating status and launching client."
+                    )
+                    _write_updates_status_flag_to_disk(UpdateStatus.UPDATES_OK)
+                    return False
+                else:
+                    sdlog.info("Required reboot pending, launching updater")
+                    return True
             else:
                 sdlog.info(
                     "Update status is {}, launching updater.".format(
@@ -477,19 +487,6 @@ def _interval_expired(interval, status):
     if (datetime.now() - update_time) < timedelta(seconds=interval):
         return False
     return True
-
-
-def _status_ok_or_rebooted(status):
-    """
-    Check if update status is OK or post-reboot.
-    """
-
-    if status["status"] == UpdateStatus.UPDATES_OK.value or (  # noqa W504
-        status["status"] == UpdateStatus.REBOOT_REQUIRED.value
-        and last_required_reboot_performed()  # noqa W504
-    ):
-        return True
-    return False
 
 
 class UpdateStatus(Enum):
