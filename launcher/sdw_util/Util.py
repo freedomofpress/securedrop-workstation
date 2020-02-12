@@ -21,7 +21,9 @@ LOG_DIRECTORY = os.path.join(BASE_DIRECTORY, "logs")
 LOCK_ERROR = "Error obtaining lock on '{}'. Process may already be running."
 
 # Format for those logs
-LOG_FORMAT = "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
+LOG_FORMAT = (
+    "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
+)
 
 sdlog = logging.getLogger(__name__)
 
@@ -51,11 +53,12 @@ def obtain_lock(basename):
     """
     lock_file = os.path.join(LOCK_DIRECTORY, basename)
     try:
-        lh = open(lock_file, 'w')
+        lh = open(lock_file, "w")
     except PermissionError:  # noqa: F821
-        sdlog.error("Error writing to lock file '{}'. User may lack the "
-                    "required permissions."
-                    .format(lock_file))
+        sdlog.error(
+            "Error writing to lock file '{}'. User may lack the "
+            "required permissions.".format(lock_file)
+        )
         return None
 
     try:
@@ -78,7 +81,7 @@ def can_obtain_lock(basename):
     """
     lock_file = os.path.join(LOCK_DIRECTORY, basename)
     try:
-        lh = open(lock_file, 'r')
+        lh = open(lock_file, "r")
     except FileNotFoundError:  # noqa: F821
         # Process may not have run during this session, safe to continue
         return True

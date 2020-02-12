@@ -22,7 +22,7 @@ def main():
     """
 
     Util.configure_logging(Notify.LOG_FILE)
-    if(Util.can_obtain_lock(Updater.LOCK_FILE) is False):
+    if Util.can_obtain_lock(Updater.LOCK_FILE) is False:
         # Preflight updater is already running. Logged.
         sys.exit(1)
 
@@ -47,13 +47,15 @@ def show_update_warning():
     """
     app = QtGui.QApplication([])  # noqa: F841
 
-    QMessageBox.warning(None,
-                        'Security check recommended',
-                        'The workstation has been running continuously for a long time. '
-                        'We recommend that you launch or restart the SecureDrop app to '
-                        'check for security updates.',
-                        QMessageBox.Ok,
-                        QMessageBox.Ok)
+    QMessageBox.warning(
+        None,
+        "Security check recommended",
+        "The workstation has been running continuously for a long time. "
+        "We recommend that you launch or restart the SecureDrop app to "
+        "check for security updates.",
+        QMessageBox.Ok,
+        QMessageBox.Ok,
+    )
 
 
 if __name__ == "__main__":
