@@ -8,13 +8,10 @@ not stdout. All settings are in Notify utility module.
 import sys
 
 from sdw_notify import Notify
-from sdw_updater import Updater
+from sdw_updater_gui import Updater
 from sdw_util import Util
 from PyQt4 import QtGui
 from PyQt4.QtGui import QMessageBox
-
-# Log file name, base directories defined in Util.py
-LOG_FILE = "sdw-notify.log"
 
 
 def main():
@@ -24,13 +21,13 @@ def main():
     system has not been updated for a specified period
     """
 
-    Util.configure_logging(LOG_FILE)
-    if(Notify.can_obtain_updater_lock(Updater.LOCK_FILE) is False):
+    Util.configure_logging(Notify.LOG_FILE)
+    if(Util.can_obtain_lock(Updater.LOCK_FILE) is False):
         # Preflight updater is already running. Logged.
         sys.exit(1)
 
     # Hold on to lock handle during execution
-    lock_handle = Notify.obtain_notify_lock()
+    lock_handle = Util.obtain_lock(Notify.LOCK_FILE)
     if lock_handle is None:
         # Can't write to lockfile or notifier already running. Logged.
         sys.exit(1)
