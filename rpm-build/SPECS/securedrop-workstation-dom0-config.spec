@@ -49,6 +49,7 @@ install -m 755 -d %{buildroot}/srv/salt/sd/sd-workstation
 install -m 755 -d %{buildroot}/srv/salt/sd/sys-firewall
 install -m 755 -d %{buildroot}/usr/share/%{name}/scripts
 install -m 755 -d %{buildroot}/srv/salt/sd/usb-autoattach
+install -m 755 -d %{buildroot}/%{_bindir}
 install -m 644 dom0/*.sls %{buildroot}/srv/salt/
 install -m 644 dom0/*.top %{buildroot}/srv/salt/
 install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
