@@ -303,7 +303,9 @@ def last_required_reboot_performed():
         return True
 
     if int(flag_contents["status"]) == int(UpdateStatus.REBOOT_REQUIRED.value):
-        reboot_time = datetime.strptime(flag_contents["last_status_update"], DATE_FORMAT)
+        reboot_time = datetime.strptime(
+            flag_contents["last_status_update"], DATE_FORMAT
+        )
         boot_time = datetime.now() - _get_uptime()
 
         # The session was started *before* the reboot was requested by

@@ -10,6 +10,9 @@ bandit:
 test:
 	pytest --cov-report term-missing --cov=sdw_updater_gui/ -v tests/
 
+black: ## Runs the black code formatter on the launcher code
+	black --check .
+
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
 # 2. Check for second field matching, skip otherwise.
