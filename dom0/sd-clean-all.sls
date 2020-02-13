@@ -27,6 +27,16 @@ remove-dom0-sdw-config-files:
       - /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
 
+sd-cleanup-crontab:
+  file.replace:
+    - name: /etc/crontab
+    - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
+    - flags:
+      - MULTILINE
+      - DOTALL
+    - repl: ''
+    - backup: no
+
 sd-cleanup-sys-firewall:
   cmd.run:
     - names:

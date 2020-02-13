@@ -15,10 +15,13 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+DEFAULT_HOME = ".securedrop_launcher"
 FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-status"
 FLAG_FILE_LAST_UPDATED_SD_APP = "/home/user/.securedrop_client/sdw-last-updated"
-FLAG_FILE_STATUS_DOM0 = ".securedrop_launcher/sdw-update-status"
-FLAG_FILE_LAST_UPDATED_DOM0 = ".securedrop_launcher/sdw-last-updated"
+FLAG_FILE_STATUS_DOM0 = os.path.join(DEFAULT_HOME, "sdw-update-status")
+FLAG_FILE_LAST_UPDATED_DOM0 = os.path.join(DEFAULT_HOME, "sdw-last-updated")
+LOCK_FILE = "sdw-launcher.lock"
+LOG_FILE = "launcher.log"
 
 sdlog = logging.getLogger(__name__)
 
