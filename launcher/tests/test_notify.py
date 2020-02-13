@@ -27,19 +27,21 @@ NO_TIMESTAMP_REGEX = r"Timestamp file '.*' does not exist."
 # Regex for warning log if we've updated too long ago, and grace period has elapsed
 UPDATER_WARNING_REGEX = (
     r"^Last successful update \(.* hours ago\) is above warning threshold "
+    r"\(.* hours\). Uptime grace period of .* hours has elapsed \(uptime: .* hours\)."
 )
-r"\(.* hours\). Uptime grace period of .* hours has elapsed (uptime: .* hours)."
 
 # Regex for info log if we've updated too long ago, but grace period still ticking
-GRACE_PERIOD_REGEX = r"Last successful update \(.* hours ago\) is above "
-r"warning threshold \(.* hours\). Uptime grace period of .* hours has not elapsed "
-r"yet \(uptime: .* hours\)."
+GRACE_PERIOD_REGEX = (
+    r"Last successful update \(.* hours ago\) is above "
+    r"warning threshold \(.* hours\). Uptime grace period of .* hours has not elapsed "
+    r"yet \(uptime: .* hours\)."
+)
 
 # Regex for info log if we've updated recently enough
 NO_WARNING_REGEX = (
     r"Last successful update \(.* hours ago\) is below the warning threshold "
+    r"\(.* hours\)."
 )
-r"\(.* hours\)."
 
 # Regex for bad contents in `sdw-last-updated` file
 BAD_TIMESTAMP_REGEX = r"Data in .* not in the expected format."
