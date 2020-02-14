@@ -2,7 +2,6 @@ import json
 import os
 import pytest
 import subprocess
-from datetime import datetime
 from importlib.machinery import SourceFileLoader
 from datetime import datetime, timedelta
 from tempfile import TemporaryDirectory
@@ -807,6 +806,15 @@ def test_last_required_reboot_performed_successful(
 def test_last_required_reboot_performed_failed(mocked_info, mocked_error, mocked_read):
     result = updater.last_required_reboot_performed()
     assert result is False
+    assert not mocked_error.called
+
+
+@mock.patch("Updater.read_dom0_update_flag_from_disk", return_value=None)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_last_required_reboot_performed_no_file(mocked_info, mocked_error, mocked_read):
+    result = updater.last_required_reboot_performed()
+    assert result is True
     assert not mocked_error.called
 
 
