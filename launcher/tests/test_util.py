@@ -187,7 +187,7 @@ def test_for_conflicting_process(
     # changes at that level.
     completed_process = subprocess.CompletedProcess(args=[], returncode=return_code)
     with mock.patch("subprocess.run", return_value=completed_process) as mocked_run:
-        running_process = util.is_conflicting_process_running(["crush-all-humans"])
+        running_process = util.is_conflicting_process_running(["cowsay"])
         mocked_run.assert_called_once()
         if expected_result is True:
             assert running_process is True
