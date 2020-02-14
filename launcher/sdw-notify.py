@@ -22,6 +22,11 @@ def main():
     """
 
     Util.configure_logging(Notify.LOG_FILE)
+
+    if Util.is_conflicting_process_running(Notify.CONFLICTING_PROCESSES):
+        # Conflicting system process may be running in dom0. Logged.
+        sys.exit(1)
+
     if Util.can_obtain_lock(Updater.LOCK_FILE) is False:
         # Preflight updater is already running. Logged.
         sys.exit(1)
