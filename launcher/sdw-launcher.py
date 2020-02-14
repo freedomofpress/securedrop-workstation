@@ -12,8 +12,6 @@ import argparse
 DEFAULT_INTERVAL = 28800
 
 
-
-
 def parse_argv(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("--skip-delta", type=int)
@@ -39,9 +37,6 @@ def main(argv):
         # Preflight updater already running or problems accessing lockfile.
         # Logged.
         sys.exit(1)
-    sdlog.info("Starting SecureDrop Launcher")
-    sdlog = logging.getLogger(__name__)
-    configure_logging()
     sdlog.info("Starting SecureDrop Launcher")
 
     args = parse_argv(argv)
