@@ -23,6 +23,12 @@ LOCK_FILE = "sdw-notify.lock"
 # Log file name, base directories defined in sdw_util
 LOG_FILE = "sdw-notify.log"
 
+# Process names that should not be running while this script runs. We do not
+# want to encourage running the updater during provisioning or system updates.
+# Caution is advised in expanding this list; a more precise detection method
+# is generally preferable.
+CONFLICTING_PROCESSES = ["qubesctl", "make"]
+
 # The maximum uptime this script should permit (specified in seconds) before
 # showing a warning. This is to avoid situations where the user boots the
 # computer after several days and immediately sees a warning.

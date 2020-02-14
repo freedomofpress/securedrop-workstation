@@ -5,8 +5,10 @@ Utility functions used by both the launcher and notifier scripts
 import fcntl
 import os
 import logging
+import subprocess
 
 from logging.handlers import TimedRotatingFileHandler
+from shlex import quote
 
 # The directory where status files and logs are stored
 BASE_DIRECTORY = os.path.join(os.path.expanduser("~"), ".securedrop_launcher")
@@ -94,3 +96,16 @@ def can_obtain_lock(basename):
         return False
 
     return True
+
+
+def is_conflicting_process_running(list):
+    """
+    Check if any process of the given name is currently running. Aborts on the
+    first match.
+    """
+    for name in list:
+        result = subprocess.run(args=["pgrep", quote(name)], stdout=subprocess.DEVNULL)
+        if result.returncode == 0:
+            sdlog.error("Conflicting process '{}' is currently running.".format(name))
+            return True
+    return False
