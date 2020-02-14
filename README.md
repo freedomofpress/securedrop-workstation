@@ -294,23 +294,7 @@ In the future, we plan on shipping a *SecureDrop Workstation* installer package 
 
 ### Building the Templates
 
-1. Create a `fedora-30` AppVM for building the templates. It's going
-   to need Docker and several other packages every time you use it, so
-   it might be worth creating another template derived from
-   `fedora-30`, into which you can install those extras, and basing
-   the builder VM on that, or just using a StandaloneVM to save time
-   and repetition.
-2. Increase the disk size to at least 15GB (as the build uses over
-   10GB): `qvm-volume extend sd-template-builder:private 15GB` (if
-   your VM is not named `sd-template-builder`, adjust that command)
-3. Import the QubesOS master key and the GPG key used to sign tags (see https://www.qubes-os.org/security/verifying-signatures/)
-4. Run `make template` in the top-level of this repository.
-5. Copy the rpm generated in `/home/user/src/securedrop-workstation/builder/qubes-builder/qubes-src/linux-template-builder/rpm/` to `dom0`
-6. Install the template in `dom0` : `sudo rpm -i <file>.rpm` (this takes a few minutes)
-7. Create a new VM based on this template:
-```
-qvm-create --template securedrop-workstation test-securedrop-workstation --class AppVM --property virt_mode=hvm --property kernel='' --label green
-```
+To build the base template, please follow the instructions in https://github.com/freedomofpress/qubes-template-securedrop-workstation
 
 ### Building workstation deb packages
 
