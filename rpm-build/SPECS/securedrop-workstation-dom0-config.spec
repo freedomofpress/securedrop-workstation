@@ -75,7 +75,6 @@ install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_u
 %doc README.md LICENSE
 %attr(755, root, root) /opt/securedrop/launcher/sdw-launcher.py
 %attr(755, root, root) /opt/securedrop/launcher/sdw-notify.py
-%attr(755, root, root) %{_bindir}/securedrop-update
 %attr(755, root, root) %{_bindir}/securedrop-admin
 %{python3_sitelib}/securedrop_workstation_dom0_config*
 %{_datadir}/%{name}
