@@ -8,7 +8,6 @@ import logging
 import subprocess
 
 from logging.handlers import TimedRotatingFileHandler
-from shlex import quote
 
 # The directory where status files and logs are stored
 BASE_DIRECTORY = os.path.join(os.path.expanduser("~"), ".securedrop_launcher")
@@ -104,7 +103,9 @@ def is_conflicting_process_running(list):
     first match.
     """
     for name in list:
-        result = subprocess.run(args=["pgrep", quote(name)], stdout=subprocess.DEVNULL)
+        result = subprocess.run(
+            args=["pgrep", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
         if result.returncode == 0:
             sdlog.error("Conflicting process '{}' is currently running.".format(name))
             return True
