@@ -431,8 +431,6 @@ def _safely_start_vm(vm):
 
 
 def should_launch_updater(interval):
-    sdlog.info("Starting SecureDrop Launcher")
-
     status = read_dom0_update_flag_from_disk(with_timestamp=True)
 
     if _valid_status(status):
@@ -453,9 +451,23 @@ def should_launch_updater(interval):
                 else:
                     sdlog.info("Required reboot pending, launching updater")
                     return True
+            elif status["status"] == UpdateStatus.UPDATES_REQUIRED.value:
+                sdlog.info(
+                    "Updates are required, launching updater.".format(
+                        str(status["status"])
+                    )
+                )
+                return True
+            elif status["status"] == UpdateStatus.UPDATES_FAILED.value:
+                sdlog.info(
+                    "Preceding update failed, launching updater.".format(
+                        str(status["status"])
+                    )
+                )
+                return True
             else:
                 sdlog.info(
-                    "Update status is {}, launching updater.".format(
+                    "Update status is unknown, launching updater.".format(
                         str(status["status"])
                     )
                 )

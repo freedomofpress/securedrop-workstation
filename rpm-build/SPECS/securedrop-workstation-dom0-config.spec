@@ -94,7 +94,7 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
-* Fri Feb 14 2020 Kevin O Gorman <kog@freedom.press> - 0.1.4
+* Fri Feb 14 2020 SecureDrop Team <securedrop@freedom.press> - 0.1.4
 - Modifies updater to allow for a configurable interval between checks
 
 * Tue Feb 11 2020 SecureDrop Team <securedrop@freedom.press> - 0.1.3
