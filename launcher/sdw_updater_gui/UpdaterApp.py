@@ -246,7 +246,8 @@ class UpdateThread(QThread):
             results[vm] = result
             self.progress_signal.emit(progress)
 
-        # write the flags to disk
+        # write the flags to disk after successful updates, including updates
+        # that require a reboot.
         run_results = Updater.overall_update_status(results)
         Updater._write_updates_status_flag_to_disk(run_results)
         if run_results in {UpdateStatus.UPDATES_OK, UpdateStatus.REBOOT_REQUIRED}:

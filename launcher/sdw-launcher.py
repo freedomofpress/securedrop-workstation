@@ -9,7 +9,7 @@ import logging
 import sys
 import argparse
 
-DEFAULT_INTERVAL = 28800
+DEFAULT_INTERVAL = 28800  # 8hr default for update interval
 
 
 def parse_argv(argv):
