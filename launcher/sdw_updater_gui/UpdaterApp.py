@@ -279,6 +279,11 @@ class UpgradeThread(QThread):
         for vm, progress, result in upgrade_generator:
             results[vm] = result
             self.progress_signal.emit(progress)
+
+        # apply dom0 state
+        result = Updater.apply_dom0_state()
+        # add to results dict, if it fails it will show error message
+        results["apply_dom0"] = result.value
         # reboot vms
         Updater.shutdown_and_start_vms()
 
