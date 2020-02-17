@@ -279,6 +279,9 @@ class UpgradeThread(QThread):
         for vm, progress, result in upgrade_generator:
             results[vm] = result
             self.progress_signal.emit(progress)
+        # reboot vms
+        Updater.shutdown_and_start_vms()
+
         # write flags to disk
         run_results = Updater.overall_update_status(results)
         Updater._write_updates_status_flag_to_disk(run_results)

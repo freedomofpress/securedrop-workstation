@@ -90,8 +90,6 @@ def apply_updates(vms):
         progress_percentage = int(((progress_current + 1) / len(vms)) * 100 - 5)
         yield vm, progress_percentage, upgrade_results
 
-    _shutdown_and_start_vms()
-
 
 def _check_updates_dom0():
     """
@@ -396,7 +394,7 @@ def overall_update_status(results):
         return UpdateStatus.UPDATES_OK
 
 
-def _shutdown_and_start_vms():
+def shutdown_and_start_vms():
     """
     Power cycles the vms to ensure. we should do them all in one shot to reduce complexity
     and likelihood of failure. Rebooting the VMs will ensure the TemplateVM
