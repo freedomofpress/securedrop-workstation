@@ -932,3 +932,35 @@ def test_should_run_updater_invalid_status_value(mocked_write):
             }
             # assuming that the tests won't take an hour to run!
             assert updater.should_launch_updater(TEST_INTERVAL) is True
+
+
+@mock.patch("subprocess.check_call")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_apply_dom0_state_success(mocked_info, mocked_error, mocked_subprocess):
+    updater.apply_dom0_state()
+    log_call_list = [call("Applying dom0 state"), call("Dom0 state applied")]
+    mocked_subprocess.assert_called_once_with(
+        ["sudo", "qubesctl", "--show-output", "state.highstate"]
+    )
+    mocked_info.assert_has_calls(log_call_list)
+    assert not mocked_error.called
+
+
+@mock.patch(
+    "subprocess.check_call",
+    side_effect=[subprocess.CalledProcessError(1, "check_call"), "0"],
+)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_apply_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
+    updater.apply_dom0_state()
+    log_error_calls = [
+        call("Failed to dom0 state"),
+        call("Command 'check_call' returned non-zero exit status 1."),
+    ]
+    mocked_subprocess.assert_called_once_with(
+        ["sudo", "qubesctl", "--show-output", "state.highstate"]
+    )
+    mocked_info.assert_called_once_with("Applying dom0 state")
+    mocked_error.assert_has_calls(log_error_calls)
