@@ -18,9 +18,11 @@ echo "Set up dom0 config files, including RPC policies, and create VMs"
 sudo qubesctl --show-output state.highstate
 
 echo "Setup sd-log-buster-template vm first"
-sudo qubesctl --show-output --skip-dom0 --targets sd-log-buster-template state.sls sd-log-template-files
+sudo qubesctl --show-output --skip-dom0 --targets sd-log-buster-template state.highstate
 # Provision whonix-gw-15 with log additions because it isn't tagged with sd-workstation (we don't want it removed after a make clean)
-sudo qubesctl --show-output --skip-dom0 --targets whonix-gw-15 state.highstate sd-whonix-template-files
+sudo qubesctl --show-output --skip-dom0 --targets whonix-gw-15 state.highstate
+sudo qubesctl --show-output --skip-dom0 --targets whonix-gw-15 state.sls sd-whonix-template-files
+
 
 # Format list of all VMs comma-separated, for use as qubesctl target
 # We run this after dom0's highstate, so that the VMs are available for listing by tag.
