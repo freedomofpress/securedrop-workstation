@@ -2,8 +2,8 @@ import json
 import os
 import pytest
 import subprocess
-from datetime import datetime
 from importlib.machinery import SourceFileLoader
+from datetime import datetime, timedelta
 from tempfile import TemporaryDirectory
 from unittest import mock
 from unittest.mock import call
@@ -191,7 +191,7 @@ def test_check_updates_debian_updates_required(
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     info_log = [
-        call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template")),
+        call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template"))
     ]
     mocked_error.assert_has_calls(error_log)
     mocked_info.assert_has_calls(info_log)
@@ -216,7 +216,7 @@ def test_check_debian_updates_failed(mocked_info, mocked_error, mocked_call, cap
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     info_log = [
-        call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template")),
+        call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template"))
     ]
     mocked_error.assert_has_calls(error_log)
     mocked_info.assert_has_calls(info_log)
@@ -238,7 +238,7 @@ def test_check_debian_has_updates(mocked_info, mocked_error, mocked_call, capsys
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     info_log = [
-        call("Checking for updates {}:{}".format("sd-log", "sd-log-buster-template")),
+        call("Checking for updates {}:{}".format("sd-log", "sd-log-buster-template"))
     ]
 
     status = updater._check_updates_debian("sd-log")
@@ -289,9 +289,7 @@ def test_check_updates_calls_correct_commands(
             call(["qvm-shutdown", "--wait", current_templates[vm]]),
         ]
     elif vm == "dom0":
-        subprocess_call_list = [
-            call(["sudo", "qubes-dom0-update", "--check-only"]),
-        ]
+        subprocess_call_list = [call(["sudo", "qubes-dom0-update", "--check-only"])]
     else:
         pytest.fail("Unupported VM: {}".format(vm))
     mocked_call.assert_has_calls(subprocess_call_list)
@@ -452,10 +450,7 @@ def test_write_updates_status_flag_to_disk_failure_dom0(
     mocked_info, mocked_error, mocked_call, mocked_expand, mocked_open, status
 ):
 
-    error_calls = [
-        call("Error writing update status flag to dom0"),
-        call("os_error"),
-    ]
+    error_calls = [call("Error writing update status flag to dom0"), call("os_error")]
     updater._write_updates_status_flag_to_disk(status)
     mocked_error.assert_has_calls(error_calls)
 
@@ -668,9 +663,7 @@ def test_overall_update_status_reboot_not_done_previously(
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_safely_shutdown(mocked_info, mocked_error, mocked_call, vm):
-    call_list = [
-        call(["qvm-shutdown", "--wait", "{}".format(vm)]),
-    ]
+    call_list = [call(["qvm-shutdown", "--wait", "{}".format(vm)])]
 
     updater._safely_shutdown_vm(vm)
     mocked_call.assert_has_calls(call_list)
@@ -682,9 +675,7 @@ def test_safely_shutdown(mocked_info, mocked_error, mocked_call, vm):
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_safely_start(mocked_info, mocked_error, mocked_call, vm):
-    call_list = [
-        call(["qvm-start", "--skip-if-running", "{}".format(vm)]),
-    ]
+    call_list = [call(["qvm-start", "--skip-if-running", "{}".format(vm)])]
 
     updater._safely_start_vm(vm)
     mocked_call.assert_has_calls(call_list)
@@ -730,12 +721,7 @@ def test_safely_shutdown_fails(mocked_info, mocked_error, mocked_call, vm):
 def test_shutdown_and_start_vms(
     mocked_info, mocked_error, mocked_shutdown, mocked_start
 ):
-    call_list = [
-        call("sd-proxy"),
-        call("sd-whonix"),
-        call("sd-app"),
-        call("sd-gpg"),
-    ]
+    call_list = [call("sd-proxy"), call("sd-whonix"), call("sd-app"), call("sd-gpg")]
     updater._shutdown_and_start_vms()
     mocked_shutdown.assert_has_calls(call_list)
     mocked_start.assert_has_calls(call_list)
@@ -784,9 +770,7 @@ def test_read_dom0_update_flag_from_disk_fails(
     except Exception:
         pytest.fail("Error writing file")
 
-    info_calls = [
-        call("Cannot read dom0 status flag, assuming first run"),
-    ]
+    info_calls = [call("Cannot read dom0 status flag, assuming first run")]
 
     assert updater.read_dom0_update_flag_from_disk() is None
     assert not mocked_error.called
@@ -825,6 +809,15 @@ def test_last_required_reboot_performed_failed(mocked_info, mocked_error, mocked
     assert not mocked_error.called
 
 
+@mock.patch("Updater.read_dom0_update_flag_from_disk", return_value=None)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_last_required_reboot_performed_no_file(mocked_info, mocked_error, mocked_read):
+    result = updater.last_required_reboot_performed()
+    assert result is True
+    assert not mocked_error.called
+
+
 @mock.patch(
     "Updater.read_dom0_update_flag_from_disk",
     return_value={
@@ -840,3 +833,111 @@ def test_last_required_reboot_performed_not_required(
     result = updater.last_required_reboot_performed()
     assert result is True
     assert not mocked_error.called
+
+
+@pytest.mark.parametrize(
+    "status, rebooted, expect_status_change, expect_updater",
+    [
+        (UpdateStatus.UPDATES_OK, True, False, True),
+        (UpdateStatus.UPDATES_REQUIRED, True, False, True),
+        (UpdateStatus.REBOOT_REQUIRED, True, False, True),
+        (UpdateStatus.UPDATES_FAILED, True, False, True),
+        (UpdateStatus.UPDATES_OK, False, False, True),
+        (UpdateStatus.UPDATES_REQUIRED, False, False, True),
+        (UpdateStatus.REBOOT_REQUIRED, False, False, True),
+        (UpdateStatus.UPDATES_FAILED, False, False, True),
+    ],
+)
+@mock.patch("Updater._write_updates_status_flag_to_disk")
+def test_should_run_updater_status_interval_expired(
+    mocked_write, status, rebooted, expect_status_change, expect_updater
+):
+    TEST_INTERVAL = 3600
+    # the updater should always run when checking interval has expired,
+    # regardless of update or reboot status
+    with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
+        mocked_last.return_value = rebooted
+        with mock.patch("Updater.read_dom0_update_flag_from_disk") as mocked_read:
+            mocked_read.return_value = {
+                "last_status_update": str(
+                    (datetime.now() - timedelta(seconds=(TEST_INTERVAL + 10))).strftime(
+                        updater.DATE_FORMAT
+                    )
+                ),
+                "status": status.value,
+            }
+            # assuming that the tests won't take an hour to run!
+            assert expect_updater == updater.should_launch_updater(TEST_INTERVAL)
+            assert expect_status_change == mocked_write.called
+
+
+@pytest.mark.parametrize(
+    "status, rebooted, expect_status_change, expect_updater",
+    [
+        (UpdateStatus.UPDATES_OK, True, False, False),
+        (UpdateStatus.UPDATES_REQUIRED, True, False, True),
+        (UpdateStatus.REBOOT_REQUIRED, True, True, False),
+        (UpdateStatus.UPDATES_FAILED, True, False, True),
+        (UpdateStatus.UPDATES_OK, False, False, False),
+        (UpdateStatus.UPDATES_REQUIRED, False, False, True),
+        (UpdateStatus.REBOOT_REQUIRED, False, False, True),
+        (UpdateStatus.UPDATES_FAILED, False, False, True),
+    ],
+)
+@mock.patch("Updater._write_updates_status_flag_to_disk")
+def test_should_run_updater_status_interval_not_expired(
+    mocked_write, status, rebooted, expect_status_change, expect_updater
+):
+    TEST_INTERVAL = 3600
+    # Even if the interval hasn't expired, the updater should only be skipped when:
+    # - the updater status is UPDATESr_OK, or
+    # - the updater status is REBOOT_REQUIRED and the reboot has been performed.
+    with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
+        mocked_last.return_value = rebooted
+        with mock.patch("Updater.read_dom0_update_flag_from_disk") as mocked_read:
+            mocked_read.return_value = {
+                "last_status_update": str(datetime.now().strftime(updater.DATE_FORMAT)),
+                "status": status.value,
+            }
+            # assuming that the tests won't take an hour to run!
+            assert expect_updater == updater.should_launch_updater(TEST_INTERVAL)
+            assert expect_status_change == mocked_write.called
+
+
+@mock.patch("Updater._write_updates_status_flag_to_disk")
+def test_should_run_updater_invalid_status(mocked_write):
+    TEST_INTERVAL = 3600
+    with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
+        mocked_last.return_value = True
+        with mock.patch("Updater.read_dom0_update_flag_from_disk") as mocked_read:
+            mocked_read.return_value = {}
+            # assuming that the tests won't take an hour to run!
+            assert updater.should_launch_updater(TEST_INTERVAL) is True
+
+
+@mock.patch("Updater._write_updates_status_flag_to_disk")
+def test_should_run_updater_invalid_timestamp(mocked_write):
+    TEST_INTERVAL = 3600
+    with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
+        mocked_last.return_value = True
+        with mock.patch("Updater.read_dom0_update_flag_from_disk") as mocked_read:
+            mocked_read.return_value = {
+                "last_status_update": "time to die",
+                "status": UpdateStatus.UPDATES_OK.value,
+            }
+            # assuming that the tests won't take an hour to run!
+            assert updater.should_launch_updater(TEST_INTERVAL) is True
+
+
+@mock.patch("Updater._write_updates_status_flag_to_disk")
+def test_should_run_updater_invalid_status_value(mocked_write):
+    TEST_INTERVAL = 3600
+    with mock.patch("Updater.last_required_reboot_performed") as mocked_last:
+        mocked_last.return_value = True
+        with mock.patch("Updater.read_dom0_update_flag_from_disk") as mocked_read:
+            mocked_read.return_value = {
+                "last_status_update": str(datetime.now().strftime(updater.DATE_FORMAT)),
+                "status": "5",
+            }
+            # assuming that the tests won't take an hour to run!
+            assert updater.should_launch_updater(TEST_INTERVAL) is True

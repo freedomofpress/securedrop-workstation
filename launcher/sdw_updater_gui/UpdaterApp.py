@@ -11,6 +11,19 @@ import sys
 logger = logging.getLogger(__name__)
 
 
+def launch_securedrop_client():
+    """
+    Helper function to launch the SecureDrop Client
+    """
+    try:
+        logger.info("Launching SecureDrop client")
+        subprocess.Popen(["qvm-run", "sd-app", "gtk-launch securedrop-client"])
+    except subprocess.CalledProcessError as e:
+        logger.error("Error while launching SecureDrop client")
+        logger.error(str(e))
+    sys.exit(0)
+
+
 class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
     def __init__(self, parent=None):
         super(UpdaterApp, self).__init__(parent)
@@ -19,7 +32,7 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         self.setupUi(self)
         self.clientOpenButton.setEnabled(False)
         self.clientOpenButton.hide()
-        self.clientOpenButton.clicked.connect(self.launch_securedrop_client)
+        self.clientOpenButton.clicked.connect(launch_securedrop_client)
         self.rebootButton.setEnabled(False)
         self.rebootButton.hide()
         self.rebootButton.clicked.connect(self.reboot_workstation)
@@ -173,19 +186,6 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
                     vms_to_upgrade.append(vm)
         return vms_to_upgrade
 
-    def launch_securedrop_client(self):
-        """
-        Helper method to launch the SecureDrop Client
-        """
-        try:
-            logger.info("Launching SecureDrop client")
-            subprocess.Popen(["qvm-run", "sd-app", "gtk-launch securedrop-client"])
-        except subprocess.CalledProcessError as e:
-            self.proposedActionDescription.setText(strings.descri)
-            logger.error("Error while launching SecureDrop client")
-            logger.error(str(e))
-        sys.exit(0)
-
     def apply_all_updates(self):
         """
         Method used by the applyUpdatesButton that will create and start an
@@ -246,10 +246,11 @@ class UpdateThread(QThread):
             results[vm] = result
             self.progress_signal.emit(progress)
 
-        # write the flags to disk
+        # write the flags to disk after successful updates, including updates
+        # that require a reboot.
         run_results = Updater.overall_update_status(results)
         Updater._write_updates_status_flag_to_disk(run_results)
-        if run_results == UpdateStatus.UPDATES_OK:
+        if run_results in {UpdateStatus.UPDATES_OK, UpdateStatus.REBOOT_REQUIRED}:
             Updater._write_last_updated_flags_to_disk()
         # populate signal contents
         message = results  # copy all the information from results
