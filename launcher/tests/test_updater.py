@@ -322,19 +322,12 @@ def test_check_all_updates(
 
 @mock.patch("Updater._write_updates_status_flag_to_disk")
 @mock.patch("Updater._write_last_updated_flags_to_disk")
-@mock.patch("Updater._shutdown_and_start_vms")
 @mock.patch("Updater._apply_updates_vm")
 @mock.patch("Updater._apply_updates_dom0", return_value=UpdateStatus.UPDATES_OK)
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_updates(
-    mocked_info,
-    mocked_error,
-    apply_dom0,
-    apply_vm,
-    shutdown,
-    write_updated,
-    write_status,
+    mocked_info, mocked_error, apply_dom0, apply_vm, write_updated, write_status,
 ):
     upgrade_generator = updater.apply_updates(["dom0"])
     results = {}
@@ -352,7 +345,6 @@ def test_apply_updates(
 
 @mock.patch("Updater._write_updates_status_flag_to_disk")
 @mock.patch("Updater._write_last_updated_flags_to_disk")
-@mock.patch("Updater._shutdown_and_start_vms")
 @mock.patch(
     "Updater._apply_updates_vm",
     side_effect=[UpdateStatus.UPDATES_OK, UpdateStatus.UPDATES_REQUIRED],
@@ -361,13 +353,7 @@ def test_apply_updates(
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_updates_required(
-    mocked_info,
-    mocked_error,
-    apply_dom0,
-    apply_vm,
-    shutdown,
-    write_updated,
-    write_status,
+    mocked_info, mocked_error, apply_dom0, apply_vm, write_updated, write_status,
 ):
     upgrade_generator = updater.apply_updates(["fedora", "sd-app"])
     results = {}
@@ -522,7 +508,7 @@ def test_write_last_updated_flags_dom0_folder_creation_fail(
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater._write_updates_status_flag_to_disk")
 @mock.patch("Updater._write_last_updated_flags_to_disk")
-@mock.patch("Updater._shutdown_and_start_vms")
+@mock.patch("Updater.shutdown_and_start_vms")
 @mock.patch("Updater._apply_updates_vm")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
@@ -721,8 +707,13 @@ def test_safely_shutdown_fails(mocked_info, mocked_error, mocked_call, vm):
 def test_shutdown_and_start_vms(
     mocked_info, mocked_error, mocked_shutdown, mocked_start
 ):
-    call_list = [call("sd-proxy"), call("sd-whonix"), call("sd-app"), call("sd-gpg")]
-    updater._shutdown_and_start_vms()
+    call_list = [
+        call("sd-proxy"),
+        call("sd-whonix"),
+        call("sd-app"),
+        call("sd-gpg"),
+    ]
+    updater.shutdown_and_start_vms()
     mocked_shutdown.assert_has_calls(call_list)
     mocked_start.assert_has_calls(call_list)
     assert not mocked_error.called
@@ -941,3 +932,35 @@ def test_should_run_updater_invalid_status_value(mocked_write):
             }
             # assuming that the tests won't take an hour to run!
             assert updater.should_launch_updater(TEST_INTERVAL) is True
+
+
+@mock.patch("subprocess.check_call")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_apply_dom0_state_success(mocked_info, mocked_error, mocked_subprocess):
+    updater.apply_dom0_state()
+    log_call_list = [call("Applying dom0 state"), call("Dom0 state applied")]
+    mocked_subprocess.assert_called_once_with(
+        ["sudo", "qubesctl", "--show-output", "state.highstate"]
+    )
+    mocked_info.assert_has_calls(log_call_list)
+    assert not mocked_error.called
+
+
+@mock.patch(
+    "subprocess.check_call",
+    side_effect=[subprocess.CalledProcessError(1, "check_call"), "0"],
+)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_apply_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
+    updater.apply_dom0_state()
+    log_error_calls = [
+        call("Failed to dom0 state"),
+        call("Command 'check_call' returned non-zero exit status 1."),
+    ]
+    mocked_subprocess.assert_called_once_with(
+        ["sudo", "qubesctl", "--show-output", "state.highstate"]
+    )
+    mocked_info.assert_called_once_with("Applying dom0 state")
+    mocked_error.assert_has_calls(log_error_calls)

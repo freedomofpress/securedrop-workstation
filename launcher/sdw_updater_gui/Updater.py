@@ -90,8 +90,6 @@ def apply_updates(vms):
         progress_percentage = int(((progress_current + 1) / len(vms)) * 100 - 5)
         yield vm, progress_percentage, upgrade_results
 
-    _shutdown_and_start_vms()
-
 
 def _check_updates_dom0():
     """
@@ -396,7 +394,25 @@ def overall_update_status(results):
         return UpdateStatus.UPDATES_OK
 
 
-def _shutdown_and_start_vms():
+def apply_dom0_state():
+    """
+    Applies the dom0 state to ensure dom0 and AppVMs are properly
+    Configured. This will *not* enforce configuration inside the AppVMs.
+    Here, we call qubectl directly (instead of through securedrop-admin) to
+    ensure it is environment-specific.
+    """
+    sdlog.info("Applying dom0 state")
+    try:
+        subprocess.check_call(["sudo", "qubesctl", "--show-output", "state.highstate"])
+        sdlog.info("Dom0 state applied")
+        return UpdateStatus.UPDATES_OK
+    except subprocess.CalledProcessError as e:
+        sdlog.error("Failed to dom0 state")
+        sdlog.error(str(e))
+        return UpdateStatus.UPDATES_FAILED
+
+
+def shutdown_and_start_vms():
     """
     Power cycles the vms to ensure. we should do them all in one shot to reduce complexity
     and likelihood of failure. Rebooting the VMs will ensure the TemplateVM
