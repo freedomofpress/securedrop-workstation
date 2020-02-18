@@ -13,6 +13,10 @@ sd-rsyslog-for-sd-whonix:
     - context:
         vmname: sd-whonix
 
+sd-rsyslog-sdlog-conf-for-sd-whonix:
+  file.managed:
+    - name: /rw/config/sdlog.conf
+    - source: "salt://sdlog.conf"
 
 sd-rc-enable-logging:
   file.blockreplace:
@@ -23,6 +27,9 @@ sd-rc-enable-logging:
     - content: |
         # Add sd-rsyslog.conf file for syslog
         ln -sf /rw/config/sd-rsyslog.conf /etc/sd-rsyslog.conf
+        if [ ! -f /etc/rsyslog.d/sdlog.conf ]; then
+            ln -sf /rw/config/sdlog.conf /etc/rsyslog.d/sdlog.conf
+        fi
         systemctl restart rsyslog
   cmd.run:
     - name: ln -sf /rw/config/sd-rsyslog.conf /etc/sd-rsyslog.conf && systemctl restart rsyslog

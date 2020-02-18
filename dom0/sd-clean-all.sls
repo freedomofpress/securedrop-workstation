@@ -14,8 +14,12 @@ sd-cleanup-whonix-gw-15:
   cmd.run:
     - names:
       - qvm-run whonix-gw-15 'sudo rm -f /etc/rsyslog.d/sdlog.conf'
-      - qvm-run whonix-gw-15 'sudo systemctl restart rsyslog'
+      - qvm-run whonix-gw-15 'sudo rm -f /etc/apt/sources.list.d/securedrop_workstation.list'
       - qvm-run whonix-gw-15 'sudo apt remove -y securedrop-log'
+      - qvm-run whonix-gw-15 'sudo systemctl restart rsyslog'
+      - qvm-run whonix-gw-15 'sudo apt-key del 4ED79CC3362D7D12837046024A3BE4A92211B03C'
+
+
 
 remove-dom0-sdw-config-files:
   file.absent:
