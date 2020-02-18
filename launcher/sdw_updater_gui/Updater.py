@@ -430,6 +430,77 @@ def _safely_start_vm(vm):
         sdlog.error(str(e))
 
 
+def should_launch_updater(interval):
+    status = read_dom0_update_flag_from_disk(with_timestamp=True)
+
+    if _valid_status(status):
+        if _interval_expired(interval, status):
+            sdlog.info("Update interval expired: launching updater.")
+            return True
+        else:
+            if status["status"] == UpdateStatus.UPDATES_OK.value:
+                sdlog.info("Updates OK and interval not expired, launching client.")
+                return False
+            elif status["status"] == UpdateStatus.REBOOT_REQUIRED.value:
+                if last_required_reboot_performed():
+                    sdlog.info(
+                        "Required reboot performed, updating status and launching client."
+                    )
+                    _write_updates_status_flag_to_disk(UpdateStatus.UPDATES_OK)
+                    return False
+                else:
+                    sdlog.info("Required reboot pending, launching updater")
+                    return True
+            elif status["status"] == UpdateStatus.UPDATES_REQUIRED.value:
+                sdlog.info(
+                    "Updates are required, launching updater.".format(
+                        str(status["status"])
+                    )
+                )
+                return True
+            elif status["status"] == UpdateStatus.UPDATES_FAILED.value:
+                sdlog.info(
+                    "Preceding update failed, launching updater.".format(
+                        str(status["status"])
+                    )
+                )
+                return True
+            else:
+                sdlog.info(
+                    "Update status is unknown, launching updater.".format(
+                        str(status["status"])
+                    )
+                )
+                return True
+    else:
+        sdlog.info("Update status not available, launching updater.")
+        return True
+
+
+def _valid_status(status):
+    """
+    status should contain 2 items, the update flag and a timestamp.
+    """
+    if isinstance(status, dict) and len(status) == 2:
+        return True
+    return False
+
+
+def _interval_expired(interval, status):
+    """
+    Check if specified update interval has expired.
+    """
+
+    try:
+        update_time = datetime.strptime(status["last_status_update"], DATE_FORMAT)
+    except ValueError:
+        # Broken timestamp? run the updater.
+        return True
+    if (datetime.now() - update_time) < timedelta(seconds=interval):
+        return False
+    return True
+
+
 class UpdateStatus(Enum):
     """
     Standardizes return codes for update/upgrade methods
