@@ -41,19 +41,14 @@ sd-proxy-configure-mimetypes:
 
 # Depends on FPF-controlled apt repo, already present
 # in underlying "securedrop-workstation" base template.
-install-securedrop-proxy-package:
+install-securedrop-proxy-and-securedrop-log-package:
   pkg.installed:
     - pkgs:
       - securedrop-proxy
-    - require:
-      - sls: fpf-apt-test-repo
-
-install-securedrop-log-package:
-  pkg.installed:
-    - pkgs:
       - securedrop-log
     - require:
       - sls: fpf-apt-test-repo
+
 
 {% import_json "sd/config.json" as d %}
 

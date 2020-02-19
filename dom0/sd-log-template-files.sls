@@ -3,7 +3,7 @@
 include:
   - fpf-apt-test-repo
 
-install-securedrop-log-package:
+sd-log-install-securedrop-log-package:
   pkg.installed:
     - pkgs:
       - redis-server

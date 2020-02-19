@@ -113,6 +113,7 @@ remove-sd-log: assert-dom0 ## Destroys SD logging VM
 clean: assert-dom0 prep-salt ## Destroys all SD VMs
 	sudo qubesctl --show-output state.sls sd-clean-default-dispvm
 	$(MAKE) destroy-all
+	sudo qubesctl --show-output --skip-dom0 --targets whonix-gw-15 state.sls sd-clean-whonix
 	sudo qubesctl --show-output state.sls sd-clean-all
 	sudo dnf -y -q remove securedrop-workstation-dom0-config 2>/dev/null || true
 	$(MAKE) clean-salt

@@ -13,11 +13,17 @@ sd-rsyslog-for-sd-whonix:
     - context:
         vmname: sd-whonix
 
+
+# We can not place the file on the template under /etc/rsyslog.d/ because of whonix
+# template. This sdlog.conf file is the same from the securedrop-log package, to
+# make sure that rsyslogd use our logging plugin.
 sd-rsyslog-sdlog-conf-for-sd-whonix:
   file.managed:
     - name: /rw/config/sdlog.conf
     - source: "salt://sdlog.conf"
 
+# Because whonix-gw-15 template is not allowing to create the config file on
+# package install time, we do it via rc.local call.
 sd-rc-enable-logging:
   file.blockreplace:
     - name: /rw/config/rc.local
