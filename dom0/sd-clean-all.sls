@@ -10,16 +10,6 @@ set-fedora-as-default-dispvm:
 include:
   - sd-usb-autoattach-remove
 
-sd-cleanup-whonix-gw-15:
-  cmd.run:
-    - names:
-      - qvm-run whonix-gw-15 'sudo rm -f /etc/rsyslog.d/sdlog.conf'
-      - qvm-run whonix-gw-15 'sudo rm -f /etc/apt/sources.list.d/securedrop_workstation.list'
-      - qvm-run whonix-gw-15 'sudo systemctl restart rsyslog'
-      - qvm-run whonix-gw-15 'sudo apt-key del 4ED79CC3362D7D12837046024A3BE4A92211B03C'
-      - qvm-run whonix-gw-15 'sudo apt-key del 22245C81E3BAEB4138B36061310F561200F4AD77'
-
-
 
 remove-dom0-sdw-config-files:
   file.absent:
