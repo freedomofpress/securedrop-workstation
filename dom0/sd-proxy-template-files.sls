@@ -41,12 +41,14 @@ sd-proxy-configure-mimetypes:
 
 # Depends on FPF-controlled apt repo, already present
 # in underlying "securedrop-workstation" base template.
-install-securedrop-proxy-package:
+install-securedrop-proxy-and-securedrop-log-package:
   pkg.installed:
     - pkgs:
       - securedrop-proxy
+      - securedrop-log
     - require:
       - sls: fpf-apt-test-repo
+
 
 {% import_json "sd/config.json" as d %}
 
@@ -58,3 +60,11 @@ install-securedrop-proxy-yaml-config:
     - context:
         hostname: {{ d.hidserv.hostname }}
     - mode: 0644
+
+sd-rsyslog-for-sd-proxy:
+  file.managed:
+    - name: /etc/sd-rsyslog.conf
+    - source: "salt://sd-rsyslog.conf.j2"
+    - template: jinja
+    - context:
+        vmname: sd-proxy

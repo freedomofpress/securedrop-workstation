@@ -10,6 +10,7 @@ set-fedora-as-default-dispvm:
 include:
   - sd-usb-autoattach-remove
 
+
 remove-dom0-sdw-config-files:
   file.absent:
     - names:

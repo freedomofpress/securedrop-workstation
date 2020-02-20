@@ -12,9 +12,19 @@ include:
   - fpf-apt-test-repo
 
 # FPF repo is setup in "securedrop-workstation" template
-install-securedrop-client-package:
+install-securedrop-client-and-securedrop-log-package:
   pkg.installed:
     - pkgs:
       - securedrop-client
+      - securedrop-log
     - require:
       - sls: fpf-apt-test-repo
+
+
+sd-rsyslog-for-sd-app:
+  file.managed:
+    - name: /etc/sd-rsyslog.conf
+    - source: "salt://sd-rsyslog.conf.j2"
+    - template: jinja
+    - context:
+        vmname: sd-app

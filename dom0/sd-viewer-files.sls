@@ -28,3 +28,18 @@ sd-viewer-install-libreoffice:
         attempts: 3
         interval: 60
     - install_recommends: False
+
+sd-viewer-install-logging:
+  pkg.installed:
+    - pkgs:
+      - securedrop-log
+    - require:
+      - sls: fpf-apt-test-repo
+
+sd-rsyslog-for-sd-viewer:
+  file.managed:
+    - name: /etc/sd-rsyslog.conf
+    - source: "salt://sd-rsyslog.conf.j2"
+    - template: jinja
+    - context:
+        vmname: sd-viewer

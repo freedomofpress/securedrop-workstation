@@ -49,6 +49,9 @@ class SD_App_Tests(SD_VM_Local_Test):
         results = json.loads(self._run(cmd))
         self.assertTrue(results['profiles']['/usr/bin/securedrop-client'] == "enforce")
 
+    def test_logging_configured(self):
+        self.logging_configured()
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_App_Tests)

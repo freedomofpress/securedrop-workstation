@@ -24,3 +24,19 @@ sd-devices-install-libreoffice:
 sd-devices-install-package:
   pkg.installed:
     - name: securedrop-export
+
+
+sd-devices-install-securedrop-log-package:
+  pkg.installed:
+    - pkgs:
+      - securedrop-log
+    - require:
+      - sls: fpf-apt-test-repo
+
+sd-rsyslog-for-sd-devices:
+  file.managed:
+    - name: /etc/sd-rsyslog.conf
+    - source: "salt://sd-rsyslog.conf.j2"
+    - template: jinja
+    - context:
+        vmname: sd-devices

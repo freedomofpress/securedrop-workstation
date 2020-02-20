@@ -11,6 +11,14 @@ sd-workstation-template-install-kernel-config-packages:
     - require:
       - sls: fpf-apt-test-repo
 
+
+sd-workstation-install-securedrop-log-package:
+  pkg.installed:
+    - pkgs:
+      - securedrop-log
+    - require:
+      - sls: fpf-apt-test-repo
+
 # Ensure that paxctld starts immediately. For AppVMs,
 # use qvm.features.enabled = ["paxctld"] to ensure service start.
 sd-workstation-template-enable-paxctld:
