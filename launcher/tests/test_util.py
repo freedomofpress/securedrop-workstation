@@ -1,4 +1,5 @@
 import os
+import pytest
 import re
 import subprocess
 
@@ -11,6 +12,8 @@ BUSY_LOCK_REGEX = r"Error obtaining lock on '.*'."
 
 # Regex for failure to obtain lock due to permission error
 LOCK_PERMISSION_REGEX = r"Error writing to lock file '.*'"
+
+CONFLICTING_PROCESS_REGEX = r"Conflicting process .* is currently running."
 
 relpath_util = "../sdw_util/Util.py"
 path_to_util = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_util)
@@ -166,3 +169,31 @@ def test_log():
         path = os.path.join(tmpdir, basename)
         count = len(open(path).readlines())
         assert count == 3
+
+
+@pytest.mark.parametrize(
+    "return_code,expected_result", [(0, True), (1, False)],
+)
+@mock.patch("Util.sdlog.error")
+@mock.patch("Util.sdlog.warning")
+@mock.patch("Util.sdlog.info")
+def test_for_conflicting_process(
+    mocked_info, mocked_warning, mocked_error, return_code, expected_result
+):
+    """
+    Test whether we can successfully detect conflicting processes.
+    """
+    # We mock the pgrep call itself, which means we _won't_ detect behavior
+    # changes at that level.
+    completed_process = subprocess.CompletedProcess(args=[], returncode=return_code)
+    with mock.patch("subprocess.run", return_value=completed_process) as mocked_run:
+        running_process = util.is_conflicting_process_running(["cowsay"])
+        mocked_run.assert_called_once()
+        if expected_result is True:
+            assert running_process is True
+            mocked_error.assert_called_once()
+            error_string = mocked_error.call_args[0][0]
+            assert re.search(CONFLICTING_PROCESS_REGEX, error_string) is not None
+        else:
+            assert running_process is False
+            assert not mocked_error.called
