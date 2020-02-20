@@ -37,6 +37,8 @@ sd-log:
     - features:
       - enable:
         - service.paxctld
+        - service.redis
+        - service.securedrop-log
     - require:
       - qvm: sd-log-buster-template
 

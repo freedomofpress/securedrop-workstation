@@ -29,13 +29,6 @@ sd-viewer-install-libreoffice:
         interval: 60
     - install_recommends: False
 
-sd-viewer-install-logging:
-  pkg.installed:
-    - pkgs:
-      - securedrop-log
-    - require:
-      - sls: fpf-apt-test-repo
-
 sd-rsyslog-for-sd-viewer:
   file.managed:
     - name: /etc/sd-rsyslog.conf

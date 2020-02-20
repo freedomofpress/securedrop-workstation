@@ -2,6 +2,7 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 include:
   - fpf-apt-test-repo
+  - sd-logging-setup
 
 sd-proxy-do-not-open-here-script:
   file.managed:
@@ -41,11 +42,10 @@ sd-proxy-configure-mimetypes:
 
 # Depends on FPF-controlled apt repo, already present
 # in underlying "securedrop-workstation" base template.
-install-securedrop-proxy-and-securedrop-log-package:
+install-securedrop-proxy-package:
   pkg.installed:
     - pkgs:
       - securedrop-proxy
-      - securedrop-log
     - require:
       - sls: fpf-apt-test-repo
 
@@ -60,11 +60,3 @@ install-securedrop-proxy-yaml-config:
     - context:
         hostname: {{ d.hidserv.hostname }}
     - mode: 0644
-
-sd-rsyslog-for-sd-proxy:
-  file.managed:
-    - name: /etc/sd-rsyslog.conf
-    - source: "salt://sd-rsyslog.conf.j2"
-    - template: jinja
-    - context:
-        vmname: sd-proxy
