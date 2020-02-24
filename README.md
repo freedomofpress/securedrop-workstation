@@ -183,6 +183,14 @@ As of February 2020, the production and staging environments are experimental. I
 
 **IMPORTANT: THE STAGING ENVIRONMENT SHOULD NEVER BE USED FOR PRODUCTION PURPOSES.**
 
+
+#### Update `dom0`, `fedora-30`, `whonix-gw-15` and `whonix-ws-15` templates
+Updates to these VMs will be provided by the installer and updater, but to ensure they are up to date prior to install, it will be easier to debug, should something go wrong.
+
+Before proceeding to updates, we must ensure that `sys-whonix` can bootstrap to the Tor network. In the Qubes menu, navigate to `sys-whonix` and click on `Anon Connection Wizard` and click `Next` and ensure the Tor Bootstrap process completes successfully.
+
+In the Qubes Menu, naviage to `System Tools` and click on `Qubes Update`. Click the `Enable updates for qubes without known available updates` and select all VMs in the list. Click on `Next` and wait for updates to complete.
+
 #### Download and install securedrop-workstation-dom0-config package
 
 Since `dom0` does not have network access, we will need to download the `securedrop-workstation-dom0-config` package in a Fedora-based VM. We can use the default Qubes-provisioned `work` VM. If you perform these changes in the `work` VM or another AppVM, they won't persist across reboots (recommended).
@@ -202,7 +210,7 @@ In a terminal in `work`, run the following commands:
 [user@work ~]$ gpg --armor --export 22245C81E3BAEB4138B36061310F561200F4AD77 | sudo tee /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
 ```
 
-Populate `/etc/yum/repos.d/securedrop-temp.repo` with the following contents:
+Populate `/etc/yum.repos.d/securedrop-temp.repo` with the following contents:
 ```
 [securedrop-workstation-temporary]
 gpgcheck=1
@@ -214,7 +222,7 @@ name=SecureDrop Workstation Qubes initial install bootstrap
 
 3. Download the RPM package
 ```
-[user@work ~]$ sudo dnf download securedrop-workstation-dom0-config
+[user@work ~]$ dnf download securedrop-workstation-dom0-config
 ```
 
 The RPM file will be downloaded to your current working directory.
@@ -226,7 +234,7 @@ The RPM file will be downloaded to your current working directory.
 In `dom0`, run the following commands (changing the version number to its current value):
 
 ```
-[dom0]$ qvm-run --pass-io work '/home/user/securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm' > securedrop-workstation.rpm
+[dom0]$ qvm-run --pass-io work 'cat /home/user/securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm' > securedrop-workstation.rpm
 sudo dnf install securedrop-workstation.rpm
 ```
 
