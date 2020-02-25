@@ -49,6 +49,10 @@ install -m 755 -d %{buildroot}/srv/salt/sd/sd-workstation
 install -m 755 -d %{buildroot}/srv/salt/sd/sys-firewall
 install -m 755 -d %{buildroot}/usr/share/%{name}/scripts
 install -m 755 -d %{buildroot}/srv/salt/sd/usb-autoattach
+install -m 755 -d %{buildroot}/srv/salt/launcher
+install -m 755 -d %{buildroot}/srv/salt/launcher/sdw_updater_gui
+install -m 755 -d %{buildroot}/srv/salt/launcher/sdw_notify
+install -m 755 -d %{buildroot}/srv/salt/launcher/sdw_util
 install -m 755 -d %{buildroot}/%{_bindir}
 install -m 644 dom0/*.sls %{buildroot}/srv/salt/
 install -m 644 dom0/*.top %{buildroot}/srv/salt/
@@ -68,10 +72,15 @@ install -m 644 usb-autoattach/99-sd-devices.rules %{buildroot}/srv/salt/sd/usb-a
 install -m 755 usb-autoattach/sd-attach-export-device %{buildroot}/srv/salt/sd/usb-autoattach/
 install -m 644 Makefile %{buildroot}/usr/share/%{name}/Makefile
 install -m 755 scripts/* %{buildroot}/usr/share/%{name}/scripts/
+# For the updater scripts, we want to provision them via rpm *and* also salt, since there's a salt step that will provision this
 install -m 644 launcher/*.py %{buildroot}/opt/securedrop/launcher/
+install -m 644 launcher/*.py %{buildroot}/srv/salt/launcher/
 install -m 644 launcher/sdw_updater_gui/*.py %{buildroot}/opt/securedrop/launcher/sdw_updater_gui/
+install -m 644 launcher/sdw_updater_gui/*.py %{buildroot}/srv/salt/launcher/sdw_updater_gui/
 install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw_notify/
+install -m 644 launcher/sdw_notify/*.py %{buildroot}/srv/salt/launcher/sdw_notify/
 install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
+install -m 644 launcher/sdw_util/*.py %{buildroot}/srv/salt/launcher/sdw_util/
 %files
 %doc README.md LICENSE
 %attr(755, root, root) /opt/securedrop/launcher/sdw-launcher.py
@@ -84,6 +93,7 @@ install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_u
 /srv/salt/dom0-xfce-desktop-file.j2
 /srv/salt/securedrop-*
 /srv/salt/fpf*
+/srv/salt/launcher*
 
 %post
 find /srv/salt -maxdepth 1 -type f -iname '*.top' \
