@@ -79,6 +79,7 @@ sd-log: prep-salt ## Provisions SD logging VM
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
 	@echo "Purging Salt config..."
 	@sudo rm -rf /srv/salt/sd
+	@sudo rm -rf /srv/salt/launcher
 	@sudo find /srv/salt -maxdepth 1 -type f -iname 'fpf*' -delete
 	@sudo find /srv/salt -maxdepth 1 -type f -iname 'sd*' -delete
 	@sudo find /srv/salt -maxdepth 1 -type f -iname 'securedrop*' -delete
