@@ -246,11 +246,13 @@ class UpdateThread(QThread):
             results[vm] = result
             self.progress_signal.emit(progress)
 
-        # write the flags to disk after successful updates, including updates
-        # that require a reboot.
         run_results = Updater.overall_update_status(results)
         Updater._write_updates_status_flag_to_disk(run_results)
-        if run_results in {UpdateStatus.UPDATES_OK, UpdateStatus.REBOOT_REQUIRED}:
+        # Write the "last updated" date to disk if the system is up-to-date.
+        # Even though no updates have been newly applied at this stage, for the
+        # purposes of security checks, all we need to know is that the system is
+        # up-to-date as of this run.
+        if run_results == UpdateStatus.UPDATES_OK:
             Updater._write_last_updated_flags_to_disk()
         # populate signal contents
         message = results  # copy all the information from results
@@ -290,7 +292,9 @@ class UpgradeThread(QThread):
         # write flags to disk
         run_results = Updater.overall_update_status(results)
         Updater._write_updates_status_flag_to_disk(run_results)
-        if run_results == UpdateStatus.UPDATES_OK:
+        # Write the "last updated" date to disk if the system is up-to-date
+        # after applying upgrades, regardless of whether a reboot is still pending.
+        if run_results in {UpdateStatus.UPDATES_OK, UpdateStatus.REBOOT_REQUIRED}:
             Updater._write_last_updated_flags_to_disk()
         # populate signal results
         message = results  # copy all information from updater call
