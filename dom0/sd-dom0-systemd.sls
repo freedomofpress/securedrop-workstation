@@ -16,4 +16,8 @@ dom0-poweroff:
     - marker_end: "### END securedrop-workstation ###"
     - content: |
         HandleLidSwitch=poweroff
+
+apply-systemd-changes:
+  cmd.run:
+    - name: sudo systemctl restart systemd-logind
 {% endif %}
