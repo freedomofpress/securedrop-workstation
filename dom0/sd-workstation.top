@@ -6,6 +6,7 @@ base:
     - sd-sys-vms
     - sd-dom0-files
     - sd-dom0-crontab
+    - sd-dom0-systemd
     - sd-workstation-template
     - sd-upgrade-templates
     - sd-dom0-qvm-rpc

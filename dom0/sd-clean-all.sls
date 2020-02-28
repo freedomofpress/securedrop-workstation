@@ -29,9 +29,11 @@ remove-dom0-sdw-config-files:
       - /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
 
-sd-cleanup-crontab:
+sd-cleanup-etc-changes:
   file.replace:
-    - name: /etc/crontab
+    - names:
+      - /etc/crontab
+      - /etc/systemd/logind.conf
     - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
     - flags:
       - MULTILINE
