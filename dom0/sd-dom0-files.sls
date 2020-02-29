@@ -118,6 +118,13 @@ dom0-create-opt-securedrop-directory:
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
+# Increase the default icon size for the GUI user for usability/accessibility reasons
+dom0-adjust-desktop-icon-size-xfce:
+  cmd.script:
+    - name: salt://update-xfce-settings
+    - args: adjust-icon-size
+    - runas: {{ gui_user }}
+
 dom0-login-autostart-directory:
   file.directory:
     - name: /home/{{ gui_user }}/.config/autostart
@@ -206,4 +213,13 @@ dom0-install-securedrop-workstation-dom0-config:
     - require:
       - file: dom0-workstation-rpm-repo
 
+{% endif %}
+
+# Hide suspend/hibernate options in menus in prod systems
+{% if d.environment == "prod" or d.environment == "staging" %}
+dom0-disable-unsafe-power-management-xfce:
+  cmd.script:
+    - name: salt://update-xfce-settings
+    - args: disable-unsafe-power-management
+    - runas: {{ gui_user }}
 {% endif %}

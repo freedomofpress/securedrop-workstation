@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# A maintenance script for altering the XFCE config for the currently logged in
+# user to settings more appropriate for SecureDrop Workstation, or resetting
+# them back to default values. Typically only called by provisioning logic.
+#
+# Note that all properties are initially unset if the user has never modified
+# them, so we have to consistently use the -n flag to create them if needed.
+#
+# This script must run as the user whose preferences are changed.
+
+set -e
+set -u
+set -o pipefail
+
+TASK=${1:-none}
+ICONSIZE=64
+
+if ! [ -x "$(command -v xfconf-query)" ]; then
+  echo "Error: xfconf-query is not installed." >&2
+  exit 1
+fi
+
+# This script requires a valid DBUS session to work. When run non-interactively,
+# we assume that a sesssion is running for the current user.
+if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+   export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
+fi
+
+
+if [[ $TASK == "disable-unsafe-power-management" ]]; then
+  echo "update-xfce-settings: Disabling unsafe power management options for user $USER"
+
+  # Trim "Actions" menu (top right) to essentials.
+  #
+  # - Remove suspend/hibernate (unsafe with full-disk encryption)
+  # - Remove "Switch user" (single user system)
+  # - Remove "Log out" (saves sessions by default, which is not recommended)
+  # - Add "Restart" so that it remains accessible
+  #
+  # TODO: Make this more resilient by querying the plugin list first.
+  xfconf-query -c xfce4-panel -np '/plugins/plugin-2/items' \
+    -t 'string' -s '+lock-screen' \
+    -t 'string' -s '+separator' \
+    -t 'string' -s '+restart' \
+    -t 'string' -s '+shutdown'
+
+  # "Log out" is still accessible via the application menu (top left), so we
+  # remove suspend and hibernate there as well.
+  xfconf-query -c xfce4-session -np '/shutdown/ShowSuspend' -t 'bool' -s 'false'
+  xfconf-query -c xfce4-session -np '/shutdown/ShowHibernate' -t 'bool' -s 'false'
+
+elif [[ $TASK == "adjust-icon-size" ]]; then
+  echo "update-xfce-settings: Adjusting icon size for user $USER to $ICONSIZE px"
+  xfconf-query -c xfce4-desktop -np '/desktop-icons/icon-size' -t 'int' -s $ICONSIZE
+
+elif [[ $TASK == "reset-power-management" ]]; then
+  echo "update-xfce-settings: Resetting power management options for user $USER"
+
+  # Does not retain its default config, so resetting to Qubes default values
+  xfconf-query -c xfce4-panel -p '/plugins/plugin-2/items' \
+    -t 'string' -s '+lock-screen' \
+    -t 'string' -s '+switch-user' \
+    -t 'string' -s '+separator' \
+    -t 'string' -s '+suspend' \
+    -t 'string' -s '-hibernate' \
+    -t 'string' -s '-separator' \
+    -t 'string' -s '+shutdown' \
+    -t 'string' -s '-restart' \
+    -t 'string' -s '+separator' \
+    -t 'string' -s '+logout' \
+    -t 'string' -s '-logout-dialog'
+
+  xfconf-query -c xfce4-session -p '/shutdown/ShowSuspend' -r
+  xfconf-query -c xfce4-session -p '/shutdown/ShowHibernate' -r
+
+elif [[ $TASK == "reset-icon-size" ]]; then
+  echo "update-xfce-settings: Resetting icon size to default for user $USER"
+  xfconf-query -c xfce4-desktop -p '/desktop-icons/icon-size' -r
+
+else
+  echo "Syntax: update-xfce-settings [task]"
+  echo
+  echo "Task must be one of:"
+  echo
+  echo " disable-unsafe-power-management   Disable suspend and hibernation buttons"
+  echo " adjust-icon-size                  Increase the default desktop icon size"
+  echo " reset-power-management            Reset power management settings to default"
+  echo " reset-icon-size                   Reset icon size to default"
+fi
