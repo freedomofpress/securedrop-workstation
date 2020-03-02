@@ -47,6 +47,7 @@ dom0-rpc-qubes.OpenInVM:
     - content: |
         @tag:sd-client @dispvm:sd-viewer allow
         @tag:sd-client sd-devices allow
+        sd-devices @dispvm:sd-viewer allow
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
 dom0-rpc-qubes.OpenURL:
