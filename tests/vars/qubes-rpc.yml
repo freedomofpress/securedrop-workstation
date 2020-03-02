@@ -97,6 +97,7 @@
     ### BEGIN securedrop-workstation ###
     @tag:sd-client @dispvm:sd-viewer allow
     @tag:sd-client sd-devices allow
+    sd-devices @dispvm:sd-viewer allow
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###

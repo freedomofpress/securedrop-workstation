@@ -43,6 +43,16 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
     def test_logging_configured(self):
         self.logging_configured()
 
+    def test_mime_types(self):
+        with open("sd-proxy/mimeapps.list", "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                if line != "[Default Applications]\n" and not line.startswith('#'):
+                    mime_type = line.split('=')[0]
+                    expected_app = line.split('=')[1].split(';')[0]
+                    actual_app = self._run("xdg-mime query default {}".format(mime_type))
+                    self.assertEqual(actual_app, expected_app)
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Proxy_Tests)

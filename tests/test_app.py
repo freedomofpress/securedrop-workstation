@@ -29,6 +29,14 @@ class SD_App_Tests(SD_VM_Local_Test):
         expected_results = "2 \n    294 open-in-dvm.desktop;"
         self.assertEqual(results, expected_results)
 
+    def test_mimeapps_functional(self):
+        cmd = "perl -F= -lane 'print $F[0]' /usr/share/applications/mimeapps.list"
+        results = self._run(cmd)
+        for line in results.split("\n"):
+            if line != "[Default Applications]" and not line.startswith('#'):
+                actual_app = self._run("xdg-mime query default {}".format(line))
+                self.assertEqual(actual_app, "open-in-dvm.desktop")
+
     def test_sd_client_package_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-client"))
 
