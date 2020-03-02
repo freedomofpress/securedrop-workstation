@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
+{% import_json "sd/config.json" as d %}
+
 set-fedora-as-default-dispvm:
   cmd.run:
     - name: qvm-check fedora-30-dvm && qubes-prefs default_dispvm fedora-30-dvm || qubes-prefs default_dispvm ''
@@ -29,15 +31,23 @@ remove-dom0-sdw-config-files:
       - /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
 
-sd-cleanup-crontab:
+sd-cleanup-etc-changes:
   file.replace:
-    - name: /etc/crontab
+    - names:
+      - /etc/crontab
+      - /etc/systemd/logind.conf
     - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
     - flags:
       - MULTILINE
       - DOTALL
     - repl: ''
     - backup: no
+
+{% if d.environment == "prod" or d.environment == "staging" %}
+apply-systemd-changes:
+  cmd.run:
+    - name: sudo systemctl restart systemd-logind
+{% endif %}
 
 sd-cleanup-sys-firewall:
   cmd.run:
