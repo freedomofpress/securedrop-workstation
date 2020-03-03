@@ -113,18 +113,15 @@ class SD_VM_Local_Test(unittest.TestCase):
 
         return True
 
-    def logging_configured(self, vmname=""):
+    def logging_configured(self):
         """
         Make sure rsyslog is configured to send in data to sd-log vm.
         """
-        if not vmname:
-            vmname = self.vm_name
         self.assertTrue(self._fileExists("/etc/sd-rsyslog.conf"))
         # Then we check the configuration inside of the file.
         file_content = self._get_file_contents("/etc/sd-rsyslog.conf")
         static_content = """[sd-rsyslog]
 remotevm = sd-log
-localvm = {0}
-""".format(vmname)
+"""
         self.assertEqual(file_content, static_content)
         self.assertTrue(self._package_is_installed("securedrop-log"))

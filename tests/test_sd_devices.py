@@ -21,7 +21,7 @@ class SD_Devices_Tests(SD_VM_Local_Test):
         self.assertTrue(self._package_is_installed("securedrop-export"))
 
     def test_logging_configured(self):
-        self.logging_configured(vmname="sd-devices")
+        self.logging_configured()
 
     def test_mime_types(self):
         filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
