@@ -30,8 +30,15 @@ base:
     - sd-proxy-template-files
   sd-app:
     - sd-app-config
+    - sd-app-enable-logging
+  sd-proxy:
+    - sd-proxy-enable-logging
   sd-viewer-buster-template:
     - sd-viewer-files
+  sd-viewer:
+    - sd-viewer-enable-logging
+  sd-devices-dvm:
+    - sd-devices-dvm-enable-logging
   sd-app-buster-template:
     - sd-app-files
   sys-firewall:

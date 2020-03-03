@@ -61,10 +61,10 @@ install-securedrop-proxy-yaml-config:
         hostname: {{ d.hidserv.hostname }}
     - mode: 0644
 
-sd-rsyslog-for-sd-proxy:
+sd-rsyslog-for-sd-proxy-template:
   file.managed:
     - name: /etc/sd-rsyslog.conf
     - source: "salt://sd-rsyslog.conf.j2"
     - template: jinja
     - context:
-        vmname: sd-proxy
+        vmname: sd-proxy-buster-template

@@ -39,4 +39,4 @@ sd-rsyslog-for-sd-devices:
     - source: "salt://sd-rsyslog.conf.j2"
     - template: jinja
     - context:
-        vmname: sd-devices
+        vmname: sd-devices-buster-template

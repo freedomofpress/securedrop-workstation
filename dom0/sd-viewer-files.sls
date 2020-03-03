@@ -42,4 +42,4 @@ sd-rsyslog-for-sd-viewer:
     - source: "salt://sd-rsyslog.conf.j2"
     - template: jinja
     - context:
-        vmname: sd-viewer
+        vmname: sd-viewer-buster-template

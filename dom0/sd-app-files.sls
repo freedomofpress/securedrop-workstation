@@ -27,4 +27,4 @@ sd-rsyslog-for-sd-app:
     - source: "salt://sd-rsyslog.conf.j2"
     - template: jinja
     - context:
-        vmname: sd-app
+        vmname: sd-app-buster-template
