@@ -1,18 +1,18 @@
-- policy: ClipboardPaste
+- policy: qubes.ClipboardPaste
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: FeaturesRequest
+- policy: qubes.FeaturesRequest
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: Filecopy
+- policy: qubes.Filecopy
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     sd-proxy @tag:sd-client allow
@@ -20,7 +20,7 @@
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: GetDate
+- policy: qubes.GetDate
   starts_with: |-
     ## Note that policy parsing stops at the first match,
     ## so adding anything below "$anyvm $anyvm action" line will have no effect
@@ -30,7 +30,7 @@
     $tag:anon-vm	$anyvm	deny
     $anyvm	$anyvm	allow,target=dom0
 
-- policy: GetRandomizedTime
+- policy: qubes.GetRandomizedTime
   starts_with: |-
     ## Note that policy parsing stops at the first match,
     ## so adding anything below "$anyvm $anyvm action" line will have no effect
@@ -39,7 +39,7 @@
 
     $anyvm	dom0	allow
 
-- policy: GetImageRGBA
+- policy: qubes.GetImageRGBA
   starts_with: |-
     ## Note that policy parsing stops at the first match,
     ## so adding anything below "$anyvm $anyvm action" line will have no effect
@@ -49,7 +49,7 @@
     $anyvm $dispvm allow
     $anyvm $anyvm ask
 
-- policy: Gpg
+- policy: qubes.Gpg
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @tag:sd-client sd-gpg allow
@@ -57,7 +57,7 @@
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: GpgImportKey
+- policy: qubes.GpgImportKey
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @tag:sd-client sd-gpg allow
@@ -65,16 +65,16 @@
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: InputKeyboard
+- policy: qubes.InputKeyboard
   starts_with: |-
     $anyvm $anyvm deny
 
-- policy: InputMouse
+- policy: qubes.InputMouse
   starts_with: |-
     sys-usb dom0 allow,user=root
     $anyvm $anyvm deny
 
-- policy: NotifyTools
+- policy: qubes.NotifyTools
   starts_with: |-
     ## Note that policy parsing stops at the first match,
     ## so adding anything below "$anyvm $anyvm action" line will have no effect
@@ -83,7 +83,7 @@
 
     $anyvm	dom0	allow
 
-- policy: NotifyUpdates
+- policy: qubes.NotifyUpdates
   starts_with: |-
     ## Note that policy parsing stops at the first match,
     ## so adding anything below "$anyvm $anyvm action" line will have no effect
@@ -92,7 +92,7 @@
 
     $anyvm	dom0	allow
 
-- policy: OpenInVM
+- policy: qubes.OpenInVM
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @tag:sd-client @dispvm:sd-viewer allow
@@ -102,21 +102,21 @@
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: OpenURL
+- policy: qubes.OpenURL
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: PdfConvert
+- policy: qubes.PdfConvert
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: ReceiveUpdates
+- policy: qubes.ReceiveUpdates
   starts_with: |-
     ## Note that policy parsing stops at the first match,
     ## so adding anything below "$anyvm $anyvm action" line will have no effect
@@ -125,14 +125,24 @@
 
     $anyvm	dom0	allow
 
-- policy: StartApp
+- policy: securedrop.Log
+  starts_with: |-
+    @tag:sd-workstation sd-log allow
+    @anyvm @anyvm deny
+
+- policy: securedrop.Proxy
+  starts_with: |-
+    sd-app sd-proxy allow
+    @anyvm @anyvm deny
+
+- policy: qubes.StartApp
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: SyncAppMenus
+- policy: qubes.SyncAppMenus
   starts_with: |-
     ## Note that policy parsing stops at the first match,
     ## so adding anything below "$anyvm $anyvm action" line will have no effect
@@ -141,7 +151,7 @@
 
     $anyvm	dom0	allow
 
-- policy: UpdatesProxy
+- policy: qubes.UpdatesProxy
   starts_with: |-
     ## Note that policy parsing stops at the first match,
     ## so adding anything below "$anyvm $anyvm action" line will have no effect
@@ -162,7 +172,7 @@
 
     $anyvm $anyvm deny
 
-- policy: USB
+- policy: qubes.USB
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     sd-devices sys-usb allow
@@ -170,7 +180,7 @@
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: USBAttach
+- policy: qubes.USBAttach
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     sys-usb sd-devices allow,user=root
@@ -178,20 +188,20 @@
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: VMRootShell
+- policy: qubes.VMRootShell
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: VMShell
+- policy: qubes.VMShell
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: WindowIconUpdater
+- policy: qubes.WindowIconUpdater
   starts_with: |-
     $anyvm dom0 allow
