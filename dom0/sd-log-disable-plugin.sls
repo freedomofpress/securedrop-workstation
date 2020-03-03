@@ -3,6 +3,9 @@
 
 ##
 # Disable securedrop-log rsyslog plugin in sd-log vm
+# Fixes https://github.com/freedomofpress/securedrop-log/issues/15
+# Due to a single Debian package for both logging and also sd-log vm
+# we need to do the following step.
 ##
 
 
@@ -13,7 +16,7 @@ sd-log-remove-rsyslog-qubes-plugin:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        # Add sd-rsyslog.conf file for syslog
+        # Removes sdlog.conf file for rsyslog
         rm -f /etc/rsyslog.d/sdlog.conf
         systemctl restart rsyslog
   cmd.run:
