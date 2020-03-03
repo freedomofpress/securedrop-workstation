@@ -1,12 +1,12 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.2.1
+Version:	0.2.2
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.2.1.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.2.2.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -102,6 +102,12 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
+* Tue Mar 03 2020 SecureDrop Team <securedrop@freedom.press> - 0.2.2
+- Start preflight updater on boot
+- Poweroff workstation on lid close
+- Default mimetype handling
+- Disable log forwarding in sd-log
+
 * Tue Feb 25 2020 SecureDrop Team <securedrop@freedom.press> - 0.2.1
 - Fixes logging and launcher configuration due to omitted file in manifest
 
