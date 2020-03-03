@@ -45,6 +45,8 @@ base:
     - sd-usb-autoattach-add
   whonix-gw-15:
     - sd-whonix-template-files
+  sd-log:
+    - sd-log-disable-plugin
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.
