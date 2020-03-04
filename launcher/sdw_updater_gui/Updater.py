@@ -108,27 +108,12 @@ def _check_updates_dom0():
 
 def _check_updates_fedora():
     """
-    Check for updates to the default Fedora TemplateVM
+    Check for updates to the default Fedora TemplateVM. Fedora has a very rapid
+    release cycle and there are almost always updates to fedora VMs. Let's just
+    return UPDATES_REQUIRED and always upgrade those VMs, since they no longer
+    trigger a full workstaiton reboot on upgrade.
     """
-    try:
-        subprocess.check_call(
-            ["qvm-run", current_templates["fedora"], "dnf check-update"]
-        )
-    except subprocess.CalledProcessError as e:
-        sdlog.error(
-            "Updates required for {} or cannot check for updates".format(
-                current_templates["fedora"]
-            )
-        )
-        sdlog.error(str(e))
-        return UpdateStatus.UPDATES_REQUIRED
-    finally:
-        reboot_status = _safely_shutdown_vm(current_templates["fedora"])
-        if reboot_status == UpdateStatus.UPDATES_FAILED:
-            return reboot_status
-
-    sdlog.info("{} is up to date".format(current_templates["fedora"]))
-    return UpdateStatus.UPDATES_OK
+    return UpdateStatus.UPDATES_REQUIRED
 
 
 def _check_updates_debian(vm):
