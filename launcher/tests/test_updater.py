@@ -716,6 +716,7 @@ def test_shutdown_and_start_vms(
         call("sys-usb"),
     ]
     app_vm_calls = [
+        call("sys-whonix"),
         call("sd-proxy"),
         call("sd-whonix"),
         call("sd-app"),
@@ -749,6 +750,7 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call("sys-usb"),
     ]
     app_vm_calls = [
+        call("sys-whonix"),
         call("sd-proxy"),
         call("sd-whonix"),
         call("sd-app"),
