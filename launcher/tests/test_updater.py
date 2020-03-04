@@ -550,10 +550,7 @@ def test_apply_updates_dom0_failure(mocked_info, mocked_error, mocked_call):
 def test_apply_updates_vms(mocked_info, mocked_error, mocked_call, vm):
     if vm != "dom0":
         result = updater._apply_updates_vm(vm)
-        if vm in ["fedora"]:
-            assert result == UpdateStatus.REBOOT_REQUIRED
-        else:
-            assert result == UpdateStatus.UPDATES_OK
+        assert result == UpdateStatus.UPDATES_OK
 
         mocked_call.assert_called_once_with(
             [
@@ -700,23 +697,76 @@ def test_safely_shutdown_fails(mocked_info, mocked_error, mocked_call, vm):
     mocked_error.assert_has_calls(call_list)
 
 
+@mock.patch("subprocess.check_call")
 @mock.patch("Updater._safely_start_vm")
 @mock.patch("Updater._safely_shutdown_vm")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_shutdown_and_start_vms(
-    mocked_info, mocked_error, mocked_shutdown, mocked_start
+    mocked_info, mocked_error, mocked_shutdown, mocked_start, mocked_call
 ):
-    call_list = [
+    sys_vm_kill_calls = [
+        call(["qvm-kill", "sys-firewall"]),
+        call(["qvm-kill", "sys-net"]),
+        call(["qvm-kill", "sys-usb"]),
+    ]
+    sys_vm_start_calls = [
+        call("sys-firewall"),
+        call("sys-net"),
+        call("sys-usb"),
+    ]
+    app_vm_calls = [
         call("sd-proxy"),
         call("sd-whonix"),
         call("sd-app"),
         call("sd-gpg"),
     ]
     updater.shutdown_and_start_vms()
-    mocked_shutdown.assert_has_calls(call_list)
-    mocked_start.assert_has_calls(call_list)
+    mocked_call.assert_has_calls(sys_vm_kill_calls)
+    mocked_shutdown.assert_has_calls(app_vm_calls)
+    mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls)
     assert not mocked_error.called
+
+
+@mock.patch(
+    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
+)
+@mock.patch("Updater._safely_start_vm")
+@mock.patch("Updater._safely_shutdown_vm")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_shutdown_and_start_vms_sysvm_fail(
+    mocked_info, mocked_error, mocked_shutdown, mocked_start, mocked_call
+):
+    sys_vm_kill_calls = [
+        call(["qvm-kill", "sys-firewall"]),
+        call(["qvm-kill", "sys-net"]),
+        call(["qvm-kill", "sys-usb"]),
+    ]
+    sys_vm_start_calls = [
+        call("sys-firewall"),
+        call("sys-net"),
+        call("sys-usb"),
+    ]
+    app_vm_calls = [
+        call("sd-proxy"),
+        call("sd-whonix"),
+        call("sd-app"),
+        call("sd-gpg"),
+    ]
+    error_calls = [
+        call("Error while killing sys-firewall"),
+        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Error while killing sys-net"),
+        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Error while killing sys-usb"),
+        call("Command 'check_call' returned non-zero exit status 1."),
+    ]
+    updater.shutdown_and_start_vms()
+    mocked_call.assert_has_calls(sys_vm_kill_calls)
+    mocked_shutdown.assert_has_calls(app_vm_calls)
+    mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls)
+    mocked_error.assert_has_calls(error_calls)
 
 
 @pytest.mark.parametrize("status", UpdateStatus)
