@@ -215,10 +215,7 @@ def _apply_updates_vm(vm):
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
     sdlog.info("{} update successful".format(current_templates[vm]))
-    if vm == "fedora":
-        return UpdateStatus.REBOOT_REQUIRED
-    else:
-        return UpdateStatus.UPDATES_OK
+    return UpdateStatus.UPDATES_OK
 
 
 def _write_last_updated_flags_to_disk():
@@ -419,7 +416,23 @@ def shutdown_and_start_vms():
     updates are picked up by the AppVM. We must first shut all VMs down to ensure
     correct order of operations, as sd-whonix cannot shutdown if sd-proxy is powered
     on, for example.
+
+    System AppVMs(sys-net, sys-firewall and sys-usb) will need to be killed and restarted
+    in case they are being used by another non-workstation VM.
     """
+
+    sys_vms_in_order = ["sys-firewall", "sys-net", "sys-usb"]
+    sdlog.info("Rebooting system fedora-based VMs")
+    for vm in sys_vms_in_order:
+        try:
+            subprocess.check_call(["qvm-kill", vm])
+        except subprocess.CalledProcessError as e:
+            sdlog.error("Error while killing {}".format(vm))
+            sdlog.error(str(e))
+
+    for vm in sys_vms_in_order:
+        _safely_start_vm(vm)
+
     vms_in_order = ["sd-proxy", "sd-whonix", "sd-app", "sd-gpg", "sd-log"]
     sdlog.info("Rebooting all vms for updates")
     for vm in vms_in_order:
