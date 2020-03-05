@@ -44,7 +44,7 @@ sd-log-remove-rsyslog-qubes-plugin:
     - require:
       - file: sd-log-remove-rsyslog-qubes-plugin
 
-{% elif grains['id'] == "sd-whonix" %}
+{% elif grains['id'] in ["sd-whonix", "sd-proxy", "sd-proxy-buster-template"] %}
 # We can not place the file on the template under /etc/rsyslog.d/ because of whonix
 # template. This sdlog.conf file is the same from the securedrop-log package, to
 # make sure that rsyslogd use our logging plugin.
@@ -63,13 +63,17 @@ sd-rc-enable-logging:
     - marker_end: "### END securedrop-workstation ###"
     - content: |
         # Add sd-rsyslog.conf file for syslog
-        ln -sf /rw/config/sd-rsyslog.conf /etc/sd-rsyslog.conf
-        if [ ! -f /etc/rsyslog.d/sdlog.conf ]; then
-            ln -sf /rw/config/sdlog.conf /etc/rsyslog.d/sdlog.conf
-        fi
+        ln -sf /rw/config/sdlog.conf /etc/rsyslog.d/sdlog.conf
+        cat <<EOF > /etc/sd-rsyslog.conf
+        [sd-rsyslog]
+        remotevm = sd-log
+        localvm = {{ grains['id'] }}
+        EOF
         systemctl restart rsyslog
   cmd.run:
-    - name: ln -sf /rw/config/sd-rsyslog.conf /etc/sd-rsyslog.conf && systemctl restart rsyslog
+    - name: /rw/config/rc.local
+    - require:
+      - file: sd-rc-enable-logging-for-sd-whonix
 
 {% else %}
 # For all other VMs, configure to send to sd-log

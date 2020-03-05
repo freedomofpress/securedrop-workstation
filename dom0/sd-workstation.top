@@ -28,6 +28,8 @@ base:
     - sd-gpg-files
   sd-proxy-buster-template:
     - sd-proxy-template-files
+  sd-proxy:
+    - sd-logging-setup
   sd-app:
     - sd-app-config
   sd-viewer-buster-template:
@@ -38,6 +40,7 @@ base:
     - sd-sys-firewall-files
   sd-whonix:
     - sd-whonix-hidserv-key
+    - sd-logging-setup
   securedrop-workstation-buster:
     - sd-workstation-template-files
     - sd-logging-setup

@@ -41,7 +41,7 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         assert not self._fileExists("/etc/apt/sources.list.d/whonix.list")
 
     def test_logging_configured(self):
-        self.logging_configured()
+        self.logging_configured(vmname=True)
 
     def test_mime_types(self):
         with open("sd-proxy/mimeapps.list", "r") as f:
