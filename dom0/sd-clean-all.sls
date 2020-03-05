@@ -28,17 +28,16 @@ dom0-reset-power-management-xfce:
     - runas: {{ gui_user }}
 {% endif %}
 
+# Removes all salt-provisioned files (if these files are also provisioned via
+# RPM, they should be removed as part of remove-dom0-sdw-config-files-dev)
 remove-dom0-sdw-config-files:
   file.absent:
     - names:
-      - /opt/securedrop
       - /etc/yum.repos.d/securedrop-workstation-dom0.repo
       - /usr/bin/securedrop-update
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
       - /etc/cron.daily/securedrop-update-cron
-      - /srv/salt/securedrop-update
-      - /srv/salt/update-xfce-settings
       - /usr/share/securedrop/icons
       - /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
       - /usr/bin/securedrop-login
@@ -46,6 +45,17 @@ remove-dom0-sdw-config-files:
       - /etc/qubes-rpc/policy/securedrop.Proxy
       - /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
+
+# Removes files that are provisioned by the dom0 RPM, only for the development
+# environment, since dnf takes care of those provisioned in the RPM
+{% if d.environment == "dev" %}
+remove-dom0-sdw-config-files-dev:
+  file.absent:
+    - names:
+      - /opt/securedrop
+      - /srv/salt/securedrop-update
+      - /srv/salt/update-xfce-settings
+{% endif %}
 
 sd-cleanup-etc-changes:
   file.replace:
