@@ -9,7 +9,7 @@ description_status_updates_available = (
     "app, Qubes needs to download and install critical security updates.</p>"
     "<p>Updates should take around 5 to 10 minutes. The computer may need to be restarted "
     "after updates are complete.</p>"
-    "<p><b>Network access will be briefly interrupted as VMs are rebooting.</p>"
+    "<p><b>Network access will be briefly interrupted as VMs are rebooting.</b></p>"
     "<p><b>Any interruption in this process may break Workstation components.</p></b>"
     "<p>Please close this window if now is a bad time, or click <em>Start Updates</em> "
     "to continue.</p>"
