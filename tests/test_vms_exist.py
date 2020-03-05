@@ -62,8 +62,6 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-proxy"]
         nvm = vm.netvm
         self.assertTrue(nvm.name == "sd-whonix")
-        wanted_kernelopts = "nopat apparmor=1 security=apparmor"
-        self.assertEqual(vm.kernelopts, wanted_kernelopts)
         self.assertTrue(vm.template == "sd-proxy-buster-template")
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
