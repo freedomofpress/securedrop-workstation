@@ -108,27 +108,12 @@ def _check_updates_dom0():
 
 def _check_updates_fedora():
     """
-    Check for updates to the default Fedora TemplateVM
+    Check for updates to the default Fedora TemplateVM. Fedora has a very rapid
+    release cycle and there are almost always updates to fedora VMs. Let's just
+    return UPDATES_REQUIRED and always upgrade those VMs, since they no longer
+    trigger a full workstation reboot on upgrade.
     """
-    try:
-        subprocess.check_call(
-            ["qvm-run", current_templates["fedora"], "dnf check-update"]
-        )
-    except subprocess.CalledProcessError as e:
-        sdlog.error(
-            "Updates required for {} or cannot check for updates".format(
-                current_templates["fedora"]
-            )
-        )
-        sdlog.error(str(e))
-        return UpdateStatus.UPDATES_REQUIRED
-    finally:
-        reboot_status = _safely_shutdown_vm(current_templates["fedora"])
-        if reboot_status == UpdateStatus.UPDATES_FAILED:
-            return reboot_status
-
-    sdlog.info("{} is up to date".format(current_templates["fedora"]))
-    return UpdateStatus.UPDATES_OK
+    return UpdateStatus.UPDATES_REQUIRED
 
 
 def _check_updates_debian(vm):
@@ -215,10 +200,7 @@ def _apply_updates_vm(vm):
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
     sdlog.info("{} update successful".format(current_templates[vm]))
-    if vm == "fedora":
-        return UpdateStatus.REBOOT_REQUIRED
-    else:
-        return UpdateStatus.UPDATES_OK
+    return UpdateStatus.UPDATES_OK
 
 
 def _write_last_updated_flags_to_disk():
@@ -419,8 +401,24 @@ def shutdown_and_start_vms():
     updates are picked up by the AppVM. We must first shut all VMs down to ensure
     correct order of operations, as sd-whonix cannot shutdown if sd-proxy is powered
     on, for example.
+
+    System AppVMs(sys-net, sys-firewall and sys-usb) will need to be killed and restarted
+    in case they are being used by another non-workstation VM.
     """
-    vms_in_order = ["sd-proxy", "sd-whonix", "sd-app", "sd-gpg", "sd-log"]
+
+    sys_vms_in_order = ["sys-firewall", "sys-net", "sys-usb"]
+    sdlog.info("Rebooting system fedora-based VMs")
+    for vm in sys_vms_in_order:
+        try:
+            subprocess.check_call(["qvm-kill", vm])
+        except subprocess.CalledProcessError as e:
+            sdlog.error("Error while killing {}".format(vm))
+            sdlog.error(str(e))
+
+    for vm in sys_vms_in_order:
+        _safely_start_vm(vm)
+
+    vms_in_order = ["sys-whonix", "sd-proxy", "sd-whonix", "sd-app", "sd-gpg", "sd-log"]
     sdlog.info("Rebooting all vms for updates")
     for vm in vms_in_order:
         _safely_shutdown_vm(vm)
