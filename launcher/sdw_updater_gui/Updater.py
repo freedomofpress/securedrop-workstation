@@ -111,7 +111,7 @@ def _check_updates_fedora():
     Check for updates to the default Fedora TemplateVM. Fedora has a very rapid
     release cycle and there are almost always updates to fedora VMs. Let's just
     return UPDATES_REQUIRED and always upgrade those VMs, since they no longer
-    trigger a full workstaiton reboot on upgrade.
+    trigger a full workstation reboot on upgrade.
     """
     return UpdateStatus.UPDATES_REQUIRED
 
