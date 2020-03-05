@@ -12,6 +12,21 @@ set-fedora-as-default-dispvm:
 include:
   - sd-usb-autoattach-remove
 
+# Reset desktop icon size to its original value
+dom0-reset-icon-size-xfce:
+  cmd.script:
+    - name: salt://update-xfce-settings
+    - args: reset-icon-size
+    - runas: {{ gui_user }}
+
+# Reset power management options to their original values
+{% if d.environment == "prod" or d.environment == "staging" %}
+dom0-reset-power-management-xfce:
+  cmd.script:
+    - name: salt://update-xfce-settings
+    - args: reset-power-management
+    - runas: {{ gui_user }}
+{% endif %}
 
 remove-dom0-sdw-config-files:
   file.absent:
@@ -23,6 +38,7 @@ remove-dom0-sdw-config-files:
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
       - /etc/cron.daily/securedrop-update-cron
       - /srv/salt/securedrop-update
+      - /srv/salt/update-xfce-settings
       - /usr/share/securedrop/icons
       - /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
       - /usr/bin/securedrop-login
