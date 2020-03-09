@@ -29,8 +29,6 @@ base:
     - sd-logging-setup
   sd-proxy-buster-template:
     - sd-proxy-template-files
-  sd-proxy:
-    - sd-logging-setup
   sd-app:
     - sd-app-config
   sd-viewer-buster-template:

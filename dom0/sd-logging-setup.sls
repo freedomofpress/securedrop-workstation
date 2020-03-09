@@ -62,7 +62,7 @@ sd-gpg-remove-rsyslog-qubes-plugin:
     - require:
       - file: sd-gpg-remove-rsyslog-qubes-plugin
 
-{% elif grains['id'] in ["sd-whonix", "sd-proxy", "sd-proxy-buster-template"] %}
+{% elif grains['id'] == "sd-whonix" %}
 # We can not place the file on the template under /etc/rsyslog.d/ because of whonix
 # template. This sdlog.conf file is the same from the securedrop-log package, to
 # make sure that rsyslogd use our logging plugin.
@@ -73,7 +73,7 @@ sd-rsyslog-sdlog-conf-for-sd-whonix:
 
 # Because whonix-gw-15 template is not allowing to create the config file on
 # package install time, we do it via rc.local call.
-sd-rc-enable-logging:
+sd-rc-enable-logging-for-sd-whonix:
   file.blockreplace:
     - name: /rw/config/rc.local
     - append_if_not_found: True
