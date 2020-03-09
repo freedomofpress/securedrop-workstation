@@ -26,6 +26,7 @@ base:
     - sd-devices-files
   sd-gpg:
     - sd-gpg-files
+    - sd-logging-setup
   sd-proxy-buster-template:
     - sd-proxy-template-files
   sd-proxy:

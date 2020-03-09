@@ -44,6 +44,24 @@ sd-log-remove-rsyslog-qubes-plugin:
     - require:
       - file: sd-log-remove-rsyslog-qubes-plugin
 
+{% elif grains['id'] == "sd-gpg" %}
+# For sd-gpg, we disable logging altogether, since access
+# to the keyring will be logged in sd-app
+sd-gpg-remove-rsyslog-qubes-plugin:
+  file.blockreplace:
+    - name: /rw/config/rc.local
+    - append_if_not_found: True
+    - marker_start: "### BEGIN securedrop-workstation ###"
+    - marker_end: "### END securedrop-workstation ###"
+    - content: |
+        # Removes sdlog.conf file for rsyslog
+        rm -f /etc/rsyslog.d/sdlog.conf
+        systemctl restart rsyslog
+  cmd.run:
+    - name: /rw/config/rc.local
+    - require:
+      - file: sd-gpg-remove-rsyslog-qubes-plugin
+
 {% elif grains['id'] in ["sd-whonix", "sd-proxy", "sd-proxy-buster-template"] %}
 # We can not place the file on the template under /etc/rsyslog.d/ because of whonix
 # template. This sdlog.conf file is the same from the securedrop-log package, to
