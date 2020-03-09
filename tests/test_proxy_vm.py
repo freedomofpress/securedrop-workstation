@@ -7,7 +7,6 @@ from base import SD_VM_Local_Test
 class SD_Proxy_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-proxy"
-        self.whonix_apt_list = "/etc/apt/sources.list.d/whonix.list"
         super(SD_Proxy_Tests, self).setUp()
 
     def test_do_not_open_here(self):
@@ -32,13 +31,14 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         for line in wanted_lines:
             self.assertFileHasLine("/etc/sd-proxy.yaml", line)
 
-    def test_whonix_ws_repo_enabled(self):
+    def test_whonix_ws_repo_absent(self):
         """
-        During Whonix 14 -> 15 migration, we removed the apt list file
-        (because the repo wasn't serving, due to EOL status). Let's
-        make sure it's there, since we're past 14 now.
+        The sd-proxy VM was previously based on Whonix Workstation,
+        but we've since moved to the standard SDW Debian-based template.
+        Guard against regressions by ensuring the old Whonix apt list
+        is missing.
         """
-        assert self._fileExists(self.whonix_apt_list)
+        assert not self._fileExists("/etc/apt/sources.list.d/whonix.list")
 
     def test_logging_configured(self):
         self.logging_configured()

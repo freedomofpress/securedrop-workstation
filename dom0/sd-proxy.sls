@@ -17,7 +17,7 @@ sd-proxy-template:
   qvm.vm:
     - name: sd-proxy-buster-template
     - clone:
-      - source: whonix-ws-15
+      - source: securedrop-workstation-buster
       - label: blue
     - tags:
       - add:
@@ -33,7 +33,6 @@ sd-proxy:
     - prefs:
       - template: sd-proxy-buster-template
       - netvm: sd-whonix
-      - kernelopts: "nopat apparmor=1 security=apparmor"
       - autostart: true
     - tags:
       - add:
