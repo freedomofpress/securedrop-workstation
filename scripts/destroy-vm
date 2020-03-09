@@ -53,23 +53,36 @@ def destroy_all():
     DispVMs, AppVMs, then TemplateVMs. Excludes VMs for which
     installed_by_rpm=true.
     """
-    # Remove DispVMs first, then AppVMs, then TemplateVMs last.
+    # Remove DispVMs first, then AppVMs, then TemplateVMs. Finally,
+    # remove log-related VMs, since RPC calls from other to sd-log
+    # will prevent shutdown/removal of sd-log.
     sdw_vms = [vm for vm in q.domains if SDW_DEFAULT_TAG in vm.tags]
     sdw_template_vms = [vm for vm in sdw_vms
                         if vm.klass == "TemplateVM" and not
                         vm.installed_by_rpm]
     sdw_disp_vms = [vm for vm in sdw_vms if vm.klass == "DispVM"]
     sdw_app_vms = [vm for vm in sdw_vms if vm.klass == "AppVM"]
+    sdw_log_vms = [vm for vm in sdw_vms if "log" in vm.name]
 
     for vm in sdw_disp_vms:
-        destroy_vm(vm)
+        if vm not in sdw_log_vms:
+            destroy_vm(vm)
 
     for vm in sdw_app_vms:
-        destroy_vm(vm)
+        if vm not in sdw_log_vms:
+            destroy_vm(vm)
 
     for vm in sdw_template_vms:
-        destroy_vm(vm)
+        if vm not in sdw_log_vms:
+            destroy_vm(vm)
 
+    for vm in sdw_log_vms:
+        if vm.klass == "AppVM":
+            destroy_vm(vm)
+
+    for vm in sdw_log_vms:
+        if vm.klass == "TemplateVM":
+            destroy_vm(vm)
 
 if __name__ == "__main__":
     args = parse_args()
