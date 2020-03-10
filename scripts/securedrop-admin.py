@@ -96,7 +96,12 @@ def perform_uninstall():
             ]
         )
         print("Reverting dom0 configuration")
-
+        subprocess.check_call(
+            ["sudo", "rm", "/srv/salt/sd/sd-journalist.sec"]
+        )
+        subprocess.check_call(
+            ["sudo", "rm", "/srv/salt/sd/config.json"]
+        )
         subprocess.check_call(
             ["sudo", "qubesctl", "state.sls", "sd-clean-all"]
         )
@@ -114,7 +119,6 @@ def perform_uninstall():
     print(
         "Instance secrets (Journalist Interface token and Submission private key) are still"
         "present on disk. You can delete them in /usr/share/securedrop-workstation-dom0-config"
-        "/srv/salt/sd/"
     )
 
 
