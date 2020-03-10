@@ -61,6 +61,8 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
     def test_logging_configured(self):
         self.logging_configured()
 
+    def test_sd_whonix_verify_tor_config(self):
+        self._run("tor --verify-config")
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Whonix_Tests)
