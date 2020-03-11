@@ -97,13 +97,10 @@ def perform_uninstall():
         )
         print("Reverting dom0 configuration")
         subprocess.check_call(
-            ["sudo", "rm", "/srv/salt/sd/sd-journalist.sec"]
-        )
-        subprocess.check_call(
-            ["sudo", "rm", "/srv/salt/sd/config.json"]
-        )
-        subprocess.check_call(
             ["sudo", "qubesctl", "state.sls", "sd-clean-all"]
+        )
+        subprocess.check_call(
+            [os.path.join(SCRIPTS_PATH, "scripts/clean-salt")]
         )
         print("Uninstalling Template")
         subprocess.check_call(
