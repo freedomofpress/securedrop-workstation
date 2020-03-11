@@ -7,8 +7,6 @@
 
 This project aims to improve journalists' experience working with SecureDrop while retaining the current security and privacy features SecureDrop provides. The journalist tools currently span multiple machines and require data to be moved using physical USB drives. We are re-designing this cumbersome process by moving the journalist workflow to a single computer running multiple virtual machines with [Qubes OS](https://qubes-os.org). Data is moved as automatically and transparently as possible between otherwise isolated VMs.
 
-**IMPORTANT:** This project is in alpha, has known bugs and shortcomings, and should not be used in production environments. This README is geared towards interested technical users and developers. When reviewing the state of the project, please take into account [known bugs](https://github.com/search?utf8=%E2%9C%93&q=repo%3Afreedomofpress%2Fsecuredrop-workstation+repo%3Afreedomofpress%2Fsecuredrop-client+repo%3Afreedomofpress%2Fsecuredrop-proxy+repo%3Afreedomofpress%2Fsecuredrop-client+repo%3Afreedmofpress%2Fsecuredrop-sdk+repo%3Afreedomofpress%2Fqubes-template-securedrop-workstation+label%3Abug+state%3Aopen&type=Issues&ref=advsearch&l=&l=) and [security issues](https://github.com/search?utf8=%E2%9C%93&q=repo%3Afreedomofpress%2Fsecuredrop-workstation+repo%3Afreedomofpress%2Fsecuredrop-client+repo%3Afreedomofpress%2Fsecuredrop-proxy+repo%3Afreedomofpress%2Fsecuredrop-client+repo%3Afreedmofpress%2Fsecuredrop-sdk+repo%3Afreedomofpress%2Fqubes-template-securedrop-workstation+label%3Asecurity+state%3Aopen&type=Issues&ref=advsearch&l=&l=) that will be addressed in future releases.
-
 ## Contents
 
 1. [Detailed Rationale](#detailed-rationale)
@@ -179,10 +177,9 @@ When the installation process completes, a number of new VMs will be available o
 
 ### Production and Staging Environments
 
-As of February 2020, the production and staging environments are experimental. If you are interested in becoming involved in development, we recommend you follow the instructions for setting up the [development environment](#development-environment) instead.
+As of March 2020, the production environment is in beta. The staging environment should not be installed for production use or on developer machines and is for use on test machines only. If you are interested in becoming involved in development, we recommend you follow the instructions for setting up the [development environment](#development-environment) instead.
 
-**IMPORTANT: THE STAGING ENVIRONMENT SHOULD NEVER BE USED FOR PRODUCTION PURPOSES.**
-
+**IMPORTANT: THE STAGING ENVIRONMENT SHOULD NEVER BE USED FOR PRODUCTION PURPOSES. IT SHOULD BE USED ON TEST MACHINES ONLY.**
 
 #### Update `dom0`, `fedora-30`, `whonix-gw-15` and `whonix-ws-15` templates
 Updates to these VMs will be provided by the installer and updater, but to ensure they are up to date prior to install, it will be easier to debug, should something go wrong.
@@ -437,35 +434,153 @@ qvm-copy-to-vm sd-onionshare ~/.securedrop_client/data/name-of-file
 6. On the target machine, navigate to the Tor onion service URL provided by OnionShare using the Tor Browser to retrieve the file.
 7. Close OnionShare and delete the decrypted submission on `sd-onionshare` from `~/QubesIncoming/sd-app`
 
-## Distributing and Releasing
+## Distributing and Releasing Workstation and its Subprojects
 
-### Signing sources
+### Release a subproject
 
-SecureDrop Workstation code spans across the following repositories:
+SecureDrop Workstation code spans across several repositories:
 
-* https://github.com/freedomofpress/securedrop-client
-* https://github.com/freedomofpress/securedrop-debian-packaging
-* https://github.com/freedomofpress/securedrop-proxy
-* https://github.com/freedomofpress/securedrop-sdk
-* https://github.com/freedomofpress/securedrop-workstation
+* https://github.com/freedomofpress/securedrop-client (Debian packaged)
+* https://github.com/freedomofpress/securedrop-export (Debian packaged)
+* https://github.com/freedomofpress/securedrop-log (Debian packaged)
+* https://github.com/freedomofpress/securedrop-proxy (Debian packaged)
+* https://github.com/freedomofpress/securedrop-sdk (Python packaged, brought in as a dependency of `securedrop-client`)
+* https://github.com/freedomofpress/securedrop-workstation (RPM packaged)
+
+Some of these subprojects have a corresponding release guide in the project's README ([example](https://github.com/freedomofpress/securedrop-client#making-a-release) for `securedrop-client`). The release process for each subproject is generally:
+
+1. Run that project's update version script if it has one. Else, update version numbers manually. Update the changelog describing the changes in that release.
+2. Commit those changes, and create a PR.
+3. Once this PR is approved, add a tag (see below) that is signed with the official release key.
+
+**Note:** Early tags in each subproject were not signed with the official release key. Later releases, as the subprojects were prepared for production, had their tags signed with the official release key.
+
+In addition, we have the following (Debian) metapackages, which are stored in the [`securedrop-debian-packaging`](https://github.com/freedomofpress/securedrop-debian-packaging) repository:
+* [`securedrop-workstation-config`](https://github.com/freedomofpress/securedrop-debian-packaging/tree/master/securedrop-workstation-config/debian)
+* [`securedrop-workstation-grsec`](https://github.com/freedomofpress/securedrop-debian-packaging/tree/master/securedrop-workstation-grsec)
+* [`securedrop-workstation-svs-disp`](https://github.com/freedomofpress/securedrop-debian-packaging/tree/master/securedrop-workstation-svs-disp)
+
+The release process for a metapackage is generally to bump the version, update the debian changelog, and then tag `securedrop-debian-packaging` (see below).
+
+Each subcomponent can be released independently. It's worth noting that in general `securedrop-sdk` releases generally be accompanied with a `securedrop-client` release, as `securedrop-sdk` is a Python dependency of the `securedrop-client` code, so any change in the SDK the client wants to use will necessitate a release of the client also.
+ We'll cover that below.
+
+### Tag a subproject
+
+Once the release PR is merged, the procedure of adding signed tags is as follows:
+
+1. Create tag: `git tag -a VERSION`
+2. Output tag to file: `git cat-file tag VERSION > VERSION.tag`
+3. Copy tag file to signing environment
+4. Verify tag integrity (commit hash)
+5. Sign tag with release key: `gpg --armor --detach-sign VERSION.tag`
+6. Append ASCII-armored signature to tag file (ensure there are no blank lines): `cat VERSION.tag.sig >> VERSION.tag`
+7. Move tag file with signature appended back to the release environment
+8. Delete old (unsigned) tag: `git tag -d VERSION`
+9. Create new (signed) tag: `git mktag < VERSION.tag > .git/refs/tags/VERSION`
+10. Verify the tag: `git tag -v VERSION`
+11. Push the tag to the shared remote: `git push origin VERSION`
+
+### Generate Tarballs
+
+Next, for the Debian-packaged projects **only**, one needs to generate the source tarballs for use during packaging, as well as add the debian changelog addition. This is done via a PR into https://github.com/freedomofpress/securedrop-debian-packaging.
+
+Follow the instructions described in [this section](https://github.com/freedomofpress/securedrop-debian-packaging#build-a-package), stopping before the final step where the package itself is built. Save the build logs from the tarball generation step (since the tarball generation is not reproducible) and commit them [here](https://github.com/freedomofpress/build-logs). You should then in a branch:
+
+* Add the tarball that is generated from that step to the `./tarballs` directory in that `securedrop-debian-packaging` repository
+* Add a detached signature of that tarball also to the `./tarballs` directory alongside the tarball above for ease of verification
+* Add the Debian changelog addition
+* Remove the tarball and corresponding signature from the previous release.
+
+File that PR. Once it's approved, move to the next step.
+
+### Tag code used to generate artifacts
+
+In addition to the code repositories above, the following repositories are used to create artifacts - the `securedrop-workstation` template and the debian packages, respectively - used in the workstation:
+
 * https://github.com/freedomofpress/qubes-template-securedrop-workstation
+* https://github.com/freedomofpress/securedrop-debian-packaging
 
-### Release
+Next, if one of these projects is needed to generate an artifact for us in a production environment, it will be released by adding a signed tag before using the corresponding logic. You can do this following the same steps as in the `Tag a subproject` section. For `securedrop-debian-packaging`, we include in the tag annotation the latest release for each subproject that is released using its logic. For example the tag annotation for `securedrop-debian-packaging 0.2.2`:
 
-1. For each release, a tag for each release will be signed and pushed to each of the above repos.
-
-2. Create a Makefile target in securedrop-debian-packaging repo that contains release tags / commit hashes for each repository used for the release. To verify the tag signature and check out the packaging logic:
 ```
-git tag -v <tag>
-git checkout <tag>
+securedrop-client 0.1.2
+securedrop-proxy 0.2.0
+securedrop-log 0.1.0
+securedrop-export 0.2.1
+securedrop-workstation-svs-disp 0.2.1
+securedrop-workstation-grsec 4.14.169
+securedrop-workstation-config 0.1.2
 ```
-3. Metadata (e.g. commit hash for release) should be tracked inside the .deb (e.g.: `/usr/share/packagename/release-info.txt`)
+
+### Final build for a subproject
+
+Finally, perform the final build. You should follow one of the sections below based on whether the subproject you are building is Debian or rpm packaged.
+
+#### Debian package
+
+In an environment sufficient for building production artifacts (if you don’t know what this means talk to @redshiftzero or @emkll):
+
+1. Clone the [`securedrop-debian-packaging`](https://github.com/freedomofpress/securedrop-debian-packaging) repository.
+2. Determine which version of the packaging logic and tarballs you want to use. You probably created the tag in the previous step, else inspect the tag annotation to determine which is the right version.
+3. `git tag -v VERSION` and ensure the tag is signed with the official release key.
+4. `git checkout VERSION`
+5. Now you are ready to build. For good measure, you can also verify the signature of the tarball you want to use, although this will have been done by the reviewer of the PR adding the tarball.
+6. Set `PKG_DIR` to point to the tarball you wish to package, and `PKG_VERSION` to the version you wish to package, then run the relevant makefile target in the `securedrop-debian-packaging` repository. For example to build version 0.1.1 of the `securedrop-client`:
+
+`$ PKG_VERSION=0.1.1 PKG_PATH=tarballs/securedrop-client-0.1.1.tar.gz make securedrop-client`
+
+6. Upload build logs in https://github.com/freedomofpress/build-logs in the workstation directory. Ensure that the sha256sum of the built package is included in the build log.
+7. Next, add the package via PR to the (private) lfs repository [here](https://github.com/freedomofpress/securedrop-debian-packages-lfs).
+8. Regenerate reprepro repository metadata using the script in that repository: `./tools/publish`. When you inspect the diff, you'll notice that the previous version of the subproject will no longer be served. This is expected.
+9. Copy the `Release` file to signing environment.
+10. Verify integrity of `Release` file.
+11. Sign the Release file `gpg --armor --detach-sign --output Release.gpg Release`
+12. Copy the detached signature into your working directory and commit along with the new package(s), and the modified repository metadata.
+13. Open a PR for review.
+14. Upon merge to master, ensure that changes deploy to `apt.freedom.press` without issue.
+
+#### RPM package
+
+1. Verify the tag of the project you wish to build: `git tag -v VERSION` and ensure the tag is signed with the official release key.
+2. `git checkout VERSION`
+3. Now you are ready to build. Build RPMs following the documentation in an environment sufficient for building production artifacts. For `securedrop-workstation` you run `make dom0-rpm` to build the RPM.
+4. sha256sum the built template (and store hash in the build logs/commit message).
+5. Commit the (unsigned) version of this RPM to a branch in the following LFS repository: https://github.com/freedomofpress/securedrop-workstation-prod-rpm-packages-lfs.
+6. Copy the RPM to the signing environment.
+7. Verify integrity of RPM prior to signing (use sha256sums to compare).
+8. Sign RPM in place (see Signing section below).
+9. Move the signed RPM back to the environment for committing to the lfs repository.
+10. Upload build logs directly to https://github.com/freedomofpress/build-logs in the workstation directory. Ensure that the sha256sum of the package before and after signing is included in the build log.
+11. Commit the RPM in a second commit on the branch you began above in https://github.com/freedomofpress/securedrop-workstation-prod-rpm-packages-lfs. Make a PR.
+12. Upon merge to master, ensure that changes deploy to `yum.securedrop.org` without issue.
+
+#### `qubes-template-securedrop-workstation` release and promotion to production
+
+The SecureDrop workstation template is RPM packaged, and is first deployed to `yum-test.securedrop.org` before being promoted to production (`yum.securedrop.org`) using the following procedure:
+
+1. Verify the tag in the `qubes-template-securedrop-workstation` repository: `git tag -v VERSION` and ensure the tag is signed with the official release key.
+2. `git checkout VERSION`
+3. Rebuild template following documentation in `qubes-template-securedrop-workstation`.
+4. sha256sum the built template (and store hash in the build logs/commit message).
+5. Commit unsigned template for historical purposes.
+6. Sign template RPM with test key (rpm --resign <file>) (see Signing section below).
+7. Commit signed template.
+8. Push those two commits to a PR in `securedrop-workstation-dev-rpm-packages-lfs`. Make the PR.
+9. Upload build logs directly to https://github.com/freedomofpress/build-logs in the workstation directory.
+10. Upon merge of the PR into `securedrop-workstation-dev-rpm-packages-lfs`, the template will be deployed to `yum-test.securedrop.org`.
+11. Test template.
+12. Once template is sufficiently tested, remove test sig: `rpm --delsign <file>`.
+13. Verify unsigned template sha256sum from build logs/commit message.
+14. Sign template with prod key: `rpm --resign <file>`
+15. Push commit to a branch in the `securedrop-workstation-rpm-packages-lfs` repository. Make a PR.
+16. Upon merge to master, ensure that changes deploy to `yum.securedrop.org` without issue.
 
 ### Signing binaries/packages
 
 #### Debian packages
 
-Apt repository Release file will be signed, containing checksum of the debs.
+The apt repository Release file will be signed, containing checksums of the debs.
 
 #### RPM packages
 
@@ -474,7 +589,7 @@ the GPG signing key (either in GPG keyring or in qubes-split-gpg) is setup.
 You will need to add the public key to RPM for verification (see below).
 
 `rpm -Kv` indicates if digests and sigs are OK. Before signature it should not return signature,
-and `rpm -qi <file>.rpm` will indicate an empty Signature field. Set up your environment:
+and `rpm -qi <file>.rpm` will indicate an empty Signature field. Set up your environment (for prod you can use the `~/.rpmmacros` example file at the bottom of this section):
 
 ```
 sudo dnf install rpm-build rpm-sign  # install required packages
@@ -486,6 +601,7 @@ cat << EOF > ~/.rpmmacros
 %__gpg_sign_cmd %{__gpg} --no-verbose -u %{_gpg_name} --detach-sign %{__plaintext_filename} --output %{__signature_filename}
 EOF
 ```
+
 Now we'll sign the RPM:
 
 ```
@@ -500,6 +616,13 @@ rpm -Kv  # Signature lines will now contain OK instead of NOKEY
 
 You can then proceed with distributing the package, via the "test" or "prod" repo,
 as appropriate.
+
+#### `~/.rpmmacros` file
+
+```
+%_signature gpg
+%_gpg_name 22245C81E3BAEB4138B36061310F561200F4AD77
+```
 
 ### Distributing packages
 
