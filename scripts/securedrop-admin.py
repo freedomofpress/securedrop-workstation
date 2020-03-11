@@ -32,6 +32,13 @@ def parse_args():
         action="store_true",
         help="Validate the configuration",
     )
+    parser.add_argument(
+        "--uninstall",
+        default=False,
+        required=False,
+        action="store_true",
+        help="Completely Uninstalls the SecureDrop Workstation",
+    )
     args = parser.parse_args()
 
     return args
@@ -72,6 +79,46 @@ def validate_config(path):
         raise SDAdminException("Error while validating configuration")
 
 
+def perform_uninstall():
+
+    try:
+        subprocess.check_call(
+            ["sudo", "qubesctl", "state.sls", "sd-clean-default-dispvm"]
+        )
+        print("Destroying all VMs")
+        subprocess.check_call(
+            [os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all"]
+        )
+        subprocess.check_call(
+            [
+                "sudo", "qubesctl", "--skip-dom0", "--targets",
+                "whonix-gw-15", "state.sls", "sd-clean-whonix"
+            ]
+        )
+        print("Reverting dom0 configuration")
+        subprocess.check_call(
+            ["sudo", "qubesctl", "state.sls", "sd-clean-all"]
+        )
+        subprocess.check_call(
+            [os.path.join(SCRIPTS_PATH, "scripts/clean-salt")]
+        )
+        print("Uninstalling Template")
+        subprocess.check_call(
+            ["sudo", "dnf", "-y", "-q", "remove", "qubes-template-securedrop-workstation-buster"]
+        )
+        print("Uninstalling dom0 config package")
+        subprocess.check_call(
+            ["sudo", "dnf", "-y", "-q", "remove", "securedrop-workstation-dom0-config"]
+        )
+    except subprocess.CalledProcessError:
+        raise SDAdminException("Error during uninstall")
+
+    print(
+        "Instance secrets (Journalist Interface token and Submission private key) are still"
+        "present on disk. You can delete them in /usr/share/securedrop-workstation-dom0-config"
+    )
+
+
 def main():
     args = parse_args()
     if args.validate:
@@ -82,6 +129,16 @@ def main():
         validate_config(SCRIPTS_PATH)
         copy_config()
         provision_all()
+    elif args.uninstall:
+        print(
+            "Uninstalling SecureDrop workstation will uninstall all packages and destroy all VMs"
+        )
+        response = input("Are you sure you would want to uninstall (y/N)? ")
+        if response.lower() != 'y':
+            print("Exiting.")
+            sys.exit(0)
+        else:
+            perform_uninstall()
     else:
         sys.exit(0)
 

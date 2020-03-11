@@ -6,14 +6,20 @@
 # add hidden service auth key to torrc
 {% if d.hidserv.hostname|length == 22 %}
 sd-whonix-hidserv-key:
-  file.append:
+  file.blockreplace:
     - name: /usr/local/etc/torrc.d/50_user.conf
-    - text: HidServAuth {{ d.hidserv.hostname }} {{ d.hidserv.key }}
+    - append_if_not_found: True
+    - marker_start: "### BEGIN securedrop-workstation ###"
+    - marker_end: "### END securedrop-workstation ###"
+    - content: HidServAuth {{ d.hidserv.hostname }} {{ d.hidserv.key }}
 {% else %}
 sd-whonix-hidservv3-directory-path:
-  file.append:
+  file.blockreplace:
     - name: /usr/local/etc/torrc.d/50_user.conf
-    - text: ClientOnionAuthDir /var/lib/tor/keys
+    - append_if_not_found: True
+    - marker_start: "### BEGIN securedrop-workstation ###"
+    - marker_end: "### END securedrop-workstation ###"
+    - content: ClientOnionAuthDir /var/lib/tor/keys
 
 {% set hostname_without_onion = d.hidserv.hostname.split('.')[0] %}
 install-sd-whonix-tor-private-key:

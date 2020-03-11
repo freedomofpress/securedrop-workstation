@@ -77,13 +77,7 @@ sd-log: prep-salt ## Provisions SD logging VM
 	sudo qubesctl --show-output --skip-dom0 --targets sd-log-buster-template,sd-log state.highstate
 
 clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
-	@echo "Purging Salt config..."
-	@sudo rm -rf /srv/salt/sd
-	@sudo rm -rf /srv/salt/launcher
-	@sudo find /srv/salt -maxdepth 1 -type f -iname 'fpf*' -delete
-	@sudo find /srv/salt -maxdepth 1 -type f -iname 'sd*' -delete
-	@sudo find /srv/salt -maxdepth 1 -type f -iname 'securedrop*' -delete
-	@sudo find /srv/salt/_tops -lname '/srv/salt/sd-*' -delete
+	@./scripts/clean-salt
 
 prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./scripts/prep-salt
