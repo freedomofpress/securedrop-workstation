@@ -79,9 +79,12 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         wanted_lines = [
             "ln -sf /rw/config/sd-rsyslog.conf /etc/sd-rsyslog.conf",
             "systemctl restart rsyslog",
+            "sudo sed -i 's,^\%include /etc/torrc.d/95_whonix.conf,,' /etc/tor/torrc",
+            "sudo service tor restart",
         ]
         for wanted_line in wanted_lines:
-            self.assertTrue(wanted_line in rc_contents)
+            self.assertTrue(wanted_line in rc_contents,
+                            "line missing from rc.local: " + wanted_line)
 
 
 def load_tests(loader, tests, pattern):
