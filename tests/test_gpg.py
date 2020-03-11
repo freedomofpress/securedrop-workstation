@@ -50,6 +50,10 @@ class SD_GPG_Tests(SD_VM_Local_Test):
     def test_we_have_the_key(self):
         self.assertEqual(get_local_fp(), get_remote_fp())
 
+    def test_logging_disabled(self):
+        # Logging to sd-log should be disabled on sd-gpg
+        self.assertFalse(self._fileExists("/etc/rsyslog.d/sdlog.conf"))
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_GPG_Tests)

@@ -113,18 +113,29 @@ class SD_VM_Local_Test(unittest.TestCase):
 
         return True
 
-    def logging_configured(self, vmname=""):
+    def logging_configured(self, vmname=False):
         """
         Make sure rsyslog is configured to send in data to sd-log vm.
+        Takes an optional 'vmname' argument, in case hostname
+        returned by system is an insufficient identifier, e.g. Whonix.
         """
-        if not vmname:
-            vmname = self.vm_name
+        self.assertTrue(self._package_is_installed("securedrop-log"))
+        self.assertTrue(self._fileExists("/usr/sbin/sd-rsyslog"))
+        self.assertTrue(self._fileExists("/etc/rsyslog.d/sdlog.conf"))
         self.assertTrue(self._fileExists("/etc/sd-rsyslog.conf"))
         # Then we check the configuration inside of the file.
         file_content = self._get_file_contents("/etc/sd-rsyslog.conf")
         static_content = """[sd-rsyslog]
 remotevm = sd-log
-localvm = {0}
-""".format(vmname)
+"""
+        # A hardcoded vmname should only be present if required,
+        # since securedrop-log will default to value of `hostname`.
+        if vmname:
+            static_content += "localvm = {}\n".format(self.vm_name)
         self.assertEqual(file_content, static_content)
-        self.assertTrue(self._package_is_installed("securedrop-log"))
+        # Check for evidence of misconfigured logging in syslog,
+        # fail if matching events found
+        # Several VMs show this error message even though they're shipping logs,
+        # so let's investigate further.
+        # cmd_output = self._run("sudo grep -F \"action 'action-0-omprog' suspended (module 'omprog')\" /var/log/syslog | wc -l").strip()  # noqa
+        # self.assertTrue(cmd_output == "0")

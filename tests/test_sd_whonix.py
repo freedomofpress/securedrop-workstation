@@ -59,7 +59,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         assert self._fileExists(self.whonix_apt_list)
 
     def test_logging_configured(self):
-        self.logging_configured()
+        self.logging_configured(vmname=True)
 
 
 def load_tests(loader, tests, pattern):

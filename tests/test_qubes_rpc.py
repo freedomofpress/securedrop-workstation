@@ -3,7 +3,7 @@ import os
 import unittest
 import yaml
 
-QUBES_POLICY_PREFIX = "/etc/qubes-rpc/policy/qubes."
+QUBES_POLICY_DIR = "/etc/qubes-rpc/policy"
 
 
 class SD_Qubes_Rpc_Tests(unittest.TestCase):
@@ -25,7 +25,7 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
         self.assertFalse(fail)
 
     def _startsWith(self, filename, expectedPolicy):
-        filePath = os.path.join(QUBES_POLICY_PREFIX + filename)
+        filePath = os.path.join(QUBES_POLICY_DIR, filename)
         with io.open(filePath, 'r') as f:
             actualPolicy = f.read()
             if actualPolicy.startswith(expectedPolicy):
