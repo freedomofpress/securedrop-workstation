@@ -64,6 +64,17 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
     def test_sd_whonix_verify_tor_config(self):
         self._run("tor --verify-config")
 
+    def test_whonix_torrc(self):
+        """
+        Ensure Whonix-maintained torrc files don't contain duplicate entries.
+        """
+        torrc_contents = self._get_file_contents("/etc/tor/torrc")
+        duplicate_includes = """%include /etc/torrc.d/
+%include /etc/torrc.d/95_whonix.conf"""
+        self.assertFalse(duplicate_includes in torrc_contents,
+                         "Whonix GW torrc contains duplicate %include lines")
+
+
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Whonix_Tests)
     return suite
