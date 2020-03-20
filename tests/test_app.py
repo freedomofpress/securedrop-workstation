@@ -26,7 +26,7 @@ class SD_App_Tests(SD_VM_Local_Test):
     def test_mimeapps(self):
         cmd = "perl -F= -lane 'print $F[1]' /usr/share/applications/mimeapps.list | sort | uniq -c"
         results = self._run(cmd)
-        expected_results = "2 \n    294 open-in-dvm.desktop;"
+        expected_results = "2 \n    295 open-in-dvm.desktop;"
         self.assertEqual(results, expected_results)
 
     def test_mimeapps_functional(self):
