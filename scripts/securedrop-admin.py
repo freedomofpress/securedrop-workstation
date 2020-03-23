@@ -114,7 +114,7 @@ def perform_uninstall():
         raise SDAdminException("Error during uninstall")
 
     print(
-        "Instance secrets (Journalist Interface token and Submission private key) are still"
+        "Instance secrets (Journalist Interface token and Submission private key) are still "
         "present on disk. You can delete them in /usr/share/securedrop-workstation-dom0-config"
     )
 
@@ -131,9 +131,10 @@ def main():
         provision_all()
     elif args.uninstall:
         print(
-            "Uninstalling SecureDrop workstation will uninstall all packages and destroy all VMs"
+            "Uninstalling will remove all packages and destroy all VMs associated\n"
+            "with SecureDrop Workstation."
         )
-        response = input("Are you sure you would want to uninstall (y/N)? ")
+        response = input("Are you sure you want to uninstall (y/N)? ")
         if response.lower() != 'y':
             print("Exiting.")
             sys.exit(0)
