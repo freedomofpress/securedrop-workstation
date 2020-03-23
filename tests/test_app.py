@@ -20,13 +20,17 @@ class SD_App_Tests(SD_VM_Local_Test):
         contents = self._get_file_contents(
             "/usr/share/applications/open-in-dvm.desktop"
         )
-        expected_content = "TryExec=/usr/bin/qvm-open-in-vm"
-        self.assertTrue(expected_content in contents)
+        expected_contents = [
+            "TryExec=/usr/bin/qvm-open-in-vm",
+            "Exec=/usr/bin/qvm-open-in-vm --view-only '@dispvm:sd-viewer' %f"
+        ]
+        for line in expected_contents:
+            self.assertTrue(line in contents)
 
     def test_mimeapps(self):
         cmd = "perl -F= -lane 'print $F[1]' /usr/share/applications/mimeapps.list | sort | uniq -c"
         results = self._run(cmd)
-        expected_results = "2 \n    294 open-in-dvm.desktop;"
+        expected_results = "2 \n    295 open-in-dvm.desktop;"
         self.assertEqual(results, expected_results)
 
     def test_mimeapps_functional(self):

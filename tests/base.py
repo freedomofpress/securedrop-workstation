@@ -59,8 +59,11 @@ class SD_VM_Local_Test(unittest.TestCase):
 
         self.vm.start()
 
-    def _run(self, cmd):
-        full_cmd = ["qvm-run", "-p", self.vm_name, cmd]
+    def _run(self, cmd, user=""):
+        full_cmd = ["qvm-run", "-p"]
+        if user:
+            full_cmd += ["-u", user]
+        full_cmd += [self.vm_name, cmd]
         contents = subprocess.check_output(full_cmd).decode("utf-8").strip()
         return contents
 

@@ -5,6 +5,7 @@ text/x-vcard=open-in-dvm.desktop;
 text/directory=open-in-dvm.desktop;
 text/calendar=open-in-dvm.desktop;
 application/x-cd-image=open-in-dvm.desktop;
+application/x-desktop=open-in-dvm.desktop;
 application/x-raw-disk-image=open-in-dvm.desktop;
 application/x-raw-disk-image-xz-compressed=open-in-dvm.desktop;
 image/x-compressed-xcf=open-in-dvm.desktop;

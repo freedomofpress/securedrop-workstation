@@ -62,7 +62,9 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         self.logging_configured(vmname=True)
 
     def test_sd_whonix_verify_tor_config(self):
-        self._run("tor --verify-config")
+        # User must be debian-tor for v3 Onion, due to restrictive
+        # mode on the client keys directory.
+        self._run("tor --verify-config", user="debian-tor")
 
     def test_whonix_torrc(self):
         """
