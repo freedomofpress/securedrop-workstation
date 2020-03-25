@@ -203,15 +203,15 @@ In a terminal in `work`, run the following commands:
 
 2. Configure the RPM package repository:
 
+First, import the signing key:
 ```
-[user@work ~]$ gpg --armor --export 22245C81E3BAEB4138B36061310F561200F4AD77 | sudo tee /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
+[user@work ~]$ gpg --armor --export 22245C81E3BAEB4138B36061310F561200F4AD77 > securedrop-release-key.pub
+[user@work ~]$ sudo rpmkeys --import securedrop-release-key.pub
 ```
 
 Populate `/etc/yum.repos.d/securedrop-temp.repo` with the following contents:
 ```
 [securedrop-workstation-temporary]
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
 enabled=1
 baseurl=https://yum.securedrop.org/workstation/dom0/f25
 name=SecureDrop Workstation Qubes initial install bootstrap
@@ -224,7 +224,23 @@ name=SecureDrop Workstation Qubes initial install bootstrap
 
 The RPM file will be downloaded to your current working directory.
 
-4. Transfer and install RPM package in `dom0`
+4. Verify RPM package signature
+
+```
+[user@work ~]$ rpm -Kv securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm
+```
+
+The output should match the following, and return `OK` for all lines as follows:
+
+```
+securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm:
+    Header V4 RSA/SHA256 Signature, key ID 00f4ad77: OK
+    Header SHA1 digest: OK
+    V4 RSA/SHA256 Signature, key ID 00f4ad77: OK
+    MD5 digest: OK
+```
+
+5. Transfer and install RPM package in `dom0`
 
 *Understand that [copying data to dom0](https://www.qubes-os.org/doc/copy-from-dom0/#copying-to-dom0) goes against the grain of the Qubes security philosophy, and should only done with trusted code and for very specific purposes. Still, be aware of the risks, especially if you rely on your Qubes installation for other sensitive work.*
 
