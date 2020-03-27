@@ -428,11 +428,11 @@ def shutdown_and_start_vms():
             sdlog.error(str(e))
 
     sdlog.info("Starting system fedora-based VMs after updates")
-    for vm in sys_vms_in_order:
+    for vm in reversed(sys_vms_in_order):
         _safely_start_vm(vm)
 
     sdlog.info("Starting SDW VMs after updates")
-    for vm in sdw_vms_in_order:
+    for vm in reversed(sdw_vms_in_order):
         _safely_start_vm(vm)
 
 
