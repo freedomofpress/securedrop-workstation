@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import subprocess
+import qubesadmin
 from datetime import datetime, timedelta
 from enum import Enum
 
@@ -24,6 +25,8 @@ LOCK_FILE = "sdw-launcher.lock"
 LOG_FILE = "launcher.log"
 
 sdlog = logging.getLogger(__name__)
+
+q = qubesadmin.Qubes()
 
 # The are the TemplateVMs that require full patch level at boot in order to start the client,
 # as well as their associated TemplateVMs.
@@ -416,11 +419,15 @@ def shutdown_and_start_vms():
     ]
     sdlog.info("Shutting down SDW VMs for updates")
     for vm in sdw_vms_in_order:
+        if not _vm_needs_reboot:
+            continue
         _safely_shutdown_vm(vm)
 
     sys_vms_in_order = ["sys-firewall", "sys-net", "sys-usb"]
     sdlog.info("Killing system fedora-based VMs for updates")
     for vm in sys_vms_in_order:
+        if not _vm_needs_reboot:
+            continue
         try:
             subprocess.check_call(["qvm-kill", vm])
         except subprocess.CalledProcessError as e:
@@ -522,6 +529,24 @@ def _interval_expired(interval, status):
     if (datetime.now() - update_time) < timedelta(seconds=interval):
         return False
     return True
+
+def _vm_needs_reboot(vm_name)
+    """
+    Determine whether VM should be rebooted in order to apply updates.
+    Mostly relevant for an AppVM, to check whether its TemplateVM has
+    been updated.
+
+    Adapted from:
+    https://github.com/QubesOS/qubes-manager/blob/da2826db20fa852403240a45b3906a6c54b2fe33/qubesmanager/table_widgets.py#L402-L406
+    """
+    is_outdated = False
+    vm = q.domains[vm_name]
+    is_disposable = getattr(vm, 'auto_cleanup', False)
+    for vol in vm.volumes.values():
+        if vol.is_outdated():
+            is_outdated = True
+            break
+    return is_outdated
 
 
 class UpdateStatus(Enum):
