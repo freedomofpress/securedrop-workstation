@@ -649,9 +649,9 @@ def test_shutdown_and_start_vms(
         call(["qvm-kill", "sys-usb"]),
     ]
     sys_vm_start_calls = [
-        call("sys-firewall"),
-        call("sys-net"),
         call("sys-usb"),
+        call("sys-net"),
+        call("sys-firewall"),
     ]
     app_vm_calls = [
         call("sys-whonix"),
@@ -659,11 +659,13 @@ def test_shutdown_and_start_vms(
         call("sd-whonix"),
         call("sd-app"),
         call("sd-gpg"),
+        call("sd-log"),
     ]
     updater.shutdown_and_start_vms()
     mocked_call.assert_has_calls(sys_vm_kill_calls)
     mocked_shutdown.assert_has_calls(app_vm_calls)
-    mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls)
+    app_vm_calls_reversed = list(reversed(app_vm_calls))
+    mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls_reversed)
     assert not mocked_error.called
 
 
@@ -683,9 +685,9 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call(["qvm-kill", "sys-usb"]),
     ]
     sys_vm_start_calls = [
-        call("sys-firewall"),
-        call("sys-net"),
         call("sys-usb"),
+        call("sys-net"),
+        call("sys-firewall"),
     ]
     app_vm_calls = [
         call("sys-whonix"),
@@ -693,6 +695,7 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call("sd-whonix"),
         call("sd-app"),
         call("sd-gpg"),
+        call("sd-log"),
     ]
     error_calls = [
         call("Error while killing sys-firewall"),
@@ -705,7 +708,8 @@ def test_shutdown_and_start_vms_sysvm_fail(
     updater.shutdown_and_start_vms()
     mocked_call.assert_has_calls(sys_vm_kill_calls)
     mocked_shutdown.assert_has_calls(app_vm_calls)
-    mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls)
+    app_vm_calls_reversed = list(reversed(app_vm_calls))
+    mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls_reversed)
     mocked_error.assert_has_calls(error_calls)
 
 
