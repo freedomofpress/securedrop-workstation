@@ -430,10 +430,11 @@ def shutdown_and_start_vms():
     sdlog.info("Killing system fedora-based VMs for updates")
     for vm in sys_vms_in_order:
         try:
-            subprocess.check_call(["qvm-kill", vm])
+            subprocess.check_output(["qvm-kill", vm], stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
             sdlog.error("Error while killing {}".format(vm))
             sdlog.error(str(e))
+            sdlog.error(str(e.stderr))
 
     sdlog.info("Starting system fedora-based VMs after updates")
     for vm in reversed(sys_vms_in_order):
@@ -446,19 +447,23 @@ def shutdown_and_start_vms():
 
 def _safely_shutdown_vm(vm):
     try:
-        subprocess.check_call(["qvm-shutdown", "--wait", vm])
+        subprocess.check_output(["qvm-shutdown", "--wait", vm], stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
         sdlog.error("Failed to shut down {}".format(vm))
         sdlog.error(str(e))
+        sdlog.error(str(e.stderr))
         return UpdateStatus.UPDATES_FAILED
 
 
 def _safely_start_vm(vm):
     try:
-        subprocess.check_call(["qvm-start", "--skip-if-running", vm])
+        subprocess.check_output(
+            ["qvm-start", "--skip-if-running", vm], stderr=subprocess.PIPE
+        )
     except subprocess.CalledProcessError as e:
         sdlog.error("Error while starting {}".format(vm))
         sdlog.error(str(e))
+        sdlog.error(str(e.stderr))
 
 
 def should_launch_updater(interval):
