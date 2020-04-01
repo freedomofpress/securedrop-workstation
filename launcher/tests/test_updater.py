@@ -653,17 +653,27 @@ def test_shutdown_and_start_vms(
         call("sys-net"),
         call("sys-firewall"),
     ]
+    template_vm_calls = [
+        call("fedora-30"),
+        call("sd-viewer-buster-template"),
+        call("sd-app-buster-template"),
+        call("sd-log-buster-template"),
+        call("sd-devices-buster-template"),
+        call("sd-proxy-buster-template"),
+        call("whonix-gw-15"),
+        call("securedrop-workstation-buster"),
+    ]
     app_vm_calls = [
-        call("sys-whonix"),
-        call("sd-proxy"),
-        call("sd-whonix"),
         call("sd-app"),
+        call("sd-proxy"),
+        call("sys-whonix"),
+        call("sd-whonix"),
         call("sd-gpg"),
         call("sd-log"),
     ]
     updater.shutdown_and_start_vms()
     mocked_call.assert_has_calls(sys_vm_kill_calls)
-    mocked_shutdown.assert_has_calls(app_vm_calls)
+    mocked_shutdown.assert_has_calls(template_vm_calls + app_vm_calls)
     app_vm_calls_reversed = list(reversed(app_vm_calls))
     mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls_reversed)
     assert not mocked_error.called
@@ -690,12 +700,22 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call("sys-firewall"),
     ]
     app_vm_calls = [
-        call("sys-whonix"),
-        call("sd-proxy"),
-        call("sd-whonix"),
         call("sd-app"),
+        call("sd-proxy"),
+        call("sys-whonix"),
+        call("sd-whonix"),
         call("sd-gpg"),
         call("sd-log"),
+    ]
+    template_vm_calls = [
+        call("fedora-30"),
+        call("sd-viewer-buster-template"),
+        call("sd-app-buster-template"),
+        call("sd-log-buster-template"),
+        call("sd-devices-buster-template"),
+        call("sd-proxy-buster-template"),
+        call("whonix-gw-15"),
+        call("securedrop-workstation-buster"),
     ]
     error_calls = [
         call("Error while killing sys-firewall"),
@@ -707,7 +727,7 @@ def test_shutdown_and_start_vms_sysvm_fail(
     ]
     updater.shutdown_and_start_vms()
     mocked_call.assert_has_calls(sys_vm_kill_calls)
-    mocked_shutdown.assert_has_calls(app_vm_calls)
+    mocked_shutdown.assert_has_calls(template_vm_calls + app_vm_calls)
     app_vm_calls_reversed = list(reversed(app_vm_calls))
     mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls_reversed)
     mocked_error.assert_has_calls(error_calls)
