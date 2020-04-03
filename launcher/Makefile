@@ -8,7 +8,8 @@ bandit:
 
 .PHONY: test
 test:
-	pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ --cov=sdw_util -v tests/
+	pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ --cov=sdw_util -v tests/ \
+		-k test_safely_start
 
 black: ## Runs the black code formatter on the launcher code
 	black --check .
