@@ -580,11 +580,11 @@ def test_overall_update_status_reboot_not_done_previously(
 
 
 @pytest.mark.parametrize("vm", current_templates.keys())
-@mock.patch("subprocess.check_call")
+@mock.patch("subprocess.check_output")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_safely_shutdown(mocked_info, mocked_error, mocked_call, vm):
-    call_list = [call(["qvm-shutdown", "--wait", "{}".format(vm)])]
+    call_list = [call(["qvm-shutdown", "--wait", "{}".format(vm)], stderr=subprocess.PIPE)]
 
     updater._safely_shutdown_vm(vm)
     mocked_call.assert_has_calls(call_list)
@@ -592,27 +592,31 @@ def test_safely_shutdown(mocked_info, mocked_error, mocked_call, vm):
 
 
 @pytest.mark.parametrize("vm", current_templates.keys())
-@mock.patch("subprocess.check_call")
+@mock.patch("Updater.subprocess")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_safely_start(mocked_info, mocked_error, mocked_call, vm):
-    call_list = [call(["qvm-start", "--skip-if-running", "{}".format(vm)])]
+def test_safely_start(mocked_info, mocked_error, mocked_sp, vm):
+    mocked_vm_ls =  []
+    call_list = [
+        call(["qvm-ls", "--running", "--raw-list"], stderr=mocked_sp.PIPE),
+        call(["qvm-start", "--skip-if-running", "{}".format(vm)], stderr=mocked_sp.PIPE),
+    ]
 
     updater._safely_start_vm(vm)
-    mocked_call.assert_has_calls(call_list)
+    mocked_sp.check_output.assert_has_calls(call_list)
     assert not mocked_error.called
 
 
 @pytest.mark.parametrize("vm", current_templates.keys())
 @mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
+    "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output")
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_safely_start_fails(mocked_info, mocked_error, mocked_call, vm):
     call_list = [
         call("Error while starting {}".format(vm)),
-        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Command 'check_output' returned non-zero exit status 1."),
     ]
 
     updater._safely_start_vm(vm)
@@ -621,14 +625,14 @@ def test_safely_start_fails(mocked_info, mocked_error, mocked_call, vm):
 
 @pytest.mark.parametrize("vm", current_templates.keys())
 @mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
+    "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output")
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_safely_shutdown_fails(mocked_info, mocked_error, mocked_call, vm):
     call_list = [
         call("Failed to shut down {}".format(vm)),
-        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Command 'check_output' returned non-zero exit status 1."),
     ]
 
     updater._safely_shutdown_vm(vm)
