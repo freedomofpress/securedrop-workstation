@@ -407,13 +407,21 @@ def shutdown_and_start_vms():
     """
 
     sdw_vms_in_order = [
-        "sys-whonix",
-        "sd-proxy",
-        "sd-whonix",
         "sd-app",
+        "sd-proxy",
+        "sys-whonix",
+        "sd-whonix",
         "sd-gpg",
         "sd-log",
     ]
+
+    # All TemplateVMs minus dom0
+    sdw_templates = [val for key, val in current_templates.items() if key != "dom0"]
+
+    sdlog.info("Ensure TemplateVMs are shut down")
+    for vm in sdw_templates:
+        _safely_shutdown_vm(vm)
+
     sdlog.info("Shutting down SDW VMs for updates")
     for vm in sdw_vms_in_order:
         _safely_shutdown_vm(vm)
