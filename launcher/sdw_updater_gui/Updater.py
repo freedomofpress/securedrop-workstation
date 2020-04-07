@@ -457,9 +457,13 @@ def _safely_shutdown_vm(vm):
 
 def _safely_start_vm(vm):
     try:
-        running_vms = subprocess.check_output(
-            ["qvm-ls", "--running", "--raw-list"], stderr=subprocess.PIPE
-        ).decode("utf-8").strip().split("\n")
+        running_vms = (
+            subprocess.check_output(
+                ["qvm-ls", "--running", "--raw-list"], stderr=subprocess.PIPE
+            )
+            .strip()
+            .split("\n")
+        )
         sdlog.info("VMs running before start of {}: {}".format(vm, running_vms))
         subprocess.check_output(
             ["qvm-start", "--skip-if-running", vm], stderr=subprocess.PIPE
