@@ -1,54 +1,41 @@
-# checking for updates
-description_status_checking_updates = (
-    "<h3> Checking for updates... </h3> <p>This should take around 3 to 5 minutes.</p>"
+headline_introduction = "Preflight security updates"
+description_introduction = (
+    "<p>To keep your Workstation safe, daily software updates are required.</p> "
+    "<p>This typically takes between 5 and 30 minutes. You cannot use the SecureDrop "
+    "Client or any of its VMs while the updater is running.</p>"
+    "<p><span style='color:#E62354;'><b>Interrupting software updates may break "
+    "the Workstation.</b></span> Please cancel and return later if you are pressed "
+    "for time.</p>"
 )
 
-# Results of update search
-description_status_updates_available = (
-    "<h3> Security updates required. </h3><p>Before you can safely use the SecureDrop "
-    "app, Qubes needs to download and install critical security updates.</p>"
-    "<p>Updates should take around 5 to 10 minutes. The computer may need to be restarted "
-    "after updates are complete.</p>"
-    "<p><b>Network access will be briefly interrupted as VMs are rebooting.</b></p>"
-    "<p><b>Any interruption in this process may break Workstation components.</p></b>"
-    "<p>Please close this window if now is a bad time, or click <em>Start Updates</em> "
-    "to continue.</p>"
-)
-description_status_up_to_date = (
-    "<h3> No updates today!</h3>" "<p>Click <em>Continue</em> to launch the SecureDrop app.</p>"
-)
-description_error_check_updates_failed = (
-    "<h3> Cannot check for updates </h3> There was an error retrieving updates. "
-    "Please check your Internet connection. If this problem persists, "
-    "please contact your administrator."
-)
-# Applying updates
+headline_applying_updates = "Updates in progress…"
 description_status_applying_updates = (
-    "<h3> Downloading and installing updates... </h3>"
-    "<p>You will see a flood of Qubes notifications as VMs are restarted "
-    "during this process.</p><br>"
-    "<h3>Do not shut down the computer or close this window until updating is "
-    "complete.</h3>"
+    "<p>You will see a flood of Qubes notifications as VMs are restarted. "
+    "Network and USB device access will be interrupted briefly.</p>"
+    "<p><span style='color:#E62354;'><b>Do not close this window, shut down the "
+    "computer, or close the laptop lid</b></span> until the process is done. "
+    "The screensaver will not affect it.</p>"
 )
+
+headline_status_updates_complete = "All updates complete!"
 description_status_updates_complete = (
-    "<h3> All updates complete!</h3>"
-    "Click <em>Continue</em> to launch the SecureDrop app. No reboot is necessary."
+    "Click <em>Continue</em> to launch the SecureDrop Client. No reboot is necessary."
 )
-description_status_security_updates_failed = (
-    "<h3> Security updates cannot be applied at this time</h3>"
+
+headline_status_updates_failed = "Security updates failed"
+description_status_updates_failed = (
     "There was an error downloading or installing updates for your workstation. "
-    "The SecureDrop app cannot be started at this time. Please contact your administrator."
+    "The SecureDrop Client cannot be started at this time. Please contact your administrator."
 )
 # Post-update actions (launching client, reboot)
+headline_status_reboot_required = "All updates complete!"
 description_status_reboot_required = (
-    "<h3> All updates complete!</h3>"
-    "A reboot is required for security updates to be applied. "
+    "You need to reboot the computer for updates to be completed. "
     "Please click the <em>Reboot</em> button to continue."
 )
-description_status_rebooting = "<h3> Rebooting workstation</h3>"
-description_error_reboot = (
-    "<h3> Error rebooting workstation</h3>" "<p>Please contact your administrator.</p>"
-)
-description_error_lauching_client = (
-    "<h3> Error launching the SecureDrop application</h3>" "Please contact your administrator."
-)
+
+headline_status_rebooting = "Rebooting Workstation"
+description_status_rebooting = ""
+
+headline_status_error_reboot = "Error rebooting Workstation"
+description_error_reboot = "<p>Please contact your administrator.</p>"
