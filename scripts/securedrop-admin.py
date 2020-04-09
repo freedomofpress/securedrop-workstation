@@ -79,6 +79,22 @@ def validate_config(path):
         raise SDAdminException("Error while validating configuration")
 
 
+def refresh_salt():
+    """
+    Cleans the Salt cache and synchronizes Salt to ensure we are applying states
+    from the currently installed version
+    """
+    try:
+        subprocess.check_call(["sudo", "rm", "-rf", "/var/cache/salt"])
+    except subprocess.CalledProcessError:
+        raise SDAdminException("Error while clearing Salt cache")
+
+    try:
+        subprocess.check_call(["sudo", "qubesctl", "saltutil.sync_all", "refresh=true"])
+    except subprocess.CalledProcessError:
+        raise SDAdminException("Error while synchronizing Salt")
+
+
 def perform_uninstall():
 
     try:
@@ -128,6 +144,7 @@ def main():
         print("Applying configuration...")
         validate_config(SCRIPTS_PATH)
         copy_config()
+        refresh_salt()
         provision_all()
     elif args.uninstall:
         print(
@@ -139,6 +156,7 @@ def main():
             print("Exiting.")
             sys.exit(0)
         else:
+            refresh_salt()
             perform_uninstall()
     else:
         sys.exit(0)
