@@ -402,14 +402,14 @@ def shutdown_and_start_vms():
     correct order of operations, as sd-whonix cannot shutdown if sd-proxy is powered
     on, for example.
 
-    System AppVMs(sys-net, sys-firewall and sys-usb) will need to be killed and restarted
-    in case they are being used by another non-workstation VM.
+    All system AppVMs (sys-net, sys-firewall and sys-usb) need to be restarted.
+    We use qvm-kill for sys-firewall and sys-net, because a shutdown may fail
+    if they are currently in use as NetVMs by any of the user's other VMs.
     """
 
     sdw_vms_in_order = [
         "sd-app",
         "sd-proxy",
-        "sys-whonix",
         "sd-whonix",
         "sd-gpg",
         "sd-log",
@@ -418,26 +418,36 @@ def shutdown_and_start_vms():
     # All TemplateVMs minus dom0
     sdw_templates = [val for key, val in current_templates.items() if key != "dom0"]
 
-    sdlog.info("Ensure TemplateVMs are shut down")
+    sdlog.info("Shutting down SDW TemplateVMs for updates")
     for vm in sdw_templates:
         _safely_shutdown_vm(vm)
 
-    sdlog.info("Shutting down SDW VMs for updates")
+    sdlog.info("Shutting down SDW AppVMs for updates")
     for vm in sdw_vms_in_order:
         _safely_shutdown_vm(vm)
 
-    sys_vms_in_order = ["sys-firewall", "sys-net", "sys-usb"]
-    sdlog.info("Killing system fedora-based VMs for updates")
-    for vm in sys_vms_in_order:
+    # System VMs that can be safely shut down (order should not matter, but will
+    # be respected).
+    safe_sys_vms_in_order = ["sys-usb", "sys-whonix"]
+    for vm in safe_sys_vms_in_order:
+        sdlog.info("Safely shutting down system VM: {}".format(vm))
+        _safely_shutdown_vm(vm)
+
+    # TODO: Use of qvm-kill should be considered unsafe and may have unexpected
+    # side effects. We should aim for a more graceful shutdown strategy.
+    unsafe_sys_vms_in_order = ["sys-firewall", "sys-net"]
+    for vm in unsafe_sys_vms_in_order:
+        sdlog.info("Killing system VM: {}".format(vm))
         try:
             subprocess.check_output(["qvm-kill", vm], stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
-            sdlog.error("Error while killing {}".format(vm))
+            sdlog.error("Error while killing system VM: {}".format(vm))
             sdlog.error(str(e))
             sdlog.error(str(e.stderr))
 
-    sdlog.info("Starting system fedora-based VMs after updates")
-    for vm in reversed(sys_vms_in_order):
+    all_sys_vms_in_order = safe_sys_vms_in_order + unsafe_sys_vms_in_order
+    sdlog.info("Starting fedora-based system VMs after updates")
+    for vm in reversed(all_sys_vms_in_order):
         _safely_start_vm(vm)
 
     sdlog.info("Starting SDW VMs after updates")
