@@ -17,6 +17,8 @@ dom0-rpc-qubes.ClipboardPaste:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
+        @tag:send-clipboard-to-sd @tag:sd-workstation ask
+        @tag:sd-workstation @tag:receive-clipboard-from-sd ask
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
 dom0-rpc-qubes.FeaturesRequest:
@@ -35,6 +37,7 @@ dom0-rpc-qubes.Filecopy:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
+        sd-log @tag:receive-sd-logs ask
         sd-proxy @tag:sd-client allow
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
