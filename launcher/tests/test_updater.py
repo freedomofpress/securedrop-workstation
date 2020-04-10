@@ -98,11 +98,12 @@ def test_check_updates_dom0_needs_updates(
     assert not mocked_info.called
 
 
+@mock.patch("subprocess.check_output", return_value="0")
 @mock.patch("subprocess.check_call", return_value=0)
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_check_debian_updates_up_to_date(
-    mocked_info, mocked_error, mocked_call, capsys
+    mocked_info, mocked_error, mocked_call, mocked_output, capsys
 ):
     status = updater._check_updates_debian("sd-app")
     assert status == UpdateStatus.UPDATES_OK
@@ -115,13 +116,16 @@ def test_check_debian_updates_up_to_date(
 
 
 @mock.patch(
+    "subprocess.check_output", side_effect=["0", "0"],
+)
+@mock.patch(
     "subprocess.check_call",
     side_effect=[subprocess.CalledProcessError(1, "check_call"), "0"],
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_check_updates_debian_updates_required(
-    mocked_info, mocked_error, mocked_call, capsys
+    mocked_info, mocked_error, mocked_call, mocked_output, capsys
 ):
     status = updater._check_updates_debian("sd-app")
     assert status == UpdateStatus.UPDATES_REQUIRED
@@ -141,11 +145,17 @@ def test_check_updates_debian_updates_required(
 
 
 @mock.patch(
+    "subprocess.check_output",
+    side_effect=subprocess.CalledProcessError(1, "check_output",),
+)
+@mock.patch(
     "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_check_debian_updates_failed(mocked_info, mocked_error, mocked_call, capsys):
+def test_check_debian_updates_failed(
+    mocked_info, mocked_error, mocked_call, mocked_output, capsys
+):
     status = updater._check_updates_debian("sd-app")
     assert status == UpdateStatus.UPDATES_FAILED
     error_log = [
@@ -156,7 +166,7 @@ def test_check_debian_updates_failed(mocked_info, mocked_error, mocked_call, cap
         ),
         call("Command 'check_call' returned non-zero exit status 1."),
         call("Failed to shut down {}".format("sd-app-buster-template")),
-        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Command 'check_output' returned non-zero exit status 1."),
     ]
     info_log = [
         call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template"))
@@ -166,12 +176,17 @@ def test_check_debian_updates_failed(mocked_info, mocked_error, mocked_call, cap
 
 
 @mock.patch(
+    "subprocess.check_output", side_effect="0",
+)
+@mock.patch(
     "subprocess.check_call",
     side_effect=[subprocess.CalledProcessError(1, "check_call"), "0", "0"],
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_check_debian_has_updates(mocked_info, mocked_error, mocked_call, capsys):
+def test_check_debian_has_updates(
+    mocked_info, mocked_error, mocked_call, mocked_output, capsys
+):
     error_log = [
         call(
             "Updates required for {} or cannot check for updates".format(
@@ -199,11 +214,12 @@ def test_check_updates_fedora_calls_fedora(mocked_info, mocked_error):
 
 
 @pytest.mark.parametrize("vm", current_templates.keys())
+@mock.patch("subprocess.check_output")
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_check_updates_calls_correct_commands(
-    mocked_info, mocked_error, mocked_call, vm
+    mocked_info, mocked_error, mocked_call, mocked_output, vm
 ):
     status = updater.check_updates(vm)
     if vm == "fedora":
@@ -221,16 +237,21 @@ def test_check_updates_calls_correct_commands(
                     "[[ $(apt list --upgradable | wc -l) -eq 1 ]]",
                 ]
             ),
-            call(["qvm-shutdown", "--wait", current_templates[vm]]),
+        ]
+        check_output_call_list = [
+            call(["qvm-shutdown", "--wait", current_templates[vm]], stderr=-1),
         ]
     elif vm == "dom0":
         subprocess_call_list = [call(["sudo", "qubes-dom0-update", "--check-only"])]
+        check_output_call_list = []
     elif vm == "fedora":
         subprocess_call_list = []
+        check_output_call_list = []
     else:
         pytest.fail("Unupported VM: {}".format(vm))
 
     mocked_call.assert_has_calls(subprocess_call_list)
+    mocked_output.assert_has_calls(check_output_call_list)
     assert not mocked_error.called
 
 
@@ -443,6 +464,7 @@ def test_write_last_updated_flags_dom0_folder_creation_fail(
     mocked_error.assert_has_calls(error_log)
 
 
+@mock.patch("subprocess.check_output")
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater._write_updates_status_flag_to_disk")
 @mock.patch("Updater._write_last_updated_flags_to_disk")
@@ -458,6 +480,7 @@ def test_apply_updates_dom0_success(
     write_updated,
     write_status,
     mocked_call,
+    mocked_output,
 ):
     result = updater._apply_updates_dom0()
     assert result == UpdateStatus.REBOOT_REQUIRED
@@ -580,39 +603,45 @@ def test_overall_update_status_reboot_not_done_previously(
 
 
 @pytest.mark.parametrize("vm", current_templates.keys())
-@mock.patch("subprocess.check_call")
+@mock.patch("subprocess.check_output")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_safely_shutdown(mocked_info, mocked_error, mocked_call, vm):
-    call_list = [call(["qvm-shutdown", "--wait", "{}".format(vm)])]
+def test_safely_shutdown(mocked_info, mocked_error, mocked_output, vm):
+    call_list = [call(["qvm-shutdown", "--wait", "{}".format(vm)], stderr=-1)]
 
     updater._safely_shutdown_vm(vm)
-    mocked_call.assert_has_calls(call_list)
-    assert not mocked_error.called
-
-
-@pytest.mark.parametrize("vm", current_templates.keys())
-@mock.patch("subprocess.check_call")
-@mock.patch("Updater.sdlog.error")
-@mock.patch("Updater.sdlog.info")
-def test_safely_start(mocked_info, mocked_error, mocked_call, vm):
-    call_list = [call(["qvm-start", "--skip-if-running", "{}".format(vm)])]
-
-    updater._safely_start_vm(vm)
-    mocked_call.assert_has_calls(call_list)
+    mocked_output.assert_has_calls(call_list)
     assert not mocked_error.called
 
 
 @pytest.mark.parametrize("vm", current_templates.keys())
 @mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
+    "subprocess.check_output", side_effect=["0", "0", "0"],
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_safely_start_fails(mocked_info, mocked_error, mocked_call, vm):
+def test_safely_start(mocked_info, mocked_error, mocked_output, vm):
+    call_list = [
+        call(["qvm-ls", "--running", "--raw-list"], stderr=-1),
+        call(["qvm-start", "--skip-if-running", vm], stderr=-1),
+    ]
+
+    updater._safely_start_vm(vm)
+    mocked_output.assert_has_calls(call_list)
+    assert not mocked_error.called
+
+
+@pytest.mark.parametrize("vm", current_templates.keys())
+@mock.patch(
+    "subprocess.check_output",
+    side_effect=subprocess.CalledProcessError(1, "check_output"),
+)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_safely_start_fails(mocked_info, mocked_error, mocked_output, vm):
     call_list = [
         call("Error while starting {}".format(vm)),
-        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Command 'check_output' returned non-zero exit status 1."),
     ]
 
     updater._safely_start_vm(vm)
@@ -621,32 +650,33 @@ def test_safely_start_fails(mocked_info, mocked_error, mocked_call, vm):
 
 @pytest.mark.parametrize("vm", current_templates.keys())
 @mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
+    "subprocess.check_output",
+    side_effect=subprocess.CalledProcessError(1, "check_output"),
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_safely_shutdown_fails(mocked_info, mocked_error, mocked_call, vm):
     call_list = [
         call("Failed to shut down {}".format(vm)),
-        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Command 'check_output' returned non-zero exit status 1."),
     ]
 
     updater._safely_shutdown_vm(vm)
     mocked_error.assert_has_calls(call_list)
 
 
-@mock.patch("subprocess.check_call")
+@mock.patch("subprocess.check_output")
 @mock.patch("Updater._safely_start_vm")
 @mock.patch("Updater._safely_shutdown_vm")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_shutdown_and_start_vms(
-    mocked_info, mocked_error, mocked_shutdown, mocked_start, mocked_call
+    mocked_info, mocked_error, mocked_shutdown, mocked_start, mocked_output
 ):
     sys_vm_kill_calls = [
-        call(["qvm-kill", "sys-firewall"]),
-        call(["qvm-kill", "sys-net"]),
-        call(["qvm-kill", "sys-usb"]),
+        call(["qvm-kill", "sys-firewall"], stderr=-1),
+        call(["qvm-kill", "sys-net"], stderr=-1),
+        call(["qvm-kill", "sys-usb"], stderr=-1),
     ]
     sys_vm_start_calls = [
         call("sys-usb"),
@@ -672,7 +702,7 @@ def test_shutdown_and_start_vms(
         call("sd-log"),
     ]
     updater.shutdown_and_start_vms()
-    mocked_call.assert_has_calls(sys_vm_kill_calls)
+    mocked_output.assert_has_calls(sys_vm_kill_calls)
     mocked_shutdown.assert_has_calls(template_vm_calls + app_vm_calls)
     app_vm_calls_reversed = list(reversed(app_vm_calls))
     mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls_reversed)
@@ -680,19 +710,20 @@ def test_shutdown_and_start_vms(
 
 
 @mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
+    "subprocess.check_output",
+    side_effect=subprocess.CalledProcessError(1, "check_output"),
 )
 @mock.patch("Updater._safely_start_vm")
 @mock.patch("Updater._safely_shutdown_vm")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_shutdown_and_start_vms_sysvm_fail(
-    mocked_info, mocked_error, mocked_shutdown, mocked_start, mocked_call
+    mocked_info, mocked_error, mocked_shutdown, mocked_start, mocked_output
 ):
     sys_vm_kill_calls = [
-        call(["qvm-kill", "sys-firewall"]),
-        call(["qvm-kill", "sys-net"]),
-        call(["qvm-kill", "sys-usb"]),
+        call(["qvm-kill", "sys-firewall"], stderr=-1),
+        call(["qvm-kill", "sys-net"], stderr=-1),
+        call(["qvm-kill", "sys-usb"], stderr=-1),
     ]
     sys_vm_start_calls = [
         call("sys-usb"),
@@ -719,14 +750,17 @@ def test_shutdown_and_start_vms_sysvm_fail(
     ]
     error_calls = [
         call("Error while killing sys-firewall"),
-        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Command 'check_output' returned non-zero exit status 1."),
+        call("None"),
         call("Error while killing sys-net"),
-        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Command 'check_output' returned non-zero exit status 1."),
+        call("None"),
         call("Error while killing sys-usb"),
-        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Command 'check_output' returned non-zero exit status 1."),
+        call("None"),
     ]
     updater.shutdown_and_start_vms()
-    mocked_call.assert_has_calls(sys_vm_kill_calls)
+    mocked_output.assert_has_calls(sys_vm_kill_calls)
     mocked_shutdown.assert_has_calls(template_vm_calls + app_vm_calls)
     app_vm_calls_reversed = list(reversed(app_vm_calls))
     mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls_reversed)
