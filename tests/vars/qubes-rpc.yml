@@ -17,6 +17,7 @@
 - policy: qubes.Filecopy
   starts_with: |-
     ### BEGIN securedrop-workstation ###
+    sd-log @default ask
     sd-log @tag:receive-sd-logs ask
     sd-proxy @tag:sd-client allow
     @anyvm @tag:sd-workstation deny
