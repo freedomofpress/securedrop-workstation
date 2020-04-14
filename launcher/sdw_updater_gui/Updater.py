@@ -514,7 +514,7 @@ def _wait_for_is_running(vm, expected, timeout=60, interval=0.2):
     timeout is reached.
 
     Return value:
-    - True if the VM reached the expeted state
+    - True if the VM reached the expected state
     - False if it did not
     """
     start_time = time.time()
