@@ -11,8 +11,18 @@ import json
 import logging
 import os
 import subprocess
+import time
 from datetime import datetime, timedelta
 from enum import Enum
+
+# Used for VM checks when run in Qubes dom0
+try:
+    import qubesadmin
+
+    qubes = qubesadmin.Qubes()
+except ImportError:
+    qubes = None
+
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_HOME = ".securedrop_launcher"
@@ -403,8 +413,8 @@ def shutdown_and_start_vms():
     on, for example.
 
     All system AppVMs (sys-net, sys-firewall and sys-usb) need to be restarted.
-    We use qvm-kill for sys-firewall and sys-net, because a shutdown may fail
-    if they are currently in use as NetVMs by any of the user's other VMs.
+    We use a forced shutdown for sys-net and sys-firewall because a regular
+    shutdown command will return an error if they are in use as NetVMs.
     """
 
     sdw_vms_in_order = [
@@ -433,17 +443,10 @@ def shutdown_and_start_vms():
         sdlog.info("Safely shutting down system VM: {}".format(vm))
         _safely_shutdown_vm(vm)
 
-    # TODO: Use of qvm-kill should be considered unsafe and may have unexpected
-    # side effects. We should aim for a more graceful shutdown strategy.
     unsafe_sys_vms_in_order = ["sys-firewall", "sys-net"]
     for vm in unsafe_sys_vms_in_order:
-        sdlog.info("Killing system VM: {}".format(vm))
-        try:
-            subprocess.check_output(["qvm-kill", vm], stderr=subprocess.PIPE)
-        except subprocess.CalledProcessError as e:
-            sdlog.error("Error while killing system VM: {}".format(vm))
-            sdlog.error(str(e))
-            sdlog.error(str(e.stderr))
+        sdlog.info("Forcing shutdown of system VM: {}".format(vm))
+        _force_shutdown_vm(vm)
 
     all_sys_vms_in_order = safe_sys_vms_in_order + unsafe_sys_vms_in_order
     sdlog.info("Starting fedora-based system VMs after updates")
@@ -463,6 +466,75 @@ def _safely_shutdown_vm(vm):
         sdlog.error(str(e))
         sdlog.error(str(e.stderr))
         return UpdateStatus.UPDATES_FAILED
+
+
+def _force_shutdown_vm(vm):
+    """
+    Qubes does not yet provide an option to force shutdown for VMs that act as
+    NetVMs. Issuing a poweroff command and polling for the VM to stop running
+    is the recommended workaround until then.
+
+    Return value:
+    - True - if VM was successfully shut down or is not running
+    - False - if there was a problem shutting down the VM (logged as error)
+    """
+    if vm not in qubes.domains:
+        sdlog.error(
+            "Error shutting down VM '{}'. No VM with this name found.".format(vm)
+        )
+        return False
+
+    if qubes.domains[vm].is_running() is False:
+        sdlog.info("VM '{}' is not running. No shutdown necessary.".format(vm))
+        return True
+
+    if qubes.domains[vm].is_paused():
+        sdlog.info("VM '{}' is paused. Unpausing before shutdown.".format(vm))
+        qubes.domains[vm].unpause()
+
+    try:
+        qubes.domains[vm].run("poweroff", user="root")
+    except subprocess.CalledProcessError as e:
+        # Exit codes 1 and 143 may occur with successful shutdown; log others
+        if e.returncode != 1 and e.returncode != 143:
+            sdlog.error(
+                "Error shutting down VM '{}'. "
+                "poweroff command returned unexpected exit code {}.".format(
+                    vm, e.returncode
+                )
+            )
+            return False
+
+    return _wait_for_is_running(vm, False)
+
+
+def _wait_for_is_running(vm, expected, timeout=60, interval=0.2):
+    """
+    Poll for a VM to enter the given is_running state, and give up after a
+    timeout is reached.
+
+    Return value:
+    - True if the VM reached the expeted state
+    - False if it did not
+    """
+    start_time = time.time()
+    stop_time = start_time + timeout
+    while time.time() < stop_time:
+        state = qubes.domains[vm].is_running()
+        elapsed = time.time() - start_time
+        if state == expected:
+            sdlog.info(
+                "VM '{}' entered expected state (is_running() is {}) "
+                "after {:.2f} seconds of polling.".format(vm, expected, elapsed)
+            )
+            return True
+        time.sleep(interval)
+
+    sdlog.error(
+        "VM '{}' did not enter expected state (is_running() is {}) "
+        "in the provided timeout of {} seconds.".format(vm, expected, timeout)
+    )
+    return False
 
 
 def _safely_start_vm(vm):

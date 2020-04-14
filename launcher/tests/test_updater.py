@@ -668,15 +668,18 @@ def test_safely_shutdown_fails(mocked_info, mocked_error, mocked_call, vm):
 @mock.patch("subprocess.check_output")
 @mock.patch("Updater._safely_start_vm")
 @mock.patch("Updater._safely_shutdown_vm")
+@mock.patch("Updater._force_shutdown_vm")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_shutdown_and_start_vms(
-    mocked_info, mocked_error, mocked_shutdown, mocked_start, mocked_output
+    mocked_info,
+    mocked_error,
+    mocked_force_shutdown,
+    mocked_shutdown,
+    mocked_start,
+    mocked_output,
 ):
-    sys_vm_kill_calls = [
-        call(["qvm-kill", "sys-firewall"], stderr=-1),
-        call(["qvm-kill", "sys-net"], stderr=-1),
-    ]
+    force_shutdown_calls = [call("sys-firewall"), call("sys-net")]
     sys_vm_shutdown_calls = [
         call("sys-usb"),
         call("sys-whonix"),
@@ -705,67 +708,13 @@ def test_shutdown_and_start_vms(
         call("sd-log"),
     ]
     updater.shutdown_and_start_vms()
-    mocked_output.assert_has_calls(sys_vm_kill_calls)
+    mocked_force_shutdown.assert_has_calls(force_shutdown_calls)
     mocked_shutdown.assert_has_calls(
         template_vm_calls + app_vm_calls + sys_vm_shutdown_calls
     )
     app_vm_calls_reversed = list(reversed(app_vm_calls))
     mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls_reversed)
     assert not mocked_error.called
-
-
-@mock.patch(
-    "subprocess.check_output",
-    side_effect=subprocess.CalledProcessError(1, "check_output"),
-)
-@mock.patch("Updater._safely_start_vm")
-@mock.patch("Updater._safely_shutdown_vm")
-@mock.patch("Updater.sdlog.error")
-@mock.patch("Updater.sdlog.info")
-def test_shutdown_and_start_vms_sysvm_fail(
-    mocked_info, mocked_error, mocked_shutdown, mocked_start, mocked_output
-):
-    sys_vm_kill_calls = [
-        call(["qvm-kill", "sys-firewall"], stderr=-1),
-        call(["qvm-kill", "sys-net"], stderr=-1),
-    ]
-    sys_vm_start_calls = [
-        call("sys-net"),
-        call("sys-firewall"),
-        call("sys-whonix"),
-        call("sys-usb"),
-    ]
-    app_vm_calls = [
-        call("sd-app"),
-        call("sd-proxy"),
-        call("sd-whonix"),
-        call("sd-gpg"),
-        call("sd-log"),
-    ]
-    template_vm_calls = [
-        call("fedora-30"),
-        call("sd-viewer-buster-template"),
-        call("sd-app-buster-template"),
-        call("sd-log-buster-template"),
-        call("sd-devices-buster-template"),
-        call("sd-proxy-buster-template"),
-        call("whonix-gw-15"),
-        call("securedrop-workstation-buster"),
-    ]
-    error_calls = [
-        call("Error while killing system VM: sys-firewall"),
-        call("Command 'check_output' returned non-zero exit status 1."),
-        call("None"),
-        call("Error while killing system VM: sys-net"),
-        call("Command 'check_output' returned non-zero exit status 1."),
-        call("None"),
-    ]
-    updater.shutdown_and_start_vms()
-    mocked_output.assert_has_calls(sys_vm_kill_calls)
-    mocked_shutdown.assert_has_calls(template_vm_calls + app_vm_calls)
-    app_vm_calls_reversed = list(reversed(app_vm_calls))
-    mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls_reversed)
-    mocked_error.assert_has_calls(error_calls)
 
 
 @pytest.mark.parametrize("status", UpdateStatus)
