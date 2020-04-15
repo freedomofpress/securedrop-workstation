@@ -676,12 +676,16 @@ def test_shutdown_and_start_vms(
     sys_vm_kill_calls = [
         call(["qvm-kill", "sys-firewall"], stderr=-1),
         call(["qvm-kill", "sys-net"], stderr=-1),
-        call(["qvm-kill", "sys-usb"], stderr=-1),
+    ]
+    sys_vm_shutdown_calls = [
+        call("sys-usb"),
+        call("sys-whonix"),
     ]
     sys_vm_start_calls = [
-        call("sys-usb"),
         call("sys-net"),
         call("sys-firewall"),
+        call("sys-whonix"),
+        call("sys-usb"),
     ]
     template_vm_calls = [
         call("fedora-30"),
@@ -696,14 +700,15 @@ def test_shutdown_and_start_vms(
     app_vm_calls = [
         call("sd-app"),
         call("sd-proxy"),
-        call("sys-whonix"),
         call("sd-whonix"),
         call("sd-gpg"),
         call("sd-log"),
     ]
     updater.shutdown_and_start_vms()
     mocked_output.assert_has_calls(sys_vm_kill_calls)
-    mocked_shutdown.assert_has_calls(template_vm_calls + app_vm_calls)
+    mocked_shutdown.assert_has_calls(
+        template_vm_calls + app_vm_calls + sys_vm_shutdown_calls
+    )
     app_vm_calls_reversed = list(reversed(app_vm_calls))
     mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls_reversed)
     assert not mocked_error.called
@@ -723,17 +728,16 @@ def test_shutdown_and_start_vms_sysvm_fail(
     sys_vm_kill_calls = [
         call(["qvm-kill", "sys-firewall"], stderr=-1),
         call(["qvm-kill", "sys-net"], stderr=-1),
-        call(["qvm-kill", "sys-usb"], stderr=-1),
     ]
     sys_vm_start_calls = [
-        call("sys-usb"),
         call("sys-net"),
         call("sys-firewall"),
+        call("sys-whonix"),
+        call("sys-usb"),
     ]
     app_vm_calls = [
         call("sd-app"),
         call("sd-proxy"),
-        call("sys-whonix"),
         call("sd-whonix"),
         call("sd-gpg"),
         call("sd-log"),
@@ -749,13 +753,10 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call("securedrop-workstation-buster"),
     ]
     error_calls = [
-        call("Error while killing sys-firewall"),
+        call("Error while killing system VM: sys-firewall"),
         call("Command 'check_output' returned non-zero exit status 1."),
         call("None"),
-        call("Error while killing sys-net"),
-        call("Command 'check_output' returned non-zero exit status 1."),
-        call("None"),
-        call("Error while killing sys-usb"),
+        call("Error while killing system VM: sys-net"),
         call("Command 'check_output' returned non-zero exit status 1."),
         call("None"),
     ]
