@@ -19,7 +19,7 @@ from enum import Enum
 try:
     import qubesadmin
 
-    qubes = qubesadmin.Qubes()
+    qubes = qubesadmin.Qubes()  # pragma: no cover
 except ImportError:
     qubes = None
 
@@ -505,13 +505,13 @@ def _force_shutdown_vm(vm):
             )
             return False
 
-    return _wait_for_is_running(vm, False)
+    return _wait_for(vm, (lambda vm: qubes.domains[vm].is_running() is False))
 
 
-def _wait_for_is_running(vm, expected, timeout=60, interval=0.2):
+def _wait_for(vm, condition, timeout=60, interval=0.2):
     """
-    Poll for a VM to enter the given is_running state, and give up after a
-    timeout is reached.
+    Poll for a VM to enter the state using the function condition()
+    that must return True when the state is reached
 
     Return value:
     - True if the VM reached the expected state
@@ -520,19 +520,21 @@ def _wait_for_is_running(vm, expected, timeout=60, interval=0.2):
     start_time = time.time()
     stop_time = start_time + timeout
     while time.time() < stop_time:
-        state = qubes.domains[vm].is_running()
+        # Evaluate condition before time measurement to include its runtime
+        condition_reached = condition(vm)
         elapsed = time.time() - start_time
-        if state == expected:
+        if condition_reached:
             sdlog.info(
-                "VM '{}' entered expected state (is_running() is {}) "
-                "after {:.2f} seconds of polling.".format(vm, expected, elapsed)
+                "VM '{}' entered expected state after {:.2f} seconds of "
+                "polling.".format(vm, elapsed)
             )
+
             return True
         time.sleep(interval)
 
     sdlog.error(
-        "VM '{}' did not enter expected state (is_running() is {}) "
-        "in the provided timeout of {} seconds.".format(vm, expected, timeout)
+        "VM '{}' did not enter expected state in the provided timeout of "
+        "{} seconds.".format(vm, timeout)
     )
     return False
 

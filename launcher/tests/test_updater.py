@@ -1,8 +1,8 @@
 import json
 import os
 import pytest
-import time
 import subprocess
+import re
 from importlib.machinery import SourceFileLoader
 from datetime import datetime, timedelta
 from tempfile import TemporaryDirectory
@@ -56,6 +56,13 @@ TEST_RESULTS_UPDATES = {
     "sd-app": UpdateStatus.UPDATES_OK,
     "sd-viewer": UpdateStatus.UPDATES_REQUIRED,
 }
+
+VM_POLLING_REGEX_SUCCESS = (
+    r"VM '.*' entered expected state after (.*) seconds of polling."
+)
+VM_POLLING_REGEX_FAILURE = (
+    r"VM '.*' did not enter expected state in the provided timeout of (.*) seconds."
+)
 
 
 def test_updater_vms_present():
@@ -507,20 +514,34 @@ def test_apply_updates_dom0_failure(mocked_info, mocked_error, mocked_call):
 
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_vm_polling(mocked_info, mocked_error):
-    def mock_api(results):
-        for r in results:
-            yield r
-            time.sleep(0.1)
+def test_vm_polling_success(mocked_info, mocked_error):
+    poll_results = mock.MagicMock(side_effect=(False, False, True))
+    assert updater._wait_for("sys-net", poll_results, interval=0.1, timeout=1) is True
+    assert mocked_info.called
+    info_string = mocked_info.call_args[0][0]
+    match = re.search(VM_POLLING_REGEX_SUCCESS, info_string)
+    assert match is not None
+    elapsed = float(match.group(1))
+    # With a sleep interval of 0.1, at least 0.2 seconds should pass before we
+    # get the expected result.
+    assert elapsed >= 0.20
+    assert not mocked_error.called
 
-    with mock.patch("Updater.qubes") as mocked_qubes:
-        mocked_qubes.domains = {"sys-net": mock.MagicMock()}
-        mocked_qubes.domains["sys-net"].is_running = mock.MagicMock(
-            side_effect=mock_api((True, True, False))
-        )
-        assert updater._wait_for_is_running("sys-net", False, timeout=1) is True
-        assert mocked_info.called
-        assert not mocked_error.called
+
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_vm_polling_failure(mocked_info, mocked_error):
+    poll_results = mock.MagicMock(side_effect=(False, False, False))
+    assert (
+        updater._wait_for("sys-net", poll_results, interval=0.1, timeout=0.3) is False
+    )
+    assert not mocked_info.called
+    assert mocked_error.called
+    error_string = mocked_error.call_args[0][0]
+    match = re.search(VM_POLLING_REGEX_FAILURE, error_string)
+    assert match is not None
+    timeout = float(match.group(1))
+    assert timeout == 0.30
 
 
 @pytest.mark.parametrize("vm", current_templates.keys())
