@@ -1,6 +1,7 @@
 import json
 import os
 import pytest
+import time
 import subprocess
 from importlib.machinery import SourceFileLoader
 from datetime import datetime, timedelta
@@ -502,6 +503,24 @@ def test_apply_updates_dom0_failure(mocked_info, mocked_error, mocked_call):
     ]
     assert result == UpdateStatus.UPDATES_FAILED
     mocked_error.assert_has_calls(error_log)
+
+
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_vm_polling(mocked_info, mocked_error):
+    def mock_api(results):
+        for r in results:
+            yield r
+            time.sleep(0.1)
+
+    with mock.patch("Updater.qubes") as mocked_qubes:
+        mocked_qubes.domains = {"sys-net": mock.MagicMock()}
+        mocked_qubes.domains["sys-net"].is_running = mock.MagicMock(
+            side_effect=mock_api((True, True, False))
+        )
+        assert updater._wait_for_is_running("sys-net", False, timeout=1) is True
+        assert mocked_info.called
+        assert not mocked_error.called
 
 
 @pytest.mark.parametrize("vm", current_templates.keys())
