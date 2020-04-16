@@ -57,10 +57,14 @@ TEST_RESULTS_UPDATES = {
     "sd-viewer": UpdateStatus.UPDATES_REQUIRED,
 }
 
-VM_POLLING_REGEX_SUCCESS = (
+VM_SHUTDOWN_FAILURE_REGEX = (
+    r"Error shutting down VM '.*'. poweroff command returned unexpected exit code (.*)."
+)
+
+VM_POLLING_SUCCESS_REGEX = (
     r"VM '.*' entered expected state after (.*) seconds of polling."
 )
-VM_POLLING_REGEX_FAILURE = (
+VM_POLLING_FAILURE_REGEX = (
     r"VM '.*' did not enter expected state in the provided timeout of (.*) seconds."
 )
 
@@ -512,6 +516,101 @@ def test_apply_updates_dom0_failure(mocked_info, mocked_error, mocked_call):
     mocked_error.assert_has_calls(error_log)
 
 
+@mock.patch("Updater._wait_for")
+@mock.patch("Updater.qubes")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_force_shutdown_vm_not_found(
+    mocked_info, mocked_error, mocked_qubes, mocked_wait
+):
+    mocked_qubes.domains = {}
+    assert updater._force_shutdown_vm("sys-net") is False
+    assert mocked_error.called
+    assert not mocked_wait.called
+
+
+@mock.patch("Updater._wait_for")
+@mock.patch("Updater.qubes")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_force_shutdown_vm_not_running(
+    mocked_info, mocked_error, mocked_qubes, mocked_wait
+):
+    mocked_qubes.domains = {"sys-net": mock.MagicMock()}
+    mocked_qubes.domains["sys-net"].is_running = mock.MagicMock(return_value=False)
+    assert updater._force_shutdown_vm("sys-net") is True
+    assert not mocked_error.called
+    assert mocked_info.called
+    assert not mocked_wait.called
+
+
+@mock.patch("Updater._wait_for", return_value=True)
+@mock.patch("Updater.qubes")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_force_shutdown_unpauses_and_shuts_down(
+    mocked_info, mocked_error, mocked_qubes, mocked_wait
+):
+    mocked_qubes.domains = {"sys-net": mock.MagicMock()}
+    mocked_qubes.domains["sys-net"].is_running = mock.MagicMock(return_value=True)
+    mocked_qubes.domains["sys-net"].is_paused = mock.MagicMock(return_value=True)
+
+    assert updater._force_shutdown_vm("sys-net") is True
+    assert mocked_qubes.domains["sys-net"].unpause.called
+    assert mocked_qubes.domains["sys-net"].run.called
+
+    assert not mocked_error.called
+    assert mocked_info.called
+    assert mocked_wait.called
+
+
+@pytest.mark.parametrize("good_returncode", (1, 143))
+@mock.patch("Updater._wait_for", return_value=True)
+@mock.patch("Updater.qubes")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_force_shutdown_expected_return_code_is_handled(
+    mocked_info, mocked_error, mocked_qubes, mocked_wait, good_returncode
+):
+    mocked_qubes.domains = {"sys-net": mock.MagicMock()}
+    mocked_qubes.domains["sys-net"].is_running = mock.MagicMock(return_value=True)
+    mocked_qubes.domains["sys-net"].run = mock.MagicMock(
+        side_effect=subprocess.CalledProcessError(returncode=good_returncode, cmd="")
+    )
+    assert updater._force_shutdown_vm("sys-net") is True
+    assert mocked_qubes.domains["sys-net"].run.called
+    assert mocked_wait.called
+
+
+@mock.patch("Updater._wait_for")
+@mock.patch("Updater.qubes")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_force_shutdown_unexpected_return_code_is_reported(
+    mocked_info, mocked_error, mocked_qubes, mocked_wait
+):
+    mocked_qubes.domains = {"sys-net": mock.MagicMock()}
+    mocked_qubes.domains["sys-net"].is_running = mock.MagicMock(return_value=True)
+    mocked_qubes.domains["sys-net"].run = mock.MagicMock(
+        side_effect=subprocess.CalledProcessError(returncode=666, cmd="")
+    )
+    assert updater._force_shutdown_vm("sys-net") is False
+    assert mocked_qubes.domains["sys-net"].run.called
+    assert mocked_error.called
+    error_string = mocked_error.call_args[0][0]
+    match = re.search(VM_SHUTDOWN_FAILURE_REGEX, error_string)
+    assert match is not None
+    found_code = int(match.group(1))
+    assert found_code == 666
+    assert not mocked_wait.called
+
+
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_force_shutdown_failure(mocked_info, mocked_error):
+    assert True
+
+
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_vm_polling_success(mocked_info, mocked_error):
@@ -519,7 +618,7 @@ def test_vm_polling_success(mocked_info, mocked_error):
     assert updater._wait_for("sys-net", poll_results, interval=0.1, timeout=1) is True
     assert mocked_info.called
     info_string = mocked_info.call_args[0][0]
-    match = re.search(VM_POLLING_REGEX_SUCCESS, info_string)
+    match = re.search(VM_POLLING_SUCCESS_REGEX, info_string)
     assert match is not None
     elapsed = float(match.group(1))
     # With a sleep interval of 0.1, at least 0.2 seconds should pass before we
@@ -538,7 +637,7 @@ def test_vm_polling_failure(mocked_info, mocked_error):
     assert not mocked_info.called
     assert mocked_error.called
     error_string = mocked_error.call_args[0][0]
-    match = re.search(VM_POLLING_REGEX_FAILURE, error_string)
+    match = re.search(VM_POLLING_FAILURE_REGEX, error_string)
     assert match is not None
     timeout = float(match.group(1))
     assert timeout == 0.30
