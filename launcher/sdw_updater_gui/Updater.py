@@ -495,7 +495,10 @@ def _force_shutdown_vm(vm):
     try:
         qubes.domains[vm].run("poweroff", user="root")
     except subprocess.CalledProcessError as e:
-        # Exit codes 1 and 143 may occur with successful shutdown; log others
+        # Exit codes 1 and 143 occur with successful shutdown (signifying
+        # the termination of the qrexec connection or a system process).
+        # poweroff does not provide a return code until the system is fully
+        # shut down; we never see exit code 0 from dom0.
         if e.returncode != 1 and e.returncode != 143:
             sdlog.error(
                 "Error shutting down VM '{}'. "
