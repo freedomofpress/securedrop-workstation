@@ -1,39 +1,30 @@
 #!/bin/bash
 # Developer-oriented utility script for deploying Saltstack config
-# files for the SecureDrop Workstation dev env.
+# files for the SecureDrop Workstation dev env. Installs the latest
+# locally built RPM in order to deploy the Salt config.
 set -e
 set -u
 set -o pipefail
 
 
-# Hardcoded location of SecureDrop Workstation salt config files
-SDW_SALT_DIR="/srv/salt/sd"
+# The dest directory in dom0 is not customizable.
+dom0_dev_dir="$HOME/securedrop-workstation"
 
+function find_latest_rpm() {
+    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname '*.rpm' | sort -n | tail -n 1
+}
+
+latest_rpm="$(find_latest_rpm)"
+if [[ -z "$latest_rpm" ]]; then
+    echo "Could not find RPM!"
+    exit 1
+fi
 
 echo "Deploying Salt config..."
-
-# If SDW Salt config dir already exists, don't overwrite contents.
-# Avoiding clobbering allows testing of the dom0 config package.
-# Use `make clean` to trigger redeployment of these files.
-if [[ ! -d "$SDW_SALT_DIR" ]]; then
-    sudo mkdir -p /srv/salt/sd
-    sudo cp -r sd-proxy /srv/salt/sd
-    sudo cp -r sd-app /srv/salt/sd
-    sudo cp -r sd-whonix /srv/salt/sd
-    sudo cp -r sd-workstation /srv/salt/sd
-    sudo cp -r sys-firewall /srv/salt/sd
-    sudo cp -r usb-autoattach /srv/salt/sd
-    sudo cp dom0/* /srv/salt/
-    sudo cp -r launcher /srv/salt/
-fi
+echo "Installing RPM at $latest_rpm ..."
+sudo dnf install -y "$latest_rpm"
 
 # Always copy secrets, these won't be configured as part
 # of the RPM installation.
-sudo cp config.json /srv/salt/sd
-sudo cp sd-journalist.sec /srv/salt/sd
-
-# Enable top files, otherwise qubesctl will report "nothing to do".
-sudo find /srv/salt -maxdepth 1 -type f -iname '*.top' \
-    | xargs -n1 basename \
-    | sed -e 's/\.top$//g' \
-    | xargs sudo qubesctl top.enable
+sudo cp config.json /usr/share/securedrop-workstation-dom0-config/
+sudo cp sd-journalist.sec /usr/share/securedrop-workstation-dom0-config/
