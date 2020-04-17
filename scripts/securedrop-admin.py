@@ -106,6 +106,8 @@ def perform_uninstall():
         subprocess.check_call(
             ["sudo", "dnf", "-y", "-q", "remove", "qubes-template-securedrop-workstation-buster"]
         )
+        print("Removing SecureDrop tags from remaining VMs")
+        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/remove-tags")])
         print("Uninstalling dom0 config package")
         subprocess.check_call(
             ["sudo", "dnf", "-y", "-q", "remove", "securedrop-workstation-dom0-config"]
@@ -132,7 +134,8 @@ def main():
     elif args.uninstall:
         print(
             "Uninstalling will remove all packages and destroy all VMs associated\n"
-            "with SecureDrop Workstation."
+            "with SecureDrop Workstation. It will also remove all SecureDrop tags\n"
+            "from other VMs on the system."
         )
         response = input("Are you sure you want to uninstall (y/N)? ")
         if response.lower() != 'y':
