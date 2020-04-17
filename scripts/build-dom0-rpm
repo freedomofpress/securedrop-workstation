@@ -24,7 +24,7 @@ function build_local_base {
 }
 
 function docker_cmd_wrapper() {
-    docker run -it --rm \
+    docker run -t --rm \
                --network=none \
                -v "${ROOT_DIR}:/sd" \
                -v "${ROOT_DIR}/rpm-build:${USER_RPMDIR}" \
