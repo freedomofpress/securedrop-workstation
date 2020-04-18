@@ -59,11 +59,11 @@ install -m 644 dom0/*.top %{buildroot}/srv/salt/
 install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
 install -m 644 dom0/*.yml %{buildroot}/srv/salt/
 install -m 644 dom0/*.conf %{buildroot}/srv/salt/
-install -m 655 dom0/remove-tags %{buildroot}/srv/salt/
+install -m 755 dom0/remove-tags %{buildroot}/srv/salt/
 install -m 644 dom0/securedrop-login %{buildroot}/srv/salt/
 install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
-install -m 655 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
-install -m 655 dom0/update-xfce-settings %{buildroot}/srv/salt/
+install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
+install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
 install -m 755 scripts/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
 install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
