@@ -198,21 +198,13 @@ dom0-securedrop-launcher-desktop-shortcut:
     - mode: 755
 
 {% import_json "sd/config.json" as d %}
-{% if d.environment == "dev" %}
-dom0-remove-securedrop-workstation-dom0-config:
-  pkg.removed:
-    - pkgs:
-      - securedrop-workstation-dom0-config
-
-{% else %}
-
+{% if d.environment != "dev" %}
 dom0-install-securedrop-workstation-dom0-config:
   pkg.installed:
     - pkgs:
       - securedrop-workstation-dom0-config
     - require:
       - file: dom0-workstation-rpm-repo
-
 {% endif %}
 
 # Hide suspend/hibernate options in menus in prod systems

@@ -52,22 +52,6 @@ remove-rpc-policy-tags:
   cmd.script:
     - name: salt://remove-tags
 
-# Removes files that are provisioned by the dom0 RPM, only for the development
-# environment, since dnf takes care of those provisioned in the RPM
-{% if d.environment == "dev" %}
-remove-dom0-sdw-config-files-dev:
-  file.absent:
-    - names:
-      - /opt/securedrop
-      - /srv/salt/remove-tags
-      - /srv/salt/securedrop-update
-      - /srv/salt/update-xfce-settings
-    # Do not remove these scripts before they have done their cleanup duties
-    - require:
-      - cmd: dom0-reset-icon-size-xfce
-      - cmd: remove-rpc-policy-tags
-{% endif %}
-
 sd-cleanup-etc-changes:
   file.replace:
     - names:
