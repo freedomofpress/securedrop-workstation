@@ -7,7 +7,7 @@ import qubesadmin
 
 q = qubesadmin.Qubes()
 
-TAGS_TO_REMOVE = ["sd-send-clipboard", "sd-receive-clipboard", "sd-receive-logs"]
+TAGS_TO_REMOVE = ["sd-send-app-clipboard", "sd-receive-app-clipboard", "sd-receive-logs"]
 
 
 def main():

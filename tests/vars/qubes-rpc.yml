@@ -1,8 +1,8 @@
 - policy: qubes.ClipboardPaste
   starts_with: |-
     ### BEGIN securedrop-workstation ###
-    @tag:sd-send-clipboard @tag:sd-workstation ask
-    @tag:sd-workstation @tag:sd-receive-clipboard ask
+    @tag:sd-send-app-clipboard sd-app ask
+    sd-app @tag:sd-receive-app-clipboard ask
     @anyvm @tag:sd-workstation deny
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
