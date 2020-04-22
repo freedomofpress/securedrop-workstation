@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
+{% if "template" in grains['id'] or grains['id'] in ["securedrop-workstation-buster", "whonix-gw-15"] %}
 include:
   - fpf-apt-test-repo
 
-{% if "template" in grains['id'] or grains['id'] in ["securedrop-workstation-buster", "whonix-gw-15"] %}
 # Install securedrop-log package in TemplateVMs only
 install-securedrop-log-package:
   pkg.installed:
