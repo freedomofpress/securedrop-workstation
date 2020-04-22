@@ -106,8 +106,6 @@ def perform_uninstall():
         subprocess.check_call(
             ["sudo", "dnf", "-y", "-q", "remove", "qubes-template-securedrop-workstation-buster"]
         )
-        print("Removing SecureDrop tags from remaining VMs")
-        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/remove-tags")])
         print("Uninstalling dom0 config package")
         subprocess.check_call(
             ["sudo", "dnf", "-y", "-q", "remove", "securedrop-workstation-dom0-config"]

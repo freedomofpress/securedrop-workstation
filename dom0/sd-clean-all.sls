@@ -46,6 +46,12 @@ remove-dom0-sdw-config-files:
       - /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
 
+
+# Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
+remove-rpc-policy-tags:
+  cmd.script:
+    - name: salt://remove-tags
+
 # Removes files that are provisioned by the dom0 RPM, only for the development
 # environment, since dnf takes care of those provisioned in the RPM
 {% if d.environment == "dev" %}
@@ -53,6 +59,7 @@ remove-dom0-sdw-config-files-dev:
   file.absent:
     - names:
       - /opt/securedrop
+      - /srv/salt/remove-tags
       - /srv/salt/securedrop-update
       - /srv/salt/update-xfce-settings
 {% endif %}
