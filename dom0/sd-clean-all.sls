@@ -62,6 +62,10 @@ remove-dom0-sdw-config-files-dev:
       - /srv/salt/remove-tags
       - /srv/salt/securedrop-update
       - /srv/salt/update-xfce-settings
+    # Do not remove these scripts before they have done their cleanup duties
+    - require:
+      - cmd: dom0-reset-icon-size-xfce
+      - cmd: remove-rpc-policy-tags
 {% endif %}
 
 sd-cleanup-etc-changes:
