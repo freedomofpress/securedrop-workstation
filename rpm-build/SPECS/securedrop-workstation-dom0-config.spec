@@ -59,6 +59,7 @@ install -m 644 dom0/*.top %{buildroot}/srv/salt/
 install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
 install -m 644 dom0/*.yml %{buildroot}/srv/salt/
 install -m 644 dom0/*.conf %{buildroot}/srv/salt/
+install -m 655 dom0/remove-tags %{buildroot}/srv/salt/
 install -m 644 dom0/securedrop-login %{buildroot}/srv/salt/
 install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
 install -m 655 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
@@ -92,6 +93,7 @@ install -m 644 launcher/sdw_util/*.py %{buildroot}/srv/salt/launcher/sdw_util/
 /opt/securedrop/launcher/**/*.py
 /srv/salt/sd*
 /srv/salt/dom0-xfce-desktop-file.j2
+/srv/salt/remove-tags
 /srv/salt/securedrop-*
 /srv/salt/update-xfce-settings
 /srv/salt/fpf*

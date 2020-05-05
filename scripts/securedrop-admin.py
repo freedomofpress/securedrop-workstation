@@ -149,7 +149,8 @@ def main():
     elif args.uninstall:
         print(
             "Uninstalling will remove all packages and destroy all VMs associated\n"
-            "with SecureDrop Workstation."
+            "with SecureDrop Workstation. It will also remove all SecureDrop tags\n"
+            "from other VMs on the system."
         )
         response = input("Are you sure you want to uninstall (y/N)? ")
         if response.lower() != 'y':
