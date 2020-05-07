@@ -123,8 +123,9 @@ Decide on a VM to use for development. We suggest creating a standalone VM calle
 
 Next we need to do some SecureDrop-specific configuration:
 
-- create a `config.json` based on `config.json.example` and include your values for the Journalist hidden service `.onion` hostname and PSK.
-- create an `sd-journalist.sec` file in the root directory with the ASCII-armored GPG private key used to encrypt submissions in your test SecureDrop instance. The included key `sd-journalist.sec` is the one used by default in the SecureDrop staging instance.
+- Create a `config.json` file based on `config.json.example` and include your values for the hidserv fields: `hostname` (the Jounalist Interface onion url) and `key` (the fingerprint for the SecureDrop Submission key). To find this information, you can run `sudo cat /var/lib/tor/services/journalist/hostname` on you server. The values for `hostname` and `key` in `config.json.example` are set to the default values for the SecureDrop staging instance.
+
+- Create an `sd-journalist.sec` file in the root directory with the ASCII-armored GPG private key used to encrypt submissions in your test SecureDrop instance. The included key `sd-journalist.sec` is the one used by default in the SecureDrop staging instance.
 
 Qubes provisioning is handled by Salt on `dom0`, so this project must be copied there from your development VM.
 
