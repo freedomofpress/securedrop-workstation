@@ -17,16 +17,26 @@ if [ -z "$OLD_VERSION" ]; then
   exit 1
 fi
 
+if [[ $NEW_VERSION == *-rc* ]]; then
+  echo "Release candidates should use the versioning 0.x.y~rcZ!"
+  exit 1
+fi
+
+NEW_SDIST_VERSION=$(echo "$NEW_VERSION" | sed -r -e 's/~/-/')
+OLD_SDIST_VERSION=$(echo "$OLD_VERSION" | sed -r -e 's/~/-/')
+
 # Update the version in rpm-build/SPECS/securedrop-workstation-dom0-config.spec and setup.py
 # We just change Source0 and Version fields in the rpm spec. The spec file also contains the changelog entries,
 # and we don't want to increment those versions.
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # The empty '' after sed -i is required on macOS to indicate no backup file should be saved.
     sed -i '' "s@$(echo "${OLD_VERSION}" | sed 's/\./\\./g')@$NEW_VERSION@g" VERSION
-    sed -i '' -e "/Source0/s/$OLD_VERSION/$NEW_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i '' -e "/Source0/s/$OLD_SDIST_VERSION/$NEW_SDIST_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
     sed -i '' -e "/Version/s/$OLD_VERSION/$NEW_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i '' -e "/\%setup -n securedrop-workstation-dom0-config-/s/$OLD_SDIST_VERSION/$NEW_SDIST_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
 else
     sed -i "s@$(echo "${OLD_VERSION}" | sed 's/\./\\./g')@$NEW_VERSION@g" VERSION
-    sed -i -e "/Source0/s/$OLD_VERSION/$NEW_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i -e "/Source0/s/$OLD_SDIST_VERSION/$NEW_SDIST_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
     sed -i -e "/Version/s/$OLD_VERSION/$NEW_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i -e "/\%setup -n securedrop-workstation-dom0-config-/s/$OLD_SDIST_VERSION/$NEW_SDIST_VERSION/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
 fi
