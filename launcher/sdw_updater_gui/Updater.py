@@ -502,25 +502,13 @@ def should_launch_updater(interval):
                     sdlog.info("Required reboot pending, launching updater")
                     return True
             elif status["status"] == UpdateStatus.UPDATES_REQUIRED.value:
-                sdlog.info(
-                    "Updates are required, launching updater.".format(
-                        str(status["status"])
-                    )
-                )
+                sdlog.info("Updates are required, launching updater.")
                 return True
             elif status["status"] == UpdateStatus.UPDATES_FAILED.value:
-                sdlog.info(
-                    "Preceding update failed, launching updater.".format(
-                        str(status["status"])
-                    )
-                )
+                sdlog.info("Preceding update failed, launching updater.")
                 return True
             else:
-                sdlog.info(
-                    "Update status is unknown, launching updater.".format(
-                        str(status["status"])
-                    )
-                )
+                sdlog.info("Update status is unknown, launching updater.")
                 return True
     else:
         sdlog.info("Update status not available, launching updater.")
