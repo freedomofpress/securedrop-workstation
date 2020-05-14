@@ -1,12 +1,12 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.2.4
+Version:	0.2.4.next.rc1
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.2.4.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.2.4.next.rc1.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -106,6 +106,13 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
+* Thu May 14 2020 SecureDrop Team <securedrop@freedom.press - 0.2.4.next.rc1
+- Removes package updates from sd-log AppVM config
+- Permit whitelisting VMs for copy/paste & copying logs via tags
+- Safely shut down sys-usb; tweak logging
+- Clear Salt cache and synchronize Salt before installing/uninstalling
+- Logs more VM state info in updater
+
 * Mon Mar 30 2020 SecureDrop Team <securedrop@freedom.press> - 0.2.4
 - Adjusts VM reboot order, to stabilize updater behavior
 
