@@ -28,7 +28,7 @@ configuration over time.
 %undefine py_auto_byte_compile
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.2.4
+%setup -q
 
 %build
 %{__python3} setup.py build
