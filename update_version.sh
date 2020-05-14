@@ -17,6 +17,11 @@ if [ -z "$OLD_VERSION" ]; then
   exit 1
 fi
 
+if [[ $NEW_VERSION == *-rc* || $NEW_VERSION == *~rc* ]]; then
+  echo "Release candidates should use the versioning 0.x.y.next.rcZ, where 0.x.y is the current version!"
+  exit 1
+fi
+
 # Update the version in rpm-build/SPECS/securedrop-workstation-dom0-config.spec and setup.py
 # We just change Source0 and Version fields in the rpm spec. The spec file also contains the changelog entries,
 # and we don't want to increment those versions.
