@@ -30,7 +30,7 @@ sdlog = logging.getLogger(__name__)
 # In the future, we could use qvm-prefs to extract this information.
 current_templates = {
     "dom0": "dom0",
-    "fedora": "fedora-30",
+    "fedora": "fedora-31",
     "sd-viewer": "sd-viewer-buster-template",
     "sd-app": "sd-app-buster-template",
     "sd-log": "sd-log-buster-template",

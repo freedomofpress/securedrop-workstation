@@ -688,7 +688,7 @@ def test_shutdown_and_start_vms(
         call("sys-usb"),
     ]
     template_vm_calls = [
-        call("fedora-30"),
+        call("fedora-31"),
         call("sd-viewer-buster-template"),
         call("sd-app-buster-template"),
         call("sd-log-buster-template"),
@@ -743,7 +743,7 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call("sd-log"),
     ]
     template_vm_calls = [
-        call("fedora-30"),
+        call("fedora-31"),
         call("sd-viewer-buster-template"),
         call("sd-app-buster-template"),
         call("sd-log-buster-template"),
