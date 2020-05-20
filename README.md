@@ -182,7 +182,7 @@ As of March 2020, the production environment is in beta. The staging environment
 
 **IMPORTANT: THE STAGING ENVIRONMENT SHOULD NEVER BE USED FOR PRODUCTION PURPOSES. IT SHOULD BE USED ON TEST MACHINES ONLY.**
 
-#### Update `dom0`, `fedora-30`, `whonix-gw-15` and `whonix-ws-15` templates
+#### Update `dom0`, `fedora-31`, `whonix-gw-15` and `whonix-ws-15` templates
 Updates to these VMs will be provided by the installer and updater, but to ensure they are up to date prior to install, it will be easier to debug, should something go wrong.
 
 Before proceeding to updates, we must ensure that `sys-whonix` can bootstrap to the Tor network. In the Qubes menu, navigate to `sys-whonix` and click on `Anon Connection Wizard` and click `Next` and ensure the Tor Bootstrap process completes successfully.
@@ -422,8 +422,8 @@ Your export devices should be labeled, and used for nothing else.
 
 ### Transferring files via OnionShare
 
-1. Create an `sd-onionshare-template` VM based on `fedora-30`:
-   1. Click on the Qubes menu in the upper left, select "Template: Fedora 30", click on "fedora-30: Qube Settings", and click on **Clone Qube**
+1. Create an `sd-onionshare-template` VM based on `fedora-31`:
+   1. Click on the Qubes menu in the upper left, select "Template: Fedora 31", click on "fedora-31: Qube Settings", and click on **Clone Qube**
    2. Name the cloned qube `sd-onionshare-template`
    3. In the Qubes menu on the top-left, select "Template: sd-onionshare-template" and click on "sd-onionshare-template: Terminal"
    4. Install OnionShare: `sudo dnf install onionshare`

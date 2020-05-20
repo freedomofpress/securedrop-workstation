@@ -3,7 +3,7 @@ import unittest
 from qubesadmin import Qubes
 
 
-CURRENT_FEDORA_VERSION = "30"
+CURRENT_FEDORA_VERSION = "31"
 CURRENT_WHONIX_VERSION = "15"
 
 
