@@ -117,6 +117,29 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         # We expect zero hits, so confirm output is empty string.
         self.assertEqual(results, "")
 
+    def _ensure_keyring_package_exists_and_has_correct_key(self, vm):
+        # apt-key finger doesnt work here due to stdout/terminal
+        cmd = "gpg --no-default-keyring --keyring /etc/apt/trusted.gpg.d/securedrop-keyring.gpg -k"
+        stdout, stderr = vm.run(cmd)
+        results = stdout.rstrip().decode("utf-8")
+        fpf_gpg_pub_key_info = [
+            "/etc/apt/trusted.gpg.d/securedrop-keyring.gpg",
+            "---------------------------------------------",
+            "pub   rsa4096 2016-10-20 [SC] [expires: 2021-06-30]",
+            "      22245C81E3BAEB4138B36061310F561200F4AD77",
+            "uid           [ unknown] SecureDrop Release Signing Key",
+            "uid           [ unknown] SecureDrop Release Signing Key <securedrop-release-key@freedom.press>"  # noqa: E501
+        ]
+        self.assertEqual(fpf_gpg_pub_key_info, results.split('\n'))
+
+    def _ensure_trusted_keyring_securedrop_key_removed(self, vm):
+        # apt-key finger doesnt work here due to stdout/terminal
+        cmd = "gpg --no-default-keyring --keyring /etc/apt/trusted.gpg -k"
+        stdout, stderr = vm.run(cmd)
+        results = stdout.rstrip().decode("utf-8")
+        fpf_gpg_pub_key_fp = "22245C81E3BAEB4138B36061310F561200F4AD77"
+        self.assertFalse(fpf_gpg_pub_key_fp in results)
+
     def test_all_jessie_backports_disabled(self):
         """
         Asserts that all VMs lack references to Jessie in apt config.
@@ -208,6 +231,17 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         for vm_name in WANTED_VMS:
             vm = self.app.domains[vm_name]
             self._validate_apt_sources(vm)
+
+    def test_ensure_keyring_package_is_installed(self, vm):
+        self.assertTrue(self._package_is_installed(vm, "securedrop-keyring"))
+
+    def test_debian_keyring_config(self):
+        """
+        """
+        for vm_name in WANTED_VMS:
+            vm = self.app.domains[vm_name]
+            self._ensure_keyring_package_exists_and_has_correct_key(vm)
+            self._ensure_trusted_keyring_securedrop_key_removed(vm)
 
 
 def load_tests(loader, tests, pattern):
