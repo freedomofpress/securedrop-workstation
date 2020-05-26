@@ -17,6 +17,14 @@ dom0-install-fedora-template:
     - pkgs:
       - qubes-template-{{ sd_supported_fedora_version }}
 
+# If the VM has just been installed via package manager, update it immediately
+update-fedora-template-if-new:
+  cmd.wait:
+    - name: sudo qubesctl --skip-dom0 --targets {{ sd_supported_fedora_version }} state.sls update.qubes-vm
+    - require:
+      - pkg: dom0-install-fedora-template
+    - watch:
+      - pkg: dom0-install-fedora-template
 # qvm.default-dispvm is not strictly required here, but we want it to be
 # updated as soon as possible to ensure make clean completes successfully, as
 # is sets the default_dispvm to fedora-31-dvm
