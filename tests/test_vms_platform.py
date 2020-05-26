@@ -232,17 +232,15 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             vm = self.app.domains[vm_name]
             self._validate_apt_sources(vm)
 
-    def test_ensure_keyring_package_is_installed(self, vm):
-        self.assertTrue(self._package_is_installed(vm, "securedrop-keyring"))
-
     def test_debian_keyring_config(self):
         """
+        Ensure the securedrop keyring package is properly installed and the
+        key it contains is up-to-date.
         """
         for vm_name in WANTED_VMS:
             vm = self.app.domains[vm_name]
             self._ensure_keyring_package_exists_and_has_correct_key(vm)
             self._ensure_trusted_keyring_securedrop_key_removed(vm)
-
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_VM_Platform_Tests)
