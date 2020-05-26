@@ -36,9 +36,11 @@ configure-apt-test-apt-repo:
 # This will install the production keyring package. This package will delete
 # the prod key from the default keyring in /etc/apt/trusted.gpg but will
 # preserve the apt-test key in this default keyring.
+# TEMPORARY: Install keyring deb
 install-securedrop-keyring-package:
-  pkg.installed:
-    - pkgs:
-      - securedrop-keyring
-    - require:
-      - pkgrepo: configure-apt-test-apt-repo
+  file.managed:
+   - name: /opt/securedrop-keyring.deb
+   - source: salt://sd/sd-workstation/securedrop-keyring_0.1.4+buster_all.deb
+   - mode: 644
+  cmd.run:
+   - name: apt install -y /opt/securedrop-keyring.deb
