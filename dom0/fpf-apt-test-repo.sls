@@ -32,3 +32,13 @@ configure-apt-test-apt-repo:
     - clean_file: True # squash file to ensure there are no duplicates
     - require:
       - pkg: install-python-apt-for-repo-config
+
+# This will install the production keyring package. This package will delete
+# the prod key from the default keyring in /etc/apt/trusted.gpg but will
+# preserve the apt-test key in this default keyring.
+install-securedrop-keyring-package:
+  pkg.installed:
+    - pkgs:
+      - securedrop-keyring
+    - require:
+      - pkgrepo: configure-apt-test-apt-repo
