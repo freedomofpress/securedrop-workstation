@@ -118,12 +118,18 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         self.assertEqual(results, "")
 
     def _ensure_keyring_package_exists_and_has_correct_key(self, vm):
+        """
+        Inspect the securedrop-keyring used by apt to ensure the correct key
+        and only the correct key is installed in that location.
+        """
+        keyring_path = "/etc/apt/trusted.gpg.d/securedrop-keyring.gpg"
         # apt-key finger doesnt work here due to stdout/terminal
-        cmd = "gpg --no-default-keyring --keyring /etc/apt/trusted.gpg.d/securedrop-keyring.gpg -k"
+        # We also set the homedir to bypass whonix-specific gnupg.conf
+        cmd = "gpg --homedir /tmp --no-default-keyring --keyring {} -k".format(keyring_path)
         stdout, stderr = vm.run(cmd)
         results = stdout.rstrip().decode("utf-8")
-        fpf_gpg_pub_key_info = [
-            "/etc/apt/trusted.gpg.d/securedrop-keyring.gpg",
+        fpf_gpg_pub_key_info = ["{}".format(keyring_path)]
+        fpf_gpg_pub_key_info += [
             "---------------------------------------------",
             "pub   rsa4096 2016-10-20 [SC] [expires: 2021-06-30]",
             "      22245C81E3BAEB4138B36061310F561200F4AD77",
@@ -133,6 +139,11 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         self.assertEqual(fpf_gpg_pub_key_info, results.split('\n'))
 
     def _ensure_trusted_keyring_securedrop_key_removed(self, vm):
+        """
+        Ensures the production key is no longer found in the default apt keyring
+        In testeing dev/staging, that keyring will be used for the test apt key,
+        the goal is to reduce of the production key
+        """
         # apt-key finger doesnt work here due to stdout/terminal
         cmd = "gpg --no-default-keyring --keyring /etc/apt/trusted.gpg -k"
         stdout, stderr = vm.run(cmd)
@@ -241,6 +252,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             vm = self.app.domains[vm_name]
             self._ensure_keyring_package_exists_and_has_correct_key(vm)
             self._ensure_trusted_keyring_securedrop_key_removed(vm)
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_VM_Platform_Tests)
