@@ -1,12 +1,12 @@
 Name:		securedrop-workstation-dom0-config
 Version:	0.3.0
-Release:	0.rc2.1%{?dist}
+Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.3.0rc2.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.3.0.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -28,7 +28,7 @@ configuration over time.
 %undefine py_auto_byte_compile
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.3.0rc2
+%setup -n securedrop-workstation-dom0-config-0.3.0
 
 %build
 %{__python3} setup.py build
@@ -106,10 +106,8 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
-* Fri May 22 2020 SecureDrop Team <securedrop@freedom.press - 0.3.0-rc2
+* Thu May 28 2020 SecureDrop Team <securedrop@freedom.press> - 0.3.0
 - Upgrades sys-net, sys-firewall and sys-usb to Fedora31 TemplateVMs
-
-* Tue May 19 2020 SecureDrop Team <securedrop@freedom.press - 0.3.0-rc1
 - Removes package updates from sd-log AppVM config
 - Permit whitelisting VMs for copy/paste & copying logs via tags
 - Safely shut down sys-usb; tweak logging
