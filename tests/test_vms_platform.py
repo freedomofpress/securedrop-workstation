@@ -117,14 +117,21 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         # We expect zero hits, so confirm output is empty string.
         self.assertEqual(results, "")
 
-    def _ensure_keyring_package_exists_and_has_correct_key(self, vm):
+    def _ensure_keyring_package_exists_and_has_correct_key(self, vm, is_whonix=False):
+        keyring_path = "/etc/apt/trusted.gpg.d/securedrop-keyring.gpg"
+        # in whonix-gw-15, the keyring name gets appended with ~ on install
+        if is_whonix:
+            keyring_path += "~"
         # apt-key finger doesnt work here due to stdout/terminal
-        cmd = "gpg --no-default-keyring --keyring /etc/apt/trusted.gpg.d/securedrop-keyring.gpg -k"
+        cmd = "gpg --homedir /tmp --no-default-keyring --keyring {} -k".format(keyring_path)
         stdout, stderr = vm.run(cmd)
         results = stdout.rstrip().decode("utf-8")
-        fpf_gpg_pub_key_info = [
-            "/etc/apt/trusted.gpg.d/securedrop-keyring.gpg",
-            "---------------------------------------------",
+        fpf_gpg_pub_key_info = ["{}".format(keyring_path)]
+        if is_whonix:
+            fpf_gpg_pub_key_info.append("----------------------------------------------")
+        else:
+            fpf_gpg_pub_key_info.append("---------------------------------------------")
+        fpf_gpg_pub_key_info += [
             "pub   rsa4096 2016-10-20 [SC] [expires: 2021-06-30]",
             "      22245C81E3BAEB4138B36061310F561200F4AD77",
             "uid           [ unknown] SecureDrop Release Signing Key",
@@ -239,8 +246,13 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         for vm_name in WANTED_VMS:
             vm = self.app.domains[vm_name]
-            self._ensure_keyring_package_exists_and_has_correct_key(vm)
+            if "whonix" in vm_name:
+                self._ensure_keyring_package_exists_and_has_correct_key(vm, is_whonix=True)
+            else:
+                self._ensure_keyring_package_exists_and_has_correct_key(vm)
+
             self._ensure_trusted_keyring_securedrop_key_removed(vm)
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_VM_Platform_Tests)
