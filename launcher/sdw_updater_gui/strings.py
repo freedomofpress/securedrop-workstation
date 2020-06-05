@@ -1,7 +1,7 @@
 headline_introduction = "Preflight security updates"
 description_introduction = (
     "<p>To keep your Workstation safe, daily software updates are required.</p> "
-    "<p>This typically takes between 5 and 30 minutes. You cannot use the SecureDrop "
+    "<p>This typically takes between 10 and 30 minutes. You cannot use the SecureDrop "
     "Client or any of its VMs while the updater is running.</p>"
     "<p><span style='color:#E62354;'><b>Interrupting software updates may break "
     "the Workstation.</b></span> Please cancel and return later if you are pressed "

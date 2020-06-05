@@ -63,10 +63,11 @@ def test_updater_vms_present():
 @mock.patch("Updater._write_last_updated_flags_to_disk")
 @mock.patch("Updater._apply_updates_vm")
 @mock.patch("Updater._apply_updates_dom0", return_value=UpdateStatus.UPDATES_OK)
+@mock.patch("Updater._check_updates_dom0", return_value=UpdateStatus.UPDATES_REQUIRED)
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_apply_updates(
-    mocked_info, mocked_error, apply_dom0, apply_vm, write_updated, write_status,
+def test_apply_updates_dom0_updates_available(
+    mocked_info, mocked_error, check_dom0, apply_dom0, apply_vm, write_updated, write_status,
 ):
     upgrade_generator = updater.apply_updates(["dom0"])
     results = {}
@@ -77,8 +78,34 @@ def test_apply_updates(
 
     assert updater.overall_update_status(results) == UpdateStatus.UPDATES_OK
     assert not mocked_error.called
-    # Ensure _apply_updates_dom0 is not called with a parameter
+    # Ensure we check for updates, and apply them (with no parameters)
+    check_dom0.assert_called_once_with()
     apply_dom0.assert_called_once_with()
+    assert not apply_vm.called
+
+
+@mock.patch("Updater._write_updates_status_flag_to_disk")
+@mock.patch("Updater._write_last_updated_flags_to_disk")
+@mock.patch("Updater._apply_updates_vm")
+@mock.patch("Updater._apply_updates_dom0")
+@mock.patch("Updater._check_updates_dom0", return_value=UpdateStatus.UPDATES_OK)
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_apply_updates_dom0_no_updates(
+    mocked_info, mocked_error, check_dom0, apply_dom0, apply_vm, write_updated, write_status,
+):
+    upgrade_generator = updater.apply_updates(["dom0"])
+    results = {}
+
+    for vm, progress, result in upgrade_generator:
+        results[vm] = result
+        assert progress is not None
+
+    assert updater.overall_update_status(results) == UpdateStatus.UPDATES_OK
+    assert not mocked_error.called
+    # We check for updates, but do not attempt to apply them
+    check_dom0.assert_called_once_with()
+    assert not apply_dom0.called
     assert not apply_vm.called
 
 
@@ -236,51 +263,42 @@ def test_write_last_updated_flags_dom0_folder_creation_fail(
     mocked_error.assert_has_calls(error_log)
 
 
-@mock.patch("subprocess.check_output", return_value=b"")
+@mock.patch("subprocess.check_call")
 @mock.patch("Updater._write_updates_status_flag_to_disk")
 @mock.patch("Updater._write_last_updated_flags_to_disk")
 @mock.patch("Updater.shutdown_and_start_vms")
+@mock.patch("Updater._check_updates_dom0", return_value=UpdateStatus.UPDATES_REQUIRED)
 @mock.patch("Updater._apply_updates_vm")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_updates_dom0_updates_applied(
-    mocked_info, mocked_error, apply_vm, shutdown, write_updated, write_status, mocked_output,
+    mocked_info,
+    mocked_error,
+    apply_vm,
+    check_dom0,
+    shutdown,
+    write_updated,
+    write_status,
+    mocked_call,
 ):
     result = updater._apply_updates_dom0()
     assert result == UpdateStatus.REBOOT_REQUIRED
-    mocked_output.assert_called_once_with(["sudo", "qubes-dom0-update", "-y"])
-    assert not mocked_error.called
-    assert not apply_vm.called
-
-
-@mock.patch("subprocess.check_output", return_value=b"No packages downloaded")
-@mock.patch("Updater._write_updates_status_flag_to_disk")
-@mock.patch("Updater._write_last_updated_flags_to_disk")
-@mock.patch("Updater.shutdown_and_start_vms")
-@mock.patch("Updater._apply_updates_vm")
-@mock.patch("Updater.sdlog.error")
-@mock.patch("Updater.sdlog.info")
-def test_apply_updates_dom0_no_updates(
-    mocked_info, mocked_error, apply_vm, shutdown, write_updated, write_status, mocked_call,
-):
-    result = updater._apply_updates_dom0()
-    assert result == UpdateStatus.UPDATES_OK
     mocked_call.assert_called_once_with(["sudo", "qubes-dom0-update", "-y"])
     assert not mocked_error.called
     assert not apply_vm.called
 
 
-@mock.patch(
-    "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"),
-)
+@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_updates_dom0_failure(mocked_info, mocked_error, mocked_call):
     result = updater._apply_updates_dom0()
     error_log = [
         call("An error has occurred updating dom0. Please contact your administrator."),
-        call("Command 'check_output' returned non-zero exit status 1."),
+        call("Command 'check_call' returned non-zero exit status 1."),
     ]
+
+    assert mocked_call.called
     assert result == UpdateStatus.UPDATES_FAILED
     mocked_error.assert_has_calls(error_log)
 
@@ -325,6 +343,30 @@ def test_apply_updates_vms_fails(mocked_info, mocked_error, mocked_call, vm):
     assert result == UpdateStatus.UPDATES_FAILED
 
     mocked_error.assert_has_calls(error_calls)
+
+
+@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_check_dom0_updates_available(mocked_info, mocked_error, mocked_call):
+    result = updater._check_updates_dom0()
+
+    error_calls = [
+        call("dom0 updates required, or cannot check for updates"),
+        call("Command 'check_call' returned non-zero exit status 1."),
+    ]
+    mocked_error.assert_has_calls(error_calls)
+    assert result == UpdateStatus.UPDATES_REQUIRED
+
+
+@mock.patch("subprocess.check_call")
+@mock.patch("Updater.sdlog.error")
+@mock.patch("Updater.sdlog.info")
+def test_check_dom0_no_updates_available(mocked_info, mocked_error, mocked_call):
+    result = updater._check_updates_dom0()
+    assert not mocked_error.called
+    mocked_info.assert_called_once_with("No updates available for dom0")
+    assert result == UpdateStatus.UPDATES_OK
 
 
 @mock.patch("Updater.sdlog.error")

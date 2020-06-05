@@ -55,12 +55,36 @@ def apply_updates(vms=current_templates.keys()):
         upgrade_results = UpdateStatus.UPDATES_FAILED
 
         if vm == "dom0":
-            upgrade_results = _apply_updates_dom0()
+            dom0_status = _check_updates_dom0()
+            if dom0_status == UpdateStatus.UPDATES_REQUIRED:
+                upgrade_results = _apply_updates_dom0()
+            else:
+                upgrade_results = UpdateStatus.UPDATES_OK
         else:
             upgrade_results = _apply_updates_vm(vm)
 
         progress_percentage = int(((progress_current + 1) / len(vms)) * 100 - 5)
         yield vm, progress_percentage, upgrade_results
+
+
+def _check_updates_dom0():
+    """
+    We need to reboot the system after every dom0 update. The update
+    script does not tell us through its exit code whether updates were applied,
+    and parsing command output can be brittle.
+
+    For this reason, we check for available updates first. The result of this
+    check is cached, so it does not incur a significant performance penalty.
+    """
+    try:
+        subprocess.check_call(["sudo", "qubes-dom0-update", "--check-only"])
+    except subprocess.CalledProcessError as e:
+        sdlog.error("dom0 updates required, or cannot check for updates")
+        sdlog.error(str(e))
+        return UpdateStatus.UPDATES_REQUIRED
+
+    sdlog.info("No updates available for dom0")
+    return UpdateStatus.UPDATES_OK
 
 
 def _apply_updates_dom0():
@@ -70,18 +94,14 @@ def _apply_updates_dom0():
     """
     sdlog.info("Updating dom0")
     try:
-        output = subprocess.check_output(["sudo", "qubes-dom0-update", "-y"]).decode("utf-8")
+        subprocess.check_call(["sudo", "qubes-dom0-update", "-y"])
     except subprocess.CalledProcessError as e:
         sdlog.error("An error has occurred updating dom0. Please contact your administrator.")
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
 
-    if output.find("No packages downloaded") != -1:
-        sdlog.info("No dom0 updates available, no reboot needed.")
-        return UpdateStatus.UPDATES_OK
-    else:
-        sdlog.info("dom0 updates have been applied and a reboot is required.")
-        return UpdateStatus.REBOOT_REQUIRED
+    sdlog.info("dom0 updates have been applied and a reboot is required.")
+    return UpdateStatus.REBOOT_REQUIRED
 
 
 def _apply_updates_vm(vm):
