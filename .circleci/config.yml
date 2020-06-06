@@ -2,12 +2,19 @@
 version: 2
 jobs:
   lint:
-    machine: true
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
-      - run: sudo apt-get update
-      - run: sudo apt-get install -qq make
-      - run: make flake8
+      - run:
+          name: Install dependencies and run linters
+          command: |
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install --require-hashes -r dev-requirements.txt
+            sudo apt install file
+            make flake8
+            make black
   buildrpm:
     machine: true
     steps:
@@ -27,7 +34,7 @@ jobs:
             source .venv/bin/activate
             pip install --require-hashes -r test-requirements.txt
             sudo apt install lsof
-            make test && make bandit && make black
+            make test && make bandit
 
 workflows:
   version: 2

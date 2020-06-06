@@ -11,7 +11,7 @@ test:
 	pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ --cov=sdw_util -v tests/
 
 black: ## Runs the black code formatter on the launcher code
-	black --check .
+	black --check --line-length=100 .
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.

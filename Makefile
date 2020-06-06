@@ -13,6 +13,12 @@ all: ## Builds and provisions all VMs required for testing workstation
 	$(MAKE) prep-salt
 	./scripts/provision-all
 
+.PHONY: black
+black: ## Lints all Python files with flake8
+# Not requiring dom0 since linting requires extra packages,
+# available only in the developer environment, i.e. Work VM.
+	@./scripts/lint-all "black --check"
+
 dev: all ## Builds and provisions all VMs required for testing workstation
 
 prod: ## Configures a PRODUCTION install for pilot use
@@ -138,9 +144,7 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 flake8: ## Lints all Python files with flake8
 # Not requiring dom0 since linting requires extra packages,
 # available only in the developer environment, i.e. Work VM.
-	@docker run -v $(PWD):/code -w /code --name sdw_flake8 --rm \
-		--entrypoint /code/scripts/flake8-linting \
-		python:3.5.7-slim-stretch
+	@./scripts/lint-all "flake8"
 
 prep-dom0: prep-salt # Copies dom0 config files
 	sudo qubesctl --show-output --targets dom0 state.highstate
@@ -151,6 +155,10 @@ destroy-all: ## Destroys all VMs managed by Workstation salt config
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
 	pip-compile --generate-hashes --output-file requirements.txt requirements.in
+
+venv:  ## Provision and activate a Python 3 virtualenv for development.
+	python3 -m venv .venv
+	.venv/bin/pip install --require-hashes -r dev-requirements.txt
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
