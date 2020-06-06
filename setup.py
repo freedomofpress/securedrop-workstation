@@ -17,7 +17,7 @@ setuptools.setup(
     license="GPLv3+",
     python_requires=">=3.5",
     url="https://github.com/freedomofpress/securdrop-workstation",
-    data_files=[("share/securedrop-workstation-dom0-config", ["config.json.example"]),],
+    data_files=[("share/securedrop-workstation-dom0-config", ["config.json.example"])],
     classifiers=(
         "Development Status :: 3 - Alpha",
         "Programming Language :: Python :: 3",

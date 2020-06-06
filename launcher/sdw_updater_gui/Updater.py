@@ -127,7 +127,7 @@ def _check_updates_debian(vm):
         sdlog.info("Checking for updates {}:{}".format(vm, current_templates[vm]))
         subprocess.check_call(["qvm-run", current_templates[vm], "sudo apt update"])
         subprocess.check_call(
-            ["qvm-run", current_templates[vm], "[[ $(apt list --upgradable | wc -l) -eq 1 ]]",]
+            ["qvm-run", current_templates[vm], "[[ $(apt list --upgradable | wc -l) -eq 1 ]]"]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error(
@@ -237,7 +237,7 @@ def _write_updates_status_flag_to_disk(status):
     try:
         sdlog.info("Setting update flag to {} in sd-app".format(status.value))
         subprocess.check_call(
-            ["qvm-run", "sd-app", "echo '{}' > {}".format(status.value, flag_file_path_sd_app),]
+            ["qvm-run", "sd-app", "echo '{}' > {}".format(status.value, flag_file_path_sd_app)]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error("Error writing update status flag to sd-app")

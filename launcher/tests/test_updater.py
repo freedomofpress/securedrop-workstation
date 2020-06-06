@@ -204,7 +204,7 @@ def test_check_updates_calls_correct_commands(
         subprocess_call_list = [
             call(["qvm-run", current_templates[vm], "sudo apt update"]),
             call(
-                ["qvm-run", current_templates[vm], "[[ $(apt list --upgradable | wc -l) -eq 1 ]]",]
+                ["qvm-run", current_templates[vm], "[[ $(apt list --upgradable | wc -l) -eq 1 ]]"]
             ),
         ]
         check_output_call_list = [
