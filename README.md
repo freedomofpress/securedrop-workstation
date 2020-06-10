@@ -359,7 +359,7 @@ Some of these subprojects have a corresponding release guide in the project's RE
 
 **Note:** Early tags in each subproject were not signed with the official release key. Later releases, as the subprojects were prepared for production, had their tags signed with the official release key.
 
-In addition, we have the following (Debian) metapackages, which are stored in the [`securedrop-debian-packaging`](https://github.com/freedomofpress/securedrop-debian-packaging) repository:
+In addition, we have the following (Debian) metapackages, which are stored in the [securedrop-debian-packaging](https://github.com/freedomofpress/securedrop-debian-packaging) repository:
 * [`securedrop-workstation-config`](https://github.com/freedomofpress/securedrop-debian-packaging/tree/master/securedrop-workstation-config/debian)
 * [`securedrop-workstation-grsec`](https://github.com/freedomofpress/securedrop-debian-packaging/tree/master/securedrop-workstation-grsec)
 * [`securedrop-workstation-svs-disp`](https://github.com/freedomofpress/securedrop-debian-packaging/tree/master/securedrop-workstation-svs-disp)
@@ -391,7 +391,7 @@ Next, for the Debian-packaged projects **only**, one needs to generate the sourc
 
 Follow the instructions described in [this section](https://github.com/freedomofpress/securedrop-debian-packaging#build-a-package), stopping before the final step where the package itself is built. Save the build logs from the tarball generation step (since the tarball generation is not reproducible) and commit them [here](https://github.com/freedomofpress/build-logs). You should then in a branch:
 
-* Add the tarball that is generated from that step to the `./tarballs` directory in that `securedrop-debian-packaging` repository
+* Add the tarball that is generated from that step to the `./tarballs` directory in that [securedrop-debian-packaging](https://github.com/freedomofpress/securedrop-debian-packaging) repository
 * Add a detached signature of that tarball also to the `./tarballs` directory alongside the tarball above for ease of verification
 * Add the Debian changelog addition
 * Remove the tarball and corresponding signature from the previous release.
@@ -425,17 +425,17 @@ Finally, perform the final build. You should follow one of the sections below ba
 
 In an environment sufficient for building production artifacts (if you don’t know what this means talk to @redshiftzero or @emkll):
 
-1. Clone the [`securedrop-debian-packaging`](https://github.com/freedomofpress/securedrop-debian-packaging) repository.
+1. Clone the [securedrop-debian-packaging](https://github.com/freedomofpress/securedrop-debian-packaging) repository.
 2. Determine which version of the packaging logic and tarballs you want to use. You probably created the tag in the previous step, else inspect the tag annotation to determine which is the right version.
 3. `git tag -v VERSION` and ensure the tag is signed with the official release key.
 4. `git checkout VERSION`
 5. Now you are ready to build. For good measure, you can also verify the signature of the tarball you want to use, although this will have been done by the reviewer of the PR adding the tarball.
-6. Set `PKG_DIR` to point to the tarball you wish to package, and `PKG_VERSION` to the version you wish to package, then run the relevant makefile target in the `securedrop-debian-packaging` repository. For example to build version 0.1.1 of the `securedrop-client`:
+6. Set `PKG_DIR` to point to the tarball you wish to package, and `PKG_VERSION` to the version you wish to package, then run the relevant makefile target in the [securedrop-debian-packaging](https://github.com/freedomofpress/securedrop-debian-packaging) repository. For example to build version 0.1.1 of the `securedrop-client`:
 
 `$ PKG_VERSION=0.1.1 PKG_PATH=tarballs/securedrop-client-0.1.1.tar.gz make securedrop-client`
 
-6. Upload build logs in https://github.com/freedomofpress/build-logs in the workstation directory. Ensure that the sha256sum of the built package is included in the build log.
-7. Next, add the package via PR to the (private) lfs repository [here](https://github.com/freedomofpress/securedrop-debian-packages-lfs).
+6. Upload build logs in the [build-logs](https://github.com/freedomofpress/build-logs) repository in the workstation directory. Ensure that the sha256sum of the built package is included in the build log.
+7. Next, add the package via PR to the private [securedrop-debian-packages-lfs](https://github.com/freedomofpress/securedrop-debian-packages-lfs) repository. 
 8. Regenerate reprepro repository metadata using the script in that repository: `./tools/publish`. When you inspect the diff, you'll notice that the previous version of the subproject will no longer be served. This is expected.
 9. Copy the `Release` file to signing environment.
 10. Verify integrity of `Release` file.
@@ -450,34 +450,34 @@ In an environment sufficient for building production artifacts (if you don’t k
 2. `git checkout VERSION`
 3. Now you are ready to build. Build RPMs following the documentation in an environment sufficient for building production artifacts. For `securedrop-workstation` you run `make dom0-rpm` to build the RPM.
 4. sha256sum the built template (and store hash in the build logs/commit message).
-5. Commit the (unsigned) version of this RPM to a branch in the following LFS repository: https://github.com/freedomofpress/securedrop-workstation-prod-rpm-packages-lfs.
+5. Commit the (unsigned) version of this RPM to a branch in the [securedrop-workstation-prod-rpm-packages-lfs](https://github.com/freedomofpress/securedrop-workstation-prod-rpm-packages-lfs) repository.
 6. Copy the RPM to the signing environment.
 7. Verify integrity of RPM prior to signing (use sha256sums to compare).
 8. Sign RPM in place (see Signing section below).
 9. Move the signed RPM back to the environment for committing to the lfs repository.
-10. Upload build logs directly to https://github.com/freedomofpress/build-logs in the workstation directory. Ensure that the sha256sum of the package before and after signing is included in the build log.
-11. Commit the RPM in a second commit on the branch you began above in https://github.com/freedomofpress/securedrop-workstation-prod-rpm-packages-lfs. Make a PR.
+10. Upload build logs directly to the [build-logs](https://github.com/freedomofpress/build-logs) repository in the workstation directory. Ensure that the sha256sum of the package before and after signing is included in the build log.
+11. Commit the RPM in a second commit on the branch you began above in [securedrop-workstation-prod-rpm-packages-lfs](https://github.com/freedomofpress/securedrop-workstation-prod-rpm-packages-lfs). Make a PR.
 12. Upon merge to master, ensure that changes deploy to `yum.securedrop.org` without issue.
 
 #### `qubes-template-securedrop-workstation` release and promotion to production
 
 The SecureDrop workstation template is RPM packaged, and is first deployed to `yum-test.securedrop.org` before being promoted to production (`yum.securedrop.org`) using the following procedure:
 
-1. Verify the tag in the `qubes-template-securedrop-workstation` repository: `git tag -v VERSION` and ensure the tag is signed with the official release key.
+1. Verify the tag in the [qubes-template-securedrop-workstation](https://github.com/freedomofpress/qubes-template-securedrop-workstation) repository: `git tag -v VERSION` and ensure the tag is signed with the official release key.
 2. `git checkout VERSION`
-3. Rebuild template following documentation in `qubes-template-securedrop-workstation`.
+3. Rebuild template following documentation in [qubes-template-securedrop-workstation](https://github.com/freedomofpress/qubes-template-securedrop-workstation).
 4. sha256sum the built template (and store hash in the build logs/commit message).
 5. Commit unsigned template for historical purposes.
 6. Sign template RPM with test key (rpm --resign <file>) (see Signing section below).
 7. Commit signed template.
-8. Push those two commits to a PR in `securedrop-workstation-dev-rpm-packages-lfs`. Make the PR.
-9. Upload build logs directly to https://github.com/freedomofpress/build-logs in the workstation directory.
-10. Upon merge of the PR into `securedrop-workstation-dev-rpm-packages-lfs`, the template will be deployed to `yum-test.securedrop.org`.
+8. Push those two commits to a PR in [securedrop-workstation-dev-rpm-packages-lfs](https://github.com/freedomofpress/securedrop-workstation-dev-rpm-packages-lfs/). Make the PR.
+9. Upload build logs directly to the [build-logs](https://github.com/freedomofpress/build-logs) repository in the workstation directory.
+10. Upon merge of the PR into [securedrop-workstation-dev-rpm-packages-lfs](https://github.com/freedomofpress/securedrop-workstation-dev-rpm-packages-lfs/), the template will be deployed to `yum-test.securedrop.org`.
 11. Test template.
 12. Once template is sufficiently tested, remove test sig: `rpm --delsign <file>`.
 13. Verify unsigned template sha256sum from build logs/commit message.
 14. Sign template with prod key: `rpm --resign <file>`
-15. Push commit to a branch in the `securedrop-workstation-rpm-packages-lfs` repository. Make a PR.
+15. Push commit to a branch in the [securedrop-workstation-prod-rpm-packages-lfs](https://github.com/freedomofpress/securedrop-workstation-prod-rpm-packages-lfs/) repository. Make a PR.
 16. Upon merge to master, ensure that changes deploy to `yum.securedrop.org` without issue.
 
 ### Signing binaries/packages
