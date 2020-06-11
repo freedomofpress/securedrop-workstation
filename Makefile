@@ -14,7 +14,7 @@ all: ## Builds and provisions all VMs required for testing workstation
 	./scripts/provision-all
 
 .PHONY: black
-black: ## Lints all Python files with flake8
+black: ## Lints all Python files with black
 # Not requiring dom0 since linting requires extra packages,
 # available only in the developer environment, i.e. Work VM.
 	@./scripts/lint-all "black --check"
@@ -156,6 +156,7 @@ destroy-all: ## Destroys all VMs managed by Workstation salt config
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
 	pip-compile --generate-hashes --output-file requirements.txt requirements.in
 
+.PHONY: venv
 venv:  ## Provision and activate a Python 3 virtualenv for development.
 	python3 -m venv .venv
 	.venv/bin/pip install --require-hashes -r dev-requirements.txt
