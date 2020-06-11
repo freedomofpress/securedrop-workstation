@@ -15,8 +15,7 @@ description_status_updates_available = (
     "to continue.</p>"
 )
 description_status_up_to_date = (
-    "<h3> No updates today!</h3>"
-    "<p>Click <em>Continue</em> to launch the SecureDrop app.</p>"
+    "<h3> No updates today!</h3>" "<p>Click <em>Continue</em> to launch the SecureDrop app.</p>"
 )
 description_error_check_updates_failed = (
     "<h3> Cannot check for updates </h3> There was an error retrieving updates. "
@@ -51,6 +50,5 @@ description_error_reboot = (
     "<h3> Error rebooting workstation</h3>" "<p>Please contact your administrator.</p>"
 )
 description_error_lauching_client = (
-    "<h3> Error launching the SecureDrop application</h3>"
-    "Please contact your administrator."
+    "<h3> Error launching the SecureDrop application</h3>" "Please contact your administrator."
 )

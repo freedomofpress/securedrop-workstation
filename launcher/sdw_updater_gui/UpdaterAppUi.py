@@ -78,9 +78,7 @@ class Ui_UpdaterDialog(object):
             QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop
         )
         self.proposedActionDescription.setWordWrap(True)
-        self.proposedActionDescription.setObjectName(
-            _fromUtf8("proposedActionDescription")
-        )
+        self.proposedActionDescription.setObjectName(_fromUtf8("proposedActionDescription"))
         self.gridLayout.addWidget(self.proposedActionDescription, 3, 0, 1, 5)
         self.label = QtGui.QLabel(self.layoutWidget)
         self.label.setMinimumSize(QtCore.QSize(0, 20))
@@ -94,14 +92,10 @@ class Ui_UpdaterDialog(object):
 
     def retranslateUi(self, UpdaterDialog):
         UpdaterDialog.setWindowTitle(
-            _translate(
-                "UpdaterDialog", "SecureDrop Workstation preflight updater", None
-            )
+            _translate("UpdaterDialog", "SecureDrop Workstation preflight updater", None)
         )
         self.rebootButton.setText(_translate("UpdaterDialog", "Reboot", None))
-        self.applyUpdatesButton.setText(
-            _translate("UpdaterDialog", "Start Updates", None)
-        )
+        self.applyUpdatesButton.setText(_translate("UpdaterDialog", "Start Updates", None))
         self.cancelButton.setText(_translate("UpdaterDialog", "Cancel", None))
         self.clientOpenButton.setText(_translate("UpdaterDialog", "Continue", None))
         self.proposedActionDescription.setText(

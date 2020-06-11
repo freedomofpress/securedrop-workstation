@@ -60,9 +60,7 @@ def is_update_check_necessary():
             sdlog.error(
                 "Data in {} not in the expected format. "
                 "Expecting a timestamp in format '{}'. "
-                "Showing security warning.".format(
-                    LAST_UPDATED_FILE, LAST_UPDATED_FORMAT
-                )
+                "Showing security warning.".format(LAST_UPDATED_FILE, LAST_UPDATED_FORMAT)
             )
             return True
 
@@ -76,9 +74,7 @@ def is_update_check_necessary():
     if not last_updated_file_exists:
         sdlog.warning(
             "Timestamp file '{}' does not exist. "
-            "Updater may never have run. Showing security warning.".format(
-                LAST_UPDATED_FILE
-            )
+            "Updater may never have run. Showing security warning.".format(LAST_UPDATED_FILE)
         )
         return True
     else:
@@ -113,9 +109,7 @@ def is_update_check_necessary():
             sdlog.info(
                 "Last successful update ({0:.1f} hours ago) "
                 "is below the warning threshold ({1:.1f} hours). "
-                "Exiting without warning.".format(
-                    updated_hours_ago, warning_threshold_hours
-                )
+                "Exiting without warning.".format(updated_hours_ago, warning_threshold_hours)
             )
             return False
 

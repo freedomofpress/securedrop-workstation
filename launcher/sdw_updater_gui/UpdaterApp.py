@@ -46,9 +46,7 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
 
         self.show()
 
-        self.proposedActionDescription.setText(
-            strings.description_status_checking_updates
-        )
+        self.proposedActionDescription.setText(strings.description_status_checking_updates)
 
         self.progress += 1
         self.progressBar.setProperty("value", self.progress)
@@ -78,18 +76,14 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             self.applyUpdatesButton.show()
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
-            self.proposedActionDescription.setText(
-                strings.description_status_updates_available
-            )
+            self.proposedActionDescription.setText(strings.description_status_updates_available)
         elif result["recommended_action"] == UpdateStatus.UPDATES_OK:
             logger.info("VMs up-to-date, OK to start client")
             self.clientOpenButton.setEnabled(True)
             self.clientOpenButton.show()
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
-            self.proposedActionDescription.setText(
-                strings.description_status_up_to_date
-            )
+            self.proposedActionDescription.setText(strings.description_status_up_to_date)
         elif result["recommended_action"] == UpdateStatus.REBOOT_REQUIRED:
             logger.info("Reboot will be required")
             # We also have further updates to do, let's apply updates and reboot
@@ -101,9 +95,7 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
                 self.applyUpdatesButton.show()
                 self.cancelButton.setEnabled(True)
                 self.cancelButton.show()
-                self.proposedActionDescription.setText(
-                    strings.description_status_updates_available
-                )
+                self.proposedActionDescription.setText(strings.description_status_updates_available)
             # No updates required, show reboot button.
             else:
                 logger.info("Reboot required")
@@ -111,15 +103,11 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
                 self.rebootButton.show()
                 self.cancelButton.setEnabled(True)
                 self.cancelButton.show()
-                self.proposedActionDescription.setText(
-                    strings.description_status_reboot_required
-                )
+                self.proposedActionDescription.setText(strings.description_status_reboot_required)
         else:
             logger.error("Error checking for updates")
             logger.error(str(result))
-            self.proposedActionDescription.setText(
-                strings.description_error_check_updates_failed
-            )
+            self.proposedActionDescription.setText(strings.description_error_check_updates_failed)
 
     @pyqtSlot(dict)
     def upgrade_status(self, result):
@@ -137,18 +125,14 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
             self.rebootButton.show()
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
-            self.proposedActionDescription.setText(
-                strings.description_status_reboot_required
-            )
+            self.proposedActionDescription.setText(strings.description_status_reboot_required)
         elif result["recommended_action"] == UpdateStatus.UPDATES_OK:
             logger.info("VMs have been succesfully updated, OK to start client")
             self.clientOpenButton.setEnabled(True)
             self.clientOpenButton.show()
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
-            self.proposedActionDescription.setText(
-                strings.description_status_updates_complete
-            )
+            self.proposedActionDescription.setText(strings.description_status_updates_complete)
         else:
             logger.info("Error upgrading VMs")
             self.cancelButton.setEnabled(True)
@@ -194,9 +178,7 @@ class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
         logger.info("Starting UpgradeThread")
         self.progress = 5
         self.progressBar.setProperty("value", self.progress)
-        self.proposedActionDescription.setText(
-            strings.description_status_applying_updates
-        )
+        self.proposedActionDescription.setText(strings.description_status_applying_updates)
         self.applyUpdatesButton.setEnabled(False)
         self.applyUpdatesButton.hide()
         self.cancelButton.setEnabled(False)
