@@ -10,11 +10,11 @@ import subprocess
 from qubesadmin import Qubes
 
 
-TOR_V3_HOSTNAME_REGEX = r'^[a-z2-7]{56}\.onion$'
-TOR_V3_AUTH_REGEX = r'^[A-Z2-7]{52}$'
+TOR_V3_HOSTNAME_REGEX = r"^[a-z2-7]{56}\.onion$"
+TOR_V3_AUTH_REGEX = r"^[A-Z2-7]{52}$"
 
-TOR_V2_HOSTNAME_REGEX = r'^[a-z2-7]{16}\.onion$'
-TOR_V2_AUTH_COOKIE_REGEX = r'^[a-zA-z0-9+/]{22}$'
+TOR_V2_HOSTNAME_REGEX = r"^[a-z2-7]{16}\.onion$"
+TOR_V2_AUTH_COOKIE_REGEX = r"^[a-zA-z0-9+/]{22}$"
 
 # CONFIG_FILEPATH = "/srv/salt/sd/config.json"
 CONFIG_FILEPATH = "config.json"
@@ -97,10 +97,10 @@ class SDWConfigValidator(object):
 
     def confirm_submission_privkey_fingerprint(self):
         assert "submission_key_fpr" in self.config
-        assert re.match('^[a-fA-F0-9]{40}$', self.config["submission_key_fpr"])
+        assert re.match("^[a-fA-F0-9]{40}$", self.config["submission_key_fpr"])
 
     def read_config_file(self):
-        with open(self.config_filepath, 'r') as f:
+        with open(self.config_filepath, "r") as f:
             j = json.load(f)
         return j
 
@@ -111,10 +111,12 @@ class SDWConfigValidator(object):
         assert "sd_app" in self.config["vmsizes"]
         assert "sd_log" in self.config["vmsizes"]
 
-        assert isinstance(self.config["vmsizes"]["sd_app"], int), \
-            "Private volume size of sd-app must be an integer value."
-        assert isinstance(self.config["vmsizes"]["sd_log"], int), \
-            "Private volume size of sd-log must be an integer value."
+        assert isinstance(
+            self.config["vmsizes"]["sd_app"], int
+        ), "Private volume size of sd-app must be an integer value."
+        assert isinstance(
+            self.config["vmsizes"]["sd_log"], int
+        ), "Private volume size of sd-log must be an integer value."
 
         app = Qubes()
         if "sd-app" in app.domains:

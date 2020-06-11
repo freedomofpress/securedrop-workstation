@@ -49,9 +49,7 @@ def copy_config():
     Copies config.json and sd-journalist.sec to /srv/salt/sd
     """
     try:
-        subprocess.check_call(
-            ["sudo", "cp", os.path.join(SCRIPTS_PATH, "config.json"), SALT_PATH]
-        )
+        subprocess.check_call(["sudo", "cp", os.path.join(SCRIPTS_PATH, "config.json"), SALT_PATH])
         subprocess.check_call(
             ["sudo", "cp", os.path.join(SCRIPTS_PATH, "sd-journalist.sec"), SALT_PATH]
         )
@@ -98,26 +96,23 @@ def refresh_salt():
 def perform_uninstall():
 
     try:
-        subprocess.check_call(
-            ["sudo", "qubesctl", "state.sls", "sd-clean-default-dispvm"]
-        )
+        subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-default-dispvm"])
         print("Destroying all VMs")
-        subprocess.check_call(
-            [os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all"]
-        )
+        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all"])
         subprocess.check_call(
             [
-                "sudo", "qubesctl", "--skip-dom0", "--targets",
-                "whonix-gw-15", "state.sls", "sd-clean-whonix"
+                "sudo",
+                "qubesctl",
+                "--skip-dom0",
+                "--targets",
+                "whonix-gw-15",
+                "state.sls",
+                "sd-clean-whonix",
             ]
         )
         print("Reverting dom0 configuration")
-        subprocess.check_call(
-            ["sudo", "qubesctl", "state.sls", "sd-clean-all"]
-        )
-        subprocess.check_call(
-            [os.path.join(SCRIPTS_PATH, "scripts/clean-salt")]
-        )
+        subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-all"])
+        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/clean-salt")])
         print("Uninstalling Template")
         subprocess.check_call(
             ["sudo", "dnf", "-y", "-q", "remove", "qubes-template-securedrop-workstation-buster"]
@@ -153,7 +148,7 @@ def main():
             "from other VMs on the system."
         )
         response = input("Are you sure you want to uninstall (y/N)? ")
-        if response.lower() != 'y':
+        if response.lower() != "y":
             print("Exiting.")
             sys.exit(0)
         else:

@@ -16,16 +16,10 @@ SDW_DEFAULT_TAG = "sd-workstation"
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--all",
-        default=False,
-        required=False,
-        action="store_true",
-        help="Destroys all SDW VMs",
+        "--all", default=False, required=False, action="store_true", help="Destroys all SDW VMs",
     )
     parser.add_argument(
-        "targets",
-        help="List of SDW VMs to destroy",
-        nargs=argparse.REMAINDER,
+        "targets", help="List of SDW VMs to destroy", nargs=argparse.REMAINDER,
     )
     args = parser.parse_args()
     if not args.all and len(args.targets) < 1:
@@ -55,9 +49,9 @@ def destroy_all():
     """
     # Remove DispVMs first, then AppVMs, then TemplateVMs last.
     sdw_vms = [vm for vm in q.domains if SDW_DEFAULT_TAG in vm.tags]
-    sdw_template_vms = [vm for vm in sdw_vms
-                        if vm.klass == "TemplateVM" and not
-                        vm.installed_by_rpm]
+    sdw_template_vms = [
+        vm for vm in sdw_vms if vm.klass == "TemplateVM" and not vm.installed_by_rpm
+    ]
     sdw_disp_vms = [vm for vm in sdw_vms if vm.klass == "DispVM"]
     sdw_app_vms = [vm for vm in sdw_vms if vm.klass == "AppVM"]
 

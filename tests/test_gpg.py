@@ -13,7 +13,7 @@ def find_fp_from_gpg_output(gpg):
         # dom0 uses Fedora25 with gpg 1.4.22, whereas AppVMs
         # use Debian9 with gpg 2.1.18, so we'll match fingerprint
         # by a loose regex rather than substring match.
-        regex = '\s*(Key fingerprint = )?([A-F0-9\s]{50})$'
+        regex = "\s*(Key fingerprint = )?([A-F0-9\s]{50})$"
         m = re.match(regex, line)
         if m is not None:
             fp = m.groups()[1]
@@ -29,8 +29,7 @@ def get_local_fp():
 
 
 def get_remote_fp():
-    cmd = ["qvm-run", "-p", "sd-gpg",
-           "/usr/bin/gpg --list-secret-keys --fingerprint"]
+    cmd = ["qvm-run", "-p", "sd-gpg", "/usr/bin/gpg --list-secret-keys --fingerprint"]
 
     p = subprocess.check_output(cmd)
 
@@ -38,7 +37,6 @@ def get_remote_fp():
 
 
 class SD_GPG_Tests(SD_VM_Local_Test):
-
     def setUp(self):
         self.vm_name = "sd-gpg"
         super(SD_GPG_Tests, self).setUp()

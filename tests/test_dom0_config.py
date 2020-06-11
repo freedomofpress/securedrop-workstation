@@ -9,7 +9,7 @@ DEPRECATED_TEMPLATES = [
     "securedrop-workstation",
     "sd-svs-buster-template",
     "sd-export-buster-template",
-    "sd-svs-disp-buster-template"
+    "sd-svs-disp-buster-template",
 ]
 
 VMS_TO_UPDATE = [
@@ -19,12 +19,11 @@ VMS_TO_UPDATE = [
     "sd-devices-buster-template",
     "whonix-ws-15",
     "whonix-gw-15",
-    "securedrop-workstation-buster"
+    "securedrop-workstation-buster",
 ]
 
 
 class SD_Qubes_Dom0_Templates_Tests(unittest.TestCase):
-
     def setUp(self):
         pass
 
@@ -39,10 +38,7 @@ class SD_Qubes_Dom0_Templates_Tests(unittest.TestCase):
                 self.assertFalse(template == line)
 
     def test_vms_to_update_are_tagged(self):
-        cmd = ["qvm-ls",
-               "--tags", "sd-workstation-updates",
-               "--raw-data",
-               "--fields", "NAME"]
+        cmd = ["qvm-ls", "--tags", "sd-workstation-updates", "--raw-data", "--fields", "NAME"]
         contents = subprocess.check_output(cmd).decode("utf-8").strip()
         for template in VMS_TO_UPDATE:
             self.assertTrue(template in contents)

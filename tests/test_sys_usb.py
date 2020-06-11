@@ -4,7 +4,6 @@ from base import SD_VM_Local_Test
 
 
 class SD_SysUSB_Tests(SD_VM_Local_Test):
-
     def setUp(self):
         self.vm_name = "sys-usb"
         super(SD_SysUSB_Tests, self).setUp()
