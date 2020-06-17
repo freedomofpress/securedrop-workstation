@@ -53,9 +53,7 @@ def test_obtain_lock(mocked_info, mocked_warning, mocked_error):
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_cannot_obtain_exclusive_lock_when_busy(
-    mocked_info, mocked_warning, mocked_error
-):
+def test_cannot_obtain_exclusive_lock_when_busy(mocked_info, mocked_warning, mocked_error):
     """
     Test whether only a single process can obtan an exclusive lock (basic
     lockfile behavior).
@@ -126,9 +124,7 @@ def test_permission_error_is_handled(mocked_info, mocked_warning, mocked_error):
     """
     Test whether permission errors obtaining a lock are handled correctly
     """
-    with mock.patch(
-        "builtins.open", side_effect=PermissionError()
-    ) as mocked_open:  # noqa: F821
+    with mock.patch("builtins.open", side_effect=PermissionError()) as mocked_open:  # noqa: F821
         lock = util.obtain_lock("test-open-error.lock")
         assert lock is None
         mocked_open.assert_called_once()
