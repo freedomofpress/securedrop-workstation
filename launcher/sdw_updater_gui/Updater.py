@@ -54,9 +54,7 @@ def check_all_updates():
 
     for progress_current, vm in enumerate(current_templates.keys()):
         # yield the progress percentage for UI updates
-        progress_percentage = int(
-            ((progress_current + 1) / len(current_templates.keys())) * 100
-        )
+        progress_percentage = int(((progress_current + 1) / len(current_templates.keys())) * 100)
         update_results = check_updates(vm)
         yield vm, progress_percentage, update_results
 
@@ -129,17 +127,11 @@ def _check_updates_debian(vm):
         sdlog.info("Checking for updates {}:{}".format(vm, current_templates[vm]))
         subprocess.check_call(["qvm-run", current_templates[vm], "sudo apt update"])
         subprocess.check_call(
-            [
-                "qvm-run",
-                current_templates[vm],
-                "[[ $(apt list --upgradable | wc -l) -eq 1 ]]",
-            ]
+            ["qvm-run", current_templates[vm], "[[ $(apt list --upgradable | wc -l) -eq 1 ]]"]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error(
-            "Updates required for {} or cannot check for updates".format(
-                current_templates[vm]
-            )
+            "Updates required for {} or cannot check for updates".format(current_templates[vm])
         )
         sdlog.error(str(e))
         updates_required = True
@@ -164,9 +156,7 @@ def _apply_updates_dom0():
     try:
         subprocess.check_call(["sudo", "qubes-dom0-update", "-y"])
     except subprocess.CalledProcessError as e:
-        sdlog.error(
-            "An error has occurred updating dom0. Please contact your administrator."
-        )
+        sdlog.error("An error has occurred updating dom0. Please contact your administrator.")
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
     sdlog.info("dom0 update successful")
@@ -247,11 +237,7 @@ def _write_updates_status_flag_to_disk(status):
     try:
         sdlog.info("Setting update flag to {} in sd-app".format(status.value))
         subprocess.check_call(
-            [
-                "qvm-run",
-                "sd-app",
-                "echo '{}' > {}".format(status.value, flag_file_path_sd_app),
-            ]
+            ["qvm-run", "sd-app", "echo '{}' > {}".format(status.value, flag_file_path_sd_app)]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error("Error writing update status flag to sd-app")
@@ -286,9 +272,7 @@ def last_required_reboot_performed():
         return True
 
     if int(flag_contents["status"]) == int(UpdateStatus.REBOOT_REQUIRED.value):
-        reboot_time = datetime.strptime(
-            flag_contents["last_status_update"], DATE_FORMAT
-        )
+        reboot_time = datetime.strptime(flag_contents["last_status_update"], DATE_FORMAT)
         boot_time = datetime.now() - _get_uptime()
 
         # The session was started *before* the reboot was requested by
@@ -315,9 +299,7 @@ def _get_uptime():
     uptime_minutes = (uptime % 3600) // 60
     uptime_seconds = uptime % 60
 
-    delta = timedelta(
-        hours=uptime_hours, minutes=uptime_minutes, seconds=uptime_seconds
-    )
+    delta = timedelta(hours=uptime_hours, minutes=uptime_minutes, seconds=uptime_seconds)
 
     return delta
 
@@ -471,9 +453,7 @@ def _safely_start_vm(vm):
             ["qvm-ls", "--running", "--raw-list"], stderr=subprocess.PIPE
         )
         sdlog.info("VMs running before start of {}: {}".format(vm, running_vms))
-        subprocess.check_output(
-            ["qvm-start", "--skip-if-running", vm], stderr=subprocess.PIPE
-        )
+        subprocess.check_output(["qvm-start", "--skip-if-running", vm], stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
         sdlog.error("Error while starting {}".format(vm))
         sdlog.error(str(e))
@@ -493,9 +473,7 @@ def should_launch_updater(interval):
                 return False
             elif status["status"] == UpdateStatus.REBOOT_REQUIRED.value:
                 if last_required_reboot_performed():
-                    sdlog.info(
-                        "Required reboot performed, updating status and launching client."
-                    )
+                    sdlog.info("Required reboot performed, updating status and launching client.")
                     _write_updates_status_flag_to_disk(UpdateStatus.UPDATES_OK)
                     return False
                 else:

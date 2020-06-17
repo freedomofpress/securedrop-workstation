@@ -6,22 +6,13 @@ from qubesadmin import Qubes
 
 
 # Reusable constant for DRY import across tests
-WANTED_VMS = [
-    "sd-gpg",
-    "sd-log",
-    "sd-proxy",
-    "sd-app",
-    "sd-viewer",
-    "sd-whonix",
-    "sd-devices"
-]
+WANTED_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "sd-devices"]
 
 
 # base class for per-VM testing
 
 
 class SD_VM_Local_Test(unittest.TestCase):
-
     def setUp(self):
         self.app = Qubes()
         self.vm = self.app.domains[self.vm_name]
@@ -44,8 +35,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         #   * QubesVMNotStartedError (from qubesadmin.base)
         for v in list(self.vm.connected_vms.values()):
             if v.is_running():
-                msg = ("Need to halt connected VM {}"
-                       " before testing".format(v))
+                msg = "Need to halt connected VM {}" " before testing".format(v)
                 print(msg)
                 v.shutdown()
                 while v.is_running():
@@ -68,8 +58,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         return contents
 
     def _get_file_contents(self, path):
-        cmd = ["qvm-run", "-p", self.vm_name,
-               "sudo /bin/cat {}".format(path)]
+        cmd = ["qvm-run", "-p", self.vm_name, "sudo /bin/cat {}".format(path)]
         contents = subprocess.check_output(cmd).decode("utf-8")
         return contents
 
@@ -79,8 +68,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         """
         # dpkg --verify will exit non-zero for a non-installed pkg,
         # and dom0 will percolate that error code
-        subprocess.check_call(["qvm-run", "-a", "-q", self.vm_name,
-                               "dpkg --verify {}".format(pkg)])
+        subprocess.check_call(["qvm-run", "-a", "-q", self.vm_name, "dpkg --verify {}".format(pkg)])
         return True
 
     def assertFilesMatch(self, remote_path, local_path):
@@ -90,6 +78,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         with open(local_path) as f:
             content = f.read()
         import difflib
+
         print("".join(difflib.unified_diff(remote_content, content)), end="")
         self.assertTrue(remote_content == content)
 
@@ -99,8 +88,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         for line in lines:
             if line == wanted_line:
                 return True
-        msg = "File {} does not contain expected line {}".format(remote_path,
-                                                                 wanted_line)
+        msg = "File {} does not contain expected line {}".format(remote_path, wanted_line)
         raise AssertionError(msg)
 
     def _fileExists(self, remote_path):
@@ -109,8 +97,9 @@ class SD_VM_Local_Test(unittest.TestCase):
         # ls will return non-zero and an exception will be thrown if the file
         # does not exist, so we return false in that case.
         try:
-            subprocess.check_call(["qvm-run", "-a", "-q", self.vm_name,
-                                   "ls {}".format(remote_path)])
+            subprocess.check_call(
+                ["qvm-run", "-a", "-q", self.vm_name, "ls {}".format(remote_path)]
+            )
         except subprocess.CalledProcessError:
             return False
 

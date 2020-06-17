@@ -5,7 +5,6 @@ from base import SD_VM_Local_Test
 
 
 class SD_Devices_Tests(SD_VM_Local_Test):
-
     def setUp(self):
         self.vm_name = "sd-devices-dvm"
         super(SD_Devices_Tests, self).setUp()
@@ -25,24 +24,23 @@ class SD_Devices_Tests(SD_VM_Local_Test):
         self.logging_configured()
 
     def test_mime_types(self):
-        filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "vars", "sd-devices.mimeapps")
+        filepath = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "vars", "sd-devices.mimeapps"
+        )
         with open(filepath, "r") as f:
             lines = f.readlines()
             for line in lines:
-                if line != "[Default Applications]\n" and not line.startswith('#'):
-                    mime_type = line.split('=')[0]
-                    expected_app = line.split('=')[1].split(';')[0]
+                if line != "[Default Applications]\n" and not line.startswith("#"):
+                    mime_type = line.split("=")[0]
+                    expected_app = line.split("=")[1].split(";")[0]
                     actual_app = self._run("xdg-mime query default {}".format(mime_type))
                     self.assertEqual(actual_app, expected_app)
 
     def test_open_in_dvm_desktop(self):
-        contents = self._get_file_contents(
-            "/usr/share/applications/open-in-dvm.desktop"
-        )
+        contents = self._get_file_contents("/usr/share/applications/open-in-dvm.desktop")
         expected_contents = [
             "TryExec=/usr/bin/qvm-open-in-vm",
-            "Exec=/usr/bin/qvm-open-in-vm --view-only '@dispvm:sd-viewer' %f"
+            "Exec=/usr/bin/qvm-open-in-vm --view-only '@dispvm:sd-viewer' %f",
         ]
         for line in expected_contents:
             self.assertTrue(line in contents)

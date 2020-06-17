@@ -23,10 +23,10 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         self.app = Qubes()
         with open("config.json") as c:
             config = json.load(c)
-            if 'environment' not in config:
-                config['environment'] = 'dev'
+            if "environment" not in config:
+                config["environment"] = "dev"
 
-            if config['environment'] == 'prod':
+            if config["environment"] == "prod":
                 self.apt_url = FPF_APT_SOURCES_BUSTER
             else:
                 self.apt_url = FPF_APT_SOURCES_BUSTER_DEV
@@ -134,9 +134,9 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             "pub   rsa4096 2016-10-20 [SC] [expires: 2021-06-30]",
             "      22245C81E3BAEB4138B36061310F561200F4AD77",
             "uid           [ unknown] SecureDrop Release Signing Key",
-            "uid           [ unknown] SecureDrop Release Signing Key <securedrop-release-key@freedom.press>"  # noqa: E501
+            "uid           [ unknown] SecureDrop Release Signing Key <securedrop-release-key@freedom.press>",  # noqa: E501
         ]
-        self.assertEqual(fpf_gpg_pub_key_info, results.split('\n'))
+        self.assertEqual(fpf_gpg_pub_key_info, results.split("\n"))
 
     def _ensure_trusted_keyring_securedrop_key_removed(self, vm):
         """

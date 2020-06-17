@@ -56,7 +56,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.provides_network)
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.template_for_dispvms)
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
 
     def test_sd_proxy_config(self):
         vm = self.app.domains["sd-proxy"]
@@ -66,7 +66,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
 
     def test_sd_app_config(self):
         vm = self.app.domains["sd-app"]
@@ -77,8 +77,8 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
-        self.assertTrue('sd-workstation' in vm.tags)
-        self.assertTrue('sd-client' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
+        self.assertTrue("sd-client" in vm.tags)
         # Check the size of the private volume
         # Should be 10GB
         # >>> 1024 * 1024 * 10 * 1024
@@ -95,7 +95,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template_for_dispvms)
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
 
     def test_sd_gpg_config(self):
         vm = self.app.domains["sd-gpg"]
@@ -107,7 +107,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
 
     def test_sd_log_config(self):
         vm = self.app.domains["sd-log"]
@@ -121,7 +121,7 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_service_running(vm, "paxctld")
         self._check_service_running(vm, "securedrop-log")
         self.assertFalse(vm.template_for_dispvms)
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
         # Check the size of the private volume
         # Should be same of config.json
         # >>> 1024 * 1024 * 5 * 1024
@@ -135,7 +135,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(nvm is None)
         self.assertTrue(vm.virt_mode == "hvm")
         self.assertTrue(vm.kernel == "")
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
 
@@ -143,34 +143,34 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-proxy-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
 
     def sd_app_template(self):
         vm = self.app.domains["sd-app-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
         self._check_kernel(vm)
 
     def sd_viewer_template(self):
         vm = self.app.domains["sd-viewer-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
         self.assertTrue(vm.template_for_dispvms)
 
     def sd_export_template(self):
         vm = self.app.domains["sd-devices-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
         self._check_kernel(vm)
 
     def sd_export_dvm(self):
         vm = self.app.domains["sd-devices-dvm"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
         self.assertTrue(vm.template_for_dispvms)
         self._check_kernel(vm)
 
@@ -180,14 +180,14 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(nvm is None)
         vm_type = vm.klass
         self.assertTrue(vm_type == "DispVM")
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
         self._check_kernel(vm)
 
     def sd_log_template(self):
         vm = self.app.domains["sd-log-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue('sd-workstation' in vm.tags)
+        self.assertTrue("sd-workstation" in vm.tags)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
 

@@ -10,8 +10,7 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         super(SD_Proxy_Tests, self).setUp()
 
     def test_do_not_open_here(self):
-        self.assertFilesMatch("/usr/bin/do-not-open-here",
-                              "sd-proxy/do-not-open-here")
+        self.assertFilesMatch("/usr/bin/do-not-open-here", "sd-proxy/do-not-open-here")
 
     def test_sd_proxy_package_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-proxy"))
@@ -19,7 +18,7 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
     def test_sd_proxy_yaml_config(self):
         with open("config.json") as c:
             config = json.load(c)
-            hostname = config['hidserv']['hostname']
+            hostname = config["hidserv"]["hostname"]
 
         wanted_lines = [
             "host: {}".format(hostname),
@@ -47,9 +46,9 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         with open("sd-proxy/mimeapps.list", "r") as f:
             lines = f.readlines()
             for line in lines:
-                if line != "[Default Applications]\n" and not line.startswith('#'):
-                    mime_type = line.split('=')[0]
-                    expected_app = line.split('=')[1].split(';')[0]
+                if line != "[Default Applications]\n" and not line.startswith("#"):
+                    mime_type = line.split("=")[0]
+                    expected_app = line.split("=")[1].split(";")[0]
                     actual_app = self._run("xdg-mime query default {}".format(mime_type))
                     self.assertEqual(actual_app, expected_app)
 

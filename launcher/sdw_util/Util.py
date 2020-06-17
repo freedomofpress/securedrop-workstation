@@ -22,9 +22,7 @@ LOG_DIRECTORY = os.path.join(BASE_DIRECTORY, "logs")
 LOCK_ERROR = "Error obtaining lock on '{}'. Process may already be running."
 
 # Format for those logs
-LOG_FORMAT = (
-    "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
-)
+LOG_FORMAT = "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
 
 sdlog = logging.getLogger(__name__)
 

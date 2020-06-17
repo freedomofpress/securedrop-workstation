@@ -9,9 +9,7 @@ from unittest import mock
 from unittest.mock import call
 
 relpath_updater_script = "../sdw_updater_gui/Updater.py"
-path_to_script = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), relpath_updater_script
-)
+path_to_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updater_script)
 updater = SourceFileLoader("Updater", path_to_script).load_module()
 from Updater import UpdateStatus  # noqa: E402
 from Updater import current_templates  # noqa: E402
@@ -80,14 +78,10 @@ def test_check_updates_dom0_up_to_date(mocked_info, mocked_error, mocked_call, c
     assert not mocked_error.called
 
 
-@mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
-)
+@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_check_updates_dom0_needs_updates(
-    mocked_info, mocked_error, mocked_call, capsys
-):
+def test_check_updates_dom0_needs_updates(mocked_info, mocked_error, mocked_call, capsys):
     status = updater._check_updates_dom0()
     assert status == UpdateStatus.UPDATES_REQUIRED
     error_log = [
@@ -119,8 +113,7 @@ def test_check_debian_updates_up_to_date(
     "subprocess.check_output", side_effect=["0", "0"],
 )
 @mock.patch(
-    "subprocess.check_call",
-    side_effect=[subprocess.CalledProcessError(1, "check_call"), "0"],
+    "subprocess.check_call", side_effect=[subprocess.CalledProcessError(1, "check_call"), "0"],
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
@@ -131,46 +124,33 @@ def test_check_updates_debian_updates_required(
     assert status == UpdateStatus.UPDATES_REQUIRED
     error_log = [
         call(
-            "Updates required for {} or cannot check for updates".format(
-                "sd-app-buster-template"
-            )
+            "Updates required for {} or cannot check for updates".format("sd-app-buster-template")
         ),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
-    info_log = [
-        call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template"))
-    ]
+    info_log = [call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template"))]
     mocked_error.assert_has_calls(error_log)
     mocked_info.assert_has_calls(info_log)
 
 
 @mock.patch(
-    "subprocess.check_output",
-    side_effect=subprocess.CalledProcessError(1, "check_output",),
+    "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output",),
 )
-@mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
-)
+@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_check_debian_updates_failed(
-    mocked_info, mocked_error, mocked_call, mocked_output, capsys
-):
+def test_check_debian_updates_failed(mocked_info, mocked_error, mocked_call, mocked_output, capsys):
     status = updater._check_updates_debian("sd-app")
     assert status == UpdateStatus.UPDATES_FAILED
     error_log = [
         call(
-            "Updates required for {} or cannot check for updates".format(
-                "sd-app-buster-template"
-            )
+            "Updates required for {} or cannot check for updates".format("sd-app-buster-template")
         ),
         call("Command 'check_call' returned non-zero exit status 1."),
         call("Failed to shut down {}".format("sd-app-buster-template")),
         call("Command 'check_output' returned non-zero exit status 1."),
     ]
-    info_log = [
-        call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template"))
-    ]
+    info_log = [call("Checking for updates {}:{}".format("sd-app", "sd-app-buster-template"))]
     mocked_error.assert_has_calls(error_log)
     mocked_info.assert_has_calls(info_log)
 
@@ -179,25 +159,18 @@ def test_check_debian_updates_failed(
     "subprocess.check_output", side_effect="0",
 )
 @mock.patch(
-    "subprocess.check_call",
-    side_effect=[subprocess.CalledProcessError(1, "check_call"), "0", "0"],
+    "subprocess.check_call", side_effect=[subprocess.CalledProcessError(1, "check_call"), "0", "0"],
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_check_debian_has_updates(
-    mocked_info, mocked_error, mocked_call, mocked_output, capsys
-):
+def test_check_debian_has_updates(mocked_info, mocked_error, mocked_call, mocked_output, capsys):
     error_log = [
         call(
-            "Updates required for {} or cannot check for updates".format(
-                "sd-log-buster-template"
-            )
+            "Updates required for {} or cannot check for updates".format("sd-log-buster-template")
         ),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
-    info_log = [
-        call("Checking for updates {}:{}".format("sd-log", "sd-log-buster-template"))
-    ]
+    info_log = [call("Checking for updates {}:{}".format("sd-log", "sd-log-buster-template"))]
 
     status = updater._check_updates_debian("sd-log")
     assert status == UpdateStatus.UPDATES_REQUIRED
@@ -231,11 +204,7 @@ def test_check_updates_calls_correct_commands(
         subprocess_call_list = [
             call(["qvm-run", current_templates[vm], "sudo apt update"]),
             call(
-                [
-                    "qvm-run",
-                    current_templates[vm],
-                    "[[ $(apt list --upgradable | wc -l) -eq 1 ]]",
-                ]
+                ["qvm-run", current_templates[vm], "[[ $(apt list --upgradable | wc -l) -eq 1 ]]"]
             ),
         ]
         check_output_call_list = [
@@ -259,9 +228,7 @@ def test_check_updates_calls_correct_commands(
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_check_all_updates(
-    mocked_info, mocked_error, mocked_call, mocked_check_updates
-):
+def test_check_all_updates(mocked_info, mocked_error, mocked_call, mocked_check_updates):
 
     update_generator = updater.check_all_updates()
     results = {}
@@ -368,9 +335,7 @@ def test_write_updates_status_flag_to_disk(
 
 @pytest.mark.parametrize("status", UpdateStatus)
 @mock.patch("os.path.expanduser", return_value=temp_dir)
-@mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
-)
+@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_write_updates_status_flag_to_disk_failure_app(
@@ -404,9 +369,7 @@ def test_write_updates_status_flag_to_disk_failure_dom0(
 @mock.patch("subprocess.check_call")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_write_last_updated_flags_to_disk(
-    mocked_info, mocked_error, mocked_call, mocked_expand
-):
+def test_write_last_updated_flags_to_disk(mocked_info, mocked_error, mocked_call, mocked_expand):
     flag_file_sd_app = updater.FLAG_FILE_LAST_UPDATED_SD_APP
     flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_LAST_UPDATED_DOM0)
     current_time = str(datetime.now().strftime(updater.DATE_FORMAT))
@@ -428,9 +391,7 @@ def test_write_last_updated_flags_to_disk(
 
 
 @mock.patch("os.path.expanduser", return_value=temp_dir)
-@mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
-)
+@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_write_last_updated_flags_to_disk_fails(
@@ -447,9 +408,7 @@ def test_write_last_updated_flags_to_disk_fails(
 
 @mock.patch("os.path.exists", return_value=False)
 @mock.patch("os.path.expanduser", return_value=temp_dir)
-@mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
-)
+@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_write_last_updated_flags_dom0_folder_creation_fail(
@@ -489,9 +448,7 @@ def test_apply_updates_dom0_success(
     assert not apply_vm.called
 
 
-@mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
-)
+@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_updates_dom0_failure(mocked_info, mocked_error, mocked_call):
@@ -528,9 +485,7 @@ def test_apply_updates_vms(mocked_info, mocked_error, mocked_call, vm):
 
 
 @pytest.mark.parametrize("vm", current_templates.keys())
-@mock.patch(
-    "subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call")
-)
+@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_updates_vms_fails(mocked_info, mocked_error, mocked_call, vm):
@@ -633,8 +588,7 @@ def test_safely_start(mocked_info, mocked_error, mocked_output, vm):
 
 @pytest.mark.parametrize("vm", current_templates.keys())
 @mock.patch(
-    "subprocess.check_output",
-    side_effect=subprocess.CalledProcessError(1, "check_output"),
+    "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"),
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
@@ -650,8 +604,7 @@ def test_safely_start_fails(mocked_info, mocked_error, mocked_output, vm):
 
 @pytest.mark.parametrize("vm", current_templates.keys())
 @mock.patch(
-    "subprocess.check_output",
-    side_effect=subprocess.CalledProcessError(1, "check_output"),
+    "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"),
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
@@ -706,17 +659,14 @@ def test_shutdown_and_start_vms(
     ]
     updater.shutdown_and_start_vms()
     mocked_output.assert_has_calls(sys_vm_kill_calls)
-    mocked_shutdown.assert_has_calls(
-        template_vm_calls + app_vm_calls + sys_vm_shutdown_calls
-    )
+    mocked_shutdown.assert_has_calls(template_vm_calls + app_vm_calls + sys_vm_shutdown_calls)
     app_vm_calls_reversed = list(reversed(app_vm_calls))
     mocked_start.assert_has_calls(sys_vm_start_calls + app_vm_calls_reversed)
     assert not mocked_error.called
 
 
 @mock.patch(
-    "subprocess.check_output",
-    side_effect=subprocess.CalledProcessError(1, "check_output"),
+    "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"),
 )
 @mock.patch("Updater._safely_start_vm")
 @mock.patch("Updater._safely_shutdown_vm")
@@ -826,9 +776,7 @@ def test_read_dom0_update_flag_from_disk_fails(
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_last_required_reboot_performed_successful(
-    mocked_info, mocked_error, mocked_read
-):
+def test_last_required_reboot_performed_successful(mocked_info, mocked_error, mocked_read):
     result = updater.last_required_reboot_performed()
     assert result is True
     assert not mocked_error.called
@@ -867,9 +815,7 @@ def test_last_required_reboot_performed_no_file(mocked_info, mocked_error, mocke
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
-def test_last_required_reboot_performed_not_required(
-    mocked_info, mocked_error, mocked_read
-):
+def test_last_required_reboot_performed_not_required(mocked_info, mocked_error, mocked_read):
     result = updater.last_required_reboot_performed()
     assert result is True
     assert not mocked_error.called
@@ -997,8 +943,7 @@ def test_apply_dom0_state_success(mocked_info, mocked_error, mocked_subprocess):
 
 
 @mock.patch(
-    "subprocess.check_call",
-    side_effect=[subprocess.CalledProcessError(1, "check_call"), "0"],
+    "subprocess.check_call", side_effect=[subprocess.CalledProcessError(1, "check_call"), "0"],
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")

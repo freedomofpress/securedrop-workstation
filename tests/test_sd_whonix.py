@@ -28,9 +28,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         with open("config.json") as c:
             config = json.load(c)
             if len(config["hidserv"]["hostname"]) == 22:
-                t = Template(
-                    "HidServAuth {{ d.hidserv.hostname }}" " {{ d.hidserv.key }}"
-                )
+                t = Template("HidServAuth {{ d.hidserv.hostname }}" " {{ d.hidserv.key }}")
                 line = t.render(d=config)
 
             else:
@@ -46,9 +44,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
             keyvalue = config["hidserv"]["key"]
             line = "{0}:descriptor:x25519:{1}".format(hostname, keyvalue)
 
-            self.assertFileHasLine(
-                "/var/lib/tor/keys/app-journalist.auth_private", line
-            )
+            self.assertFileHasLine("/var/lib/tor/keys/app-journalist.auth_private", line)
 
     def test_sd_whonix_repo_enabled(self):
         """
@@ -73,8 +69,10 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         torrc_contents = self._get_file_contents("/etc/tor/torrc")
         duplicate_includes = """%include /etc/torrc.d/
 %include /etc/torrc.d/95_whonix.conf"""
-        self.assertFalse(duplicate_includes in torrc_contents,
-                         "Whonix GW torrc contains duplicate %include lines")
+        self.assertFalse(
+            duplicate_includes in torrc_contents,
+            "Whonix GW torrc contains duplicate %include lines",
+        )
 
 
 def load_tests(loader, tests, pattern):

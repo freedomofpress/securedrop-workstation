@@ -8,15 +8,11 @@ from importlib.machinery import SourceFileLoader
 from tempfile import TemporaryDirectory
 
 relpath_notify = "../sdw_notify/Notify.py"
-path_to_notify = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), relpath_notify
-)
+path_to_notify = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_notify)
 notify = SourceFileLoader("Notify", path_to_notify).load_module()
 
 relpath_updater = "../sdw_updater_gui/Updater.py"
-path_to_updater = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), relpath_updater
-)
+path_to_updater = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updater)
 updater = SourceFileLoader("Updater", path_to_updater).load_module()
 
 
@@ -39,8 +35,7 @@ GRACE_PERIOD_REGEX = (
 
 # Regex for info log if we've updated recently enough
 NO_WARNING_REGEX = (
-    r"Last successful update \(.* hours ago\) is below the warning threshold "
-    r"\(.* hours\)."
+    r"Last successful update \(.* hours ago\) is below the warning threshold " r"\(.* hours\)."
 )
 
 # Regex for bad contents in `sdw-last-updated` file
