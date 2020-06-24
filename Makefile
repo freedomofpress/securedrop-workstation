@@ -6,30 +6,28 @@ ifneq ($(HOST),dom0)
 	exit 1
 endif
 
-all: ## Builds and provisions all VMs required for testing workstation
-	$(MAKE) assert-dom0
+all: assert-dom0
+	@echo "Please run one of the following targets:"
+	@echo
+	@echo "make dev"
+	@echo "make staging"
+	@echo "make prod"
+	@echo
+	@echo "These targets will set your config.json to the appropriate environment."
+
+dev: assert-dom0 ## Configures and builds a DEVELOPMENT install
 	./scripts/configure-environment --env dev
 	$(MAKE) validate
 	$(MAKE) prep-salt
 	./scripts/provision-all
 
-.PHONY: black
-black: ## Lints all Python files with black
-# Not requiring dom0 since linting requires extra packages,
-# available only in the developer environment, i.e. Work VM.
-	@./scripts/lint-all "black --check"
-
-dev: all ## Builds and provisions all VMs required for testing workstation
-
-prod: ## Configures a PRODUCTION install for pilot use
-	$(MAKE) assert-dom0
+prod: assert-dom0 ## Configures and builds a PRODUCTION install for pilot use
 	./scripts/configure-environment --env prod
 	$(MAKE) validate
 	$(MAKE) prep-salt
 	./scripts/provision-all
 
-staging: ## Configures a STAGING install. To be used on test hardware ONLY
-	$(MAKE) assert-dom0
+staging: assert-dom0 ## Configures and builds a STAGING install. To be used on test hardware ONLY
 	./scripts/configure-environment --env staging
 	$(MAKE) validate
 	$(MAKE) prep-salt
@@ -139,6 +137,12 @@ test-gpg: assert-dom0 ## Runs tests for SD GPG functionality
 
 validate: assert-dom0 ## Checks for local requirements in dev env
 	@./scripts/validate_config.py
+
+.PHONY: black
+black: ## Lints all Python files with black
+# Not requiring dom0 since linting requires extra packages,
+# available only in the developer environment, i.e. Work VM.
+	@./scripts/lint-all "black --check"
 
 .PHONY: flake8
 flake8: ## Lints all Python files with flake8

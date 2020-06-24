@@ -154,17 +154,18 @@ Doing so will permit the `sd-dev` AppVM to make RPC calls with the same privileg
 
 #### Provision the VMs
 
-Before provisioning the VMs, ensure your `environment` key is set to `dev` in `config.json`.
 Once the configuration is done and this directory is copied to `dom0`, you must update existing Qubes templates and use `make` to handle all provisioning and configuration by your unprivileged user:
 
 ```
-make all
+make dev
 ```
+
+Note that this target automatically sets the `environment` variable in `config.json` to `dev`, regardless of its current value, before provisioning.
 
 The build process takes quite a while. You will be presented with a dialog asking how to connect to Tor: you should be able to select the default option and continue. You may wish to increase the scrollback in the dom0 terminal from 1000 (the default) to 100000, to ensure you can review any errors in the verbose output. If you want to refer back to the provisioning log for a given
 VM, go to `/var/log/qubes/mgmt-<vm name>.log` in `dom0`. You can also monitor logs as they're being written via `journalctl -ef`. This will display logs across the entire system so it can be noisy. It's best used when you know what to look for, at least somewhat, or if you're provisioning one VM at a time.
 
-**NOTE:** Due to [issue #202](https://github.com/freedomofpress/securedrop-workstation/issues/202), the installation may fail with disk quota errors. If this happens, reboot the entire workstation and run `make all` again. The error will contain the following informating in your dom0 terminal:
+**NOTE:** Due to [issue #202](https://github.com/freedomofpress/securedrop-workstation/issues/202), the installation may fail with disk quota errors. If this happens, reboot the entire workstation and run `make dev` again. The error will contain the following informating in your dom0 terminal:
 
 ```
 qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (error type: Disk quota exceeded) '/usr/lib/qubes/qrexec-client-vm dom0 qubes.Receiveupdates /usr/lib/qubes/qfile-agent /var/lib/qubes/dom0-updates/packages/*.rpm' failed with exit code 1!
@@ -273,7 +274,7 @@ In a terminal in `dom0`, run the following commands:
 
 This project's development requires different workflows for working on provisioning components and working on submission-handling scripts.
 
-For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make all` to rebuild the full installation. Current valid target VM names are `sd-proxy`, `sd-gpg`, `sd-whonix`, and `disp-vm`. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
+For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make dev` to rebuild the full installation. Current valid target VM names are `sd-proxy`, `sd-gpg`, `sd-whonix`, and `disp-vm`. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
 
 For developing submission processing scripts, work is done directly in the virtual machine running the component. To commit, copy the updated files to a development VM with `qvm-copy-to-vm`and move the copied files into place in the repo. (This process is a little awkward, and it would be nice to make it better.)
 
@@ -287,7 +288,7 @@ These tests assert that expected scripts and configuration files are in the corr
 
     make test
 
-Note that since tests confirm the states of provisioned VMs, they should be run _after_ all the VMs have been built with `make all`.
+Note that since tests confirm the states of provisioned VMs, they should be run _after_ all the VMs have been built with `make dev`.
 
 Individual tests can be run with `make <test-name>`, where `test-name` is one of `test-app`, `test-journalist`, `test-whonix`, or `test-disp`.
 
@@ -309,7 +310,7 @@ In `dom0`:
 
 ```
 make clone
-make all
+make dev
 ```
 
 In the future, we plan on shipping a *SecureDrop Workstation* installer package as an RPM package in `dom0` to automatically update the salt provisioning logic.
@@ -435,7 +436,7 @@ In an environment sufficient for building production artifacts (if you don’t k
 `$ PKG_VERSION=0.1.1 PKG_PATH=tarballs/securedrop-client-0.1.1.tar.gz make securedrop-client`
 
 6. Upload build logs in the [build-logs](https://github.com/freedomofpress/build-logs) repository in the workstation directory. Ensure that the sha256sum of the built package is included in the build log.
-7. Next, add the package via PR to the private [securedrop-debian-packages-lfs](https://github.com/freedomofpress/securedrop-debian-packages-lfs) repository. 
+7. Next, add the package via PR to the private [securedrop-debian-packages-lfs](https://github.com/freedomofpress/securedrop-debian-packages-lfs) repository.
 8. Regenerate reprepro repository metadata using the script in that repository: `./tools/publish`. When you inspect the diff, you'll notice that the previous version of the subproject will no longer be served. This is expected.
 9. Copy the `Release` file to signing environment.
 10. Verify integrity of `Release` file.
