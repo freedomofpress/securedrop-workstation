@@ -45,35 +45,9 @@ def get_dom0_path(folder):
     return os.path.join(os.path.expanduser("~"), folder)
 
 
-def check_all_updates():
+def apply_updates(vms=current_templates.keys()):
     """
-    Check for updates for all vms listed in current_templates above
-    """
-
-    sdlog.info("Checking for all updates")
-
-    for progress_current, vm in enumerate(current_templates.keys()):
-        # yield the progress percentage for UI updates
-        progress_percentage = int(((progress_current + 1) / len(current_templates.keys())) * 100)
-        update_results = check_updates(vm)
-        yield vm, progress_percentage, update_results
-
-
-def check_updates(vm):
-    """
-    Check for updates for a single VM
-    """
-    if vm == "dom0":
-        return _check_updates_dom0()
-    elif vm == "fedora":
-        return _check_updates_fedora()
-    else:
-        return _check_updates_debian(vm)
-
-
-def apply_updates(vms):
-    """
-    Apply updates to the TemplateVMs of VM list specified in parameter
+    Apply updates to all TemplateVMs
     """
     sdlog.info("Applying all updates")
 
@@ -81,7 +55,11 @@ def apply_updates(vms):
         upgrade_results = UpdateStatus.UPDATES_FAILED
 
         if vm == "dom0":
-            upgrade_results = _apply_updates_dom0()
+            dom0_status = _check_updates_dom0()
+            if dom0_status == UpdateStatus.UPDATES_REQUIRED:
+                upgrade_results = _apply_updates_dom0()
+            else:
+                upgrade_results = UpdateStatus.UPDATES_OK
         else:
             upgrade_results = _apply_updates_vm(vm)
 
@@ -91,60 +69,22 @@ def apply_updates(vms):
 
 def _check_updates_dom0():
     """
-    Check for dom0 updates
+    We need to reboot the system after every dom0 update. The update
+    script does not tell us through its exit code whether updates were applied,
+    and parsing command output can be brittle.
+
+    For this reason, we check for available updates first. The result of this
+    check is cached, so it does not incur a significant performance penalty.
     """
     try:
         subprocess.check_call(["sudo", "qubes-dom0-update", "--check-only"])
     except subprocess.CalledProcessError as e:
-        sdlog.error("dom0 updates required or cannot check for updates")
+        sdlog.error("dom0 updates required, or cannot check for updates")
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_REQUIRED
 
-    sdlog.info("dom0 is up to date")
+    sdlog.info("No updates available for dom0")
     return UpdateStatus.UPDATES_OK
-
-
-def _check_updates_fedora():
-    """
-    Check for updates to the default Fedora TemplateVM. Fedora has a very rapid
-    release cycle and there are almost always updates to fedora VMs. Let's just
-    return UPDATES_REQUIRED and always upgrade those VMs, since they no longer
-    trigger a full workstation reboot on upgrade.
-    """
-    return UpdateStatus.UPDATES_REQUIRED
-
-
-def _check_updates_debian(vm):
-    """
-    Check for updates for a given Debian-based TemplateVM
-    """
-    updates_required = False
-    try:
-        # There is no apt command that uses exit codes in such a way that we can discover if
-        # updates are required by relying on exit codes.
-        # Since we don't want to use --pass-io and parse the output, we have to count
-        # the lines on the vm output
-        sdlog.info("Checking for updates {}:{}".format(vm, current_templates[vm]))
-        subprocess.check_call(["qvm-run", current_templates[vm], "sudo apt update"])
-        subprocess.check_call(
-            ["qvm-run", current_templates[vm], "[[ $(apt list --upgradable | wc -l) -eq 1 ]]"]
-        )
-    except subprocess.CalledProcessError as e:
-        sdlog.error(
-            "Updates required for {} or cannot check for updates".format(current_templates[vm])
-        )
-        sdlog.error(str(e))
-        updates_required = True
-    finally:
-        reboot_status = _safely_shutdown_vm(current_templates[vm])
-        if reboot_status == UpdateStatus.UPDATES_FAILED:
-            return reboot_status
-
-    if not updates_required:
-        sdlog.info("{} is up to date".format(current_templates[vm]))
-        return UpdateStatus.UPDATES_OK
-    else:
-        return UpdateStatus.UPDATES_REQUIRED
 
 
 def _apply_updates_dom0():
@@ -159,7 +99,8 @@ def _apply_updates_dom0():
         sdlog.error("An error has occurred updating dom0. Please contact your administrator.")
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
-    sdlog.info("dom0 update successful")
+
+    sdlog.info("dom0 updates have been applied and a reboot is required.")
     return UpdateStatus.REBOOT_REQUIRED
 
 
