@@ -14,6 +14,7 @@ all: assert-dom0
 	@echo "make prod"
 	@echo
 	@echo "These targets will set your config.json to the appropriate environment."
+	@false
 
 dev: assert-dom0 ## Configures and builds a DEVELOPMENT install
 	./scripts/configure-environment --env dev
