@@ -59,15 +59,25 @@ class SDWConfigValidator(object):
 
     def confirm_onion_config_valid(self):
         """
-        We support both v2 and v3 Onion Services, so if the values
-        in config file match either format, good enough.
+        We support both v2 and v3 onion services, so if the values
+        in the config file match either format, the configuration is considered
+        valid. A deprecation warning is shown if v2 services are in use.
         """
+        v2_config = False
         try:
             self.confirm_onion_v3_url()
             self.confirm_onion_v3_auth()
         except AssertionError:
             self.confirm_onion_v2_url()
             self.confirm_onion_v2_auth()
+            v2_config = True
+
+        if v2_config:
+            print(
+                "WARNING: v2 onion service configuration found.\n"
+                "Support for v2 onion services will be removed from SecureDrop in February 2021.\n"
+                "Migration guide: https://securedrop.org/v2-onion-eol/"
+            )
 
     def confirm_onion_v3_url(self):
         assert "hidserv" in self.config
