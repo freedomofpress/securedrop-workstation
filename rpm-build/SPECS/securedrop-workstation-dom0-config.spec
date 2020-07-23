@@ -64,7 +64,7 @@ install -m 644 dom0/securedrop-login %{buildroot}/srv/salt/
 install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
 install -m 655 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 install -m 655 dom0/update-xfce-settings %{buildroot}/srv/salt/
-install -m 755 scripts/securedrop-admin.py %{buildroot}/%{_bindir}/securedrop-admin
+install -m 755 scripts/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
 install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
 install -m 644 sd-whonix/* %{buildroot}/srv/salt/sd/sd-whonix/
@@ -87,7 +87,7 @@ install -m 644 launcher/sdw_util/*.py %{buildroot}/srv/salt/launcher/sdw_util/
 %doc README.md LICENSE
 %attr(755, root, root) /opt/securedrop/launcher/sdw-launcher.py
 %attr(755, root, root) /opt/securedrop/launcher/sdw-notify.py
-%attr(755, root, root) %{_bindir}/securedrop-admin
+%attr(755, root, root) %{_bindir}/sdw-admin
 %{python3_sitelib}/securedrop_workstation_dom0_config*
 %{_datadir}/%{name}
 /opt/securedrop/launcher/**/*.py
