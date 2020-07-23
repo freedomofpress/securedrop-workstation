@@ -194,7 +194,7 @@ You can install the staging environment in two ways:
 
 - If you have an up-to-date clone of this repo with a valid configuration in `dom0`, you can use the `make staging` target to provision a staging environment. Prior to provisioning, `make staging` will set your `config.json` environment to `staging`. As part of the provisioning, your package repository configuration will be updated to use the latest test release of the RPM package, and the latest nightlies of the Debian packages.
 
-- If you want to install a staging environment from scratch in a manner similar to a production install (starting from an RPM, and using `securedrop-admin` for the installation), follow the process in the following sections.
+- If you want to install a staging environment from scratch in a manner similar to a production install (starting from an RPM, and using `sdw-admin` for the installation), follow the process in the following sections.
 
 #### Download and install securedrop-workstation-dom0-config package
 
@@ -267,7 +267,7 @@ Your workstation configuration will reside in `/usr/share/securedrop-workstation
 In a terminal in `dom0`, run the following commands:
 
 ```
-[dom0]$ securedrop-admin --apply
+[dom0]$ sdw-admin --apply
 ```
 
 ## Development
