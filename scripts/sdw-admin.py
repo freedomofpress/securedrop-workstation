@@ -54,7 +54,7 @@ def copy_config():
             ["sudo", "cp", os.path.join(SCRIPTS_PATH, "sd-journalist.sec"), SALT_PATH]
         )
     except subprocess.CalledProcessError:
-        raise SDAdminException("Error copying configuration")
+        raise SDWAdminException("Error copying configuration")
 
 
 def provision_all():
@@ -64,7 +64,7 @@ def provision_all():
     try:
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/provision-all")])
     except subprocess.CalledProcessError:
-        raise SDAdminException("Error during provision-all")
+        raise SDWAdminException("Error during provision-all")
 
 
 def validate_config(path):
@@ -74,7 +74,7 @@ def validate_config(path):
     try:
         validator = SDWConfigValidator(path)  # noqa: F841
     except ValidationError:
-        raise SDAdminException("Error while validating configuration")
+        raise SDWAdminException("Error while validating configuration")
 
 
 def refresh_salt():
@@ -85,12 +85,12 @@ def refresh_salt():
     try:
         subprocess.check_call(["sudo", "rm", "-rf", "/var/cache/salt"])
     except subprocess.CalledProcessError:
-        raise SDAdminException("Error while clearing Salt cache")
+        raise SDWAdminException("Error while clearing Salt cache")
 
     try:
         subprocess.check_call(["sudo", "qubesctl", "saltutil.sync_all", "refresh=true"])
     except subprocess.CalledProcessError:
-        raise SDAdminException("Error while synchronizing Salt")
+        raise SDWAdminException("Error while synchronizing Salt")
 
 
 def perform_uninstall():
@@ -122,7 +122,7 @@ def perform_uninstall():
             ["sudo", "dnf", "-y", "-q", "remove", "securedrop-workstation-dom0-config"]
         )
     except subprocess.CalledProcessError:
-        raise SDAdminException("Error during uninstall")
+        raise SDWAdminException("Error during uninstall")
 
     print(
         "Instance secrets (Journalist Interface token and Submission private key) are still "
@@ -158,7 +158,7 @@ def main():
         sys.exit(0)
 
 
-class SDAdminException(Exception):
+class SDWAdminException(Exception):
     pass
 
 

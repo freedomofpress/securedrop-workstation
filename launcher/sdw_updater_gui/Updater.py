@@ -303,7 +303,7 @@ def apply_dom0_state():
     """
     Applies the dom0 state to ensure dom0 and AppVMs are properly
     Configured. This will *not* enforce configuration inside the AppVMs.
-    Here, we call qubectl directly (instead of through securedrop-admin) to
+    Here, we call qubectl directly (instead of through sdw-admin) to
     ensure it is environment-specific.
     """
     sdlog.info("Applying dom0 state")
