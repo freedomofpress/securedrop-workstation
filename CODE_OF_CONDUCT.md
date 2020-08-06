@@ -105,7 +105,7 @@ following behaviors:
   - Unwelcome sexual attention
   - Posting (or threatening to post) other people's personally identifying
     information ("doxing")
-  - Respect people's stated personal boundaries
+  - Violation of people's stated personal boundaries
 
 - Following the letter of this Code of Conduct while disregarding its spirit.
   When judging whether certain behavior represents a violation of this code, we
@@ -134,7 +134,8 @@ assist with resolving conflicts within the community.
 
 Currently the Community Team consists of:
 
-- Jen Helsby (`@redshiftzero`) - Lead Engineer - [jen@freedom.press](mailto:jen@freedom.press)
+- Jen Helsby (`@redshiftzero`) - Principal Research Engineer - [jen@freedom.press](mailto:jen@freedom.press)
+- Mickael E. (`@emkll`) - Lead Engineer - [mickael@freedom.press](mailto:mickael@freedom.press)
 
 You can contact the whole Community Team or members individually.
 
