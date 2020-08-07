@@ -44,7 +44,7 @@ def parse_args():
         default=False,
         required=False,
         action="store_true",
-        help="During uninstall action, leave TemplateVM RPM packag installed in dom0",
+        help="During uninstall action, leave TemplateVM RPM package installed in dom0",
     )
     parser.add_argument(
         "--force",

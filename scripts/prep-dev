@@ -26,5 +26,6 @@ sudo dnf install -y "$latest_rpm"
 
 # Always copy secrets, these won't be configured as part
 # of the RPM installation.
-sudo cp config.json /usr/share/securedrop-workstation-dom0-config/
-sudo cp sd-journalist.sec /usr/share/securedrop-workstation-dom0-config/
+echo "Copying config secrets into place..."
+sudo cp -v config.json /usr/share/securedrop-workstation-dom0-config/
+sudo cp -v sd-journalist.sec /usr/share/securedrop-workstation-dom0-config/
