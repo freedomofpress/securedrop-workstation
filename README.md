@@ -116,7 +116,9 @@ Select all VMs marked as **updates available**, then click **Next**. Once all up
 
 #### Download, Configure, Copy to `dom0`
 
-Decide on a VM to use for development. We suggest creating a standalone VM called `sd-dev`. Clone this repo to your preferred location on that VM.
+Decide on a VM to use for development. We recommend creating a standalone VM called `sd-dev` by following [these instructions](https://docs.securedrop.org/en/stable/development/setup_development.html#qubes). You must install Docker in that VM in order to build a development environment using the standard workflow.
+
+Clone this repo to your preferred location on that VM.
 
 Next we need to do some SecureDrop-specific configuration:
 
@@ -139,7 +141,7 @@ After that initial manual step, the code in your development VM may be copied in
 [dom0]$ export SECUREDROP_DEV_VM=sd-dev    # set to your dev VM
 [dom0]$ export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory
 [dom0]$ cd ~/securedrop-workstation/
-[dom0]$ make clone    # copy repo to dom0
+[dom0]$ make clone    # build RPM package (requires Docker) and copy repo to dom0
 ```
 
 If you plan to work on the [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) code, also run this command in `dom0`:
@@ -274,7 +276,7 @@ In a terminal in `dom0`, run the following commands:
 
 This project's development requires different workflows for working on provisioning components and working on submission-handling scripts.
 
-For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make dev` to rebuild the full installation. Current valid target VM names are `sd-proxy`, `sd-gpg`, `sd-whonix`, and `disp-vm`. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
+For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to package and copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make dev` to rebuild the full installation. Current valid target VM names are `sd-proxy`, `sd-gpg`, `sd-whonix`, and `disp-vm`. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
 
 For developing submission processing scripts, work is done directly in the virtual machine running the component. To commit, copy the updated files to a development VM with `qvm-copy-to-vm`and move the copied files into place in the repo. (This process is a little awkward, and it would be nice to make it better.)
 
@@ -298,7 +300,7 @@ Be aware that running tests *will* power down running SecureDrop VMs, and may re
 
 Double-clicking the "SecureDrop" desktop icon will launch a preflight updater that applies any necessary updates to VMs, and may prompt a reboot.
 
-To update workstation provisioning logic, one must use the `sd-dev` AppVM that was created during the install. From your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
+To update workstation provisioning logic in a development environment, one must use the `sd-dev` AppVM that was created during the install. From your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
 
 ```
 git fetch --tags
@@ -313,7 +315,7 @@ make clone
 make dev
 ```
 
-In the future, we plan on shipping a *SecureDrop Workstation* installer package as an RPM package in `dom0` to automatically update the salt provisioning logic.
+The `make clone` command will build a new version of the RPM package that contains the provisioning logic and copy it to `dom0`.
 
 ### Building the Templates
 
