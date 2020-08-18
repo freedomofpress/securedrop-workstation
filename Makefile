@@ -11,26 +11,15 @@ all: assert-dom0
 	@echo
 	@echo "make dev"
 	@echo "make staging"
-	@echo "make prod"
 	@echo
 	@echo "These targets will set your config.json to the appropriate environment."
 	@false
 
-dev: assert-dom0 ## Configures and builds a DEVELOPMENT install
-	./scripts/configure-environment --env dev
+dev staging: assert-dom0 ## Configures and builds a dev or staging environment
+	./scripts/configure-environment --env $@
 	$(MAKE) validate
 	$(MAKE) prep-dev
 	sdw-admin --apply
-
-prod: assert-dom0 ## Configures and builds a PRODUCTION install for pilot use
-	./scripts/configure-environment --env prod
-	$(MAKE) validate
-	./scripts/provision-all
-
-staging: assert-dom0 ## Configures and builds a STAGING install. To be used on test hardware ONLY
-	./scripts/configure-environment --env staging
-	$(MAKE) validate
-	./scripts/provision-all
 
 dom0-rpm: ## Builds rpm package to be installed on dom0
 	@./scripts/build-dom0-rpm

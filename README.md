@@ -180,8 +180,6 @@ When the installation process completes, a number of new VMs will be available o
 
 The staging environment is intended to provide an experience closer to a production environment. For example, it will alter power management settings on your laptop to prevent suspending it to disk, and make other changes that may not be desired during day-to-day development in Qubes.
 
-**IMPORTANT: THE STAGING ENVIRONMENT SHOULD NEVER BE USED FOR PRODUCTION PURPOSES. IT SHOULD ALSO NOT BE USED ON DEVELOPER MACHINES, BUT ONLY ON TEST MACHINES THAT HOLD NO SENSITIVE DATA.**
-
 #### Update `dom0`, `fedora-31`, `whonix-gw-15` and `whonix-ws-15` templates
 
 Updates to these VMs will be provided by the installer and updater, but to ensure they are up to date prior to install, it will be easier to debug, should something go wrong.
@@ -194,9 +192,9 @@ In the Qubes Menu, navigate to `System Tools` and click on `Qubes Update`. Click
 
 You can install the staging environment in two ways:
 
-- If you have an up-to-date clone of this repo with a valid configuration in `dom0`, you can use the `make staging` target to provision a staging environment. Prior to provisioning, `make staging` will set your `config.json` environment to `staging`. As part of the provisioning, your package repository configuration will be updated to use the latest test release of the RPM package, and the latest nightlies of the Debian packages.
+- If you have an up-to-date clone of this repo with a valid configuration in `dom0`, you can use the `make staging` target to provision a staging environment. Prior to provisioning, `make staging` will set your `config.json` environment to `staging`. As part of the provisioning, a locally built RPM will be installed in dom0, and your package repository configuration will be updated to use the latest test release of the RPM package, and the latest nightlies of the Debian packages (same as `make dev`).
 
-- If you want to install a staging environment from scratch in a manner similar to a production install (starting from an RPM, and using `sdw-admin` for the installation), follow the process in the following sections.
+- If you want to download a specific version of the RPM, and follow a verification procedure similar to that used in a production install, follow the process in the following sections.
 
 #### Download and install securedrop-workstation-dom0-config package
 
