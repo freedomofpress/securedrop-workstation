@@ -313,7 +313,7 @@ make clone
 make dev
 ```
 
-The `make clone` command will build a new version of the RPM package that contains the provisioning logic and copy it to `dom0`.
+The `make clone` command will build a new version of the RPM package that contains the provisioning logic in your development VM (e.g., `sd-dev`) and copy it to `dom0`. The RPM is built using a Docker container, so Docker must be installed in your development VM.
 
 ### Building the Templates
 
