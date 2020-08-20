@@ -199,6 +199,8 @@ dom0-securedrop-launcher-desktop-shortcut:
 
 {% import_json "sd/config.json" as d %}
 {% if d.environment != "dev" %}
+# In the dev environment, we've already installed the rpm from
+# local sources, so don't also pull in from the yum-test repo.
 dom0-install-securedrop-workstation-dom0-config:
   pkg.installed:
     - pkgs:

@@ -175,6 +175,8 @@ qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (err
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
 
+#### Editing the configuration
+When developing on the Workstation, make sure to edit files in `sd-dev`, then copy them to dom0 via `make clone && make dev` to reinstall them. Any changes that you make to the ~/securedrop-workstation folder in dom0 will be overwritten during `make clone`. Similarly, any changes you make to e.g. `/srv/salt/` in dom0 will be overwritten by `make dev`.
 
 ### Staging Environment
 
@@ -192,7 +194,7 @@ In the Qubes Menu, navigate to `System Tools` and click on `Qubes Update`. Click
 
 You can install the staging environment in two ways:
 
-- If you have an up-to-date clone of this repo with a valid configuration in `dom0`, you can use the `make staging` target to provision a staging environment. Prior to provisioning, `make staging` will set your `config.json` environment to `staging`. As part of the provisioning, a locally built RPM will be installed in dom0, and your package repository configuration will be updated to use the latest test release of the RPM package, and the latest nightlies of the Debian packages (same as `make dev`).
+- If you have an up-to-date clone of this repo with a valid configuration in `dom0`, you can use the `make staging` target to provision a staging environment. Prior to provisioning, `make staging` will set your `config.json` environment to `staging`. As part of the provisioning, a locally built RPM will be installed in dom0. The dom0 package repository configuration will be updated to install future test-only versions of the RPM package from the https://yum-test.securedrop.org repository, and Workstation VMs will receive the latest nightlies of the Debian packages (same as `make dev`).
 
 - If you want to download a specific version of the RPM, and follow a verification procedure similar to that used in a production install, follow the process in the following sections.
 
