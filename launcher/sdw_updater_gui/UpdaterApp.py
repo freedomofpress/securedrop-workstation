@@ -24,7 +24,7 @@ def launch_securedrop_client():
     sys.exit(0)
 
 
-class UpdaterApp(QtGui.QMainWindow, Ui_UpdaterDialog):
+class UpdaterApp(QtGui.QDialog, Ui_UpdaterDialog):
     def __init__(self, parent=None):
         super(UpdaterApp, self).__init__(parent)
 
