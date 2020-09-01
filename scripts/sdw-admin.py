@@ -126,6 +126,7 @@ def perform_uninstall(keep_template_rpm=False):
         )
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-all"])
+        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/clean-salt")])
         if not keep_template_rpm:
             print("Uninstalling Template")
             subprocess.check_call(
