@@ -36,6 +36,12 @@ class SD_VM_Tests(unittest.TestCase):
         assert kernel_version.endswith("-grsec-workstation")
         assert kernel_version == EXPECTED_KERNEL_VERSION
 
+        u2mfn_filepath = "/usr/lib/modules/{}/updates/dkms/u2mfn.ko".format(EXPECTED_KERNEL_VERSION)
+        # cmd will raise exception if file not found
+        stdout, stderr = vm.run("sudo test -f {}".format(u2mfn_filepath))
+        assert stdout == b""
+        assert stderr == b""
+
     def _check_service_running(self, vm, service):
         """
         Ensures a given service is running inside a given VM.
