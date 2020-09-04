@@ -32,7 +32,7 @@ jobs:
             set -e
             virtualenv .venv
             source .venv/bin/activate
-            pip install --require-hashes -r test-requirements.txt
+            pip install --require-hashes -r dev-requirements.txt
             sudo apt install lsof
             make test && make bandit
 

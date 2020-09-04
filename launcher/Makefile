@@ -1,6 +1,6 @@
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
-	pip-compile --allow-unsafe --generate-hashes --output-file=test-requirements.txt test-requirements.in
+	pip-compile --allow-unsafe --generate-hashes --output-file=dev-requirements.txt dev-requirements.in
 
 .PHONY: bandit
 bandit:

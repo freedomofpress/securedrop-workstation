@@ -10,8 +10,12 @@ import sys
 from sdw_notify import Notify
 from sdw_updater_gui import Updater
 from sdw_util import Util
-from PyQt4 import QtGui
-from PyQt4.QtGui import QMessageBox
+
+if Util.get_qt_version() == 5:
+    print("Using Qt5 (experimental)")
+    from PyQt5.QtWidgets import QApplication, QMessageBox
+else:
+    from PyQt4.QtGui import QApplication, QMessageBox
 
 
 def main():
@@ -50,7 +54,7 @@ def show_update_warning():
     Show a graphical warning reminding the user to check for security updates
     using the preflight updater.
     """
-    app = QtGui.QApplication([])  # noqa: F841
+    app = QApplication([])  # noqa: F841
 
     QMessageBox.warning(
         None,
