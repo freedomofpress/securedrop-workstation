@@ -1,12 +1,20 @@
-from PyQt4 import QtGui
-from PyQt4.QtCore import QThread, pyqtSignal, pyqtSlot
-from sdw_updater_gui.UpdaterAppUi import Ui_UpdaterDialog
 from sdw_updater_gui import strings
 from sdw_updater_gui import Updater
 from sdw_updater_gui.Updater import UpdateStatus
+from sdw_util import Util
 import logging
 import subprocess
 import sys
+
+if Util.get_qt_version() == 5:
+    from PyQt5.QtWidgets import QDialog
+    from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+    from sdw_updater_gui.UpdaterAppUiQt5 import Ui_UpdaterDialog
+else:
+    from PyQt4.QtGui import QDialog
+    from PyQt4.QtCore import QThread, pyqtSignal, pyqtSlot
+    from sdw_updater_gui.UpdaterAppUi import Ui_UpdaterDialog
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +32,7 @@ def launch_securedrop_client():
     sys.exit(0)
 
 
-class UpdaterApp(QtGui.QDialog, Ui_UpdaterDialog):
+class UpdaterApp(QDialog, Ui_UpdaterDialog):
     def __init__(self, parent=None):
         super(UpdaterApp, self).__init__(parent)
 
