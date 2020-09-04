@@ -116,7 +116,9 @@ Select all VMs marked as **updates available**, then click **Next**. Once all up
 
 #### Download, Configure, Copy to `dom0`
 
-Decide on a VM to use for development. We suggest creating a standalone VM called `sd-dev`. Clone this repo to your preferred location on that VM.
+Decide on a VM to use for development. We recommend creating a standalone VM called `sd-dev` by following [these instructions](https://docs.securedrop.org/en/stable/development/setup_development.html#qubes). You must install Docker in that VM in order to build a development environment using the standard workflow.
+
+Clone this repo to your preferred location on that VM.
 
 Next we need to do some SecureDrop-specific configuration:
 
@@ -139,7 +141,7 @@ After that initial manual step, the code in your development VM may be copied in
 [dom0]$ export SECUREDROP_DEV_VM=sd-dev    # set to your dev VM
 [dom0]$ export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory
 [dom0]$ cd ~/securedrop-workstation/
-[dom0]$ make clone    # copy repo to dom0
+[dom0]$ make clone    # build RPM package (requires Docker) and copy repo to dom0
 ```
 
 If you plan to work on the [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) code, also run this command in `dom0`:
@@ -173,12 +175,12 @@ qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (err
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
 
+#### Editing the configuration
+When developing on the Workstation, make sure to edit files in `sd-dev`, then copy them to dom0 via `make clone && make dev` to reinstall them. Any changes that you make to the ~/securedrop-workstation folder in dom0 will be overwritten during `make clone`. Similarly, any changes you make to e.g. `/srv/salt/` in dom0 will be overwritten by `make dev`.
 
 ### Staging Environment
 
 The staging environment is intended to provide an experience closer to a production environment. For example, it will alter power management settings on your laptop to prevent suspending it to disk, and make other changes that may not be desired during day-to-day development in Qubes.
-
-**IMPORTANT: THE STAGING ENVIRONMENT SHOULD NEVER BE USED FOR PRODUCTION PURPOSES. IT SHOULD ALSO NOT BE USED ON DEVELOPER MACHINES, BUT ONLY ON TEST MACHINES THAT HOLD NO SENSITIVE DATA.**
 
 #### Update `dom0`, `fedora-31`, `whonix-gw-15` and `whonix-ws-15` templates
 
@@ -192,9 +194,9 @@ In the Qubes Menu, navigate to `System Tools` and click on `Qubes Update`. Click
 
 You can install the staging environment in two ways:
 
-- If you have an up-to-date clone of this repo with a valid configuration in `dom0`, you can use the `make staging` target to provision a staging environment. Prior to provisioning, `make staging` will set your `config.json` environment to `staging`. As part of the provisioning, your package repository configuration will be updated to use the latest test release of the RPM package, and the latest nightlies of the Debian packages.
+- If you have an up-to-date clone of this repo with a valid configuration in `dom0`, you can use the `make staging` target to provision a staging environment. Prior to provisioning, `make staging` will set your `config.json` environment to `staging`. As part of the provisioning, a locally built RPM will be installed in dom0. The dom0 package repository configuration will be updated to install future test-only versions of the RPM package from the https://yum-test.securedrop.org repository, and Workstation VMs will receive the latest nightlies of the Debian packages (same as `make dev`).
 
-- If you want to install a staging environment from scratch in a manner similar to a production install (starting from an RPM, and using `sdw-admin` for the installation), follow the process in the following sections.
+- If you want to download a specific version of the RPM, and follow a verification procedure similar to that used in a production install, follow the process in the following sections.
 
 #### Download and install securedrop-workstation-dom0-config package
 
@@ -274,7 +276,7 @@ In a terminal in `dom0`, run the following commands:
 
 This project's development requires different workflows for working on provisioning components and working on submission-handling scripts.
 
-For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make dev` to rebuild the full installation. Current valid target VM names are `sd-proxy`, `sd-gpg`, `sd-whonix`, and `disp-vm`. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
+For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to package and copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make dev` to rebuild the full installation. Current valid target VM names are `sd-proxy`, `sd-gpg`, `sd-whonix`, and `disp-vm`. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
 
 For developing submission processing scripts, work is done directly in the virtual machine running the component. To commit, copy the updated files to a development VM with `qvm-copy-to-vm`and move the copied files into place in the repo. (This process is a little awkward, and it would be nice to make it better.)
 
@@ -298,7 +300,7 @@ Be aware that running tests *will* power down running SecureDrop VMs, and may re
 
 Double-clicking the "SecureDrop" desktop icon will launch a preflight updater that applies any necessary updates to VMs, and may prompt a reboot.
 
-To update workstation provisioning logic, one must use the `sd-dev` AppVM that was created during the install. From your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
+To update workstation provisioning logic in a development environment, one must use the `sd-dev` AppVM that was created during the install. From your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
 
 ```
 git fetch --tags
@@ -313,7 +315,7 @@ make clone
 make dev
 ```
 
-In the future, we plan on shipping a *SecureDrop Workstation* installer package as an RPM package in `dom0` to automatically update the salt provisioning logic.
+The `make clone` command will build a new version of the RPM package that contains the provisioning logic in your development VM (e.g., `sd-dev`) and copy it to `dom0`. The RPM is built using a Docker container, so Docker must be installed in your development VM.
 
 ### Building the Templates
 

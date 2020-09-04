@@ -11,27 +11,15 @@ all: assert-dom0
 	@echo
 	@echo "make dev"
 	@echo "make staging"
-	@echo "make prod"
 	@echo
 	@echo "These targets will set your config.json to the appropriate environment."
+	@false
 
-dev: assert-dom0 ## Configures and builds a DEVELOPMENT install
-	./scripts/configure-environment --env dev
+dev staging: assert-dom0 ## Configures and builds a dev or staging environment
+	./scripts/configure-environment --env $@
 	$(MAKE) validate
-	$(MAKE) prep-salt
-	./scripts/provision-all
-
-prod: assert-dom0 ## Configures and builds a PRODUCTION install for pilot use
-	./scripts/configure-environment --env prod
-	$(MAKE) validate
-	$(MAKE) prep-salt
-	./scripts/provision-all
-
-staging: assert-dom0 ## Configures and builds a STAGING install. To be used on test hardware ONLY
-	./scripts/configure-environment --env staging
-	$(MAKE) validate
-	$(MAKE) prep-salt
-	./scripts/provision-all
+	$(MAKE) prep-dev
+	sdw-admin --apply
 
 dom0-rpm: ## Builds rpm package to be installed on dom0
 	@./scripts/build-dom0-rpm
@@ -39,52 +27,49 @@ dom0-rpm: ## Builds rpm package to be installed on dom0
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
 
-qubes-rpc: prep-salt ## Places default deny qubes-rpc policies for sd-app and sd-gpg
+qubes-rpc: prep-dev ## Places default deny qubes-rpc policies for sd-app and sd-gpg
 	sudo qubesctl --show-output --targets sd-dom0-qvm-rpc state.highstate
 
 add-usb-autoattach: prep-dom0 ## Adds udev rules and scripts to sys-usb
 	sudo qubesctl --show-output --skip-dom0 --targets sys-usb state.highstate
 
-remove-usb-autoattach: prep-salt ## Removes udev rules and scripts from sys-usb
+remove-usb-autoattach: prep-dev ## Removes udev rules and scripts from sys-usb
 	sudo qubesctl --show-output state.sls sd-usb-autoattach-remove
 
-sd-workstation-template: prep-salt ## Provisions base template for SDW AppVMs
+sd-workstation-template: prep-dev ## Provisions base template for SDW AppVMs
 	sudo qubesctl --show-output state.sls sd-workstation-buster-template
 	sudo qubesctl --show-output --skip-dom0 --targets sd-workstation-buster-template state.highstate
 
-sd-proxy: prep-salt ## Provisions SD Proxy VM
+sd-proxy: prep-dev ## Provisions SD Proxy VM
 	sudo qubesctl --show-output state.sls sd-proxy
 	sudo qubesctl --show-output --skip-dom0 --targets sd-proxy-buster-template,sd-proxy state.highstate
 
-sd-gpg: prep-salt ## Provisions SD GPG keystore VM
+sd-gpg: prep-dev ## Provisions SD GPG keystore VM
 	sudo qubesctl --show-output state.sls sd-gpg
 	sudo qubesctl --show-output --skip-dom0 --targets sd-workstation-buster-template,sd-gpg state.highstate
 
-sd-app: prep-salt ## Provisions SD APP VM
+sd-app: prep-dev ## Provisions SD APP VM
 	sudo qubesctl --show-output state.sls sd-app
 	sudo qubesctl --show-output --skip-dom0 --targets sd-app-buster-template,sd-app state.highstate
 
-sd-whonix: prep-salt ## Provisions SD Whonix VM
+sd-whonix: prep-dev ## Provisions SD Whonix VM
 	sudo qubesctl --show-output state.sls sd-whonix
 	sudo qubesctl --show-output --skip-dom0 --targets whonix-gw-15,sd-whonix state.highstate
 
-sd-viewer: prep-salt ## Provisions SD Submission Viewing VM
+sd-viewer: prep-dev ## Provisions SD Submission Viewing VM
 	sudo qubesctl --show-output state.sls sd-viewer
 	sudo qubesctl --show-output --skip-dom0 --targets sd-viewer-buster-template,sd-viewer state.highstate
 
-sd-devices: prep-salt ## Provisions SD Export VM
+sd-devices: prep-dev ## Provisions SD Export VM
 	sudo qubesctl --show-output state.sls sd-devices
 	sudo qubesctl --show-output --skip-dom0 --targets sd-devices-buster-template,sd-devices,sd-devices-dvm state.highstate
 
-sd-log: prep-salt ## Provisions SD logging VM
+sd-log: prep-dev ## Provisions SD logging VM
 	sudo qubesctl --show-output state.sls sd-log
 	sudo qubesctl --show-output --skip-dom0 --targets sd-log-buster-template,sd-log state.highstate
 
-clean-salt: assert-dom0 ## Purges SD Salt configuration from dom0
-	@./scripts/clean-salt
-
-prep-salt: assert-dom0 ## Configures Salt layout for SD workstation VMs
-	@./scripts/prep-salt
+prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
+	@./scripts/prep-dev
 	@./scripts/validate_config.py
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
@@ -109,13 +94,10 @@ remove-sd-devices: assert-dom0 ## Destroys SD EXPORT VMs
 remove-sd-log: assert-dom0 ## Destroys SD logging VM
 	@./scripts/destroy-vm sd-log
 
-clean: assert-dom0 prep-salt ## Destroys all SD VMs
-	sudo qubesctl --show-output state.sls sd-clean-default-dispvm
-	$(MAKE) destroy-all
-	sudo qubesctl --show-output --skip-dom0 --targets whonix-gw-15 state.sls sd-clean-whonix
-	sudo qubesctl --show-output state.sls sd-clean-all
-	sudo dnf -y -q remove securedrop-workstation-dom0-config 2>/dev/null || true
-	$(MAKE) clean-salt
+clean: assert-dom0 prep-dev ## Destroys all SD VMs
+# Use the local script path, since system PATH location will be absent
+# if clean has already been run.
+	./scripts/sdw-admin.py --uninstall --keep-template-rpm --force
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python3 -m unittest discover -v tests
@@ -150,7 +132,7 @@ flake8: ## Lints all Python files with flake8
 # available only in the developer environment, i.e. Work VM.
 	@./scripts/lint-all "flake8"
 
-prep-dom0: prep-salt # Copies dom0 config files
+prep-dom0: prep-dev # Copies dom0 config files
 	sudo qubesctl --show-output --targets dom0 state.highstate
 
 destroy-all: ## Destroys all VMs managed by Workstation salt config

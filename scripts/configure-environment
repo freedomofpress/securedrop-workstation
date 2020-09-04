@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 """
-Helper script to permit developers to select deployment
-strategies for the dom0-based SecureDrop Workstation config.
-
-Updates the config.json in-place in dom0 in order to modify.
+Updates the config.json in-place in dom0 to set the environment to 'dev' or
+'staging'.
 """
 import json
 import sys
 import argparse
 import os
-from distutils.util import strtobool
 
 
 def parse_args():
@@ -23,10 +20,10 @@ def parse_args():
     )
     parser.add_argument(
         "--environment",
-        default="prod",
+        default="dev",
         required=False,
         action="store",
-        help="Target deploy strategy, e.g. 'prod', 'dev', or 'staging'",
+        help="Target deploy strategy, i.e. 'dev', or 'staging'",
     )
     args = parser.parse_args()
     if not os.path.exists(args.config):
@@ -35,26 +32,10 @@ def parse_args():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    if args.environment not in ("prod", "dev", "staging"):
+    if args.environment not in ("dev", "staging"):
         parser.print_help(sys.stderr)
         sys.exit(2)
     return args
-
-
-def confirm_staging():
-    """Prompt for confirmation if staging selected.
-    We only want to use staging on test machines.
-    """
-    print("WARNING: Config environment 'staging' was requested.")
-    print("WARNING: The staging env should only be used on TEST HARDWARE.")
-    print("WARNING: If you are on a primary laptop for work/production use, ")
-    print("WARNING: please update your config.json with environment=prod.")
-    confirmation = input("WARNING: Are you sure you wish to continue? [y/N] ")
-    try:
-        assert strtobool(confirmation)
-    except (AssertionError, ValueError):
-        print("Confirmation declined, exiting...")
-        sys.exit(1)
 
 
 def set_env_in_config(args):
@@ -74,8 +55,5 @@ def set_env_in_config(args):
 
 if __name__ == "__main__":
     args = parse_args()
-
-    if args.environment == "staging":
-        confirm_staging()
 
     set_env_in_config(args)

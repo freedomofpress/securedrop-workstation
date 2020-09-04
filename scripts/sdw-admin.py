@@ -39,6 +39,20 @@ def parse_args():
         action="store_true",
         help="Completely Uninstalls the SecureDrop Workstation",
     )
+    parser.add_argument(
+        "--keep-template-rpm",
+        default=False,
+        required=False,
+        action="store_true",
+        help="During uninstall action, leave TemplateVM RPM package installed in dom0",
+    )
+    parser.add_argument(
+        "--force",
+        default=False,
+        required=False,
+        action="store_true",
+        help="During uninstall action, don't prompt for confirmation, proceed immediately",
+    )
     args = parser.parse_args()
 
     return args
@@ -93,7 +107,7 @@ def refresh_salt():
         raise SDWAdminException("Error while synchronizing Salt")
 
 
-def perform_uninstall():
+def perform_uninstall(keep_template_rpm=False):
 
     try:
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-default-dispvm"])
@@ -113,10 +127,18 @@ def perform_uninstall():
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-all"])
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/clean-salt")])
-        print("Uninstalling Template")
-        subprocess.check_call(
-            ["sudo", "dnf", "-y", "-q", "remove", "qubes-template-securedrop-workstation-buster"]
-        )
+        if not keep_template_rpm:
+            print("Uninstalling Template")
+            subprocess.check_call(
+                [
+                    "sudo",
+                    "dnf",
+                    "-y",
+                    "-q",
+                    "remove",
+                    "qubes-template-securedrop-workstation-buster",
+                ]
+            )
         print("Uninstalling dom0 config package")
         subprocess.check_call(
             ["sudo", "dnf", "-y", "-q", "remove", "securedrop-workstation-dom0-config"]
@@ -147,13 +169,13 @@ def main():
             "with SecureDrop Workstation. It will also remove all SecureDrop tags\n"
             "from other VMs on the system."
         )
-        response = input("Are you sure you want to uninstall (y/N)? ")
-        if response.lower() != "y":
-            print("Exiting.")
-            sys.exit(0)
-        else:
-            refresh_salt()
-            perform_uninstall()
+        if not args.force:
+            response = input("Are you sure you want to uninstall (y/N)? ")
+            if response.lower() != "y":
+                print("Exiting.")
+                sys.exit(0)
+        refresh_salt()
+        perform_uninstall(keep_template_rpm=args.keep_template_rpm)
     else:
         sys.exit(0)
 
