@@ -15,6 +15,9 @@ LOCK_PERMISSION_REGEX = r"Error writing to lock file '.*'"
 
 CONFLICTING_PROCESS_REGEX = r"Conflicting process .* is currently running."
 
+# Fixtures (sample files) for certain tests
+FIXTURES_PATH = os.path.join(os.path.dirname(__file__), "fixtures")
+
 relpath_util = "../sdw_util/Util.py"
 path_to_util = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_util)
 util = SourceFileLoader("Util", path_to_util).load_module()
@@ -193,3 +196,92 @@ def test_for_conflicting_process(
         else:
             assert running_process is False
             assert not mocked_error.called
+
+
+@pytest.mark.parametrize(
+    "os_release_fixture,version_contains",
+    [
+        ("os-release-qubes-4.0", "4.0"),
+        ("os-release-qubes-4.1", "4.1"),
+        ("os-release-ubuntu", None),
+        ("no-such-file", None),
+    ],
+)
+@mock.patch("Util.sdlog.error")
+@mock.patch("Util.sdlog.warning")
+@mock.patch("Util.sdlog.info")
+@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0"))
+def test_detect_qubes(
+    mocked_info, mocked_warning, mocked_error, os_release_fixture, version_contains
+):
+    """
+    Test whether we can successfully detect whether we're on Qubes and, if so,
+    what version of Qubes, by parsing /etc/os-release in the expected format.
+    """
+    with mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, os_release_fixture)):
+        qubes_version = util.get_qubes_version()
+        if version_contains is not None:
+            assert qubes_version is not None
+            assert version_contains in qubes_version
+        else:
+            assert qubes_version is None
+
+
+@pytest.mark.parametrize(
+    "env_override,expected_qt_override_result", [(None, None), ("4", 4), ("5", 5)]
+)
+@pytest.mark.parametrize(
+    "os_release_fixture,expected_qt_version",
+    [
+        ("os-release-qubes-4.0", 4),
+        ("os-release-qubes-4.1", 5),
+        ("os-release-ubuntu", 4),
+        ("no-such-file", 4),
+    ],
+)
+@mock.patch("Util.sdlog.error")
+@mock.patch("Util.sdlog.warning")
+@mock.patch("Util.sdlog.info")
+@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0"))
+def test_pick_qt(
+    mocked_info,
+    mocked_warning,
+    mocked_error,
+    os_release_fixture,
+    expected_qt_version,
+    env_override,
+    expected_qt_override_result,
+):
+    """
+    Test whether we're using the expected Qt version based on the operating system
+    and the environment variable, which should take precedence if defined.
+    """
+    if env_override is None:
+        mocked_env = {}
+    else:
+        mocked_env = {"SDW_UPDATER_QT": env_override}
+
+    with mock.patch(
+        "Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, os_release_fixture)
+    ), mock.patch.dict("os.environ", mocked_env):
+        qt_version = util.get_qt_version()
+        if expected_qt_override_result is not None:
+            assert qt_version == expected_qt_override_result
+        else:
+            assert qt_version == expected_qt_version
+
+
+@pytest.mark.parametrize("env_override", ["3", "3000", "GTK"])
+@mock.patch("Util.sdlog.error")
+@mock.patch("Util.sdlog.warning")
+@mock.patch("Util.sdlog.info")
+def test_pick_bad_qt(
+    mocked_info, mocked_warning, mocked_error, env_override,
+):
+    """
+    Test whether we're getting the expected error when specifying an invalid
+    version via environment override
+    """
+    mocked_env = {"SDW_UPDATER_QT": env_override}
+    with mock.patch.dict("os.environ", mocked_env), pytest.raises(ValueError):
+        util.get_qt_version()

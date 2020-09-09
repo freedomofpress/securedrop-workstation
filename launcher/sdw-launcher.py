@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from PyQt4 import QtGui
 from sdw_updater_gui.UpdaterApp import UpdaterApp
 from sdw_util import Util
 from sdw_updater_gui import Updater
@@ -8,6 +7,13 @@ from sdw_updater_gui.Updater import should_launch_updater
 import logging
 import sys
 import argparse
+
+if Util.get_qt_version() == 5:
+    print("Using Qt5 (experimental)")
+    from PyQt5.QtWidgets import QApplication
+else:
+    from PyQt4.QtGui import QApplication
+
 
 DEFAULT_INTERVAL = 28800  # 8hr default for update interval
 
@@ -23,7 +29,7 @@ def launch_updater():
     Start the updater GUI
     """
 
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     form = UpdaterApp()
     form.show()
     sys.exit(app.exec_())
