@@ -31,6 +31,7 @@ base:
     - sd-proxy-template-files
   sd-app:
     - sd-app-config
+    - sd-mime-handling
   sd-viewer-buster-template:
     - sd-viewer-files
   sd-app-buster-template:
@@ -49,6 +50,10 @@ base:
     - sd-logging-setup
   sd-log:
     - sd-logging-setup
+  sd-viewer:
+    - sd-mime-handling
+  sd-devices-dvm:
+    - sd-mime-handling
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.
