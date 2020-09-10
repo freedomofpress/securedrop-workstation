@@ -11,6 +11,7 @@ base:
     - sd-upgrade-templates
     - sd-dom0-qvm-rpc
     - sd-sys-whonix-vms
+    - sd-templates
     - sd-log
     - sd-devices
     - sd-gpg
@@ -20,6 +21,14 @@ base:
     - sd-whonix
     - sd-remove-unused-templates
 
+  sd-small-buster-template:
+    - sd-logging-setup
+    - sd-proxy-template-files
+    - sd-app-files
+  sd-large-buster-template:
+    - sd-logging-setup
+    - sd-devices-files
+    - sd-viewer-files
   sd-log-buster-template:
     - sd-logging-setup
   sd-devices-buster-template:
