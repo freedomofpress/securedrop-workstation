@@ -12,7 +12,7 @@
 # respective AppVMs.
 ##
 
-{% if grains['id'] in ["sd-viewer", "sd-app", "sd-devices-dvm"] %}
+{% if grains['id'] in ["sd-viewer", "sd-app", "sd-devices-dvm", "sd-proxy"] %}
 
 sd-private-volume-mimeapps-handling:
   file.symlink:
