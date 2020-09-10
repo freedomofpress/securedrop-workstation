@@ -4,7 +4,7 @@
 #
 # Installs consolidated templateVMs:
 # - sd-small-buster-template, to be used for
-#   sd-app, sd-gpg, sd-log, and sd-proxy
+#   sd-app, sd-log, and sd-proxy
 # - sd-large-buster-template, to be used for
 #   sd-export and sd-viewer
 ##
