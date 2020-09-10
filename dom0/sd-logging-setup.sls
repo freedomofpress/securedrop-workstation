@@ -14,7 +14,7 @@ install-securedrop-log-package:
       - sls: fpf-apt-test-repo
 {% endif %}
 
-{% if grains['id'] == "sd-log-buster-template" %}
+{% if grains['id'] in ["sd-log-buster-template", "sd-small-buster-template"] %}
 install-redis-for-sd-log-template:
   pkg.installed:
     - pkgs:
