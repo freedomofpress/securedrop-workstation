@@ -21,25 +21,6 @@ sd-proxy-do-not-open-here-desktop-file:
     - mode: 644
     - makedirs: True
 
-sd-proxy-configure-mimetypes:
-  file.managed:
-    - name: /usr/share/applications/mimeapps.list
-    - source: salt://sd/sd-proxy/mimeapps.list
-    - user: user
-    - group: user
-    - mode: 644
-    - makedirs: True
-  cmd.run:
-    - name: sudo update-desktop-database /usr/share/applications
-    - require:
-      - file: sd-proxy-configure-mimetypes
-      - file: sd-proxy-do-not-open-here-desktop-file
-      - file: sd-proxy-do-not-open-here-script
-    - onchanges:
-      - file: sd-proxy-do-not-open-here-script
-      - file: sd-proxy-do-not-open-here-desktop-file
-      - file: sd-proxy-configure-mimetypes
-
 # Depends on FPF-controlled apt repo, already present
 # in underlying "securedrop-workstation" base template.
 install-securedrop-proxy-package:
