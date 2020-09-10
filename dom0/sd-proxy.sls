@@ -13,25 +13,13 @@ include:
   - sd-whonix
   - sd-upgrade-templates
 
-sd-proxy-template:
-  qvm.vm:
-    - name: sd-proxy-buster-template
-    - clone:
-      - source: securedrop-workstation-buster
-      - label: blue
-    - tags:
-      - add:
-        - sd-workstation
-        - sd-buster
-        - sd-workstation-updates
-
 sd-proxy:
   qvm.vm:
     - name: sd-proxy
     - present:
       - label: blue
     - prefs:
-      - template: sd-proxy-buster-template
+      - template: sd-small-buster-template
       - netvm: sd-whonix
       - autostart: true
     - tags:
@@ -40,7 +28,7 @@ sd-proxy:
         - sd-buster
     - require:
       - qvm: sd-whonix
-      - qvm: sd-proxy-template
+      - qvm: sd-small-buster-template
 
 # Permit the SecureDrop Proxy to manage Client connections
 sd-proxy-dom0-securedrop.Proxy:

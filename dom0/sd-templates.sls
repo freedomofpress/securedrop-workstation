@@ -21,9 +21,11 @@ sd-small-buster-template:
     - tags:
       - add:
         - sd-workstation
+        - sd-buster
+        - sd-workstation-updates
     - require:
       - sls: sd-workstation-template
-
+      - sls: sd-upgrade-templates
 
 sd-large-buster-template:
   qvm.vm:
