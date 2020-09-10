@@ -23,12 +23,10 @@ base:
 
   sd-small-buster-template:
     - sd-logging-setup
-    - sd-proxy-template-files
-    - sd-app-files
+    - sd-small-template-files
   sd-large-buster-template:
     - sd-logging-setup
-    - sd-devices-files
-    - sd-viewer-files
+    - sd-large-template-files
   sd-log-buster-template:
     - sd-logging-setup
   sd-devices-buster-template:
