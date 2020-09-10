@@ -6,6 +6,22 @@
 # from all SecureDrop related VMs.
 # This VM has no network configured.
 ##
+include:
+  - sd-workstation-template
+  - sd-upgrade-templates
+
+sd-log-template:
+  qvm.vm:
+    - name: sd-log-buster-template
+    - clone:
+      - source: securedrop-workstation-buster
+      - label: red
+    - tags:
+      - add:
+        - sd-workstation
+    - require:
+      - sls: sd-workstation-template
+
 sd-log:
   qvm.vm:
     - name: sd-log

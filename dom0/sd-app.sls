@@ -12,6 +12,21 @@ include:
   - sd-workstation-template
   - sd-upgrade-templates
 
+sd-app-template:
+  qvm.vm:
+    - name: sd-app-buster-template
+    - clone:
+      - source: securedrop-workstation-buster
+      - label: yellow
+    - tags:
+      - add:
+        - sd-workstation
+        - sd-buster
+        - sd-workstation-updates
+    - require:
+      - sls: sd-workstation-template
+      - sls: sd-upgrade-templates
+
 sd-app:
   qvm.vm:
     - name: sd-app
@@ -45,9 +60,9 @@ sd-app-private-volume-size:
 sd-app-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start --skip-if-running sd-app-buster-template &&
-        qvm-sync-appmenus sd-app-buster-template
+        qvm-start --skip-if-running sd-small-buster-template &&
+        qvm-sync-appmenus sd-small-buster-template
     - require:
-      - qvm: sd-app-buster-template
+      - qvm: sd-small-buster-template
     - onchanges:
-      - qvm: sd-app-buster-template
+      - qvm: sd-small-buster-template
