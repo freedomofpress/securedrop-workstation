@@ -1,0 +1,4 @@
+# No line
+VERSION=
+[we're doing toml now]
+RELEASES = [ ["gamma", "delta"], [1, 2] ]
