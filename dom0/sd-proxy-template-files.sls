@@ -21,14 +21,14 @@ sd-proxy-do-not-open-here-desktop-file:
     - mode: 644
     - makedirs: True
 
-# TEMPORARY: installs local deb for debugging
+# Depends on FPF-controlled apt repo, already present
+# in underlying "securedrop-workstation" base template.
 install-securedrop-proxy-package:
- file.managed:
-   - name: /opt/securedrop-proxy.deb
-   - source: salt://sd/sd-workstation/securedrop-proxy_0.3.0+buster_all.deb
-   - mode: 644
- cmd.run:
-  - name: apt install -y /opt/securedrop-proxy.deb
+  pkg.installed:
+    - pkgs:
+      - securedrop-proxy
+    - require:
+      - sls: fpf-apt-test-repo
 
 
 {% import_json "sd/config.json" as d %}

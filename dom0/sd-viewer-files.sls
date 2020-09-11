@@ -23,7 +23,7 @@ sd-viewer-install-mimetype-handler-package:
 sd-viewer-install-mimetype-handler-package-local:
   file.managed:
     - name: /opt/securedrop-workstation-svs-disp.deb
-    - source: salt://sd/sd-workstation/securedrop-workstation-svs-disp_0.2.2+buster_all.deb
+    - source: salt://sd/sd-workstation/securedrop-workstation-svs-disp_0.2.3+buster_all.deb
     - mode: 644
   cmd.run:
    - name: apt install -y /opt/securedrop-workstation-svs-disp.deb
