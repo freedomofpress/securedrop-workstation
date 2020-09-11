@@ -14,18 +14,6 @@ include:
   - sd-upgrade-templates
   - sd-templates
 
-sd-proxy-template:
-  qvm.vm:
-    - name: sd-proxy-buster-template
-    - clone:
-      - source: securedrop-workstation-buster
-      - label: blue
-    - tags:
-      - add:
-        - sd-workstation
-        - sd-buster
-        - sd-workstation-updates
-
 sd-proxy:
   qvm.vm:
     - name: sd-proxy

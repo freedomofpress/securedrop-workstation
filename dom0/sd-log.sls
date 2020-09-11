@@ -11,18 +11,6 @@ include:
   - sd-upgrade-templates
   - sd-templates
 
-sd-log-template:
-  qvm.vm:
-    - name: sd-log-buster-template
-    - clone:
-      - source: securedrop-workstation-buster
-      - label: red
-    - tags:
-      - add:
-        - sd-workstation
-    - require:
-      - sls: sd-workstation-template
-
 sd-log:
   qvm.vm:
     - name: sd-log

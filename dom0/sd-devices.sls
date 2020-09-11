@@ -9,20 +9,6 @@ include:
   - sd-workstation-template
   - sd-upgrade-templates
 
-sd-devices-template:
-  qvm.vm:
-    - name: sd-devices-buster-template
-    - clone:
-      - source: securedrop-workstation-buster
-      - label: red
-    - tags:
-      - add:
-        - sd-workstation
-        - sd-workstation-updates
-    - require:
-      - sls: sd-workstation-template
-      - sls: sd-upgrade-templates
-
 sd-devices-dvm:
   qvm.vm:
     - name: sd-devices-dvm
@@ -41,7 +27,7 @@ sd-devices-dvm:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-devices-buster-template
+      - qvm: sd-large-buster-template
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.

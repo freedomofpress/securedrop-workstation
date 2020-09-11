@@ -15,20 +15,6 @@ include:
   - sd-workstation-template
   - sd-upgrade-templates
 
-sd-viewer-template:
-  qvm.vm:
-    - name: sd-viewer-buster-template
-    - clone:
-      - source: securedrop-workstation-buster
-      - label: green
-    - tags:
-      - add:
-        - sd-workstation
-        - sd-workstation-updates
-    - require:
-      - sls: sd-workstation-template
-      - sls: sd-upgrade-templates
-
 sd-viewer:
   qvm.vm:
     - name: sd-viewer
