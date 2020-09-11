@@ -22,7 +22,13 @@ dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 	sdw-admin --apply
 
 dom0-rpm: ## Builds rpm package to be installed on dom0
-	@./scripts/build-dom0-rpm
+	$(MAKE) dom0-rpm-f25
+
+dom0-rpm-f25: ## Builds rpm package to be installed on dom0
+	@./scripts/build-dom0-rpm f25
+
+dom0-rpm-f32: ## Builds rpm package to be installed on dom0
+	@./scripts/build-dom0-rpm f32
 
 clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
