@@ -67,8 +67,14 @@ class SD_VM_Local_Test(unittest.TestCase):
         Confirms that a given package is installed inside the VM.
         """
         # dpkg --verify will exit non-zero for a non-installed pkg,
-        # and dom0 will percolate that error code
-        subprocess.check_call(["qvm-run", "-a", "-q", self.vm_name, "dpkg --verify {}".format(pkg)])
+        # catch that and return False
+        try:
+            subprocess.check_call(
+                ["qvm-run", "-a", "-q", self.vm_name, "dpkg --verify {}".format(pkg)]
+            )
+        except subprocess.CalledProcessError:
+            return False
+
         return True
 
     def assertFilesMatch(self, remote_path, local_path):

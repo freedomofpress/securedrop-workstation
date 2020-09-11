@@ -9,19 +9,6 @@
 include:
   - sd-workstation-template
   - sd-upgrade-templates
-  - sd-templates
-
-sd-log-template:
-  qvm.vm:
-    - name: sd-log-buster-template
-    - clone:
-      - source: securedrop-workstation-buster
-      - label: red
-    - tags:
-      - add:
-        - sd-workstation
-    - require:
-      - sls: sd-workstation-template
 
 sd-log:
   qvm.vm:
@@ -30,6 +17,7 @@ sd-log:
       - template: sd-small-buster-template
       - label: red
     - prefs:
+      - template: sd-small-buster-template
       - netvm: ""
       - autostart: true
     - tags:

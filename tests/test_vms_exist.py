@@ -68,7 +68,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-proxy"]
         nvm = vm.netvm
         self.assertTrue(nvm.name == "sd-whonix")
-        self.assertTrue(vm.template == "sd-proxy-buster-template")
+        self.assertTrue(vm.template == "sd-small-buster-template")
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -78,7 +78,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-app"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-app-buster-template")
+        self.assertTrue(vm.template == "sd-small-buster-template")
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
@@ -96,7 +96,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-viewer"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-viewer-buster-template")
+        self.assertTrue(vm.template == "sd-large-buster-template")
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
         self._check_kernel(vm)
@@ -108,7 +108,7 @@ class SD_VM_Tests(unittest.TestCase):
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         # No sd-gpg-template, since keyring is managed in $HOME
-        self.assertTrue(vm.template == "securedrop-workstation-buster")
+        self.assertTrue(vm.template == "sd-small-buster-template")
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -119,7 +119,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-log"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-log-buster-template")
+        self.assertTrue(vm.template == "sd-small-buster-template")
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -146,27 +146,27 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_service_running(vm, "paxctld")
 
     def test_sd_proxy_template(self):
-        vm = self.app.domains["sd-proxy-buster-template"]
+        vm = self.app.domains["sd-small-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)
 
     def sd_app_template(self):
-        vm = self.app.domains["sd-app-buster-template"]
+        vm = self.app.domains["sd-small-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)
         self._check_kernel(vm)
 
     def sd_viewer_template(self):
-        vm = self.app.domains["sd-viewer-buster-template"]
+        vm = self.app.domains["sd-large-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)
         self.assertTrue(vm.template_for_dispvms)
 
     def sd_export_template(self):
-        vm = self.app.domains["sd-devices-buster-template"]
+        vm = self.app.domains["sd-large-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)
@@ -189,8 +189,16 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue("sd-workstation" in vm.tags)
         self._check_kernel(vm)
 
-    def sd_log_template(self):
-        vm = self.app.domains["sd-log-buster-template"]
+    def sd_small_template(self):
+        vm = self.app.domains["sd-small-buster-template"]
+        nvm = vm.netvm
+        self.assertTrue(nvm is None)
+        self.assertTrue("sd-workstation" in vm.tags)
+        self.assertFalse(vm.template_for_dispvms)
+        self._check_kernel(vm)
+
+    def sd_large_template(self):
+        vm = self.app.domains["sd-large-buster-template"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)
