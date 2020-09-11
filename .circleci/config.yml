@@ -15,11 +15,16 @@ jobs:
             sudo apt install file
             make flake8
             make black
-  buildrpm:
+  buildrpm-f25:
     machine: true
     steps:
       - checkout
-      - run: make dom0-rpm
+      - run: make dom0-rpm-f25
+  buildrpm-f32:
+    machine: true
+    steps:
+      - checkout
+      - run: make dom0-rpm-f32
   launcher-tests-buster:
     docker:
       - image: circleci/python:3.7-buster
@@ -41,5 +46,6 @@ workflows:
   securedrop_workstation_ci:
     jobs:
       - lint
-      - buildrpm
+      - buildrpm-f25
+      - buildrpm-f32
       - launcher-tests-buster
