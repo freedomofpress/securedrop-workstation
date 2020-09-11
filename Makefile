@@ -49,6 +49,7 @@ sd-workstation-template: prep-dev ## Provisions base template for SDW AppVMs
 sd-consolidated-templates: prep-dev ## Provisions consolidated templates for SDW AppVMs
 	sudo qubesctl --show-output state.sls sd-templates
 	sudo qubesctl --show-output --skip-dom0 --targets sd-small-buster-template,sd-large-buster-template state.highstate
+	$(MAKE) dev
 
 sd-proxy: prep-dev ## Provisions SD Proxy VM
 	sudo qubesctl --show-output state.sls sd-proxy
