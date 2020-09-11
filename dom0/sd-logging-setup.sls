@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
-{% if "template" in grains['id'] or grains['id'] in ["securedrop-workstation-buster", "whonix-gw-15"] %}
+{% if "template" in grains['id'] or grains['id'] in ["securedrop-workstation-buster", "sd-small-buster-template", "sd-large-buster-template", "whonix-gw-15"] %}
 include:
   - fpf-apt-test-repo
 
@@ -14,7 +14,7 @@ install-securedrop-log-package:
       - sls: fpf-apt-test-repo
 {% endif %}
 
-{% if grains['id'] in ["sd-log-buster-template", "sd-small-buster-template"] %}
+{% if grains['id'] in ["sd-small-buster-template", "sd-large-buster-template"] %}
 install-redis-for-sd-log-template:
   pkg.installed:
     - pkgs:

@@ -27,10 +27,10 @@ sd-devices-dvm:
   qvm.vm:
     - name: sd-devices-dvm
     - present:
-      - template: sd-devices-buster-template
+      - template: sd-large-buster-template
       - label: red
     - prefs:
-      - template: sd-devices-buster-template
+      - template: sd-large-buster-template
       - netvm: ""
       - template_for_dispvms: True
     - tags:
@@ -48,12 +48,12 @@ sd-devices-dvm:
 sd-devices-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start --skip-if-running sd-devices-buster-template &&
-        qvm-sync-appmenus sd-devices-buster-template
+        qvm-start --skip-if-running sd-large-buster-template &&
+        qvm-sync-appmenus sd-large-buster-template
     - require:
-      - qvm: sd-devices-buster-template
+      - qvm: sd-large-buster-template
     - onchanges:
-      - qvm: sd-devices-buster-template
+      - qvm: sd-large-buster-template
 
 sd-devices-create-named-dispvm:
   qvm.vm:
