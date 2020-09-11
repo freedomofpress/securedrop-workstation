@@ -7,20 +7,34 @@
 set -u
 set -e
 
-# maps to label 0.6.0.1-1.fc25
-export RPM_BUILDER_IMG_HASH="957d2953870c72aec6d5faf3ce5a0666def3667de5dee0b94294905e2f065f38"
-export LOCAL_IMG="fpf.local/rpmbuilder:${RPM_BUILDER_IMG_HASH}"
+export RPM_DIST=${1-"f25"}
+
+export F25_BASE_CONTAINER_HASH="322cb01bbca26972c98051bacd3ab8555cec059496d64d35ee78b15de9ea0d06"
+export F32_BASE_CONTAINER_HASH="d6a6d60fda1b22b6d5fe3c3b2abe2554b60432b7b215adc11a2b5fae16f50188"
+export F25_PKGR_VER="0.6.0.1-1.fc25"
+export F32_PKGR_VER="0.6.0.4-1.fc32"
+export LOCAL_IMG="fpf.local/rpmbuilder-${RPM_DIST}:latest"
 export ROOT_DIR="$(git rev-parse --show-toplevel)"
 export USER_RPMDIR="/home/user/rpmbuild"
 
+# Set distribution-specific variables for generic Dockerfile
+if [[ ${RPM_DIST} == "f32" ]] ; then
+  echo "Building for Fedora 32"
+  export CONTAINER_HASH="${F32_BASE_CONTAINER_HASH}"
+  export PKG_VER="${F32_PKGR_VER}"
+else
+  echo "Building for Fedora 25"
+  export CONTAINER_HASH="${F25_BASE_CONTAINER_HASH}"
+  export PKG_VER="${F25_PKGR_VER}"
+
+fi
 
 function build_local_base {
-    # Build a local revision of quay.io/freedomofpress/rpmbuilder. Needed to pass UIDs without
-    # doing privilege escalation hoops at run-time
-    docker build --build-arg="RPM_HASH=${RPM_BUILDER_IMG_HASH}" \
+    docker build --build-arg=CONTAINER_HASH="${CONTAINER_HASH}" \
+                 --build-arg=FEDORA_PKGR_VER="${PKG_VER}" \
                  --build-arg=USERID="$(id -u)" \
                  -t "${LOCAL_IMG}" \
-                 -f scripts/rpmbuilder.Dockerfile scripts/ 2>&1 1> /dev/null
+                 -f "scripts/rpmbuilder.Dockerfile" scripts/ 2>&1
 }
 
 function docker_cmd_wrapper() {
