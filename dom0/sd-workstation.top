@@ -31,22 +31,12 @@ base:
     - sd-workstation-template-files
     - sd-devices-files
     - sd-viewer-files
-  sd-log-buster-template:
-    - sd-logging-setup
-  sd-devices-buster-template:
-    - sd-devices-files
   sd-gpg:
     - sd-gpg-files
     - sd-logging-setup
-  sd-proxy-buster-template:
-    - sd-proxy-template-files
   sd-app:
     - sd-app-config
     - sd-mime-handling
-  sd-viewer-buster-template:
-    - sd-viewer-files
-  sd-app-buster-template:
-    - sd-app-files
   sys-firewall:
     - sd-sys-firewall-files
   sd-whonix:

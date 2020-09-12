@@ -20,9 +20,6 @@ install-redis-for-sd-log-template:
     - pkgs:
       - redis-server
       - redis
-remove-sd-rsyslog-config-for-logserver:
-  file.absent:
-    - name: /etc/rsyslog.d/sdlog.conf
 
 {% elif grains['id'] == "sd-log" %}
 # Only for the "sd-log" AppVM, configure /rw/config to disable
@@ -43,6 +40,9 @@ sd-log-remove-rsyslog-qubes-plugin:
     - name: /rw/config/rc.local
     - require:
       - file: sd-log-remove-rsyslog-qubes-plugin
+remove-sd-rsyslog-config-for-logserver:
+  file.absent:
+    - name: /etc/rsyslog.d/sdlog.conf
 
 {% elif grains['id'] == "sd-gpg" %}
 # For sd-gpg, we disable logging altogether, since access
