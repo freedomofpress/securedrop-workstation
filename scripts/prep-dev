@@ -22,7 +22,7 @@ fi
 
 echo "Deploying Salt config..."
 echo "Uninstalling any previous RPM versions..."
-sudo dnf remove -y securedrop-worsktation-dom0-config || true
+sudo dnf remove -y securedrop-workstation-dom0-config || true
 echo "Installing RPM at $latest_rpm ..."
 sudo dnf install -y "$latest_rpm"
 
