@@ -61,42 +61,35 @@ sd-gpg-remove-rsyslog-qubes-plugin:
     - name: /rw/config/rc.local
     - require:
       - file: sd-gpg-remove-rsyslog-qubes-plugin
-
-{% elif grains['id'] == "sd-whonix" %}
-# We can not place the file on the template under /etc/rsyslog.d/ because of whonix
-# template. This sdlog.conf file is the same from the securedrop-log package, to
-# make sure that rsyslogd use our logging plugin.
-sd-rsyslog-sdlog-conf-for-sd-whonix:
-  file.managed:
-    - name: /rw/config/sdlog.conf
-    - source: "salt://sdlog.conf"
-
-# Because whonix-gw-15 template is not allowing to create the config file on
-# package install time, we do it via rc.local call.
-sd-rc-enable-logging-for-sd-whonix:
-  file.blockreplace:
-    - name: /rw/config/rc.local
-    - append_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        # Add sd-rsyslog.conf file for syslog
-        ln -sf /rw/config/sdlog.conf /etc/rsyslog.d/sdlog.conf
-        cat <<EOF > /etc/sd-rsyslog.conf
-        [sd-rsyslog]
-        remotevm = sd-log
-        localvm = {{ grains['id'] }}
-        EOF
-        systemctl restart rsyslog
-  cmd.run:
-    - name: /rw/config/rc.local
-    - require:
-      - file: sd-rc-enable-logging-for-sd-whonix
-
 {% else %}
 # For all other VMs, configure to send to sd-log
 configure-rsyslog-for-sd:
   file.managed:
     - name: /etc/sd-rsyslog.conf
     - source: "salt://sd-rsyslog.conf.j2"
+{% endif %}
+
+{% if grains['id'] == "whonix-gw-15" %}
+
+# sd-log uses the hostname to sort logs into folders. Whonix enforces the name
+# 'host' for anonymity reasons. For this reason, we set the 'localvm' value in
+# sd-rsyslog.conf.
+#
+# rc.local in /rw of the AppVM is not a good option here, as it's run too late
+# in the boot process. The template itself is prevented from logging via RPC
+# policy (it's not tagged 'sd-workstation'), and we only base one AppVM on it,
+# so we can safely set this value at the template level.
+#
+# Background:
+# https://github.com/freedomofpress/securedrop-workstation/issues/583
+sd-rsyslog-conf-for-sd-whonix:
+  file.blockreplace:
+    - name: /etc/sd-rsyslog.conf
+    - append_if_not_found: True
+    - marker_start: "### BEGIN securedrop-workstation ###"
+    - marker_end: "### END securedrop-workstation ###"
+    - content: |
+        localvm = sd-whonix
+    - require:
+        - file: configure-rsyslog-for-sd
 {% endif %}
