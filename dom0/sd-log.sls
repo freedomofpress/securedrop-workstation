@@ -18,6 +18,7 @@ sd-log:
       - template: sd-small-buster-template
       - label: red
     - prefs:
+      - template: sd-small-buster-template
       - netvm: ""
       - autostart: true
     - tags:
