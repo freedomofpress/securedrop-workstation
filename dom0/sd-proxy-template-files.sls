@@ -4,23 +4,6 @@ include:
   - fpf-apt-test-repo
   - sd-logging-setup
 
-sd-proxy-do-not-open-here-script:
-  file.managed:
-    - name: /usr/bin/do-not-open-here
-    - source: salt://sd/sd-proxy/do-not-open-here
-    - user: root
-    - group: root
-    - mode: 755
-
-sd-proxy-do-not-open-here-desktop-file:
-  file.managed:
-    - name: /usr/share/applications/do-not-open.desktop
-    - source: salt://sd/sd-proxy/do-not-open.desktop
-    - user: root
-    - group: root
-    - mode: 644
-    - makedirs: True
-
 # Depends on FPF-controlled apt repo, already present
 # in underlying "securedrop-workstation" base template.
 install-securedrop-proxy-package:
