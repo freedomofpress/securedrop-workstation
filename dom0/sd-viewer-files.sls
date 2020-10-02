@@ -17,16 +17,10 @@ include:
 sd-viewer-install-mimetype-handler-package:
   pkg.installed:
     - pkgs:
+      - securedrop-workstation-svs-disp
       - evince
-
-# TEMPORARY: local package build for debugging
-sd-viewer-install-mimetype-handler-package-local:
-  file.managed:
-    - name: /opt/securedrop-workstation-svs-disp.deb
-    - source: salt://sd/sd-workstation/securedrop-workstation-svs-disp_0.2.3+buster_all.deb
-    - mode: 644
-  cmd.run:
-   - name: apt install -y /opt/securedrop-workstation-svs-disp.deb
+    - require:
+      - sls: fpf-apt-test-repo
 
 sd-viewer-install-libreoffice:
   pkg.installed:

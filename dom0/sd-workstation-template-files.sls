@@ -3,17 +3,10 @@
 include:
   - fpf-apt-test-repo
 
-sd-workstation-template-install-config-from-local:
-  file.managed:
-    - name: /opt/sdw-config.deb
-    - source: salt://sd/sd-workstation/securedrop-workstation-config_0.1.5+buster_all.deb
-    - mode: 644
-  cmd.run:
-    - name: apt install -y /opt/sdw-config.deb
-
 sd-workstation-template-install-kernel-config-packages:
   pkg.installed:
     - pkgs:
+      - securedrop-workstation-config
       - securedrop-workstation-grsec
     - require:
       - sls: fpf-apt-test-repo
