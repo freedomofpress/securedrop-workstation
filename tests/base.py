@@ -105,11 +105,9 @@ class SD_VM_Local_Test(unittest.TestCase):
 
         return True
 
-    def logging_configured(self, vmname=False):
+    def logging_configured(self):
         """
         Make sure rsyslog is configured to send in data to sd-log vm.
-        Takes an optional 'vmname' argument, in case hostname
-        returned by system is an insufficient identifier, e.g. Whonix.
         """
         self.assertTrue(self._package_is_installed("securedrop-log"))
         self.assertTrue(self._fileExists("/usr/sbin/sd-rsyslog"))
@@ -120,10 +118,6 @@ class SD_VM_Local_Test(unittest.TestCase):
         static_content = """[sd-rsyslog]
 remotevm = sd-log
 """
-        # A hardcoded vmname should only be present if required,
-        # since securedrop-log will default to value of `hostname`.
-        if vmname:
-            static_content += "localvm = {}\n".format(self.vm_name)
         self.assertEqual(file_content, static_content)
         # Check for evidence of misconfigured logging in syslog,
         # fail if matching events found

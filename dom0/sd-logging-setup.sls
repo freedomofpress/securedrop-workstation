@@ -62,41 +62,33 @@ sd-gpg-remove-rsyslog-qubes-plugin:
     - require:
       - file: sd-gpg-remove-rsyslog-qubes-plugin
 
-{% elif grains['id'] == "sd-whonix" %}
-# We can not place the file on the template under /etc/rsyslog.d/ because of whonix
-# template. This sdlog.conf file is the same from the securedrop-log package, to
-# make sure that rsyslogd use our logging plugin.
-sd-rsyslog-sdlog-conf-for-sd-whonix:
-  file.managed:
-    - name: /rw/config/sdlog.conf
-    - source: "salt://sdlog.conf"
-
-# Because whonix-gw-15 template is not allowing to create the config file on
-# package install time, we do it via rc.local call.
-sd-rc-enable-logging-for-sd-whonix:
-  file.blockreplace:
-    - name: /rw/config/rc.local
-    - append_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        # Add sd-rsyslog.conf file for syslog
-        ln -sf /rw/config/sdlog.conf /etc/rsyslog.d/sdlog.conf
-        cat <<EOF > /etc/sd-rsyslog.conf
-        [sd-rsyslog]
-        remotevm = sd-log
-        localvm = {{ grains['id'] }}
-        EOF
-        systemctl restart rsyslog
-  cmd.run:
-    - name: /rw/config/rc.local
-    - require:
-      - file: sd-rc-enable-logging-for-sd-whonix
-
 {% else %}
 # For all other VMs, configure to send to sd-log
 configure-rsyslog-for-sd:
   file.managed:
     - name: /etc/sd-rsyslog.conf
     - source: "salt://sd-rsyslog.conf.j2"
+{% endif %}
+
+# Remove outdated configuration that was previously used to configure the
+# sd-whonix VM name for logging purposes, see:
+# https://github.com/freedomofpress/securedrop-workstation/issues/583
+#
+# Can be removed in a future release once all production workstations have
+# been updated.
+{% if grains['id'] == "sd-whonix" %}
+sd-whonix-cleanup-rc-local:
+  file.replace:
+    - names:
+      - /rw/config/rc.local
+    - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
+    - flags:
+      - MULTILINE
+      - DOTALL
+    - repl: ''
+    - backup: no
+
+sd-whonix-cleanup-sdlog-conf:
+  file.absent:
+    - name: /rw/config/sdlog.conf
 {% endif %}
