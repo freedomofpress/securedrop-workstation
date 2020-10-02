@@ -26,7 +26,7 @@ install-python-apt-for-repo-config:
 
 configure-apt-test-apt-repo:
   pkgrepo.managed:
-    - name: "deb [arch=amd64] {{ sdvars.apt_repo_url }} {{ grains['oscodename'] }} main"
+    - name: "deb [arch=amd64] {{ sdvars.apt_repo_url }} {{ grains['oscodename'] }} {{ sdvars.apt_repo_component }}"
     - file: /etc/apt/sources.list.d/securedrop_workstation.list
     - key_url: "salt://sd/sd-workstation/{{ sdvars.signing_key_filename }}"
     - clean_file: True # squash file to ensure there are no duplicates
