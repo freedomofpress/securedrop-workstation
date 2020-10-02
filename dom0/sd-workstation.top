@@ -55,6 +55,8 @@ base:
     - sd-mime-handling
   sd-devices-dvm:
     - sd-mime-handling
+  sd-proxy:
+    - sd-mime-handling
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.

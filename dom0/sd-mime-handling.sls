@@ -12,12 +12,20 @@
 # respective AppVMs.
 ##
 
-{% if grains['id'] in ["sd-viewer", "sd-app", "sd-devices-dvm", "sd-proxy"] %}
+{% if grains['id'] in ["sd-viewer", "sd-app", "sd-devices-dvm"] %}
 
 sd-private-volume-mimeapps-handling:
   file.symlink:
     - name: /home/user/.local/share/applications/mimeapps.list
     - target: /opt/sdw/mimeapps.list.{{ grains['id'] }}
+    - makedirs: True
+
+{% else %}
+
+sd-private-volume-mimeapps-handling:
+  file.symlink:
+    - name: /home/user/.local/share/applications/mimeapps.list
+    - target: /opt/sdw/mimeapps.list.default
     - makedirs: True
 
 {% endif %}
