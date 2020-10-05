@@ -10,7 +10,11 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         super(SD_Proxy_Tests, self).setUp()
 
     def test_do_not_open_here(self):
-        self.assertFilesMatch("/usr/bin/do-not-open-here", "sd-proxy/do-not-open-here")
+        """
+        The do-not-open here script has been removed from sd-proxy.
+        All VMs now default to using open-in-dvm.
+        """
+        assert not self._fileExists("/usr/bin/do-not-open-here")
 
     def test_sd_proxy_package_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-proxy"))
@@ -43,14 +47,12 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         self.logging_configured()
 
     def test_mime_types(self):
-        with open("sd-proxy/mimeapps.list", "r") as f:
-            lines = f.readlines()
-            for line in lines:
-                if line != "[Default Applications]\n" and not line.startswith("#"):
-                    mime_type = line.split("=")[0]
-                    expected_app = line.split("=")[1].split(";")[0]
-                    actual_app = self._run("xdg-mime query default {}".format(mime_type))
-                    self.assertEqual(actual_app, expected_app)
+        cmd = "perl -F= -lane 'print $F[0]' /usr/share/applications/mimeapps.list"
+        results = self._run(cmd)
+        for line in results.split("\n"):
+            if line != "[Default Applications]" and not line.startswith("#"):
+                actual_app = self._run("xdg-mime query default {}".format(line))
+                self.assertEqual(actual_app, "open-in-dvm.desktop")
 
 
 def load_tests(loader, tests, pattern):
