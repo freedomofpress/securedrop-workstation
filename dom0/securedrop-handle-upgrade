@@ -98,7 +98,10 @@ if [[ $TASK == "prepare" ]]; then
 elif [[ $TASK == "remove" ]]; then
     # For each template, ensure the TemplateVM exists, that it is shut down
     # before deleting it.
-    for template in sd-app-template sd-viewer-template sd-devices-template sd-proxy-template
+    for template in sd-app-template sd-viewer-template sd-devices-template sd-proxy-template \
+        sd-svs-template sd-svs-disp-template sd-export-template sd-proxy-template \
+        sd-svs-buster-template sd-export-buster-template sd-svs-disp-buster-template sd-app-buster-template \
+        sd-viewer-buster-template sd-proxy-buster-template sd-devices-buster-template sd-log-buster-template
     do
         if qvm-check "${template}" --quiet; then
             if qvm-check --running "${template}"; then
