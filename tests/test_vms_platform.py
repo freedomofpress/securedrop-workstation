@@ -12,7 +12,7 @@ SUPPORTED_PLATFORMS = [
 
 apt_url = ""
 FPF_APT_SOURCES_STRETCH_DEV = "deb [arch=amd64] https://apt-test.freedom.press stretch main"
-FPF_APT_SOURCES_BUSTER_DEV = "deb [arch=amd64] https://apt-test.freedom.press buster main"
+FPF_APT_SOURCES_BUSTER_DEV = "deb [arch=amd64] https://apt-test.freedom.press buster template-consolidation"
 FPF_APT_SOURCES_STRETCH = "deb [arch=amd64] https://apt.freedom.press stretch main"
 FPF_APT_SOURCES_BUSTER = "deb [arch=amd64] https://apt.freedom.press buster main"
 APT_SOURCES_FILE = "/etc/apt/sources.list.d/securedrop_workstation.list"
