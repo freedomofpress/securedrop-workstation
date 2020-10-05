@@ -24,6 +24,9 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
             config = json.load(c)
             hostname = config["hidserv"]["hostname"]
 
+        # Config file moved to private volume during template consolidation
+        assert not self._fileExists("/etc/sd-proxy.yaml")
+
         wanted_lines = [
             "host: {}".format(hostname),
             "scheme: http",
@@ -32,7 +35,14 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
             "dev: False",
         ]
         for line in wanted_lines:
-            self.assertFileHasLine("/etc/sd-proxy.yaml", line)
+            self.assertFileHasLine("/home/user/.securedrop_proxy/sd-proxy.yaml", line)
+
+    def test_sd_proxy_rpc_spec(self):
+        wanted_lines = [
+            "/usr/bin/sd-proxy /home/user/.securedrop_proxy/sd-proxy.yaml",
+        ]
+        for line in wanted_lines:
+            self.assertFileHasLine("/etc/qubes-rpc/securedrop.Proxy", line)
 
     def test_whonix_ws_repo_absent(self):
         """
