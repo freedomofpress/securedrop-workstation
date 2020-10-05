@@ -10,8 +10,8 @@ class SD_Viewer_Tests(SD_VM_Local_Test):
         super(SD_Viewer_Tests, self).setUp()
 
     def test_sd_viewer_metapackage_installed(self):
-        pkg = "securedrop-workstation-viewer"
-        self.assertTrue(self._package_is_installed(pkg))
+        self.assertTrue(self._package_is_installed("securedrop-workstation-viewer"))
+        self.assertFalse(self._package_is_installed("securedrop-workstation-svs-disp"))
 
     def test_sd_viewer_evince_installed(self):
         pkg = "evince"
