@@ -22,6 +22,7 @@ FLAG_FILE_STATUS_DOM0 = os.path.join(DEFAULT_HOME, "sdw-update-status")
 FLAG_FILE_LAST_UPDATED_DOM0 = os.path.join(DEFAULT_HOME, "sdw-last-updated")
 LOCK_FILE = "sdw-launcher.lock"
 LOG_FILE = "launcher.log"
+MIGRATION_DIR = "/tmp/sdw-migrations"
 
 sdlog = logging.getLogger(__name__)
 
@@ -31,18 +32,44 @@ sdlog = logging.getLogger(__name__)
 current_templates = {
     "dom0": "dom0",
     "fedora": "fedora-31",
-    "sd-viewer": "sd-viewer-buster-template",
-    "sd-app": "sd-app-buster-template",
-    "sd-log": "sd-log-buster-template",
-    "sd-devices": "sd-devices-buster-template",
-    "sd-proxy": "sd-proxy-buster-template",
+    "sd-viewer": "sd-large-buster-template",
+    "sd-app": "sd-small-buster-template",
+    "sd-log": "sd-small-buster-template",
+    "sd-devices": "sd-large-buster-template",
+    "sd-proxy": "sd-small-buster-template",
     "sd-whonix": "whonix-gw-15",
-    "sd-gpg": "securedrop-workstation-buster",
+    "sd-gpg": "sd-small-buster-template",
 }
 
 
 def get_dom0_path(folder):
     return os.path.join(os.path.expanduser("~"), folder)
+
+
+def run_full_install(force=False):
+    """
+    Re-apply the entire Salt config via sdw-admin. Required to enforce
+    VM state during major migrations, such as template consolidation.
+    """
+    if force or migration_is_required():
+        sdlog.info("Running sdw-admin apply")
+        cmd = ["sdw-admin", "--apply"]
+        subprocess.check_call(cmd)
+
+        # Clean up flag requesting migration. Shell out since root created it.
+        subprocess.check_call(["sudo", "rm", "-rf", MIGRATION_DIR])
+
+
+def migration_is_required():
+    """
+    Check whether a full run of the Salt config via sdw-admin is required.
+    """
+    result = False
+    if os.path.exists(MIGRATION_DIR):
+        if len(os.listdir(MIGRATION_DIR)) > 0:
+            sdlog.info("Migration is required, will enforce full config during update")
+            result = True
+    return result
 
 
 def apply_updates(vms=current_templates.keys()):

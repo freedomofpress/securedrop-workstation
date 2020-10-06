@@ -508,13 +508,13 @@ def test_shutdown_and_start_vms(
     ]
     template_vm_calls = [
         call("fedora-31"),
-        call("sd-viewer-buster-template"),
-        call("sd-app-buster-template"),
-        call("sd-log-buster-template"),
-        call("sd-devices-buster-template"),
-        call("sd-proxy-buster-template"),
+        call("sd-large-buster-template"),
+        call("sd-small-buster-template"),
+        call("sd-small-buster-template"),
+        call("sd-large-buster-template"),
+        call("sd-small-buster-template"),
         call("whonix-gw-15"),
-        call("securedrop-workstation-buster"),
+        call("sd-small-buster-template"),
     ]
     app_vm_calls = [
         call("sd-app"),
@@ -560,13 +560,13 @@ def test_shutdown_and_start_vms_sysvm_fail(
     ]
     template_vm_calls = [
         call("fedora-31"),
-        call("sd-viewer-buster-template"),
-        call("sd-app-buster-template"),
-        call("sd-log-buster-template"),
-        call("sd-devices-buster-template"),
-        call("sd-proxy-buster-template"),
+        call("sd-large-buster-template"),
+        call("sd-small-buster-template"),
+        call("sd-small-buster-template"),
+        call("sd-large-buster-template"),
+        call("sd-small-buster-template"),
         call("whonix-gw-15"),
-        call("securedrop-workstation-buster"),
+        call("sd-small-buster-template"),
     ]
     error_calls = [
         call("Error while killing system VM: sys-firewall"),

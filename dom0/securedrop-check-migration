@@ -1,0 +1,32 @@
+#!/bin/bash
+# Utility script to check whether the entire config should be reapplied
+# as part of the GUI updater run, essentially re-running the "install"
+# action from sdw-admin. Adds about ~20m to an update, so we'll only
+# do it conditionally.
+
+set -e
+set -u
+set -o pipefail
+
+
+# Location for empty files to signal to GUI updater that salt states
+# should be re-run.
+flag_dir="/tmp/sdw-migrations"
+function request_migration() {
+    local reason
+    reason="$1"
+    shift 1
+    mkdir -p "$flag_dir"
+    touch "${flag_dir}/${reason}"
+}
+
+# Template consolidation. If old template names are found,
+# then we must rerun the full states to re-apply.
+if [[ -n "$(qvm-ls --tags sd-workstation --raw-list | perl -nE '/sd-(?!small|large).*-template/ and print $_')" ]] ; then
+    reason="template-consolidation"
+    echo "Migration required for ${reason}, will re-run Salt states."
+    request_migration "$reason"
+else
+    echo "No migration required, skipping full state run against all VMs."
+    rm -rf "${flag_dir}"
+fi

@@ -183,6 +183,9 @@ class UpgradeThread(QThread):
         result = Updater.apply_dom0_state()
         # add to results dict, if it fails it will show error message
         results["apply_dom0"] = result.value
+        # rerun full config if dom0 checks determined it's required
+        if Updater.migration_is_required():
+            Updater.run_full_install()
         # reboot vms
         Updater.shutdown_and_start_vms()
 
