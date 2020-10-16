@@ -125,3 +125,27 @@ remotevm = sd-log
         # so let's investigate further.
         # cmd_output = self._run("sudo grep -F \"action 'action-0-omprog' suspended (module 'omprog')\" /var/log/syslog | wc -l").strip()  # noqa
         # self.assertTrue(cmd_output == "0")
+
+    def qubes_gpg_domain_configured(self, vmname=False):
+        """
+        Ensure the QUBES_GPG_DOMAIN is properly set for a given AppVM. This
+        var is set by a script /etc/profile.d.
+        sd-app should have it set to sd-gpg.
+        All other AppVMs should not have this configured.
+        """
+        expected_profile_app = 'if [ "$(qubesdb-read /name)" = "sd-app" ]; then export QUBES_GPG_DOMAIN="sd-gpg"; fi\n'  # noqa: E501
+        expected_env_app = "sd-gpg"
+        expected_env_all = ""
+        profile_path = "/etc/profile.d/sd-app-qubes-gpg-domain.sh"
+
+        env_cmd = 'echo "$QUBES_GPG_DOMAIN"'
+        env_contents = self._run(env_cmd)
+
+        if vmname == "sd-app":
+            self.assertTrue(self._fileExists(profile_path))
+            profile_contents = self._get_file_contents(profile_path)
+            self.assertEqual(profile_contents, expected_profile_app)
+            self.assertEqual(env_contents, expected_env_app)
+        else:
+            self.assertFalse(self._fileExists(profile_path))
+            self.assertEqual(env_contents, expected_env_all)

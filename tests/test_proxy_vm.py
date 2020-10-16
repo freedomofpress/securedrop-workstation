@@ -52,6 +52,9 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
                     actual_app = self._run("xdg-mime query default {}".format(mime_type))
                     self.assertEqual(actual_app, expected_app)
 
+    def test_gpg_domain_configured(self):
+        self.qubes_gpg_domain_configured(self.vm_name)
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Proxy_Tests)

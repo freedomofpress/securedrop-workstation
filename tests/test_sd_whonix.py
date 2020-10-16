@@ -74,6 +74,9 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
             "Whonix GW torrc contains duplicate %include lines",
         )
 
+    def test_gpg_domain_configured(self):
+        self.qubes_gpg_domain_configured(self.vm_name)
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Whonix_Tests)

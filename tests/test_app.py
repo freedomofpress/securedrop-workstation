@@ -9,10 +9,8 @@ class SD_App_Tests(SD_VM_Local_Test):
         self.vm_name = "sd-app"
         super(SD_App_Tests, self).setUp()
 
-    def test_decrypt_sd_user_profile(self):
-        contents = self._get_file_contents("/etc/profile.d/sd-app-qubes-gpg-domain.sh")
-        expected_content = 'export QUBES_GPG_DOMAIN="sd-gpg"\n'
-        self.assertEqual(contents, expected_content)
+    def test_gpg_domain_configured(self):
+        self.qubes_gpg_domain_configured(self.vm_name)
 
     def test_open_in_dvm_desktop(self):
         contents = self._get_file_contents("/usr/share/applications/open-in-dvm.desktop")
