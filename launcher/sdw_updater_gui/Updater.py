@@ -36,7 +36,6 @@ sdlog = logging.getLogger(__name__)
 # as well as their associated TemplateVMs.
 # In the future, we could use qvm-prefs to extract this information.
 current_templates = {
-    "dom0": "dom0",
     "fedora": "fedora-31",
     "sd-viewer": "sd-large-buster-template",
     "sd-app": "sd-small-buster-template",
@@ -52,18 +51,17 @@ def get_dom0_path(folder):
     return os.path.join(os.path.expanduser("~"), folder)
 
 
-def run_full_install(force=False):
+def run_full_install():
     """
     Re-apply the entire Salt config via sdw-admin. Required to enforce
     VM state during major migrations, such as template consolidation.
     """
-    if force or migration_is_required():
-        sdlog.info("Running sdw-admin apply")
-        cmd = ["sdw-admin", "--apply"]
-        subprocess.check_call(cmd)
+    sdlog.info("Running sdw-admin apply")
+    cmd = ["sdw-admin", "--apply"]
+    subprocess.check_call(cmd)
 
-        # Clean up flag requesting migration. Shell out since root created it.
-        subprocess.check_call(["sudo", "rm", "-rf", MIGRATION_DIR])
+    # Clean up flag requesting migration. Shell out since root created it.
+    subprocess.check_call(["sudo", "rm", "-rf", MIGRATION_DIR])
 
 
 def migration_is_required():
@@ -82,6 +80,9 @@ def apply_updates(vms=current_templates.keys()):
     """
     Apply updates to all TemplateVMs
     """
+    # The updater thread sets 15% progress before the per-VM
+    # updates start, we'll base progress on that.
+    progress_start = 15
     sdlog.info("Applying all updates")
 
     for progress_current, vm in enumerate(vms):
@@ -96,7 +97,9 @@ def apply_updates(vms=current_templates.keys()):
         else:
             upgrade_results = _apply_updates_vm(vm)
 
-        progress_percentage = int(((progress_current + 1) / len(vms)) * 100 - 5)
+        progress_percentage = int(progress_start + ((progress_current + 1) / len(vms)) * 100 - 25)
+        if progress_percentage < progress_start:
+            progress_percentage = progress_start
         yield vm, progress_percentage, upgrade_results
 
 

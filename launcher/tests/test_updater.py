@@ -56,7 +56,7 @@ TEST_RESULTS_UPDATES = {
 
 
 def test_updater_vms_present():
-    assert len(updater.current_templates) == 9
+    assert len(updater.current_templates) == 8
 
 
 @mock.patch("Updater._write_updates_status_flag_to_disk")
