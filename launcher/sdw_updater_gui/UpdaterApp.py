@@ -172,20 +172,34 @@ class UpgradeThread(QThread):
         QThread.__init__(self)
 
     def run(self):
-        upgrade_generator = Updater.apply_updates()
+
+        # Update dom0 first, then apply dom0 state. If full state run
+        # is required, the dom0 state will drop a flag.
+        self.progress_signal.emit(5)
+        upgrade_generator = Updater.apply_updates(["dom0"])
+
         results = {}
-
-        for vm, progress, result in upgrade_generator:
-            results[vm] = result
-            self.progress_signal.emit(progress)
-
         # apply dom0 state
+        self.progress_signal.emit(10)
         result = Updater.apply_dom0_state()
         # add to results dict, if it fails it will show error message
         results["apply_dom0"] = result.value
-        # rerun full config if dom0 checks determined it's required
+
+        self.progress_signal.emit(15)
+        # rerun full config if dom0 checks determined it's required,
+        # otherwise proceed with per-VM package updates
         if Updater.migration_is_required():
+            # Progress bar will freeze for ~15m during full state run
+            self.progress_signal.emit(35)
             Updater.run_full_install()
+            self.progress_signal.emit(75)
+        else:
+            upgrade_generator = Updater.apply_updates()
+            results = {}
+            for vm, progress, result in upgrade_generator:
+                results[vm] = result
+                self.progress_signal.emit(progress)
+
         # reboot vms
         Updater.shutdown_and_start_vms()
 
