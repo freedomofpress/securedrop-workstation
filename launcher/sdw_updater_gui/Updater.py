@@ -22,7 +22,13 @@ FLAG_FILE_STATUS_DOM0 = os.path.join(DEFAULT_HOME, "sdw-update-status")
 FLAG_FILE_LAST_UPDATED_DOM0 = os.path.join(DEFAULT_HOME, "sdw-last-updated")
 LOCK_FILE = "sdw-launcher.lock"
 LOG_FILE = "launcher.log"
-MIGRATION_DIR = "/tmp/sdw-migrations"
+
+
+# We use a hardcoded temporary directory path in dom0. As dom0 is not
+# a multi-user environment, we can safely assume that only the Updater is
+# managing that filepath. Later on, we should consider porting the check-migration
+# logic to leverage the Qubes Python API.
+MIGRATION_DIR = "/tmp/sdw-migrations"  # nosec
 
 sdlog = logging.getLogger(__name__)
 
