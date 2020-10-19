@@ -139,19 +139,12 @@ remotevm = sd-log
         sd-app should have it set to sd-gpg.
         All other AppVMs should not have this configured.
         """
-        expected_profile_app = 'if [ "$(qubesdb-read /name)" = "sd-app" ]; then export QUBES_GPG_DOMAIN="sd-gpg"; fi\n'  # noqa: E501
-        expected_env_app = "sd-gpg"
-        expected_env_all = ""
-        profile_path = "/etc/profile.d/sd-app-qubes-gpg-domain.sh"
-
         env_cmd = 'echo "$QUBES_GPG_DOMAIN"'
         env_contents = self._run(env_cmd)
 
         if vmname == "sd-app":
-            self.assertTrue(self._fileExists(profile_path))
-            profile_contents = self._get_file_contents(profile_path)
-            self.assertEqual(profile_contents, expected_profile_app)
-            self.assertEqual(env_contents, expected_env_app)
+            expected_env = "sd-gpg"
         else:
-            self.assertFalse(self._fileExists(profile_path))
-            self.assertEqual(env_contents, expected_env_all)
+            expected_env = ""
+
+        self.assertEqual(env_contents, expected_env)
