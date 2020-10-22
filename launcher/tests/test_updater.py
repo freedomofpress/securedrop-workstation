@@ -13,6 +13,7 @@ path_to_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpat
 updater = SourceFileLoader("Updater", path_to_script).load_module()
 from Updater import UpdateStatus  # noqa: E402
 from Updater import current_templates  # noqa: E402
+from Updater import current_vms  # noqa: E402
 
 temp_dir = TemporaryDirectory().name
 
@@ -56,7 +57,11 @@ TEST_RESULTS_UPDATES = {
 
 
 def test_updater_vms_present():
-    assert len(updater.current_templates) == 8
+    assert len(updater.current_vms) == 8
+
+
+def test_updater_templatevms_present():
+    assert len(updater.current_templates) == 4
 
 
 @mock.patch("Updater._write_updates_status_flag_to_disk")
@@ -303,7 +308,7 @@ def test_apply_updates_dom0_failure(mocked_info, mocked_error, mocked_call):
     mocked_error.assert_has_calls(error_log)
 
 
-@pytest.mark.parametrize("vm", current_templates.keys())
+@pytest.mark.parametrize("vm", current_templates)
 @mock.patch("subprocess.check_call", side_effect="0")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
@@ -313,30 +318,18 @@ def test_apply_updates_vms(mocked_info, mocked_error, mocked_call, vm):
         assert result == UpdateStatus.UPDATES_OK
 
         mocked_call.assert_called_once_with(
-            [
-                "sudo",
-                "qubesctl",
-                "--skip-dom0",
-                "--targets",
-                current_templates[vm],
-                "state.sls",
-                "update.qubes-vm",
-            ]
+            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", "update.qubes-vm"]
         )
         assert not mocked_error.called
 
 
-@pytest.mark.parametrize("vm", current_templates.keys())
+@pytest.mark.parametrize("vm", current_templates)
 @mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_updates_vms_fails(mocked_info, mocked_error, mocked_call, vm):
     error_calls = [
-        call(
-            "An error has occurred updating {}. Please contact your administrator.".format(
-                current_templates[vm]
-            )
-        ),
+        call("An error has occurred updating {}. Please contact your administrator.".format(vm)),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     result = updater._apply_updates_vm(vm)
@@ -423,7 +416,7 @@ def test_overall_update_status_reboot_not_done_previously(
     assert not mocked_error.called
 
 
-@pytest.mark.parametrize("vm", current_templates.keys())
+@pytest.mark.parametrize("vm", current_vms.keys())
 @mock.patch("subprocess.check_output")
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
@@ -435,7 +428,7 @@ def test_safely_shutdown(mocked_info, mocked_error, mocked_output, vm):
     assert not mocked_error.called
 
 
-@pytest.mark.parametrize("vm", current_templates.keys())
+@pytest.mark.parametrize("vm", current_vms.keys())
 @mock.patch(
     "subprocess.check_output", side_effect=["0", "0", "0"],
 )
@@ -452,7 +445,7 @@ def test_safely_start(mocked_info, mocked_error, mocked_output, vm):
     assert not mocked_error.called
 
 
-@pytest.mark.parametrize("vm", current_templates.keys())
+@pytest.mark.parametrize("vm", current_vms.keys())
 @mock.patch(
     "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"),
 )
@@ -468,7 +461,7 @@ def test_safely_start_fails(mocked_info, mocked_error, mocked_output, vm):
     mocked_error.assert_has_calls(call_list)
 
 
-@pytest.mark.parametrize("vm", current_templates.keys())
+@pytest.mark.parametrize("vm", current_vms.keys())
 @mock.patch(
     "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"),
 )
@@ -510,11 +503,7 @@ def test_shutdown_and_start_vms(
         call("fedora-31"),
         call("sd-large-buster-template"),
         call("sd-small-buster-template"),
-        call("sd-small-buster-template"),
-        call("sd-large-buster-template"),
-        call("sd-small-buster-template"),
         call("whonix-gw-15"),
-        call("sd-small-buster-template"),
     ]
     app_vm_calls = [
         call("sd-app"),
@@ -562,11 +551,7 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call("fedora-31"),
         call("sd-large-buster-template"),
         call("sd-small-buster-template"),
-        call("sd-small-buster-template"),
-        call("sd-large-buster-template"),
-        call("sd-small-buster-template"),
         call("whonix-gw-15"),
-        call("sd-small-buster-template"),
     ]
     error_calls = [
         call("Error while killing system VM: sys-firewall"),
