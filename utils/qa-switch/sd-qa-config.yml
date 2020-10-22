@@ -1,0 +1,13 @@
+---
+# Production variables, for use with real-world installs
+prod:
+  dom0_yum_repo_url: "https://yum-test.securedrop.org/workstation/dom0/f25"
+  apt_repo_url: "https://apt-test.freedom.press"
+  signing_key_filename: "apt-test-pubkey.asc"
+  apt_repo_component: template-consolidation
+# Development variables, suited for use during local development
+dev:
+  dom0_yum_repo_url: "https://yum-test.securedrop.org/workstation/dom0/f25"
+  apt_repo_url: "https://apt-test.freedom.press"
+  signing_key_filename: "apt-test-pubkey.asc"
+  apt_repo_component: template-consolidation
