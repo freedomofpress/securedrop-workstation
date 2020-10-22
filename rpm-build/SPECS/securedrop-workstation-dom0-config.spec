@@ -1,12 +1,12 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.4.0
-Release:	1%{?dist}
+Version:	0.5.0
+Release:	0.rc1.1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.4.0.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.5.0rc1.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -28,7 +28,7 @@ configuration over time.
 %undefine py_auto_byte_compile
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.4.0
+%setup -n securedrop-workstation-dom0-config-0.5.0rc1
 
 %build
 %{__python3} setup.py build
