@@ -35,7 +35,7 @@ sdlog = logging.getLogger(__name__)
 # The are the TemplateVMs that require full patch level at boot in order to start the client,
 # as well as their associated TemplateVMs.
 # In the future, we could use qvm-prefs to extract this information.
-current_templates = {
+current_vms = {
     "fedora": "fedora-31",
     "sd-viewer": "sd-large-buster-template",
     "sd-app": "sd-small-buster-template",
@@ -45,6 +45,8 @@ current_templates = {
     "sd-whonix": "whonix-gw-15",
     "sd-gpg": "sd-small-buster-template",
 }
+
+current_templates = set([val for key, val in current_vms.items() if key != "dom0"])
 
 
 def get_dom0_path(folder):
@@ -76,7 +78,7 @@ def migration_is_required():
     return result
 
 
-def apply_updates(vms=current_templates.keys()):
+def apply_updates(vms=current_templates):
     """
     Apply updates to all TemplateVMs
     """
@@ -85,7 +87,7 @@ def apply_updates(vms=current_templates.keys()):
     progress_start = 15
     sdlog.info("Applying all updates")
 
-    for progress_current, vm in enumerate(vms):
+    for progress_current, vm in enumerate(vms, 1):
         upgrade_results = UpdateStatus.UPDATES_FAILED
 
         if vm == "dom0":
@@ -97,7 +99,7 @@ def apply_updates(vms=current_templates.keys()):
         else:
             upgrade_results = _apply_updates_vm(vm)
 
-        progress_percentage = int(progress_start + ((progress_current + 1) / len(vms)) * 100 - 25)
+        progress_percentage = int(progress_start + ((progress_current) / len(vms)) * 100 - 25)
         if progress_percentage < progress_start:
             progress_percentage = progress_start
         yield vm, progress_percentage, upgrade_results
@@ -145,28 +147,18 @@ def _apply_updates_vm(vm):
     Apply updates to a given TemplateVM. Any update to the base fedora template
     will require a reboot after the upgrade.
     """
-    sdlog.info("Updating {}:{}".format(vm, current_templates[vm]))
+    sdlog.info("Updating {}".format(vm))
     try:
         subprocess.check_call(
-            [
-                "sudo",
-                "qubesctl",
-                "--skip-dom0",
-                "--targets",
-                current_templates[vm],
-                "state.sls",
-                "update.qubes-vm",
-            ]
+            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", "update.qubes-vm"]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error(
-            "An error has occurred updating {}. Please contact your administrator.".format(
-                current_templates[vm]
-            )
+            "An error has occurred updating {}. Please contact your administrator.".format(vm)
         )
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
-    sdlog.info("{} update successful".format(current_templates[vm]))
+    sdlog.info("{} update successful".format(vm))
     return UpdateStatus.UPDATES_OK
 
 
@@ -374,11 +366,8 @@ def shutdown_and_start_vms():
         "sd-log",
     ]
 
-    # All TemplateVMs minus dom0
-    sdw_templates = [val for key, val in current_templates.items() if key != "dom0"]
-
     sdlog.info("Shutting down SDW TemplateVMs for updates")
-    for vm in sdw_templates:
+    for vm in sorted(current_templates):
         _safely_shutdown_vm(vm)
 
     sdlog.info("Shutting down SDW AppVMs for updates")
