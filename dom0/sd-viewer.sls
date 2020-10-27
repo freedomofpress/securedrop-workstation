@@ -15,28 +15,14 @@ include:
   - sd-workstation-template
   - sd-upgrade-templates
 
-sd-viewer-template:
-  qvm.vm:
-    - name: sd-viewer-buster-template
-    - clone:
-      - source: securedrop-workstation-buster
-      - label: green
-    - tags:
-      - add:
-        - sd-workstation
-        - sd-workstation-updates
-    - require:
-      - sls: sd-workstation-template
-      - sls: sd-upgrade-templates
-
 sd-viewer:
   qvm.vm:
     - name: sd-viewer
     - present:
-      - template: sd-viewer-buster-template
+      - template: sd-large-buster-template
       - label: green
     - prefs:
-      - template: sd-viewer-buster-template
+      - template: sd-large-buster-template
       - netvm: ""
       - template_for_dispvms: True
     - tags:
@@ -48,7 +34,7 @@ sd-viewer:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-viewer-buster-template
+      - qvm: sd-large-buster-template
 
 sd-viewer-default-dispvm:
   cmd.run:

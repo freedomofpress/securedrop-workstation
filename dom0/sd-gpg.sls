@@ -17,10 +17,10 @@ sd-gpg:
   qvm.vm:
     - name: sd-gpg
     - present:
-      - template: securedrop-workstation-buster
+      - template: sd-small-buster-template
       - label: purple
     - prefs:
-      - template: securedrop-workstation-buster
+      - template: sd-small-buster-template
       - netvm: ""
       - autostart: true
     - tags:

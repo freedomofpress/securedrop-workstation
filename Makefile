@@ -48,7 +48,7 @@ sd-workstation-template: prep-dev ## Provisions base template for SDW AppVMs
 
 sd-proxy: prep-dev ## Provisions SD Proxy VM
 	sudo qubesctl --show-output state.sls sd-proxy
-	sudo qubesctl --show-output --skip-dom0 --targets sd-proxy-buster-template,sd-proxy state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets sd-small-buster-template,sd-proxy state.highstate
 
 sd-gpg: prep-dev ## Provisions SD GPG keystore VM
 	sudo qubesctl --show-output state.sls sd-gpg
@@ -56,7 +56,7 @@ sd-gpg: prep-dev ## Provisions SD GPG keystore VM
 
 sd-app: prep-dev ## Provisions SD APP VM
 	sudo qubesctl --show-output state.sls sd-app
-	sudo qubesctl --show-output --skip-dom0 --targets sd-app-buster-template,sd-app state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets sd-small-buster-template,sd-app state.highstate
 
 sd-whonix: prep-dev ## Provisions SD Whonix VM
 	sudo qubesctl --show-output state.sls sd-whonix
@@ -72,7 +72,7 @@ sd-devices: prep-dev ## Provisions SD Export VM
 
 sd-log: prep-dev ## Provisions SD logging VM
 	sudo qubesctl --show-output state.sls sd-log
-	sudo qubesctl --show-output --skip-dom0 --targets sd-log-buster-template,sd-log state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets sd-small-buster-template,sd-log state.highstate
 
 prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./scripts/prep-dev

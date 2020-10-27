@@ -14,11 +14,10 @@ include:
   - fpf-apt-test-repo
   - sd-logging-setup
 
-sd-viewer-install-mimetype-handler-package:
+sd-viewer-install-metapackage:
   pkg.installed:
     - pkgs:
-      - securedrop-workstation-svs-disp
-      - evince
+      - securedrop-workstation-viewer
     - require:
       - sls: fpf-apt-test-repo
 

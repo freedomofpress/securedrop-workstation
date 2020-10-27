@@ -1,12 +1,12 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.4.0
-Release:	1%{?dist}
+Version:	0.5.0
+Release:	0.rc1.1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.4.0.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.5.0rc1.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -28,7 +28,7 @@ configuration over time.
 %undefine py_auto_byte_compile
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.4.0
+%setup -n securedrop-workstation-dom0-config-0.5.0rc1
 
 %build
 %{__python3} setup.py build
@@ -62,6 +62,7 @@ install -m 644 dom0/*.conf %{buildroot}/srv/salt/
 install -m 755 dom0/remove-tags %{buildroot}/srv/salt/
 install -m 644 dom0/securedrop-login %{buildroot}/srv/salt/
 install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
+install -m 755 dom0/securedrop-check-migration %{buildroot}/srv/salt/
 install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
 install -m 755 scripts/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
@@ -106,6 +107,10 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
+* Tue Oct 27 2020 SecureDrop Team <securedrop@freedom.press> - 0.5.0
+- Consolidates templates into small and large
+- Modifies updater UI to rerun full state if required
+
 * Tue Jul 07 2020 SecureDrop Team <securedrop@freedom.press> - 0.4.0
 - Consolidates updates from two stages into one
 - Makes the updater UI more compact

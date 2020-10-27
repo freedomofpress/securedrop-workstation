@@ -1,5 +1,6 @@
 import unittest
 import json
+import subprocess
 
 from base import SD_VM_Local_Test
 
@@ -10,7 +11,11 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         super(SD_Proxy_Tests, self).setUp()
 
     def test_do_not_open_here(self):
-        self.assertFilesMatch("/usr/bin/do-not-open-here", "sd-proxy/do-not-open-here")
+        """
+        The do-not-open here script has been removed from sd-proxy.
+        All VMs now default to using open-in-dvm.
+        """
+        assert not self._fileExists("/usr/bin/do-not-open-here")
 
     def test_sd_proxy_package_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-proxy"))
@@ -20,6 +25,9 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
             config = json.load(c)
             hostname = config["hidserv"]["hostname"]
 
+        # Config file moved to private volume during template consolidation
+        assert not self._fileExists("/etc/sd-proxy.yaml")
+
         wanted_lines = [
             "host: {}".format(hostname),
             "scheme: http",
@@ -28,7 +36,25 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
             "dev: False",
         ]
         for line in wanted_lines:
-            self.assertFileHasLine("/etc/sd-proxy.yaml", line)
+            self.assertFileHasLine("/home/user/.securedrop_proxy/sd-proxy.yaml", line)
+
+    def test_sd_proxy_writable_config_dir(self):
+        # Directory must be writable by normal user. If owned by root,
+        # sd-proxy can't write logs, and will fail, blocking client logins.
+        result = False
+        try:
+            self._run("test -w /home/user/.securedrop_proxy")
+            result = True
+        except subprocess.CalledProcessError:
+            pass
+        self.assertTrue(result)
+
+    def test_sd_proxy_rpc_spec(self):
+        wanted_lines = [
+            "/usr/bin/sd-proxy /home/user/.securedrop_proxy/sd-proxy.yaml",
+        ]
+        for line in wanted_lines:
+            self.assertFileHasLine("/etc/qubes-rpc/securedrop.Proxy", line)
 
     def test_whonix_ws_repo_absent(self):
         """
@@ -43,14 +69,12 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         self.logging_configured()
 
     def test_mime_types(self):
-        with open("sd-proxy/mimeapps.list", "r") as f:
-            lines = f.readlines()
-            for line in lines:
-                if line != "[Default Applications]\n" and not line.startswith("#"):
-                    mime_type = line.split("=")[0]
-                    expected_app = line.split("=")[1].split(";")[0]
-                    actual_app = self._run("xdg-mime query default {}".format(mime_type))
-                    self.assertEqual(actual_app, expected_app)
+        cmd = "perl -F= -lane 'print $F[0]' /usr/share/applications/mimeapps.list"
+        results = self._run(cmd)
+        for line in results.split("\n"):
+            if line != "[Default Applications]" and not line.startswith("#"):
+                actual_app = self._run("xdg-mime query default {}".format(line))
+                self.assertEqual(actual_app, "open-in-dvm.desktop")
 
     def test_gpg_domain_configured(self):
         self.qubes_gpg_domain_configured(self.vm_name)

@@ -10,13 +10,16 @@ DEPRECATED_TEMPLATES = [
     "sd-svs-buster-template",
     "sd-export-buster-template",
     "sd-svs-disp-buster-template",
-]
-
-VMS_TO_UPDATE = [
     "sd-app-buster-template",
     "sd-viewer-buster-template",
     "sd-proxy-buster-template",
     "sd-devices-buster-template",
+    "sd-log-buster-template",
+]
+
+VMS_TO_UPDATE = [
+    "sd-large-buster-template",
+    "sd-small-buster-template",
     "whonix-ws-15",
     "whonix-gw-15",
     "securedrop-workstation-buster",

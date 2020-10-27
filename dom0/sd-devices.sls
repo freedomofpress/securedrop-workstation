@@ -9,28 +9,14 @@ include:
   - sd-workstation-template
   - sd-upgrade-templates
 
-sd-devices-template:
-  qvm.vm:
-    - name: sd-devices-buster-template
-    - clone:
-      - source: securedrop-workstation-buster
-      - label: red
-    - tags:
-      - add:
-        - sd-workstation
-        - sd-workstation-updates
-    - require:
-      - sls: sd-workstation-template
-      - sls: sd-upgrade-templates
-
 sd-devices-dvm:
   qvm.vm:
     - name: sd-devices-dvm
     - present:
-      - template: sd-devices-buster-template
+      - template: sd-large-buster-template
       - label: red
     - prefs:
-      - template: sd-devices-buster-template
+      - template: sd-large-buster-template
       - netvm: ""
       - template_for_dispvms: True
     - tags:
@@ -41,19 +27,19 @@ sd-devices-dvm:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-devices-buster-template
+      - qvm: sd-large-buster-template
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.
 sd-devices-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start --skip-if-running sd-devices-buster-template &&
-        qvm-sync-appmenus sd-devices-buster-template
+        qvm-start --skip-if-running sd-large-buster-template &&
+        qvm-sync-appmenus sd-large-buster-template
     - require:
-      - qvm: sd-devices-buster-template
+      - qvm: sd-large-buster-template
     - onchanges:
-      - qvm: sd-devices-buster-template
+      - qvm: sd-large-buster-template
 
 sd-devices-create-named-dispvm:
   qvm.vm:
