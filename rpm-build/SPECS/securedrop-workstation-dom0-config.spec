@@ -107,6 +107,10 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
+* Tue Oct 27 2020 SecureDrop Team <securedrop@freedom.press> - 0.5.0
+- Consolidates templates into small and large
+- Modifies updater UI to rerun full state if required
+
 * Tue Jul 07 2020 SecureDrop Team <securedrop@freedom.press> - 0.4.0
 - Consolidates updates from two stages into one
 - Makes the updater UI more compact
