@@ -23,35 +23,71 @@ FLAG_FILE_LAST_UPDATED_DOM0 = os.path.join(DEFAULT_HOME, "sdw-last-updated")
 LOCK_FILE = "sdw-launcher.lock"
 LOG_FILE = "launcher.log"
 
+
+# We use a hardcoded temporary directory path in dom0. As dom0 is not
+# a multi-user environment, we can safely assume that only the Updater is
+# managing that filepath. Later on, we should consider porting the check-migration
+# logic to leverage the Qubes Python API.
+MIGRATION_DIR = "/tmp/sdw-migrations"  # nosec
+
 sdlog = logging.getLogger(__name__)
 
 # The are the TemplateVMs that require full patch level at boot in order to start the client,
 # as well as their associated TemplateVMs.
 # In the future, we could use qvm-prefs to extract this information.
-current_templates = {
-    "dom0": "dom0",
+current_vms = {
     "fedora": "fedora-31",
-    "sd-viewer": "sd-viewer-buster-template",
-    "sd-app": "sd-app-buster-template",
-    "sd-log": "sd-log-buster-template",
-    "sd-devices": "sd-devices-buster-template",
-    "sd-proxy": "sd-proxy-buster-template",
+    "sd-viewer": "sd-large-buster-template",
+    "sd-app": "sd-small-buster-template",
+    "sd-log": "sd-small-buster-template",
+    "sd-devices": "sd-large-buster-template",
+    "sd-proxy": "sd-small-buster-template",
     "sd-whonix": "whonix-gw-15",
-    "sd-gpg": "securedrop-workstation-buster",
+    "sd-gpg": "sd-small-buster-template",
 }
+
+current_templates = set([val for key, val in current_vms.items() if key != "dom0"])
 
 
 def get_dom0_path(folder):
     return os.path.join(os.path.expanduser("~"), folder)
 
 
-def apply_updates(vms=current_templates.keys()):
+def run_full_install():
+    """
+    Re-apply the entire Salt config via sdw-admin. Required to enforce
+    VM state during major migrations, such as template consolidation.
+    """
+    sdlog.info("Running sdw-admin apply")
+    cmd = ["sdw-admin", "--apply"]
+    subprocess.check_call(cmd)
+
+    # Clean up flag requesting migration. Shell out since root created it.
+    subprocess.check_call(["sudo", "rm", "-rf", MIGRATION_DIR])
+
+
+def migration_is_required():
+    """
+    Check whether a full run of the Salt config via sdw-admin is required.
+    """
+    result = False
+    if os.path.exists(MIGRATION_DIR):
+        if len(os.listdir(MIGRATION_DIR)) > 0:
+            sdlog.info("Migration is required, will enforce full config during update")
+            result = True
+    return result
+
+
+def apply_updates(vms=current_templates):
     """
     Apply updates to all TemplateVMs
     """
+    # The updater thread sets 15% progress before the per-VM
+    # updates start, we'll base progress on that.
+    progress_start = 15
     sdlog.info("Applying all updates")
 
-    for progress_current, vm in enumerate(vms):
+    for progress_current, vm in enumerate(vms, 1):
         upgrade_results = UpdateStatus.UPDATES_FAILED
 
         if vm == "dom0":
@@ -63,7 +99,9 @@ def apply_updates(vms=current_templates.keys()):
         else:
             upgrade_results = _apply_updates_vm(vm)
 
-        progress_percentage = int(((progress_current + 1) / len(vms)) * 100 - 5)
+        progress_percentage = int(progress_start + ((progress_current) / len(vms)) * 100 - 25)
+        if progress_percentage < progress_start:
+            progress_percentage = progress_start
         yield vm, progress_percentage, upgrade_results
 
 
@@ -109,28 +147,18 @@ def _apply_updates_vm(vm):
     Apply updates to a given TemplateVM. Any update to the base fedora template
     will require a reboot after the upgrade.
     """
-    sdlog.info("Updating {}:{}".format(vm, current_templates[vm]))
+    sdlog.info("Updating {}".format(vm))
     try:
         subprocess.check_call(
-            [
-                "sudo",
-                "qubesctl",
-                "--skip-dom0",
-                "--targets",
-                current_templates[vm],
-                "state.sls",
-                "update.qubes-vm",
-            ]
+            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", "update.qubes-vm"]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error(
-            "An error has occurred updating {}. Please contact your administrator.".format(
-                current_templates[vm]
-            )
+            "An error has occurred updating {}. Please contact your administrator.".format(vm)
         )
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
-    sdlog.info("{} update successful".format(current_templates[vm]))
+    sdlog.info("{} update successful".format(vm))
     return UpdateStatus.UPDATES_OK
 
 
@@ -338,11 +366,8 @@ def shutdown_and_start_vms():
         "sd-log",
     ]
 
-    # All TemplateVMs minus dom0
-    sdw_templates = [val for key, val in current_templates.items() if key != "dom0"]
-
     sdlog.info("Shutting down SDW TemplateVMs for updates")
-    for vm in sdw_templates:
+    for vm in sorted(current_templates):
         _safely_shutdown_vm(vm)
 
     sdlog.info("Shutting down SDW AppVMs for updates")
