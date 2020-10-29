@@ -26,4 +26,4 @@ if [ ! -f "/srv/salt/qa-switcher/sd-default-config.yml.orig" ]; then
 fi
 cp qa-switch/sd-qa-config.yml sd-default-config.yml
 
-echo "Done! (Run this script after 'sudo qubes-dom0-update -y' to reapply")
+echo "Done! (Run this script after 'sudo qubes-dom0-update -y' to reapply)"
