@@ -23,6 +23,14 @@ class SD_Viewer_Tests(SD_VM_Local_Test):
     def test_logging_configured(self):
         self.logging_configured()
 
+    def test_redis_packages_not_installed(self):
+        """
+        Only the log collector, i.e. sd-log, needs redis, so redis will be
+        present in small template, but not in large.
+        """
+        self.assertFalse(self._package_is_installed("redis"))
+        self.assertFalse(self._package_is_installed("redis-server"))
+
     def test_mime_types(self):
         filepath = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "vars", "sd-viewer.mimeapps"
