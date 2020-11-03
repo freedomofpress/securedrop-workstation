@@ -43,6 +43,7 @@ sd-log-remove-rsyslog-qubes-plugin:
         systemctl restart rsyslog
         systemctl start redis
         systemctl start securedrop-log
+        exit 0
   cmd.run:
     - name: /rw/config/rc.local
     - require:
