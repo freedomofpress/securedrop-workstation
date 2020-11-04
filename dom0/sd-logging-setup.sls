@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
-{% if "template" in grains['id'] or grains['id'] in ["securedrop-workstation-buster", "sd-small-buster-template", "sd-large-buster-template", "whonix-gw-15"] %}
+{% if grains['id'] in ["securedrop-workstation-buster", "sd-small-buster-template", "sd-large-buster-template", "whonix-gw-15"] %}
 include:
   - fpf-apt-test-repo
 
@@ -12,9 +12,16 @@ install-securedrop-log-package:
       - securedrop-log
     - require:
       - sls: fpf-apt-test-repo
+
+# configure all VMs to send to sd-log - excluded on a per-VM basis below via /rw
+configure-rsyslog-for-sd:
+  file.managed:
+    - name: /etc/sd-rsyslog.conf
+    - source: "salt://sd-rsyslog.conf.j2"
+
 {% endif %}
 
-{% if grains['id'] in ["sd-small-buster-template", "sd-large-buster-template"] %}
+{% if grains['id'] == "sd-small-buster-template" %}
 install-redis-for-sd-log-template:
   pkg.installed:
     - pkgs:
@@ -36,6 +43,7 @@ sd-log-remove-rsyslog-qubes-plugin:
         systemctl restart rsyslog
         systemctl start redis
         systemctl start securedrop-log
+        exit 0
   cmd.run:
     - name: /rw/config/rc.local
     - require:
@@ -62,12 +70,6 @@ sd-gpg-remove-rsyslog-qubes-plugin:
     - require:
       - file: sd-gpg-remove-rsyslog-qubes-plugin
 
-{% else %}
-# For all other VMs, configure to send to sd-log
-configure-rsyslog-for-sd:
-  file.managed:
-    - name: /etc/sd-rsyslog.conf
-    - source: "salt://sd-rsyslog.conf.j2"
 {% endif %}
 
 # Remove outdated configuration that was previously used to configure the
