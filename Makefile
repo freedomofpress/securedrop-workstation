@@ -109,19 +109,19 @@ test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python3 -m unittest discover -v tests
 
 test-base: assert-dom0 ## Runs tests for VMs layout
-	python3 -m unittest -v tests.test_vms_exist.SD_VM_Tests
+	python3 -m unittest discover -v tests -p test_vms_exist.py
 
 test-app: assert-dom0 ## Runs tests for SD APP VM config
-	python3 -m unittest -v tests.test_app.SD_App_Tests
+	python3 -m unittest discover -v tests -p test_app.py
 
 test-proxy: assert-dom0 ## Runs tests for SD Proxy VM
-	python3 -m unittest -v tests.test_proxy_vm
+	python3 -m unittest discover -v tests -p test_proxy_vm.py
 
 test-whonix: assert-dom0 ## Runs tests for SD Whonix VM
-	python3 -m unittest -v tests.test_sd_whonix
+	python3 -m unittest discover -v tests -p test_sd_whonix.py
 
 test-gpg: assert-dom0 ## Runs tests for SD GPG functionality
-	python3 -m unittest -v tests.test_gpg
+	python3 -m unittest discover -v tests -p test_gpg.py
 
 validate: assert-dom0 ## Checks for local requirements in dev env
 	@./scripts/validate_config.py
