@@ -1,12 +1,12 @@
 Name:		securedrop-workstation-dom0-config
 Version:	0.5.0
-Release:	0.rc3.1%{?dist}
+Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.5.0rc3.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.5.0.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -28,7 +28,7 @@ configuration over time.
 %undefine py_auto_byte_compile
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.5.0rc3
+%setup -n securedrop-workstation-dom0-config-0.5.0
 
 %build
 %{__python3} setup.py build
@@ -107,15 +107,10 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
-* Wed Nov 04 2020 SecureDrop Team <securedrop@freedom.press> - 0.5.0-3
-- Fixing log collection for first-time installs
-
-* Tue Oct 27 2020 SecureDrop Team <securedrop@freedom.press> - 0.5.0-2
-- Removes qa-switcher testing logic from RPM
-
-* Tue Oct 27 2020 SecureDrop Team <securedrop@freedom.press> - 0.5.0-1
+* Mon Nov 09 2020 SecureDrop Team <securedrop@freedom.press> - 0.5.0
 - Consolidates templates into small and large
 - Modifies updater UI to rerun full state if required
+- Fixing log collection for first-time installs
 
 * Tue Jul 07 2020 SecureDrop Team <securedrop@freedom.press> - 0.4.0
 - Consolidates updates from two stages into one
