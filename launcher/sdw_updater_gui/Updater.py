@@ -36,7 +36,7 @@ sdlog = logging.getLogger(__name__)
 # as well as their associated TemplateVMs.
 # In the future, we could use qvm-prefs to extract this information.
 current_vms = {
-    "fedora": "fedora-31",
+    "fedora": "fedora-32",
     "sd-viewer": "sd-large-buster-template",
     "sd-app": "sd-small-buster-template",
     "sd-log": "sd-small-buster-template",

@@ -5,11 +5,11 @@
 # an up-to-date version of Fedora, in order to receive security updates.
 
 include:
-  # Import the upstream Qubes-maintained default-dispvm to ensure fedora-31-dvm
-  # is created.
+  # Import the upstream Qubes-maintained default-dispvm to ensure Fedora-based
+  # DispVM is created
   - qvm.default-dispvm
 
-{% set sd_supported_fedora_version = 'fedora-31' %}
+{% set sd_supported_fedora_version = 'fedora-32' %}
 
 # Install latest templates required for SDW VMs.
 dom0-install-fedora-template:
@@ -27,7 +27,7 @@ update-fedora-template-if-new:
       - pkg: dom0-install-fedora-template
 # qvm.default-dispvm is not strictly required here, but we want it to be
 # updated as soon as possible to ensure make clean completes successfully, as
-# is sets the default_dispvm to fedora-31-dvm
+# is sets the default_dispvm to the DispVM based on the wanted Fedora version.
 set-fedora-default-template-version:
   cmd.run:
     - name: qubes-prefs default_template {{ sd_supported_fedora_version }}

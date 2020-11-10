@@ -19,7 +19,7 @@ dom0-rpm-test-key:
   file.managed:
     # We write the pubkey to the repos config location, because the repos
     # config location is automatically sent to dom0's UpdateVM. Otherwise,
-    # we must place the GPG key inside the fedora-31 TemplateVM, then
+    # we must place the GPG key inside the fedora TemplateVM, then
     # restart sys-firewall.
     - name: /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
     - source: "salt://sd/sd-workstation/{{ sdvars.signing_key_filename }}"

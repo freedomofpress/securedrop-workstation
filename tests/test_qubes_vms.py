@@ -1,10 +1,7 @@
 import unittest
 
 from qubesadmin import Qubes
-
-
-CURRENT_FEDORA_VERSION = "31"
-CURRENT_WHONIX_VERSION = "15"
+from base import CURRENT_FEDORA_TEMPLATE, CURRENT_WHONIX_VERSION
 
 
 class SD_Qubes_VM_Tests(unittest.TestCase):
@@ -32,7 +29,7 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
         ]
         for sys_vm in sys_vms:
             vm = self.app.domains[sys_vm]
-            self.assertTrue(vm.template.name == "fedora-" + CURRENT_FEDORA_VERSION)
+            self.assertEqual(vm.template.name, CURRENT_FEDORA_TEMPLATE)
 
     def test_current_whonix_vms(self):
         """
