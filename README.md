@@ -182,7 +182,7 @@ When developing on the Workstation, make sure to edit files in `sd-dev`, then co
 
 The staging environment is intended to provide an experience closer to a production environment. For example, it will alter power management settings on your laptop to prevent suspending it to disk, and make other changes that may not be desired during day-to-day development in Qubes.
 
-#### Update `dom0`, `fedora-31`, `whonix-gw-15` and `whonix-ws-15` templates
+#### Update `dom0`, `fedora-32`, `whonix-gw-15` and `whonix-ws-15` templates
 
 Updates to these VMs will be provided by the installer and updater, but to ensure they are up to date prior to install, it will be easier to debug, should something go wrong.
 

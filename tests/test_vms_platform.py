@@ -3,7 +3,7 @@ import unittest
 import subprocess
 
 from qubesadmin import Qubes
-from base import WANTED_VMS
+from base import WANTED_VMS, CURRENT_FEDORA_TEMPLATE
 
 
 SUPPORTED_PLATFORMS = [
@@ -175,8 +175,8 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         # Technically we want to know whether the sys-firewall, sys-net, and
         # sys-usb VMs have their updates installed. This test assumes those
-        # AppVMs are based on fedora-31.
-        vm_name = "fedora-31"
+        # AppVMs are based on the most recent Fedora version.
+        vm_name = CURRENT_FEDORA_TEMPLATE
         vm = self.app.domains[vm_name]
         self._ensure_packages_up_to_date(vm, fedora=True)
         vm.shutdown()
@@ -227,7 +227,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             "sys-usb",
         ]
         for vm in sys_vms:
-            wanted_template = "fedora-31"
+            wanted_template = CURRENT_FEDORA_TEMPLATE
             found_template = self.app.domains[vm].template.name
             self.assertEqual(wanted_template, found_template)
 
