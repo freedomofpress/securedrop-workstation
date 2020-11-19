@@ -1,12 +1,12 @@
 Name:		securedrop-workstation-dom0-config
 Version:	0.5.1
-Release:	0.rc1.1%{?dist}
+Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.5.1rc1.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.5.1.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -28,7 +28,7 @@ configuration over time.
 %undefine py_auto_byte_compile
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.5.1rc1
+%setup -n securedrop-workstation-dom0-config-0.5.1
 
 %build
 %{__python3} setup.py build
@@ -107,7 +107,7 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
-* Tue Nov 17 2020 SecureDrop Team <securedrop@freedom.press> - 0.5.1-rc1
+* Thu Nov 19 2020 SecureDrop Team <securedrop@freedom.press> - 0.5.1
 - Migrates Fedora 31 templates to Fedora 32
 
 * Mon Nov 09 2020 SecureDrop Team <securedrop@freedom.press> - 0.5.0
