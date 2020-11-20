@@ -809,3 +809,28 @@ def test_apply_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
     )
     mocked_info.assert_called_once_with("Applying dom0 state")
     mocked_error.assert_has_calls(log_error_calls)
+
+
+@mock.patch("os.path.exists", return_value=True)
+@mock.patch("os.listdir", return_value=["apple", "banana"])
+@mock.patch("Updater.sdlog.info")
+def test_migration_is_required(m_info, m_listdir, m_existence):
+    assert updater.migration_is_required() is True
+    assert m_info.called_once_with("Migration is required, will enforce full config during update")
+
+
+@mock.patch("os.path.exists", return_value=False)
+@mock.patch("os.listdir", return_value=[])
+@mock.patch("Updater.sdlog.info")
+def test_migration_not_required(mock_info, mock_listdir, mock_existence):
+    assert updater.migration_is_required() is False
+    assert not mock_info.called
+
+
+@mock.patch("Updater.sdlog.info")
+@mock.patch("subprocess.check_call")
+def test_run_full_install(mock_call, mock_info):
+    MIGRATION_DIR = "potato"
+    updater.run_full_install()
+    calls = [["sdw-admin", "--apply"], ["sudo", "rm", "-rf", MIGRATION_DIR]]
+    assert mock_call.has_calls(calls, any_order=False)
