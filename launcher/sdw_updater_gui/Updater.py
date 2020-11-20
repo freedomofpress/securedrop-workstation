@@ -78,18 +78,22 @@ def migration_is_required():
     return result
 
 
-def apply_updates(vms=current_templates):
+def apply_updates(vms=current_templates, progress_start=15, progress_end=75):
     """
-    Apply updates to all TemplateVMs
-    """
-    # The updater thread sets 15% progress before the per-VM
-    # updates start, we'll base progress on that.
-    progress_start = 15
-    sdlog.info("Applying all updates")
+    Apply updates to all TemplateVMs.
 
-    for progress_current, vm in enumerate(vms, 1):
+    Returns a tuple of (vm_name, percentage_progress, upgrade_results),
+    for use in updating the GUI progress bar.
+    """
+    sdlog.info("Applying all updates to VMs: {}".format(vms))
+    # Figure out how much each completed VM should bump the progress bar.
+    assert progress_end > progress_start
+    progress_step = (progress_end - progress_start) // len(vms)
+
+    progress_current = progress_start
+
+    for vm in vms:
         upgrade_results = UpdateStatus.UPDATES_FAILED
-
         if vm == "dom0":
             dom0_status = _check_updates_dom0()
             if dom0_status == UpdateStatus.UPDATES_REQUIRED:
@@ -99,10 +103,13 @@ def apply_updates(vms=current_templates):
         else:
             upgrade_results = _apply_updates_vm(vm)
 
-        progress_percentage = int(progress_start + ((progress_current) / len(vms)) * 100 - 25)
-        if progress_percentage < progress_start:
-            progress_percentage = progress_start
-        yield vm, progress_percentage, upgrade_results
+        progress_current += progress_step
+        if progress_current < progress_start:
+            progress_current = progress_start
+        elif progress_current > progress_end:
+            progress_current = progress_end
+
+        yield vm, progress_current, upgrade_results
 
 
 def _check_updates_dom0():
