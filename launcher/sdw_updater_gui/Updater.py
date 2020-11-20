@@ -104,10 +104,12 @@ def apply_updates(vms=current_templates, progress_start=15, progress_end=75):
             upgrade_results = _apply_updates_vm(vm)
 
         progress_current += progress_step
-        if progress_current < progress_start:
-            progress_current = progress_start
-        elif progress_current > progress_end:
-            progress_current = progress_end
+
+        # constrain progress_current to given progress range
+        def clamp(val, min_val, max_val):
+            return max(min(max_val, val), min_val)
+
+        progress_current = clamp(progress_current, progress_start, progress_end)
 
         yield vm, progress_current, upgrade_results
 
