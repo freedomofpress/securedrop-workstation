@@ -42,6 +42,11 @@ function unpack-tarball() {
     tar xf /tmp/sd-proj.tar -C "${dom0_dev_dir}" --strip-components=1
 }
 
-build-dom0-rpm
+# By default we build the RPM, but the step can be skipped, which is useful
+# for certain development tasks
+if [[ "${BUILD_RPM:-true}" == "true" ]]; then
+  build-dom0-rpm
+fi
+
 create-tarball
 unpack-tarball

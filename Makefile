@@ -30,8 +30,11 @@ dom0-rpm-f25: ## Builds rpm package to be installed on dom0
 dom0-rpm-f32: ## Builds rpm package to be installed on dom0
 	@./scripts/build-dom0-rpm f32
 
-clone: assert-dom0 ## Pulls the latest repo from work VM to dom0
+clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
+
+clone-norpm: assert-dom0 ## As above, but skip creating RPM
+	@BUILD_RPM=false ./scripts/clone-to-dom0
 
 qubes-rpc: prep-dev ## Places default deny qubes-rpc policies for sd-app and sd-gpg
 	sudo qubesctl --show-output --targets sd-dom0-qvm-rpc state.highstate
