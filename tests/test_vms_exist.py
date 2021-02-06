@@ -99,6 +99,8 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template == "sd-large-buster-template")
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
+        # sd-viewer should not be able to create other disposable VMs
+        self.assertIsNone(vm.default_dispvm)
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
         self.assertTrue("sd-workstation" in vm.tags)
