@@ -25,9 +25,26 @@ jobs:
     steps:
       - checkout
       - run: make dom0-rpm-f32
-  launcher-tests-buster:
+  launcher-tests-ubuntu-machine:
+    machine:
+      enabled: true
+      image: ubuntu-2004:202101-01
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies and run Python tests for launcher
+          command: |
+            pyenv global 3.9.1
+            cd launcher/
+            set -e
+            virtualenv .venv
+            source .venv/bin/activate
+            pip install --require-hashes -r dev-requirements.txt
+            sudo apt install lsof
+            make test && make bandit
+  launcher-tests-buster-docker:
     docker:
-      - image: circleci/python:3.7-buster
+      - image: circleci/python:3.9.1-buster
     steps:
       - checkout
       - run:
@@ -45,7 +62,5 @@ workflows:
   version: 2
   securedrop_workstation_ci:
     jobs:
-      - lint
-      - buildrpm-f25
-      - buildrpm-f32
-      - launcher-tests-buster
+      - launcher-tests-ubuntu-machine
+      - launcher-tests-buster-docker
