@@ -3,7 +3,7 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: circleci/python:3.7-buster
+      - image: cimg/python:3.7
     steps:
       - checkout
       - run:
@@ -27,7 +27,7 @@ jobs:
       - run: make dom0-rpm-f32
   launcher-tests-buster:
     docker:
-      - image: circleci/python:3.7-buster
+      - image: cimg/python:3.7
     steps:
       - checkout
       - run:
@@ -38,7 +38,6 @@ jobs:
             virtualenv .venv
             source .venv/bin/activate
             pip install --require-hashes -r dev-requirements.txt
-            sudo apt install lsof
             make test && make bandit
 
 workflows:
