@@ -33,24 +33,25 @@ def test_obtain_lock(mocked_info, mocked_warning, mocked_error):
     with TemporaryDirectory() as tmpdir, mock.patch("Util.LOCK_DIRECTORY", tmpdir):
 
         basename = "test-obtain-lock.lock"
-        pid = os.getpid()
+        pid_str = str(os.getpid())
         lh = util.obtain_lock(basename)  # noqa: F841
         # No handled exception should occur
         assert not mocked_error.called
         # We should be getting a lock handle back
         assert lh is not None
 
-        cmd = ["lsof", "-w", os.path.join(util.LOCK_DIRECTORY, basename)]
-        output_lines = subprocess.check_output(cmd).decode("utf-8").strip().split("\n")
-        # We expect exactly one process to be accessing this file, plus output header
-        assert len(output_lines) == 2
-        lsof_data = output_lines[1].split()
-        # We expect the output to have the standard number of fields
-        assert len(lsof_data) == 9
-        # We expect the PID column to contain the ID of this process
-        assert lsof_data[1] == str(pid)
-        # We expect an exclusive write lock to be set for this process
-        assert lsof_data[3].find("W") != -1
+        # Note that there are different lock types; lslocks provides information
+        # about all of them for a given process, including POSIX system locks,
+        # which is the type we want to verify.
+        lslocks_output = (
+            subprocess.check_output(["lslocks", "-n", "-p", pid_str]).decode("utf-8").strip()
+        )
+
+        # Due to output discrepancies between local tests and CI these assertions
+        # are naive, but sufficient for the purposes of this test suite, as no
+        # write locks other than the test-created ones should be present.
+        assert "WRITE" in lslocks_output
+        assert "POSIX" in lslocks_output
 
 
 @mock.patch("Util.sdlog.error")
