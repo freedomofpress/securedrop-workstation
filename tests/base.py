@@ -135,6 +135,35 @@ remotevm = sd-log
         # cmd_output = self._run("sudo grep -F \"action 'action-0-omprog' suspended (module 'omprog')\" /var/log/syslog | wc -l").strip()  # noqa
         # self.assertTrue(cmd_output == "0")
 
+    def mailcap_hardened(self):
+        """
+        Ensure that mailcap rules are not used as a fallback when looking up
+        appropriate viewer applications for files of a given MIME type.
+        """
+
+        # Ensure that mailcap configuration files are present in the expected
+        # locations and contain the expected contents. Rules in `~/.mailcap`
+        # take precedence over those in `/etc/mailcap`.
+        self.assertTrue(self._fileExists("/home/user/.mailcap"))
+        self.assertTrue(self._fileExists("/opt/sdw/mailcap.default"))
+        self.assertFileHasLine("/home/user/.mailcap", '*/*; logger "Mailcap is disabled."')
+
+        # Because we target an AppVM, we cannot easily use the Pyhton tempfile
+        # module here without relying on a helper script. Instead, we use the
+        # mktemp utility to create a test file with the OpenDocument extension.
+        tmpfile_name = self._run("mktemp -t XXXXXX.odt")
+
+        # The --norun argument ensures that we do not launch any application,
+        # regardless of the result of this invocation.
+        mailcap_result = self._run("run-mailcap --norun {}".format(tmpfile_name))
+
+        # For simplicity, we remove the tempfile here instead of in a separate
+        # teardown method.
+        self._run("rm {}".format(tmpfile_name))
+
+        # Ensure that the wildcard rule worked as expected.
+        self.assertEqual(mailcap_result, 'logger "Mailcap is disabled." <{}'.format(tmpfile_name))
+
     def qubes_gpg_domain_configured(self, vmname=False):
         """
         Ensure the QUBES_GPG_DOMAIN is properly set for a given AppVM. This

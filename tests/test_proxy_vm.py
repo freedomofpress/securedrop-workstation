@@ -76,6 +76,9 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
                 actual_app = self._run("xdg-mime query default {}".format(line))
                 self.assertEqual(actual_app, "open-in-dvm.desktop")
 
+    def test_mailcap_hardened(self):
+        self.mailcap_hardened()
+
     def test_gpg_domain_configured(self):
         self.qubes_gpg_domain_configured(self.vm_name)
 
