@@ -41,3 +41,20 @@ sd-viewer-default-dispvm:
     - name: qubes-prefs default_dispvm sd-viewer
     - require:
       - qvm: sd-viewer
+
+# Allow any SecureDrop VM to log to the centralized log VM
+sd-viewer-dom0-securedrop.CreateSourceDispVM:
+  file.prepend:
+    - name: /etc/qubes-rpc/policy/securedrop.CreateSourceDispVM
+    - text: |
+        @tag:sd-client dom0 allow
+        @anyvm @anyvm deny
+
+# Script to handle opening per-source DispVM
+sd-viewer-dom0-per-source-dispvm-script:
+  file.managed:
+    - name: /etc/qubes-rpc/securedrop.CreateSourceDispVM
+    - source: salt://sd/securedrop.CreateSourceDispVM
+    - user: root
+    - group: root
+    - mode: 0755

@@ -1,0 +1,21 @@
+#!/bin/sh
+# Create to @deeplow, see discussion in 
+#  https://github.com/freedomofpress/securedrop-workstation/issues/333#issuecomment-789562152
+# Content slightly modified from original.
+
+# TODO Fully sanitize this $1 parameter to make sure it is only a source's code
+# name and nothing else. Otherwise sd-app we will have an RCE in dom0
+#
+# TODO Script should read from stdin, not handle args.
+
+if [ -z "$1" ]; then
+    # This service requires an argument
+    exit 1
+fi
+
+# create a named disposable VM with the and set it to autodestroy once shut down
+/usr/bin/qvm-create --class DispVM sd-viewer-$1 --template=sd-viewer \
+--label=red --property auto_cleanup=True
+
+# Give it a tag so we can target the policy from sd-app onto this new VM
+/usr/bin/qvm-tags sd-viewer-$1 set sd-viewer-dvm
