@@ -13,9 +13,19 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-# create a named disposable VM with the and set it to autodestroy once shut down
-/usr/bin/qvm-create --class DispVM sd-viewer-$1 --template=sd-viewer \
---label=red --property auto_cleanup=True
+source_name="$1"
+vm_name="sd-viewer-$source_name"
 
-# Give it a tag so we can target the policy from sd-app onto this new VM
-/usr/bin/qvm-tags sd-viewer-$1 set sd-viewer-dvm
+
+if ! qvm-check $vm_name ; then
+    # create a named disposable VM with the and set it to autodestroy once shut down
+    /usr/bin/qvm-create --class DispVM $vm_name --template=sd-viewer \
+    --label=red --property auto_cleanup=True
+
+    # Give it a tag so we can target the policy from sd-app onto this new VM
+    /usr/bin/qvm-tags $vm_name set sd-viewer-dvm
+fi
+
+if ! qvm-check --running $vm_name; then
+    /usr/bin/qvm-start $vm_name
+fi
