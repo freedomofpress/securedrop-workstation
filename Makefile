@@ -57,6 +57,8 @@ sd-gpg: prep-dev ## Provisions SD GPG keystore VM
 sd-app: prep-dev ## Provisions SD APP VM
 	sudo qubesctl --show-output state.sls sd-app
 	sudo qubesctl --show-output --skip-dom0 --targets sd-small-buster-template,sd-app state.highstate
+	@echo "Rebooting sd-app to apply changes"
+	hexagon ls --outdated sd-app | xargs -r hexagon reboot
 
 sd-whonix: prep-dev ## Provisions SD Whonix VM
 	sudo qubesctl --show-output state.sls sd-whonix
