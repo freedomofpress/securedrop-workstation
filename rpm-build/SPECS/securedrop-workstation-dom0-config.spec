@@ -1,12 +1,12 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.5.2
+Version:	0.5.3
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.5.2.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.5.3.tar.gz
 
 BuildArch:      noarch
 BuildRequires:	python3-setuptools
@@ -28,7 +28,7 @@ configuration over time.
 %undefine py_auto_byte_compile
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.5.2
+%setup -n securedrop-workstation-dom0-config-0.5.3
 
 %build
 %{__python3} setup.py build
@@ -109,6 +109,10 @@ mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/mailcap-hardening
 
 %changelog
+* Wed Mar 10 2021 SecureDrop Team <securedrop@freedom.press> - 0.5.3
+- Prevents sd-viewer from launching disposable VMs
+- Provisions default mailcap rules to enforce Fail Closed behavior
+
 * Fri Nov 20 2020 SecureDrop Team <securedrop@freedom.press> - 0.5.2
 - Fixes updater, ensuring dom0 packages are updated
 
