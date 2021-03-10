@@ -25,6 +25,7 @@ sd-viewer:
       - template: sd-large-buster-template
       - netvm: ""
       - template_for_dispvms: True
+      - default_dispvm: ""
     - tags:
       - add:
         - sd-workstation

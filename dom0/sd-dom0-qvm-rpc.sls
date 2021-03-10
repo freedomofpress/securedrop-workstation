@@ -42,6 +42,15 @@ dom0-rpc-qubes.Filecopy:
         sd-proxy @tag:sd-client allow
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
+dom0-rpc-qubes.GetImageRGBA:
+  file.blockreplace:
+    - name: /etc/qubes-rpc/policy/qubes.GetImageRGBA
+    - prepend_if_not_found: True
+    - marker_start: "### BEGIN securedrop-workstation ###"
+    - marker_end: "### END securedrop-workstation ###"
+    - content: |
+        @anyvm @tag:sd-workstation deny
+        @tag:sd-workstation @anyvm deny
 dom0-rpc-qubes.OpenInVM:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.OpenInVM

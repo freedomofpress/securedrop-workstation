@@ -43,3 +43,10 @@ sd-private-volume-mimeapps-handling:
       - file: sd-private-volume-mimeapps-config-dir
 
 {% endif %}
+
+sd-private-volume-mailcap-handling:
+  file.symlink:
+    - name: /home/user/.mailcap
+    - target: /opt/sdw/mailcap.default
+    - user: user
+    - group: user

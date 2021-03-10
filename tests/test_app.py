@@ -16,7 +16,7 @@ class SD_App_Tests(SD_VM_Local_Test):
         contents = self._get_file_contents("/usr/share/applications/open-in-dvm.desktop")
         expected_contents = [
             "TryExec=/usr/bin/qvm-open-in-vm",
-            "Exec=/usr/bin/qvm-open-in-vm --view-only '@dispvm:sd-viewer' %f",
+            "Exec=/usr/bin/qvm-open-in-vm --view-only @dispvm:sd-viewer %f",
         ]
         for line in expected_contents:
             self.assertTrue(line in contents)
@@ -34,6 +34,9 @@ class SD_App_Tests(SD_VM_Local_Test):
             if line != "[Default Applications]" and not line.startswith("#"):
                 actual_app = self._run("xdg-mime query default {}".format(line))
                 self.assertEqual(actual_app, "open-in-dvm.desktop")
+
+    def test_mailcap_hardened(self):
+        self.mailcap_hardened()
 
     def test_sd_client_package_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-client"))

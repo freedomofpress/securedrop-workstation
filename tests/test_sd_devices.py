@@ -36,11 +36,14 @@ class SD_Devices_Tests(SD_VM_Local_Test):
                     actual_app = self._run("xdg-mime query default {}".format(mime_type))
                     self.assertEqual(actual_app, expected_app)
 
+    def test_mailcap_hardened(self):
+        self.mailcap_hardened()
+
     def test_open_in_dvm_desktop(self):
         contents = self._get_file_contents("/usr/share/applications/open-in-dvm.desktop")
         expected_contents = [
             "TryExec=/usr/bin/qvm-open-in-vm",
-            "Exec=/usr/bin/qvm-open-in-vm --view-only '@dispvm:sd-viewer' %f",
+            "Exec=/usr/bin/qvm-open-in-vm --view-only @dispvm:sd-viewer %f",
         ]
         for line in expected_contents:
             self.assertTrue(line in contents)
