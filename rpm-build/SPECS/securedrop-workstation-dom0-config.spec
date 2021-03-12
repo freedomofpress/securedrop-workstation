@@ -1,16 +1,33 @@
-Name:		securedrop-workstation-dom0-config
-Version:	0.5.3
+%global srcname securedrop-workstation-dom0-config
+%global version 0.5.3
+%global __python3 /usr/bin/python3
+%global python3_sitelib /usr/lib/%{_python_version}/site-packages
+# For reproducible builds:
+#
+#   * _buildhost is hostname, will vary based on environment
+#   * _source_date_epoch will be defined via env var
+#   * _custom_docdir is a workaround for %docs not supporting SOURCE_DATE_EPOCH
+#   * optflags is for multi-arch support: otherwise rpmbuild sets 'OPTFLAGS: -O2 -g -march=i386 -mtune=i686'
+%global _buildhost %{srcname}
+%global _source_date_epoch %{getenv:SOURCE_DATE_EPOCH}
+%global _custom_docdir /usr/share/doc/%{srcname}
+%global optflags -O2 -g
+
+Name:		%{srcname}
+Version:	%{version}
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.5.3.tar.gz
+Source0:	%{srcname}-%%{version}.tar.gz
 
 BuildArch:      noarch
-BuildRequires:	python3-setuptools
-BuildRequires:	python3-devel
+# Disable declaration of build dependencies, because
+# we build on Debian stable.
+#BuildRequires:	python3-setuptools
+#BuildRequires:	python3-devel
 
 # This package installs all standard VMs in Qubes
 Requires:       qubes-mgmt-salt-dom0-virtual-machines
@@ -27,14 +44,15 @@ configuration over time.
 # root policy.
 %undefine py_auto_byte_compile
 
-%prep
-%setup -n securedrop-workstation-dom0-config-0.5.3
+# Ensure that SOURCE_DATE_EPOCH is honored. Does not appear to affect
+# use of %doc macro, so we use _custom_docdir instead.
+%define use_source_date_epoch_as_buildtime 1
 
-%build
-%{__python3} setup.py build
+%prep
+%setup -n %{srcname}-%{version}
 
 %install
-%{__python3} setup.py install --no-compile --skip-build --root %{buildroot}
+%{__python3} setup.py install --install-lib %{python3_sitelib} --no-compile --root %{buildroot}
 install -m 755 -d %{buildroot}/opt/securedrop/launcher
 install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_updater_gui
 install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_notify
@@ -54,6 +72,9 @@ install -m 755 -d %{buildroot}/srv/salt/launcher/sdw_updater_gui
 install -m 755 -d %{buildroot}/srv/salt/launcher/sdw_notify
 install -m 755 -d %{buildroot}/srv/salt/launcher/sdw_util
 install -m 755 -d %{buildroot}/%{_bindir}
+install -m 755 -d %{buildroot}/usr/share/%{srcname}
+# Create doc dir manually, because %doc macro doesn't honor SOURCE_DATE_EPOCH.
+install -m 755 -d %{buildroot}/%{_custom_docdir}
 install -m 644 dom0/*.sls %{buildroot}/srv/salt/
 install -m 644 dom0/*.top %{buildroot}/srv/salt/
 install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
@@ -73,7 +94,6 @@ install -m 644 sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
 install -m 644 sys-firewall/* %{buildroot}/srv/salt/sd/sys-firewall/
 install -m 644 usb-autoattach/99-sd-devices.rules %{buildroot}/srv/salt/sd/usb-autoattach/
 install -m 755 usb-autoattach/sd-attach-export-device %{buildroot}/srv/salt/sd/usb-autoattach/
-install -m 644 Makefile %{buildroot}/usr/share/%{name}/Makefile
 install -m 755 scripts/* %{buildroot}/usr/share/%{name}/scripts/
 # For the updater scripts, we want to provision them via rpm *and* also salt, since there's a salt step that will provision this
 install -m 644 launcher/*.py %{buildroot}/opt/securedrop/launcher/
@@ -84,13 +104,19 @@ install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw
 install -m 644 launcher/sdw_notify/*.py %{buildroot}/srv/salt/launcher/sdw_notify/
 install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
 install -m 644 launcher/sdw_util/*.py %{buildroot}/srv/salt/launcher/sdw_util/
+install -m 644 config.json.example %{buildroot}/usr/share/%{srcname}/
+install -m 644 README.md LICENSE %{buildroot}/%{_custom_docdir}/
+find %{buildroot} -type d -iname '*.egg-info' -print0 | xargs -0 -r rm -rf
+find %{buildroot} -exec touch -m -d @%{_source_date_epoch} {} +
+
 %files
-%doc README.md LICENSE
 %attr(755, root, root) /opt/securedrop/launcher/sdw-launcher.py
 %attr(755, root, root) /opt/securedrop/launcher/sdw-notify.py
 %attr(755, root, root) %{_bindir}/sdw-admin
-%{python3_sitelib}/securedrop_workstation_dom0_config*
 %{_datadir}/%{name}
+%{_custom_docdir}/LICENSE
+%{_custom_docdir}/README.md
+/usr/share/%{srcname}/config.json.example
 /opt/securedrop/launcher/**/*.py
 /srv/salt/sd*
 /srv/salt/dom0-xfce-desktop-file.j2

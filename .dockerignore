@@ -1,4 +1,0 @@
-# ignore everything
-**
-# whitelist just the pubkey, used for verifying sigs
-!sd-workstation/apt-test-pubkey.asc

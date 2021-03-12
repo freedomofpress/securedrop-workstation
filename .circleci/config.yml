@@ -15,16 +15,27 @@ jobs:
             sudo apt install file
             make flake8
             make black
-  buildrpm-f25:
-    machine: true
+  buildrpm:
+    docker:
+      - image: circleci/python:3.7-buster
     steps:
       - checkout
-      - run: make dom0-rpm-f25
-  buildrpm-f32:
-    machine: true
+      - run: sudo apt-get update && make install-deps
+      - run: make dom0-rpm
+  reprotest:
+    docker:
+      - image: debian:buster
     steps:
       - checkout
-      - run: make dom0-rpm-f32
+      - run: apt-get update && apt-get install -y sudo git make
+      - run: make install-deps
+      # Patch reprotest in-place to skip 'setarch' prefix, which fails under containers.
+      # See for more info in https://github.com/freedomofpress/securedrop-debian-packaging/pull/213/commits/18770bd44ec54da86f436515da4452c05111605e
+      # We should probably try to upstream this as an option.
+      - run:
+          command:
+            sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
+      - run: make reprotest-ci
   launcher-tests-buster:
     docker:
       - image: circleci/python:3.7-buster
@@ -45,6 +56,6 @@ workflows:
   securedrop_workstation_ci:
     jobs:
       - lint
-      - buildrpm-f25
-      - buildrpm-f32
+      - buildrpm
+      - reprotest
       - launcher-tests-buster

@@ -141,7 +141,7 @@ After that initial manual step, the code in your development VM may be copied in
 [dom0]$ export SECUREDROP_DEV_VM=sd-dev    # set to your dev VM
 [dom0]$ export SECUREDROP_DEV_DIR=/home/user/projects/securedrop-workstation    # set to your working directory
 [dom0]$ cd ~/securedrop-workstation/
-[dom0]$ make clone    # build RPM package (requires Docker) and copy repo to dom0
+[dom0]$ make clone    # build RPM package and copy repo to dom0
 ```
 
 If you plan to work on the [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) code, also run this command in `dom0`:
@@ -315,7 +315,7 @@ make clone
 make dev
 ```
 
-The `make clone` command will build a new version of the RPM package that contains the provisioning logic in your development VM (e.g., `sd-dev`) and copy it to `dom0`. The RPM is built using a Docker container, so Docker must be installed in your development VM.
+The `make clone` command will build a new version of the RPM package that contains the provisioning logic in your development VM (e.g., `sd-dev`) and copy it to `dom0`.
 
 ### Building the Templates
 
@@ -332,10 +332,8 @@ https://github.com/freedomofpress/securedrop-debian-packaging/
 make dom0-rpm
 ```
 
-This uses a base docker image as defined in https://github.com/freedomofpress/containers/.
-If you need to bump versions of the rpmbuild tooling, make an update to that
-repo's metadata, and increment the version as defined in the `Makefile`. See the
-`RPM_BUILD_VER` variable.
+The build assumes use of Debian Stable as the build environment. You can install
+the necessary dependencies from system packages via the `make install-deps` target.
 
 ## Using the *SecureDrop Client*
 

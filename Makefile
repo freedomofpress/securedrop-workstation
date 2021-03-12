@@ -21,14 +21,26 @@ dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 	$(MAKE) prep-dev
 	sdw-admin --apply
 
+.PHONY: dom0-rpm
 dom0-rpm: ## Builds rpm package to be installed on dom0
-	$(MAKE) dom0-rpm-f25
+	@./scripts/build-dom0-rpm
 
-dom0-rpm-f25: ## Builds rpm package to be installed on dom0
-	@./scripts/build-dom0-rpm f25
+.PHONY: reprotest
+reprotest: ## Runs reprotest for RPMs with all variations
+	reprotest -c "make dom0-rpm" . "rpm-build/RPMS/noarch/*.rpm"
 
-dom0-rpm-f32: ## Builds rpm package to be installed on dom0
-	@./scripts/build-dom0-rpm f32
+.PHONY: reprotest-ci
+reprotest-ci: ## Runs reprotest for RPMs, with CI-compatible skips in variations
+	# Disable a few variations, to support CircleCI container environments.
+	# Requires a sed hack to reprotest, see .circle/config.yml
+	TERM=xterm-256color reprotest --variations "+all, +kernel, -domain_host, -fileordering" \
+		 -c "make dom0-rpm" . "rpm-build/RPMS/noarch/*.rpm"
+
+.PHONY: install-deps
+install-deps: ## Installs apt package dependencies, for building RPMs
+	sudo apt-get install --no-install-recommends -y \
+		python3 python3-setuptools file python3-rpm \
+		rpm rpm-common diffoscope reprotest disorderfs faketime
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
