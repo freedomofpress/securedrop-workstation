@@ -12,6 +12,7 @@ application/vnd.openxmlformats-officedocument.spreadsheetml.sheet=libreoffice-ba
 application/vnd.openxmlformats-officedocument.presentationml.presentation=libreoffice-base.desktop
 application/pdf=org.gnome.Evince.desktop
 application/x-desktop=org.gnome.gedit.desktop
+audio/mp4=audacious.desktop
 audio/mpeg=audacious.desktop
 audio/x-vorbis+ogg=audacious.desktop
 audio/x-wav=audacious.desktop
