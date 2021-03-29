@@ -11,7 +11,10 @@ set -o pipefail
 dom0_dev_dir="$HOME/securedrop-workstation"
 
 function find_latest_rpm() {
-    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname '*.rpm' | xargs -d '\n' ls -t | head -n 1
+    # Look up which version of dom0 we're using.
+    # Qubes 4.0 is fc25, Qubes 4.1 will be fc32.
+    fedora_version="$(rpm --eval '%{fedora}')"
+    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "*fc${fedora_version}.noarch.rpm" -print0 | xargs -0 ls -t | head -n 1
 }
 
 latest_rpm="$(find_latest_rpm)"
