@@ -1,67 +1,48 @@
 #!/bin/bash
-#
-#
-# Builds RPM for dom0 bootstrap logic
-# $1 - Digest Hash of base docker container to use
-
-set -u
+# Builds RPMs for installation in dom0. RPMs are fully reproducible.
+# Targets F25 & F32 for Qubes 4.0 and 4.1 support.
 set -e
+set -u
+set -o pipefail
 
-export RPM_DIST=${1-"f25"}
 
-export F25_BASE_CONTAINER_HASH="322cb01bbca26972c98051bacd3ab8555cec059496d64d35ee78b15de9ea0d06"
-export F32_BASE_CONTAINER_HASH="d6a6d60fda1b22b6d5fe3c3b2abe2554b60432b7b215adc11a2b5fae16f50188"
-export F25_PKGR_VER="0.6.0.1-1.fc25"
-export F32_PKGR_VER="0.6.0.4-1.fc32"
-export LOCAL_IMG="fpf.local/rpmbuilder-${RPM_DIST}:latest"
-export ROOT_DIR="$(git rev-parse --show-toplevel)"
-export USER_RPMDIR="/home/user/rpmbuild"
-
-# Set distribution-specific variables for generic Dockerfile
-if [[ ${RPM_DIST} == "f32" ]] ; then
-  echo "Building for Fedora 32"
-  export CONTAINER_HASH="${F32_BASE_CONTAINER_HASH}"
-  export PKG_VER="${F32_PKGR_VER}"
-else
-  echo "Building for Fedora 25"
-  export CONTAINER_HASH="${F25_BASE_CONTAINER_HASH}"
-  export PKG_VER="${F25_PKGR_VER}"
-
+# Check for dependencies
+if ! hash rpmbuild 2> /dev/null ; then
+    echo "ERROR: missing rpmbuild, run: make install-deps"
+    exit 1
 fi
 
-function build_local_base {
-    docker build --build-arg=CONTAINER_HASH="${CONTAINER_HASH}" \
-                 --build-arg=FEDORA_PKGR_VER="${PKG_VER}" \
-                 --build-arg=USERID="$(id -u)" \
-                 -t "${LOCAL_IMG}" \
-                 -f "scripts/rpmbuilder.Dockerfile" scripts/ 2>&1
-}
+# Prepare tarball, rpmbuild will use it
+mkdir -p dist/
+git clean -fdX rpm-build/ dist/
+/usr/bin/python3 setup.py sdist
 
-function docker_cmd_wrapper() {
-    docker run -t --rm \
-               --network=none \
-               -v "${ROOT_DIR}:/sd" \
-               -v "${ROOT_DIR}/rpm-build:${USER_RPMDIR}" \
-               "${LOCAL_IMG}" \
-               $@
-}
+# Use the epoch time of the highest semver tag available.
+# SOURCE_DATE_EPOCH="$(git tag | sort -V | tail -n 1 | xargs git log -1 --format=%at)"
+# Use the epoch time of the most recent commit. If works in dev,
+# as well as building from signed tags.
+SOURCE_DATE_EPOCH="$(git log -1 --format=%at HEAD)"
+export SOURCE_DATE_EPOCH
 
+# Place tarball where rpmbuild will find it
+cp dist/*.tar.gz rpm-build/SOURCES/
 
+# Build for Qubes 4.0.x and 4.1.x, for which dom0 is based on
+# F25 and F32, respectively.
+for i in 25 32; do
+    # dom0 defaults to python3.5 in F25
+    python_version="python3.5"
+    if [[ $i = 32 ]]; then
+        python_version="python3.8"
+    fi
+    dist=".fc${i}"
+    rpmbuild \
+        --quiet \
+        --define "_topdir $PWD/rpm-build" \
+        --define "dist $dist" \
+        --define "_python_version $python_version" \
+        -bb --clean "rpm-build/SPECS/securedrop-workstation-dom0-config.spec"
+done
 
-build_local_base
-
-docker_cmd_wrapper /usr/bin/python3 setup.py sdist
-
-# Remove any cached tarballs. We must do this because the container image config
-# needlessly marks the rpmbuild dir as a volume. If we don't remove tarballs
-# before building, the subsequent cp command will fail.
-docker_cmd_wrapper find "${USER_RPMDIR}" -type f -iname '*.tar.gz' -delete
-
-# The tarball will exist in the /sd workdir, copy it to the RPM build dir.
-docker_cmd_wrapper find /sd -type f -iname '*.tar.gz' -exec cp -u -t "${USER_RPMDIR}/SOURCES/" {} +
-
-docker_cmd_wrapper rpmbuild -ba "${USER_RPMDIR}/SPECS/securedrop-workstation-dom0-config.spec"
-
-local_rpms="$(find rpm-build/ -type f -iname '*.rpm')"
-
-printf "\nRPM packages can be found at:\n\n%s\n" "$local_rpms"
+printf '\nBuild complete! RPMs and their checksums are:\n\n'
+find rpm-build/ -type f -iname '*.rpm' -print0 | sort -zV | xargs -0 sha256sum
