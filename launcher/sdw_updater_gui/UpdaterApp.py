@@ -185,9 +185,8 @@ class UpgradeThread(QThread):
 
         # apply dom0 state
         self.progress_signal.emit(10)
-        result = Updater.apply_dom0_state()
         # add to results dict, if it fails it will show error message
-        results["apply_dom0"] = result.value
+        results["apply_dom0"] = Updater.apply_dom0_state()
 
         self.progress_signal.emit(15)
         # rerun full config if dom0 checks determined it's required,
@@ -195,7 +194,8 @@ class UpgradeThread(QThread):
         if Updater.migration_is_required():
             # Progress bar will freeze for ~15m during full state run
             self.progress_signal.emit(35)
-            Updater.run_full_install()
+            # add to results dict, if it fails it will show error message
+            results["apply_all"] = Updater.run_full_install()
             self.progress_signal.emit(75)
         else:
             upgrade_generator = Updater.apply_updates(progress_start=15, progress_end=75)
