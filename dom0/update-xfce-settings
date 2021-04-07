@@ -13,6 +13,11 @@ set -e
 set -u
 set -o pipefail
 
+if [[ $EUID -eq 0 ]]; then
+   echo "This script should not be run as root; it must be run as a user with an active login session."
+   exit 1
+fi
+
 TASK=${1:-none}
 ICONSIZE=64
 
@@ -23,10 +28,7 @@ fi
 
 # This script requires a valid DBUS session to work. When run non-interactively,
 # we assume that a sesssion is running for the current user.
-if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
-   export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
-fi
-
+export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u $USER)/bus"
 
 if [[ $TASK == "disable-unsafe-power-management" ]]; then
   echo "update-xfce-settings: Disabling unsafe power management options for user $USER"
