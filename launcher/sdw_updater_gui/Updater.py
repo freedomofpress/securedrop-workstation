@@ -58,12 +58,26 @@ def run_full_install():
     Re-apply the entire Salt config via sdw-admin. Required to enforce
     VM state during major migrations, such as template consolidation.
     """
-    sdlog.info("Running sdw-admin apply")
-    cmd = ["sdw-admin", "--apply"]
-    subprocess.check_call(cmd)
+    sdlog.info("Running 'sdw-admin --apply' to apply full system state")
+    apply_cmd = ["sdw-admin", "--apply"]
+    try:
+        subprocess.check_call(apply_cmd)
+    except subprocess.CalledProcessError as e:
+        sdlog.error("Failed to apply full system state. Please review system logs.")
+        sdlog.error(str(e))
+        return UpdateStatus.UPDATES_FAILED
 
     # Clean up flag requesting migration. Shell out since root created it.
-    subprocess.check_call(["sudo", "rm", "-rf", MIGRATION_DIR])
+    rm_flag_cmd = ["sudo", "rm", "-rf", MIGRATION_DIR]
+    try:
+        subprocess.check_call(rm_flag_cmd)
+    except subprocess.CalledProcessError as e:
+        sdlog.error("Failed to remove migration flag.")
+        sdlog.error(str(e))
+        return UpdateStatus.UPDATES_FAILED
+
+    sdlog.info("Full system state successfully applied and migration flag cleared.")
+    return UpdateStatus.UPDATES_OK
 
 
 def migration_is_required():
@@ -349,7 +363,7 @@ def apply_dom0_state():
         sdlog.info("Dom0 state applied")
         return UpdateStatus.UPDATES_OK
     except subprocess.CalledProcessError as e:
-        sdlog.error("Failed to dom0 state")
+        sdlog.error("Failed to apply dom0 state")
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
 

@@ -801,7 +801,7 @@ def test_apply_dom0_state_success(mocked_info, mocked_error, mocked_subprocess):
 def test_apply_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
     updater.apply_dom0_state()
     log_error_calls = [
-        call("Failed to dom0 state"),
+        call("Failed to apply dom0 state"),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     mocked_subprocess.assert_called_once_with(
@@ -814,23 +814,78 @@ def test_apply_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
 @mock.patch("os.path.exists", return_value=True)
 @mock.patch("os.listdir", return_value=["apple", "banana"])
 @mock.patch("Updater.sdlog.info")
-def test_migration_is_required(m_info, m_listdir, m_existence):
+def test_migration_is_required(mocked_info, mocked_listdir, mocked_exists):
     assert updater.migration_is_required() is True
-    assert m_info.called_once_with("Migration is required, will enforce full config during update")
+    assert mocked_info.called_once_with(
+        "Migration is required, will enforce full config during update"
+    )
 
 
 @mock.patch("os.path.exists", return_value=False)
 @mock.patch("os.listdir", return_value=[])
 @mock.patch("Updater.sdlog.info")
-def test_migration_not_required(mock_info, mock_listdir, mock_existence):
+def test_migration_not_required(mocked_info, mocked_listdir, mocked_exists):
     assert updater.migration_is_required() is False
-    assert not mock_info.called
+    assert not mocked_info.called
 
 
 @mock.patch("Updater.sdlog.info")
 @mock.patch("subprocess.check_call")
-def test_run_full_install(mock_call, mock_info):
-    MIGRATION_DIR = "potato"
-    updater.run_full_install()
-    calls = [["sdw-admin", "--apply"], ["sudo", "rm", "-rf", MIGRATION_DIR]]
-    assert mock_call.has_calls(calls, any_order=False)
+def test_run_full_install(mocked_call, mocked_info):
+    """
+    When a full migration is requested
+      And the migration succeeds
+    Then the migration flag is cleared
+      And the success enum is returned
+    """
+    # subprocess.check_call is mocked, so this directory should never be accessed
+    # by the test.
+    MIGRATION_DIR = "/tmp/potato"  # nosec
+    with mock.patch("Updater.MIGRATION_DIR", MIGRATION_DIR):
+        result = updater.run_full_install()
+    calls = [call(["sdw-admin", "--apply"]), call(["sudo", "rm", "-rf", MIGRATION_DIR])]
+    assert mocked_call.call_count == 2
+    assert result == UpdateStatus.UPDATES_OK
+    mocked_call.assert_has_calls(calls, any_order=False)
+
+
+@mock.patch("Updater.sdlog.error")
+@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
+def test_run_full_install_with_error(mocked_call, mocked_error):
+    """
+    When a full migration is requested
+      And the migration fails in any way
+    Then the migration flag is not cleared
+      And the error is logged
+      And the failure enum is returned
+    """
+    MIGRATION_DIR = "/tmp/potato"  # nosec
+    with mock.patch("Updater.MIGRATION_DIR", MIGRATION_DIR):
+        result = updater.run_full_install()
+    calls = [call(["sdw-admin", "--apply"])]
+    assert mocked_call.call_count == 1
+    assert mocked_error.called
+    assert result == UpdateStatus.UPDATES_FAILED
+    mocked_call.assert_has_calls(calls, any_order=False)
+
+
+@mock.patch("Updater.sdlog.error")
+@mock.patch(
+    "subprocess.check_call", side_effect=[None, subprocess.CalledProcessError(1, "check_call")]
+)
+def test_run_full_install_with_flag_error(mocked_call, mocked_error):
+    """
+    When a full migration is requested
+      And the migration succeeds
+      And there is a problem clearing the migration flag
+    Then the error is logged
+      And the failure enum is returned
+    """
+    MIGRATION_DIR = "/tmp/potato"  # nosec
+    with mock.patch("Updater.MIGRATION_DIR", MIGRATION_DIR):
+        result = updater.run_full_install()
+    calls = [call(["sdw-admin", "--apply"]), call(["sudo", "rm", "-rf", MIGRATION_DIR])]
+    assert mocked_call.call_count == 2
+    assert mocked_error.called
+    assert result == UpdateStatus.UPDATES_FAILED
+    mocked_call.assert_has_calls(calls, any_order=False)
