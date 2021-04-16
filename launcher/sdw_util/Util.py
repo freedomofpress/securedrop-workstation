@@ -5,6 +5,7 @@ Utility functions used by both the launcher and notifier scripts
 import fcntl
 import os
 import logging
+import re
 import subprocess
 
 from logging.handlers import TimedRotatingFileHandler
@@ -27,12 +28,19 @@ LOCK_ERROR = "Error obtaining lock on '{}'. Process may already be running."
 # Format for those logs
 LOG_FORMAT = "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
 
-sdlog = logging.getLogger(__name__)
+# Namespace for primary logger, additional namespaces should be defined by module user
+SD_LOGGER_PREFIX = "sd"
+
+sdlog = logging.getLogger(SD_LOGGER_PREFIX + "." + __name__)
 
 
-def configure_logging(log_file):
+def configure_logging(log_file, logger_namespace=SD_LOGGER_PREFIX, backup_count=0):
     """
     All logging related settings are set up by this function.
+
+    `log_file` - the filename
+    `logger_namespace - the prefix used for all log events by this logger
+    `backup_count` - if nonzero, at most backup_count files will be kept
     """
 
     if not os.path.exists(LOG_DIRECTORY):
@@ -40,11 +48,13 @@ def configure_logging(log_file):
 
     formatter = logging.Formatter((LOG_FORMAT))
 
-    handler = TimedRotatingFileHandler(os.path.join(LOG_DIRECTORY, log_file))
+    handler = TimedRotatingFileHandler(
+        os.path.join(LOG_DIRECTORY, log_file), backupCount=backup_count
+    )
     handler.setFormatter(formatter)
     handler.setLevel(logging.INFO)
 
-    log = logging.getLogger()
+    log = logging.getLogger(logger_namespace)
     log.setLevel(logging.INFO)
     log.addHandler(handler)
 
@@ -163,3 +173,17 @@ def get_qt_version():
         return version
     else:
         raise ValueError("Qt version not supported: {}".format(version_str))
+
+
+def get_logger(prefix=SD_LOGGER_PREFIX, module=None):
+    if module is None:
+        return logging.getLogger(prefix)
+    else:
+        return logging.getLogger(prefix + "." + module)
+
+
+def strip_ansi_colors(str):
+    """
+    Strip ANSI colors from command output
+    """
+    return re.sub(r"\u001b\[.*?[@-~]", "", str)

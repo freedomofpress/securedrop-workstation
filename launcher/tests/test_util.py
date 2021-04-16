@@ -289,3 +289,16 @@ def test_pick_bad_qt(
         "Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0")
     ), pytest.raises(ValueError):
         util.get_qt_version()
+
+
+def test_get_logger():
+    """
+    Test whether the logging utility functions returns namespaced loggers in
+    the `prefix.module` format.
+    """
+    test_prefix = "potato"
+    test_module = "salad"
+    logger = util.get_logger(prefix=test_prefix)
+    assert logger.name == test_prefix
+    logger = util.get_logger(prefix=test_prefix, module=test_module)
+    assert logger.name == "{}.{}".format(test_prefix, test_module)

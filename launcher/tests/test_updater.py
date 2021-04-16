@@ -780,7 +780,7 @@ def test_should_run_updater_invalid_status_value(mocked_write):
             assert updater.should_launch_updater(TEST_INTERVAL) is True
 
 
-@mock.patch("subprocess.check_call")
+@mock.patch("subprocess.check_output", side_effect=[b""])
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_dom0_state_success(mocked_info, mocked_error, mocked_subprocess):
@@ -794,15 +794,16 @@ def test_apply_dom0_state_success(mocked_info, mocked_error, mocked_subprocess):
 
 
 @mock.patch(
-    "subprocess.check_call", side_effect=[subprocess.CalledProcessError(1, "check_call"), "0"],
+    "subprocess.check_output",
+    side_effect=[subprocess.CalledProcessError(1, cmd="check_output", output=b"")],
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
     updater.apply_dom0_state()
     log_error_calls = [
-        call("Failed to apply dom0 state"),
-        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Failed to apply dom0 state. See launcher-detail.log for details."),
+        call("Command 'check_output' returned non-zero exit status 1."),
     ]
     mocked_subprocess.assert_called_once_with(
         ["sudo", "qubesctl", "--show-output", "state.highstate"]
@@ -830,8 +831,9 @@ def test_migration_not_required(mocked_info, mocked_listdir, mocked_exists):
 
 
 @mock.patch("Updater.sdlog.info")
+@mock.patch("subprocess.check_output", return_value=b"")
 @mock.patch("subprocess.check_call")
-def test_run_full_install(mocked_call, mocked_info):
+def test_run_full_install(mocked_call, mocked_output, mocked_info):
     """
     When a full migration is requested
       And the migration succeeds
@@ -843,15 +845,22 @@ def test_run_full_install(mocked_call, mocked_info):
     MIGRATION_DIR = "/tmp/potato"  # nosec
     with mock.patch("Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = updater.run_full_install()
-    calls = [call(["sdw-admin", "--apply"]), call(["sudo", "rm", "-rf", MIGRATION_DIR])]
-    assert mocked_call.call_count == 2
+    check_outputs = [call(["sdw-admin", "--apply"])]
+    check_calls = [call(["sudo", "rm", "-rf", MIGRATION_DIR])]
+    assert mocked_output.call_count == 1
+    assert mocked_call.call_count == 1
     assert result == UpdateStatus.UPDATES_OK
-    mocked_call.assert_has_calls(calls, any_order=False)
+    mocked_output.assert_has_calls(check_outputs, any_order=False)
+    mocked_call.assert_has_calls(check_calls, any_order=False)
 
 
 @mock.patch("Updater.sdlog.error")
-@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
-def test_run_full_install_with_error(mocked_call, mocked_error):
+@mock.patch(
+    "subprocess.check_output",
+    side_effect=[subprocess.CalledProcessError(1, cmd="check_output", output=b"")],
+)
+@mock.patch("subprocess.check_call", return_value=0)
+def test_run_full_install_with_error(mocked_call, mocked_output, mocked_error):
     """
     When a full migration is requested
       And the migration fails in any way
@@ -863,17 +872,19 @@ def test_run_full_install_with_error(mocked_call, mocked_error):
     with mock.patch("Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = updater.run_full_install()
     calls = [call(["sdw-admin", "--apply"])]
-    assert mocked_call.call_count == 1
+    assert mocked_output.call_count == 1
+    assert mocked_call.call_count == 0
     assert mocked_error.called
     assert result == UpdateStatus.UPDATES_FAILED
-    mocked_call.assert_has_calls(calls, any_order=False)
+    mocked_output.assert_has_calls(calls, any_order=False)
 
 
 @mock.patch("Updater.sdlog.error")
+@mock.patch("subprocess.check_output", return_value=b"")
 @mock.patch(
-    "subprocess.check_call", side_effect=[None, subprocess.CalledProcessError(1, "check_call")]
+    "subprocess.check_call", side_effect=[subprocess.CalledProcessError(1, cmd="check_call")]
 )
-def test_run_full_install_with_flag_error(mocked_call, mocked_error):
+def test_run_full_install_with_flag_error(mocked_call, mocked_output, mocked_error):
     """
     When a full migration is requested
       And the migration succeeds
@@ -884,8 +895,11 @@ def test_run_full_install_with_flag_error(mocked_call, mocked_error):
     MIGRATION_DIR = "/tmp/potato"  # nosec
     with mock.patch("Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = updater.run_full_install()
-    calls = [call(["sdw-admin", "--apply"]), call(["sudo", "rm", "-rf", MIGRATION_DIR])]
-    assert mocked_call.call_count == 2
+    check_outputs = [call(["sdw-admin", "--apply"])]
+    check_calls = [call(["sudo", "rm", "-rf", MIGRATION_DIR])]
+    assert mocked_output.call_count == 1
+    assert mocked_call.call_count == 1
     assert mocked_error.called
     assert result == UpdateStatus.UPDATES_FAILED
-    mocked_call.assert_has_calls(calls, any_order=False)
+    mocked_output.assert_has_calls(check_outputs, any_order=False)
+    mocked_call.assert_has_calls(check_calls, any_order=False)

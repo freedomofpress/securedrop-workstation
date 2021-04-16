@@ -2,7 +2,6 @@ from sdw_updater_gui import strings
 from sdw_updater_gui import Updater
 from sdw_updater_gui.Updater import UpdateStatus
 from sdw_util import Util
-import logging
 import subprocess
 import sys
 
@@ -16,7 +15,7 @@ else:
     from sdw_updater_gui.UpdaterAppUi import Ui_UpdaterDialog
 
 
-logger = logging.getLogger(__name__)
+logger = Util.get_logger(module=__name__)
 
 
 def launch_securedrop_client():
