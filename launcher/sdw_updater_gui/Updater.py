@@ -8,11 +8,11 @@ from the parent directory.
 """
 
 import json
-import logging
 import os
 import subprocess
 from datetime import datetime, timedelta
 from enum import Enum
+from sdw_util import Util
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_HOME = ".securedrop_launcher"
@@ -22,7 +22,8 @@ FLAG_FILE_STATUS_DOM0 = os.path.join(DEFAULT_HOME, "sdw-update-status")
 FLAG_FILE_LAST_UPDATED_DOM0 = os.path.join(DEFAULT_HOME, "sdw-last-updated")
 LOCK_FILE = "sdw-launcher.lock"
 LOG_FILE = "launcher.log"
-
+DETAIL_LOG_FILE = "launcher-detail.log"
+DETAIL_LOGGER_PREFIX = "detail"  # For detailed logs such as Salt states
 
 # We use a hardcoded temporary directory path in dom0. As dom0 is not
 # a multi-user environment, we can safely assume that only the Updater is
@@ -30,7 +31,8 @@ LOG_FILE = "launcher.log"
 # logic to leverage the Qubes Python API.
 MIGRATION_DIR = "/tmp/sdw-migrations"  # nosec
 
-sdlog = logging.getLogger(__name__)
+sdlog = Util.get_logger(module=__name__)
+detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 
 # The are the TemplateVMs that require full patch level at boot in order to start the client,
 # as well as their associated TemplateVMs.
@@ -60,12 +62,20 @@ def run_full_install():
     """
     sdlog.info("Running 'sdw-admin --apply' to apply full system state")
     apply_cmd = ["sdw-admin", "--apply"]
+    apply_cmd_for_log = (" ").join(apply_cmd)
     try:
-        subprocess.check_call(apply_cmd)
+        output = subprocess.check_output(apply_cmd)
     except subprocess.CalledProcessError as e:
-        sdlog.error("Failed to apply full system state. Please review system logs.")
+        sdlog.error("Failed to apply full system state. Please review {}.".format(DETAIL_LOG_FILE))
         sdlog.error(str(e))
+        clean_output = Util.strip_ansi_colors(e.output.decode("utf-8").strip())
+        detail_log.error(
+            "Output from failed command: {}\n{}".format(apply_cmd_for_log, clean_output)
+        )
         return UpdateStatus.UPDATES_FAILED
+
+    clean_output = Util.strip_ansi_colors(output.decode("utf-8").strip())
+    detail_log.info("Output from command: {}\n{}".format(apply_cmd_for_log, clean_output))
 
     # Clean up flag requesting migration. Shell out since root created it.
     rm_flag_cmd = ["sudo", "rm", "-rf", MIGRATION_DIR]
@@ -252,11 +262,11 @@ def _write_updates_status_flag_to_disk(status):
 
 def last_required_reboot_performed():
     """
-        Checks if the dom0 flag file indicates that a reboot is required, and
-        if so, will check current uptime with the data at which the reboot
-        was requested. This will be used by the _write_updates_status_flag_to_disk
-        function to preserve the status UPDATES_REQUIRED instead of updating.
-        """
+    Checks if the dom0 flag file indicates that a reboot is required, and
+    if so, will check current uptime with the data at which the reboot
+    was requested. This will be used by the _write_updates_status_flag_to_disk
+    function to preserve the status UPDATES_REQUIRED instead of updating.
+    """
     flag_contents = read_dom0_update_flag_from_disk(with_timestamp=True)
 
     # No flag exists on disk (yet)
@@ -358,13 +368,19 @@ def apply_dom0_state():
     ensure it is environment-specific.
     """
     sdlog.info("Applying dom0 state")
+    cmd = ["sudo", "qubesctl", "--show-output", "state.highstate"]
+    cmd_for_log = " ".join(cmd)
     try:
-        subprocess.check_call(["sudo", "qubesctl", "--show-output", "state.highstate"])
+        output = subprocess.check_output(cmd)
         sdlog.info("Dom0 state applied")
+        clean_output = Util.strip_ansi_colors(output.decode("utf-8").strip())
+        detail_log.info("Output from command: {}\n{}".format(cmd_for_log, clean_output))
         return UpdateStatus.UPDATES_OK
     except subprocess.CalledProcessError as e:
-        sdlog.error("Failed to apply dom0 state")
+        sdlog.error("Failed to apply dom0 state. See {} for details.".format(DETAIL_LOG_FILE))
         sdlog.error(str(e))
+        clean_output = Util.strip_ansi_colors(e.output.decode("utf-8").strip())
+        detail_log.error("Output from failed command: {}\n{}".format(cmd_for_log, clean_output))
         return UpdateStatus.UPDATES_FAILED
 
 
