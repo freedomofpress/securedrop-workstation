@@ -63,7 +63,9 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         Guard against regressions by ensuring the old Whonix apt list
         is missing.
         """
+        # Whonix project changed the repo filename ~2021-05, so check both.
         assert not self._fileExists("/etc/apt/sources.list.d/whonix.list")
+        assert not self._fileExists("/etc/apt/sources.list.d/derivative.list")
 
     def test_logging_configured(self):
         self.logging_configured()

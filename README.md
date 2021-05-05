@@ -124,7 +124,9 @@ Clone this repo to your preferred location on that VM.
 
 Next we need to do some SecureDrop-specific configuration:
 
-- Create a `config.json` file based on `config.json.example` and include your values for the hidserv fields: `hostname` (the Journalist Interface Onion URL) and `key` (the fingerprint for the SecureDrop Submission key). To find the Journalist Interface Onion URL, you can run `sudo cat /var/lib/tor/services/journalist/hostname` on your server. The values for `hostname` and `key` in `config.json.example` are set to the default values for the SecureDrop staging instance.
+- Create a `config.json` file based on `config.json.example` and include your values for the hidserv fields: `hostname` (the Journalist Interface Onion URL) and `key` (the private key for client authentication). Set `submission_key_fpr` to the submission key fingerprint.
+
+   - On your Admin Workstation, you can find the Journalist Interface onion address and private key in `~/Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private`, and the submission key fingerprint in `~/Persistent/securedrop/install_files/ansible-base/group_vars/all/site-specific` (`securedrop_app_gpg_fingerprint`).
 
 - Create an `sd-journalist.sec` file in the root directory with the ASCII-armored GPG private key used to encrypt submissions in your test SecureDrop instance. The included key `sd-journalist.sec` is the one used by default in the SecureDrop staging instance.
 
