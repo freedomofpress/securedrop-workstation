@@ -17,12 +17,24 @@ dom0-install-fedora-template:
     - pkgs:
       - qubes-template-{{ sd_supported_fedora_version }}
 
+# Update the mgmt VM before updating the new Fedora VM. The order is required
+# and listed in the release notes for F32 & F33.
+set-fedora-template-as-default-mgmt-dvm:
+  cmd.run:
+    - name: >
+        qvm-shutdown --wait default-mgmt-dvm &&
+        qvm-prefs default-mgmt-dvm template {{ sd_supported_fedora_version }}
+    - require:
+      - pkg: dom0-install-fedora-template
+
 # If the VM has just been installed via package manager, update it immediately
 update-fedora-template-if-new:
   cmd.wait:
     - name: sudo qubesctl --skip-dom0 --targets {{ sd_supported_fedora_version }} state.sls update.qubes-vm
     - require:
       - pkg: dom0-install-fedora-template
+      # Update the mgmt-dvm setting first, to avoid problems during first update
+      - cmd: set-fedora-template-as-default-mgmt-dvm
     - watch:
       - pkg: dom0-install-fedora-template
 # qvm.default-dispvm is not strictly required here, but we want it to be
@@ -35,7 +47,8 @@ set-fedora-default-template-version:
       - pkg: dom0-install-fedora-template
       - sls: qvm.default-dispvm
 
-{% for sys_vm in ['sys-usb', 'sys-net', 'sys-firewall', 'default-mgmt-dvm'] %}
+# Now proceed with rebooting all the sys-* VMs, since the new template is up to date.
+{% for sys_vm in ['sys-usb', 'sys-net', 'sys-firewall'] %}
 {% if salt['cmd.shell']('qvm-prefs '+sys_vm+' template') != sd_supported_fedora_version %}
 sd-{{ sys_vm }}-fedora-version-halt:
   qvm.kill:
