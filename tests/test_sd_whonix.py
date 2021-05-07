@@ -6,22 +6,10 @@ from jinja2 import Template
 from base import SD_VM_Local_Test
 
 
-def v2_onion_services():
-    """
-    Returns True if v3 address is not setup
-    """
-    with open("config.json") as c:
-        config = json.load(c)
-        if len(config["hidserv"]["hostname"]) == 22:
-            return True
-        else:
-            return False
-
-
 class SD_Whonix_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-whonix"
-        self.whonix_apt_list = "/etc/apt/sources.list.d/whonix.list"
+        self.whonix_apt_list = "/etc/apt/sources.list.d/derivative.list"
         super(SD_Whonix_Tests, self).setUp()
 
     def test_accept_sd_xfer_extracted_file(self):
@@ -36,7 +24,6 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
 
             self.assertFileHasLine("/usr/local/etc/torrc.d/50_user.conf", line)
 
-    @unittest.skipIf(v2_onion_services(), "Onion v3 address is not setup")
     def test_v3_auth_private_file(self):
         with open("config.json") as c:
             config = json.load(c)
