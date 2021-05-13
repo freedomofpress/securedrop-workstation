@@ -8,7 +8,7 @@ bandit:
 
 .PHONY: test
 test:
-	pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ --cov=sdw_util -v tests/
+	python -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ --cov=sdw_util -v tests/
 
 black: ## Runs the black code formatter on the launcher code
 	black --check --line-length=100 .
