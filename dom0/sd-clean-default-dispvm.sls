@@ -3,4 +3,4 @@
 
 set-fedora-as-default-dispvm:
   cmd.run:
-    - name: qvm-check fedora-32-dvm && qubes-prefs default_dispvm fedora-32-dvm || qubes-prefs default_dispvm ''
+    - name: qvm-check fedora-33-dvm && qubes-prefs default_dispvm fedora-33-dvm || qubes-prefs default_dispvm ''

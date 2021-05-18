@@ -1,6 +1,6 @@
 #!/bin/bash
 # Builds RPMs for installation in dom0. RPMs are fully reproducible.
-# Targets F25 & F32 for Qubes 4.0 and 4.1 support.
+# Targets fedora-25 & fedora-32 for Qubes 4.0 and 4.1 support.
 set -e
 set -u
 set -o pipefail
@@ -28,9 +28,9 @@ export SOURCE_DATE_EPOCH
 cp dist/*.tar.gz rpm-build/SOURCES/
 
 # Build for Qubes 4.0.x and 4.1.x, for which dom0 is based on
-# F25 and F32, respectively.
+# fedora-25 and fedora-32, respectively.
 for i in 25 32; do
-    # dom0 defaults to python3.5 in F25
+    # dom0 defaults to python3.5 in fedora-25
     python_version="python3.5"
     if [[ $i = 32 ]]; then
         python_version="python3.8"
