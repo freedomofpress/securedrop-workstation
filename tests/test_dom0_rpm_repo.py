@@ -7,7 +7,7 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
     pubkey_wanted = ""
     yum_repo_url = ""
     pubkey_actual = "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation"  # noqa
-    pubkey_wanted_prod = "sd-workstation/securedrop-release-signing-pubkey.asc"
+    pubkey_wanted_prod = "sd-workstation/securedrop-release-signing-pubkey-2021.asc"
     pubkey_wanted_test = "sd-workstation/apt-test-pubkey.asc"
     yum_repo_url_prod = "https://yum.securedrop.org/workstation/dom0/f25"
     yum_repo_url_test = "https://yum-test.securedrop.org/workstation/dom0/f25"
