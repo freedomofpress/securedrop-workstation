@@ -45,13 +45,13 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # The empty '' after sed -i is required on macOS to indicate no backup file should be saved.
     sed -i '' "s@$(echo "${OLD_VERSION}" | sed 's/\./\\./g')@$NEW_VERSION@g" VERSION
     sed -i '' -e "/Source0/s/Source0:.*/Source0:\tsecuredrop-workstation-dom0-config-${CLEAN_VERSION}.tar.gz/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
-    sed -i '' -e "/Version/s/$OLD_VERSION/$VERSION_FIELD/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i '' -r -e "s/^(%global version ).*/\1$VERSION_FIELD/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
     sed -i '' -r -e "/^Release/s/Release.*/Release:\t${RELEASE_FIELD}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
     sed -i '' -r -e "/\%setup/s/%setup.*/%setup -n securedrop-workstation-dom0-config-${CLEAN_VERSION}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
 else
     sed -i "s@$(echo "${OLD_VERSION}" | sed 's/\./\\./g')@$NEW_VERSION@g" VERSION
     sed -i -e "/Source0/s/Source0:.*/Source0:\tsecuredrop-workstation-dom0-config-${CLEAN_VERSION}.tar.gz/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
-    sed -i -e "/Version/s/$OLD_VERSION/$VERSION_FIELD/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i -r -e "s/^(%global version ).*/\1$VERSION_FIELD/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
     sed -i -r -e "/^Release/s/Release.*/Release:\t${RELEASE_FIELD}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
     sed -i -r -e "/\%setup/s/%setup.*/%setup -n securedrop-workstation-dom0-config-${CLEAN_VERSION}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
 fi
