@@ -1,5 +1,5 @@
 %global srcname securedrop-workstation-dom0-config
-%global version 0.5.3
+%global version 0.5.4
 %global __python3 /usr/bin/python3
 %global python3_sitelib /usr/lib/%{_python_version}/site-packages
 # For reproducible builds:
@@ -15,13 +15,13 @@
 
 Name:		%{srcname}
 Version:	%{version}
-Release:	1%{?dist}
+Release:	0.rc1.1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	%{srcname}-%%{version}.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.5.4rc1.tar.gz
 
 BuildArch:      noarch
 # Disable declaration of build dependencies, because
@@ -49,7 +49,7 @@ configuration over time.
 %define use_source_date_epoch_as_buildtime 1
 
 %prep
-%setup -n %{srcname}-%{version}
+%setup -n securedrop-workstation-dom0-config-0.5.4rc1
 
 %install
 %{__python3} setup.py install --install-lib %{python3_sitelib} --no-compile --root %{buildroot}
@@ -135,6 +135,11 @@ mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/signing-key-update
 
 %changelog
+* Thu May 26 2021 SecureDrop Team <securedrop@freedom.press> - 0.5.4-rc1
+- Migrates Fedora 3222emplates to Fedora 33
+- Updates SecureDrop Release Signing Key for RPM packages
+- Improves error handling and logging for updater
+
 * Wed Mar 10 2021 SecureDrop Team <securedrop@freedom.press> - 0.5.3
 - Prevents sd-viewer from launching disposable VMs
 - Provisions default mailcap rules to enforce Fail Closed behavior
