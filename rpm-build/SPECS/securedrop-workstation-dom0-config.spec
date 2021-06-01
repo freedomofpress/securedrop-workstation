@@ -131,6 +131,8 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs -n1 basename \
     | sed -e 's/\.top$$//g' \
     | xargs qubesctl top.enable > /dev/null
+mkdir -p /tmp/sdw-migrations
+touch /tmp/sdw-migrations/signing-key-update
 
 %changelog
 * Wed Mar 10 2021 SecureDrop Team <securedrop@freedom.press> - 0.5.3
