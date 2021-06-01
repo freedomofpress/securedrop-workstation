@@ -1,5 +1,5 @@
 %global srcname securedrop-workstation-dom0-config
-%global version 0.5.3
+%global version 0.5.4
 %global __python3 /usr/bin/python3
 %global python3_sitelib /usr/lib/%{_python_version}/site-packages
 # For reproducible builds:
@@ -135,6 +135,13 @@ mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/signing-key-update
 
 %changelog
+* Tue Jun 1 2021 SecureDrop Team <securedrop@freedom.press> - 0.5.4
+- Rotate SecureDrop Release Signing key for dom0 updates
+- Replace Fedora 32 with Fedora 33 as a default template
+- Upgrade sys-net, sys-firewall and sys-usb to Fedora 33
+- Increase logs and show user-facing error when updater provisioning fails
+- Fix session handling for power management settings
+
 * Wed Mar 10 2021 SecureDrop Team <securedrop@freedom.press> - 0.5.3
 - Prevents sd-viewer from launching disposable VMs
 - Provisions default mailcap rules to enforce Fail Closed behavior
