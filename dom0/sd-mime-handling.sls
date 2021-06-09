@@ -26,7 +26,7 @@ sd-private-volume-mimeapps-config-dir:
 sd-private-volume-mimeapps-handling:
   file.symlink:
     - name: /home/user/.local/share/applications/mimeapps.list
-    - target: /opt/sdw/mimeapps.list.{{ grains['id'] }}
+    - target: /opt/sdw/mimeapps.list.{{ vm_name }}
     - user: user
     - group: user
     - require:
