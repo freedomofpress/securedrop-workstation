@@ -20,7 +20,8 @@ sd-private-volume-mimeapps-config-dir:
     - makedirs: True
     - mode: "0755"
 
-{% if grains['id'] in ["sd-viewer", "sd-app", "sd-devices-dvm"] %}
+{% set vm_name = salt['cmd.shell']('qubesdb-read /name') %}
+{% if vm_name in ["sd-viewer", "sd-app", "sd-devices-dvm"] %}
 
 sd-private-volume-mimeapps-handling:
   file.symlink:
