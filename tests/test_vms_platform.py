@@ -99,6 +99,14 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             stdout, stderr = vm.run(cmd)
             # 'stdout' will contain timestamped progress info; ignore it
             results = stderr.rstrip().decode("utf-8")
+            stdout_lines = results.split("\n")
+            # filter out gpgcheck warning present on all dnf operations
+            stdout_lines = [
+                x
+                for x in stdout_lines
+                if not x.startswith("Warning: Enforcing GPG signature check")
+            ]
+            results = "".join(stdout_lines)
             self.assertEqual(results, "", fail_msg)
 
     def _ensure_jessie_backports_disabled(self, vm):
@@ -123,20 +131,24 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         and only the correct key is installed in that location.
         """
         keyring_path = "/etc/apt/trusted.gpg.d/securedrop-keyring.gpg"
-        # apt-key finger doesnt work here due to stdout/terminal
-        # We also set the homedir to bypass whonix-specific gnupg.conf
         cmd = "gpg --homedir /tmp --no-default-keyring --keyring {} -k".format(keyring_path)
+        cmd = "apt-key --keyring {} finger".format(keyring_path)
         stdout, stderr = vm.run(cmd)
         results = stdout.rstrip().decode("utf-8")
-        fpf_gpg_pub_key_info = ["{}".format(keyring_path)]
-        fpf_gpg_pub_key_info += [
-            "---------------------------------------------",
-            "pub   rsa4096 2016-10-20 [SC] [expires: 2021-06-30]",
-            "      22245C81E3BAEB4138B36061310F561200F4AD77",
-            "uid           [ unknown] SecureDrop Release Signing Key",
-            "uid           [ unknown] SecureDrop Release Signing Key <securedrop-release-key@freedom.press>",  # noqa: E501
-        ]
-        self.assertEqual(fpf_gpg_pub_key_info, results.split("\n"))
+        fpf_gpg_pub_key_info = """/etc/apt/trusted.gpg.d/securedrop-keyring.gpg
+---------------------------------------------
+pub   rsa4096 2016-10-20 [SC] [expired: 2021-06-30]
+      2224 5C81 E3BA EB41 38B3  6061 310F 5612 00F4 AD77
+uid           [ expired] SecureDrop Release Signing Key
+uid           [ expired] SecureDrop Release Signing Key <securedrop-release-key@freedom.press>
+
+pub   rsa4096 2021-05-10 [SC] [expires: 2022-07-04]
+      2359 E653 8C06 13E6 5295  5E6C 188E DD3B 7B22 E6A3
+uid           [ unknown] SecureDrop Release Signing Key <securedrop-release-key-2021@freedom.press>
+sub   rsa4096 2021-05-10 [E] [expires: 2022-07-04]"""
+        # display any differences
+        self.maxDiff = None
+        self.assertEqual(results, fpf_gpg_pub_key_info), "Keyring incorrect in " + vm.name
 
     def _ensure_trusted_keyring_securedrop_key_removed(self, vm):
         """
