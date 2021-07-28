@@ -20,7 +20,7 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
         for policy in self.expected:
             if not self._startsWith(policy["policy"], policy["starts_with"]):
                 fail = True
-        self.assertFalse(fail)
+        self.assertFalse(fail), "Policy does not match: " + policy["policy"]
 
     def _startsWith(self, filename, expectedPolicy):
         filePath = os.path.join(QUBES_POLICY_DIR, filename)
