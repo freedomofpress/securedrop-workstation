@@ -11,7 +11,7 @@
 ##
 
 include:
-  - fpf-apt-test-repo
+  - fpf-apt-repo
   - sd-logging-setup
 
 sd-viewer-install-metapackage:
@@ -19,7 +19,7 @@ sd-viewer-install-metapackage:
     - pkgs:
       - securedrop-workstation-viewer
     - require:
-      - sls: fpf-apt-test-repo
+      - sls: fpf-apt-repo
 
 sd-viewer-install-libreoffice:
   pkg.installed:

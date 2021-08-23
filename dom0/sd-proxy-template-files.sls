@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 include:
-  - fpf-apt-test-repo
+  - fpf-apt-repo
   - sd-logging-setup
 
 # Depends on FPF-controlled apt repo, already present
@@ -11,7 +11,7 @@ install-securedrop-proxy-package:
     - pkgs:
       - securedrop-proxy
     - require:
-      - sls: fpf-apt-test-repo
+      - sls: fpf-apt-repo
 
 # Remove the legacy config file location
 remove-legacy-sd-proxy-config:

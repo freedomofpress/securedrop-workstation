@@ -24,7 +24,7 @@ install-python-apt-for-repo-config:
       # will ensure that apt is sufficiently patched prior to installing.
       - sls: update.qubes-vm
 
-configure-apt-test-apt-repo:
+configure-fpf-apt-repo:
   pkgrepo.managed:
     - name: "deb [arch=amd64] {{ sdvars.apt_repo_url }} {{ grains['oscodename'] }} main"
     - file: /etc/apt/sources.list.d/securedrop_workstation.list
@@ -41,4 +41,4 @@ install-securedrop-keyring-package:
     - pkgs:
       - securedrop-keyring
     - require:
-      - pkgrepo: configure-apt-test-apt-repo
+      - pkgrepo: configure-fpf-apt-repo
