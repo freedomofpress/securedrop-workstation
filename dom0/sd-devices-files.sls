@@ -9,7 +9,7 @@
 #
 ##
 include:
-  - fpf-apt-test-repo
+  - fpf-apt-repo
   - sd-logging-setup
 
 # Libreoffice needs to be installed here to convert to pdf to allow printing
@@ -26,4 +26,4 @@ sd-devices-install-package:
   pkg.installed:
     - name: securedrop-export
     - require:
-      - sls: fpf-apt-test-repo
+      - sls: fpf-apt-repo

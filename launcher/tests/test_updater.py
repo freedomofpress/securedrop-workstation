@@ -318,7 +318,7 @@ def test_apply_updates_vms(mocked_info, mocked_error, mocked_call, vm):
         assert result == UpdateStatus.UPDATES_OK
 
         mocked_call.assert_called_once_with(
-            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", "update.qubes-vm"]
+            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", "fpf-apt-repo"]
         )
         assert not mocked_error.called
 

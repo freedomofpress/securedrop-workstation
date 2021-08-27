@@ -3,7 +3,7 @@
 
 {% if grains['id'] in ["securedrop-workstation-buster", "sd-small-buster-template", "sd-large-buster-template", "whonix-gw-15"] %}
 include:
-  - fpf-apt-test-repo
+  - fpf-apt-repo
 
 # Install securedrop-log package in TemplateVMs only
 install-securedrop-log-package:
@@ -11,7 +11,7 @@ install-securedrop-log-package:
     - pkgs:
       - securedrop-log
     - require:
-      - sls: fpf-apt-test-repo
+      - sls: fpf-apt-repo
 
 # configure all VMs to send to sd-log - excluded on a per-VM basis below via /rw
 configure-rsyslog-for-sd:

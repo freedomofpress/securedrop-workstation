@@ -9,7 +9,7 @@
 #
 ##
 include:
-  - fpf-apt-test-repo
+  - fpf-apt-repo
   - sd-logging-setup
 
 # FPF repo is setup in "securedrop-workstation" template
@@ -18,4 +18,4 @@ install-securedrop-client-package:
     - pkgs:
       - securedrop-client
     - require:
-      - sls: fpf-apt-test-repo
+      - sls: fpf-apt-repo
