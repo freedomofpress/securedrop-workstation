@@ -183,7 +183,7 @@ def _apply_updates_vm(vm):
     sdlog.info("Updating {}".format(vm))
     try:
         subprocess.check_call(
-            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", "update.qubes-vm"]
+            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", "fpf-apt-repo"]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error(
