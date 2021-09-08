@@ -181,9 +181,16 @@ def _apply_updates_vm(vm):
     will require a reboot after the upgrade.
     """
     sdlog.info("Updating {}".format(vm))
+
+    # We run custom Salt logic for Debian-based TemplateVMs
+    if vm.startswith("fedora"):
+        salt_state = "update.qubes-vm"
+    else:
+        salt_state = "fpf-apt-repo"
+
     try:
         subprocess.check_call(
-            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", "fpf-apt-repo"]
+            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", salt_state]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error(
