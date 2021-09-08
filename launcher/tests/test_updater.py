@@ -317,8 +317,13 @@ def test_apply_updates_vms(mocked_info, mocked_error, mocked_call, vm):
         result = updater._apply_updates_vm(vm)
         assert result == UpdateStatus.UPDATES_OK
 
+        if vm.startswith("fedora"):
+            expected_salt_state = "update.qubes-vm"
+        else:
+            expected_salt_state = "fpf-apt-repo"
+
         mocked_call.assert_called_once_with(
-            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", "fpf-apt-repo"]
+            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", expected_salt_state]
         )
         assert not mocked_error.called
 
