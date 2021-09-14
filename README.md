@@ -116,6 +116,8 @@ Select all VMs marked as **updates available**, then click **Next**. Once all up
 
 ### Development Environment
 
+The development environment is just like the [Staging Environment](#staging-environment) except that it does not alter power management settings on your laptop to prevent suspension to disk, since developers probably want to suspend their laptops when running the workstation all day. The reasoning for disabling suspension in a production environment is that it's unsafe -- an attacker who gains access to a suspended laptop may be able to bypass full-disk encryption.
+
 #### Download, Configure, Copy to `dom0`
 
 Decide on a VM to use for development. We recommend creating a standalone VM called `sd-dev` by following [these instructions](https://docs.securedrop.org/en/stable/development/setup_development.html#qubes). You must install Docker in that VM in order to build a development environment using the standard workflow.
@@ -184,7 +186,7 @@ When developing on the Workstation, make sure to edit files in `sd-dev`, then co
 
 ### Staging Environment
 
-The staging environment is intended to provide an experience closer to a production environment. For example, it will alter power management settings on your laptop to prevent suspending it to disk, and make other changes that may not be desired during day-to-day development in Qubes.
+The staging environment differs from a production envionment in that it builds a local RPM, installs it in dom0, uses the dom0 package repository configuration for future updates of the RPM package from the https://yum-test.securedrop.org repository, and makes it so that you receive the latest nightlies of the workstation components, such as the SecureDrop Client.
 
 #### Update `dom0`, `fedora-33`, `whonix-gw-15` and `whonix-ws-15` templates
 
@@ -198,7 +200,7 @@ In the Qubes Menu, navigate to `System Tools` and click on `Qubes Update`. Click
 
 You can install the staging environment in two ways:
 
-- If you have an up-to-date clone of this repo with a valid configuration in `dom0`, you can use the `make staging` target to provision a staging environment. Prior to provisioning, `make staging` will set your `config.json` environment to `staging`. As part of the provisioning, a locally built RPM will be installed in dom0. The dom0 package repository configuration will be updated to install future test-only versions of the RPM package from the https://yum-test.securedrop.org repository, and Workstation VMs will receive the latest nightlies of the Debian packages (same as `make dev`).
+- If you have an up-to-date clone of this repo with a valid configuration in `dom0`, you can use the `make staging` target to provision a staging environment. Prior to provisioning, `make staging` will set your `config.json` environment to `staging`.
 
 - If you want to download a specific version of the RPM, and follow a verification procedure similar to that used in a production install, follow the process in the following sections.
 
