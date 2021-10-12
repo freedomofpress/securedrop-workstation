@@ -98,7 +98,7 @@ dom0-securedrop-icon:
 
 dom0-enabled-apparmor-on-whonix-gw-template:
   qvm.vm:
-    - name: whonix-gw-15
+    - name: whonix-gw-16
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
     - require:
@@ -106,7 +106,7 @@ dom0-enabled-apparmor-on-whonix-gw-template:
 
 dom0-enabled-apparmor-on-whonix-ws-template:
   qvm.vm:
-    - name: whonix-ws-15
+    - name: whonix-ws-16
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
     - require:
@@ -156,16 +156,16 @@ dom0-login-autostart-script:
     - group: root
     - mode: 755
 
-dom0-tag-whonix-ws-15:
+dom0-tag-whonix-ws-16:
   qvm.vm:
-    - name: whonix-ws-15
+    - name: whonix-ws-16
     - tags:
       - add:
         - sd-workstation-updates
 
-dom0-tag-whonix-gw-15:
+dom0-tag-whonix-gw-16:
   qvm.vm:
-    - name: whonix-gw-15
+    - name: whonix-gw-16
     - tags:
       - add:
         - sd-workstation-updates

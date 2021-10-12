@@ -44,7 +44,7 @@ current_vms = {
     "sd-log": "sd-small-buster-template",
     "sd-devices": "sd-large-buster-template",
     "sd-proxy": "sd-small-buster-template",
-    "sd-whonix": "whonix-gw-15",
+    "sd-whonix": "whonix-gw-16",
     "sd-gpg": "sd-small-buster-template",
 }
 
@@ -182,8 +182,8 @@ def _apply_updates_vm(vm):
     """
     sdlog.info("Updating {}".format(vm))
 
-    # We run custom Salt logic for Debian-based TemplateVMs
-    if vm.startswith("fedora"):
+    # We run custom Salt logic for our own Debian-based TemplateVMs
+    if vm.startswith("fedora") or vm.startswith("whonix"):
         salt_state = "update.qubes-vm"
     else:
         salt_state = "fpf-apt-repo"

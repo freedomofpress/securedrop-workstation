@@ -27,7 +27,7 @@ base:
     - sd-buster-switch
   sys-usb:
     - sd-buster-switch
-  whonix-gw-15:
+  whonix-gw-16:
     - sd-buster-switch
   sd-log:
     - sd-buster-switch

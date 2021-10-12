@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
-{% if grains['id'] in ["securedrop-workstation-buster", "sd-small-buster-template", "sd-large-buster-template", "whonix-gw-15"] %}
+{% if grains['id'] in ["securedrop-workstation-buster", "sd-small-buster-template", "sd-large-buster-template"] %}
 include:
   - fpf-apt-repo
 
@@ -70,27 +70,4 @@ sd-gpg-remove-rsyslog-qubes-plugin:
     - require:
       - file: sd-gpg-remove-rsyslog-qubes-plugin
 
-{% endif %}
-
-# Remove outdated configuration that was previously used to configure the
-# sd-whonix VM name for logging purposes, see:
-# https://github.com/freedomofpress/securedrop-workstation/issues/583
-#
-# Can be removed in a future release once all production workstations have
-# been updated.
-{% if grains['id'] == "sd-whonix" %}
-sd-whonix-cleanup-rc-local:
-  file.replace:
-    - names:
-      - /rw/config/rc.local
-    - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
-    - flags:
-      - MULTILINE
-      - DOTALL
-    - repl: ''
-    - backup: no
-
-sd-whonix-cleanup-sdlog-conf:
-  file.absent:
-    - name: /rw/config/sdlog.conf
 {% endif %}

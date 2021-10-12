@@ -20,8 +20,8 @@ DEPRECATED_TEMPLATES = [
 VMS_TO_UPDATE = [
     "sd-large-buster-template",
     "sd-small-buster-template",
-    "whonix-ws-15",
-    "whonix-gw-15",
+    "whonix-ws-16",
+    "whonix-gw-16",
     "securedrop-workstation-buster",
 ]
 

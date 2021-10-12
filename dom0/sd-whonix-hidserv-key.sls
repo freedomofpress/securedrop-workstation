@@ -3,16 +3,6 @@
 
 {% import_json "sd/config.json" as d %}
 
-# add hidden service auth key to torrc
-{% if d.hidserv.hostname|length == 22 %}
-sd-whonix-hidserv-key:
-  file.blockreplace:
-    - name: /usr/local/etc/torrc.d/50_user.conf
-    - append_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: HidServAuth {{ d.hidserv.hostname }} {{ d.hidserv.key }}
-{% else %}
 sd-whonix-hidservv3-directory-path:
   file.blockreplace:
     - name: /usr/local/etc/torrc.d/50_user.conf
@@ -33,4 +23,3 @@ install-sd-whonix-tor-private-key:
     - mode: 0600
     - user: debian-tor
     - group: debian-tor
-{% endif %}

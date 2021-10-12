@@ -9,7 +9,7 @@ from qubesadmin import Qubes
 WANTED_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "sd-devices"]
 CURRENT_FEDORA_VERSION = "33"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION
-CURRENT_WHONIX_VERSION = "15"
+CURRENT_WHONIX_VERSION = "16"
 
 
 # base class for per-VM testing
