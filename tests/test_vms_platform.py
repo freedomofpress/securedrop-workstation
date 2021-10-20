@@ -6,9 +6,14 @@ from qubesadmin import Qubes
 from base import WANTED_VMS, CURRENT_FEDORA_TEMPLATE
 
 
-SUPPORTED_PLATFORMS = [
+SUPPORTED_SD_PLATFORMS = [
     "Debian GNU/Linux 10 (buster)",
 ]
+
+SUPPORTED_WHONIX_PLATFORMS = [
+    "Debian GNU/Linux 11 (bullseye)",
+]
+
 
 apt_url = ""
 FPF_APT_SOURCES_STRETCH_DEV = "deb [arch=amd64] https://apt-test.freedom.press stretch main"
@@ -50,13 +55,15 @@ class SD_VM_Platform_Tests(unittest.TestCase):
     def _validate_vm_platform(self, vm):
         """
         Asserts that the given AppVM is based on an OS listed in the
-        SUPPORTED_PLATFORMS list, as specified in tests.
-        sd-whonix and sd-proxy are based on whonix-16 templates.
-        All other workstation-provisioned VMs
-        should be buster based.
+        SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
+        sd-whonix is based on the whonix-16 template.
+        All other workstation-provisioned VMs should be buster based.
         """
         platform = self._get_platform_info(vm)
-        self.assertIn(platform, SUPPORTED_PLATFORMS)
+        if vm.name in ["sd-whonix"]:
+            self.assertIn(platform, SUPPORTED_WHONIX_PLATFORMS)
+        else:
+            self.assertIn(platform, SUPPORTED_SD_PLATFORMS)
 
     def _validate_apt_sources(self, vm):
         """
@@ -66,16 +73,16 @@ class SD_VM_Platform_Tests(unittest.TestCase):
 
         # sd-whonix does not use the fpf-apt-test-repo
         if vm.name in ["sd-whonix"]:
-            pass
-        else:
-            cmd = "cat {}".format(APT_SOURCES_FILE)
-            stdout, stderr = vm.run(cmd)
-            contents = stdout.decode("utf-8").rstrip("\n")
+            return
 
-            self.assertTrue(self.apt_url in contents)
-            self.assertFalse(FPF_APT_SOURCES_STRETCH in contents)
-            # Old alpha URL for apt repo should be absent
-            self.assertFalse("apt-test-qubes.freedom.press" in contents)
+        cmd = "cat {}".format(APT_SOURCES_FILE)
+        stdout, stderr = vm.run(cmd)
+        contents = stdout.decode("utf-8").rstrip("\n")
+
+        self.assertTrue(self.apt_url in contents)
+        self.assertFalse(FPF_APT_SOURCES_STRETCH in contents)
+        # Old alpha URL for apt repo should be absent
+        self.assertFalse("apt-test-qubes.freedom.press" in contents)
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
@@ -130,6 +137,10 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         Inspect the securedrop-keyring used by apt to ensure the correct key
         and only the correct key is installed in that location.
         """
+        # sd-whonix does not require the keyring package
+        if vm.name in ["sd-whonix"]:
+            return
+
         keyring_path = "/etc/apt/trusted.gpg.d/securedrop-keyring.gpg"
         cmd = "gpg --homedir /tmp --no-default-keyring --keyring {} -k".format(keyring_path)
         cmd = "apt-key --keyring {} finger".format(keyring_path)
