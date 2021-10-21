@@ -62,7 +62,7 @@ if [[ $TASK == "prepare" ]]; then
     # is not, we want to ensure a smooth upgrade.
     if qvm-check --quiet sd-whonix; then
         BASE_TEMPLATE=$(qvm-prefs sd-whonix template)
-        if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "16" ]]; then
             qvm-shutdown --wait sd-proxy
             qvm-shutdown --wait sd-whonix
         fi
@@ -71,7 +71,7 @@ if [[ $TASK == "prepare" ]]; then
     # Kill sys-whonix, to make sure connected clients don't prevent shutdown.
     if qvm-check --quiet sys-whonix; then
         BASE_TEMPLATE=$(qvm-prefs sys-whonix template)
-        if [[ ! $BASE_TEMPLATE =~ "15" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "16" ]]; then
             if qvm-check --quiet --running sys-whonix; then
                 qvm-kill sys-whonix
                 # Wait for machine to stop fully, since qvm-kill doesn't block

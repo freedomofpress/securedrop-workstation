@@ -113,17 +113,6 @@ def perform_uninstall(keep_template_rpm=False):
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-default-dispvm"])
         print("Destroying all VMs")
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all"])
-        subprocess.check_call(
-            [
-                "sudo",
-                "qubesctl",
-                "--skip-dom0",
-                "--targets",
-                "whonix-gw-15",
-                "state.sls",
-                "sd-clean-whonix",
-            ]
-        )
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-all"])
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/clean-salt")])

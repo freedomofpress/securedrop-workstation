@@ -41,9 +41,6 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         """
         assert self._fileExists(self.whonix_apt_list)
 
-    def test_logging_configured(self):
-        self.logging_configured()
-
     def test_sd_whonix_verify_tor_config(self):
         # User must be debian-tor for v3 Onion, due to restrictive
         # mode on the client keys directory.

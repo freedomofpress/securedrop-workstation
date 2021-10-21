@@ -32,7 +32,6 @@ autoremove-old-packages:
 install-python-apt-for-repo-config:
   pkg.installed:
     - pkgs:
-      - python-apt
       - python3-apt
     - require:
       - cmd: update-apt-cache-with-stable-change
