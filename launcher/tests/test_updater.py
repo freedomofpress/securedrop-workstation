@@ -317,7 +317,7 @@ def test_apply_updates_vms(mocked_info, mocked_error, mocked_call, vm):
         result = updater._apply_updates_vm(vm)
         assert result == UpdateStatus.UPDATES_OK
 
-        if vm.startswith("fedora"):
+        if vm.startswith("fedora") or vm.startswith("whonix"):
             expected_salt_state = "update.qubes-vm"
         else:
             expected_salt_state = "fpf-apt-repo"
@@ -508,7 +508,7 @@ def test_shutdown_and_start_vms(
         call("fedora-33"),
         call("sd-large-buster-template"),
         call("sd-small-buster-template"),
-        call("whonix-gw-15"),
+        call("whonix-gw-16"),
     ]
     app_vm_calls = [
         call("sd-app"),
@@ -556,7 +556,7 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call("fedora-33"),
         call("sd-large-buster-template"),
         call("sd-small-buster-template"),
-        call("whonix-gw-15"),
+        call("whonix-gw-16"),
     ]
     error_calls = [
         call("Error while killing system VM: sys-firewall"),
