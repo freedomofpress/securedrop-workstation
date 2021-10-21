@@ -36,18 +36,17 @@ jobs:
           command:
             sudo sed -i -re "292s/^(\s+).*\$/\1return _.prepend_to_build_command_raw('')/" /usr/lib/python3/dist-packages/reprotest/build.py
       - run: make reprotest-ci
-  launcher-tests-buster:
+  launcher-tests:
     docker:
-      - image: circleci/python:3.7-buster
+      - image: cimg/python:3.8
     steps:
       - checkout
       - run:
-          name: Install dependencies and run Python tests for launcher
+          name: Install Python requirements and run tests for launcher
           command: |
             cd launcher/
             set -e
-            virtualenv .venv
-            source .venv/bin/activate
+            python3 -m venv .venv && source .venv/bin/activate
             pip install --require-hashes -r dev-requirements.txt
             make test && make bandit
 
@@ -58,4 +57,4 @@ workflows:
       - lint
       - buildrpm
       - reprotest
-      - launcher-tests-buster
+      - launcher-tests
