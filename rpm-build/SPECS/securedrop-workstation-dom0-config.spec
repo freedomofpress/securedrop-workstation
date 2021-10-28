@@ -15,13 +15,13 @@
 
 Name:		%{srcname}
 Version:	%{version}
-Release:	0.rc1.1%{?dist}
+Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.5.6rc1.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.5.6.tar.gz
 
 BuildArch:      noarch
 # Disable declaration of build dependencies, because
@@ -49,7 +49,7 @@ configuration over time.
 %define use_source_date_epoch_as_buildtime 1
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.5.6rc1
+%setup -n securedrop-workstation-dom0-config-0.5.6
 
 %install
 %{__python3} setup.py install --install-lib %{python3_sitelib} --no-compile --root %{buildroot}
@@ -133,7 +133,7 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
-* Tue Oct 25 2021 SecureDrop Team <securedrop@freedom.press> - 0.5.6-rc1
+* Wed Oct 27 2021 SecureDrop Team <securedrop@freedom.press> - 0.5.6
 - Migrate Whonix templates 15 -> 16 (Buster to Bullseye)
 - Fix support for Debian Buster-based TemplateVMs during first install
 
