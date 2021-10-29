@@ -120,7 +120,7 @@ The development environment is just like the [Staging Environment](#staging-envi
 
 #### Download, Configure, Copy to `dom0`
 
-Decide on a VM to use for development. We recommend creating a standalone VM called `sd-dev` by following [these instructions](https://docs.securedrop.org/en/stable/development/setup_development.html#qubes). You must install Docker in that VM in order to build a development environment using the standard workflow.
+Decide on a VM to use for development. We recommend creating a standalone VM called `sd-dev` by following [these instructions](https://docs.securedrop.org/en/stable/development/setup_development.html#qubes).
 
 Clone this repo to your preferred location on that VM.
 
