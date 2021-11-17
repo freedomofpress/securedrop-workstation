@@ -1,6 +1,25 @@
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
 	pip-compile --allow-unsafe --generate-hashes --output-file=dev-requirements.txt dev-requirements.in
+	pip-compile --allow-unsafe --generate-hashes --output-file=dev-requirements-pyqt4.txt dev-requirements-pyqt4.in
+
+.PHONY: venv
+venv: ## Provision a Python 3 virtualenv for development with pyqt5
+	python3 -m venv .venv
+	.venv/bin/pip install --upgrade pip wheel
+	.venv/bin/pip install --require-hashes -r "dev-requirements.txt"
+	@echo "#################"
+	@echo "Virtualenv is complete."
+	@echo "Then run: source .venv/bin/activate"
+
+.PHONY: venv-pyqt4
+venv-pyqt4: ## Provision a Python 3 virtualenv for development on a prod-like system that has https://packages.debian.org/buster/python3-pyqt4 installed
+	python3 -m venv .venv-pyqt4 --system-site-packages
+	.venv-pyqt4/bin/pip install --upgrade pip wheel
+	.venv-pyqt4/bin/pip install --require-hashes -r "dev-requirements-pyqt4.txt"
+	@echo "#################"
+	@echo "Virtualenv with system-site-packages is complete."
+	@echo "Then run: source .venv-pyqt4/bin/activate"
 
 .PHONY: bandit
 bandit:
