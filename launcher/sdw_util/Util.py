@@ -187,3 +187,26 @@ def strip_ansi_colors(str):
     Strip ANSI colors from command output
     """
     return re.sub(r"\u001b\[.*?[@-~]", "", str)
+
+
+def is_sdapp_halted() -> bool:
+    """
+    Helper fuction that returns True if `sd-app` VM is in a halted state
+    and False if state is running, paused, or cannot be determined.
+
+    Runs only if Qubes environment detected; otherwise returns False.
+    """
+
+    if not get_qubes_version():
+        sdlog.error("QubesOS not detected, is_sdapp_halted will return False")
+        return False
+
+    try:
+        output_bytes = subprocess.check_output(["qvm-ls", "sd-app"])
+        output_str = output_bytes.decode("utf-8")
+        return "Halted" in output_str
+
+    except subprocess.CalledProcessError as e:
+        sdlog.error("Failed to return sd-app VM status via qvm-ls")
+        sdlog.error(str(e))
+        return False

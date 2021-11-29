@@ -298,3 +298,76 @@ def test_get_logger():
     assert logger.name == test_prefix
     logger = util.get_logger(prefix=test_prefix, module=test_module)
     assert logger.name == "{}.{}".format(test_prefix, test_module)
+
+
+@pytest.mark.parametrize(
+    "os_release_fixture,version_contains",
+    [
+        ("os-release-qubes-4.0", "4.0"),
+        ("os-release-qubes-4.1", "4.1"),
+        ("os-release-ubuntu", None),
+        ("no-such-file", None),
+    ],
+)
+@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0"))
+def test_is_sdapp_halted_yes(os_release_fixture, version_contains):
+    """
+    When sd-app state is 'Halted'
+    Then `Util.is_sdapp_halted()` should return True
+    """
+    output = bytes(
+        "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
+        "    Halted    AppVM   yellow     sd-small-buster-template\n",
+        "utf-8",
+    )
+
+    with mock.patch("subprocess.check_output") as patched_subprocess_check:
+        patched_subprocess_check.return_value = output
+        assert util.is_sdapp_halted()
+
+
+@pytest.mark.parametrize(
+    "os_release_fixture,version_contains",
+    [
+        ("os-release-qubes-4.0", "4.0"),
+        ("os-release-qubes-4.1", "4.1"),
+        ("os-release-ubuntu", None),
+        ("no-such-file", None),
+    ],
+)
+@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0"))
+def test_is_sdapp_halted_no(os_release_fixture, version_contains):
+    """
+    When sd-app is not Halted (i.e. Running, Pasued)
+    Then Util.is_sd_app_halted() should return False
+    """
+    output = bytes(
+        "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
+        "    Paused    AppVM   yellow     sd-small-buster-template\n",
+        "utf-8",
+    )
+
+    with mock.patch("subprocess.check_output") as patched_subprocess:
+        patched_subprocess.return_value = output
+        assert not util.is_sdapp_halted()
+
+
+@pytest.mark.parametrize(
+    "os_release_fixture,version_contains",
+    [
+        ("os-release-qubes-4.0", "4.0"),
+        ("os-release-qubes-4.1", "4.1"),
+        ("os-release-ubuntu", None),
+        ("no-such-file", None),
+    ],
+)
+@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0"))
+@mock.patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"))
+def test_is_sdapp_halted_error(patched_subprocess, os_release_fixture, version_contains):
+    """
+    When the sd-app status check encounters an error
+    Then the call to Util.is_sdapp_halted() should still complete
+     And the method should return False
+    """
+
+    assert not util.is_sdapp_halted()
