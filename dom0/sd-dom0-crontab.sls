@@ -17,4 +17,4 @@ dom0-crontab-update-notify:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        0 * * * * {{gui_user}} DISPLAY=:0 /opt/securedrop/launcher/sdw-notify.py
+        0 */2 * * * {{gui_user}} DISPLAY=:0 /opt/securedrop/launcher/sdw-notify.py
