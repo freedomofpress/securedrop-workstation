@@ -45,10 +45,8 @@ jobs:
           name: Install Python requirements and run tests for launcher
           command: |
             cd launcher/
-            set -e
-            python3 -m venv .venv && source .venv/bin/activate
-            pip install --require-hashes -r dev-requirements.txt
-            make test && make bandit
+            make venv && source .venv/bin/activate
+            make check
 
 workflows:
   version: 2
