@@ -404,13 +404,7 @@ def shutdown_and_start_vms():
     if they are currently in use as NetVMs by any of the user's other VMs.
     """
 
-    sdw_vms_in_order = [
-        "sd-app",
-        "sd-proxy",
-        "sd-whonix",
-        "sd-gpg",
-        "sd-log",
-    ]
+    sdw_vms_in_order = ["sd-app", "sd-proxy", "sd-whonix", "sd-gpg", "sd-log"]
 
     sdlog.info("Shutting down SDW TemplateVMs for updates")
     for vm in sorted(current_templates):

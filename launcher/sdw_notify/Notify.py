@@ -85,10 +85,7 @@ def is_update_check_necessary():
                     "warning threshold ({1:.1f} hours). Uptime grace period of "
                     "{2:.1f} hours has elapsed (uptime: {3:.1f} hours). "
                     "Showing security warning.".format(
-                        updated_hours_ago,
-                        warning_threshold_hours,
-                        grace_period_hours,
-                        uptime_hours,
+                        updated_hours_ago, warning_threshold_hours, grace_period_hours, uptime_hours
                     )
                 )
                 return True
@@ -98,10 +95,7 @@ def is_update_check_necessary():
                     "warning threshold ({1:.1f} hours). Uptime grace period "
                     "of {2:.1f} hours has not elapsed yet (uptime: {3:.1f} "
                     "hours). Exiting without warning.".format(
-                        updated_hours_ago,
-                        warning_threshold_hours,
-                        grace_period_hours,
-                        uptime_hours,
+                        updated_hours_ago, warning_threshold_hours, grace_period_hours, uptime_hours
                     )
                 )
                 return False
