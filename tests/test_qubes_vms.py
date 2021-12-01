@@ -21,12 +21,7 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
         Checks that all sys-* VMs are configured to use
         an up-to-date version of Fedora.
         """
-        sys_vms = [
-            "sys-firewall",
-            "sys-net",
-            "sys-usb",
-            "default-mgmt-dvm",
-        ]
+        sys_vms = ["sys-firewall", "sys-net", "sys-usb", "default-mgmt-dvm"]
         for sys_vm in sys_vms:
             vm = self.app.domains[sys_vm]
             self.assertEqual(vm.template.name, CURRENT_FEDORA_TEMPLATE)
@@ -36,10 +31,7 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
         Checks that the Qubes-maintained Whonix tooling
         has been updated to the most recent version.
         """
-        whonix_vms = [
-            "sys-whonix",
-            "anon-whonix",
-        ]
+        whonix_vms = ["sys-whonix", "anon-whonix"]
         for whonix_vm in whonix_vms:
             vm = self.app.domains[whonix_vm]
             self.assertTrue(vm.template.name.startswith("whonix-"))
