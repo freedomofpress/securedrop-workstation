@@ -27,6 +27,7 @@ To run the preflight updater outside of `dom0`:
 4. `export SDW_UPDATER_QT=4` (in case it was set to `5` when testing against PyQt5)
 5. Now you can run the updater: `./sdw-launcher.py` (it won't actually update VMs unless you are in `dom0`)
 6. You can also run the notifier: `./sdw-notify.py`
+7. And, finally, tests and linters by running: `make check`
 
 ### PyQt5 instructions
 
@@ -36,3 +37,4 @@ To run the preflight updater outside of `dom0`:
 3. `export SDW_UPDATER_QT=5`
 4. Now you can run the updater: `./sdw-launcher.py` (it won't actually update VMs unless you are in `dom0`)
 5. You can also run the notifier: `./sdw-notify.py`
+6. And, finally, tests and linters by running: `make check`

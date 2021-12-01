@@ -72,7 +72,13 @@ def test_updater_templatevms_present():
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_updates_dom0_updates_available(
-    mocked_info, mocked_error, check_dom0, apply_dom0, apply_vm, write_updated, write_status,
+    mocked_info,
+    mocked_error,
+    check_dom0,
+    apply_dom0,
+    apply_vm,
+    write_updated,
+    write_status,
 ):
     upgrade_generator = updater.apply_updates(["dom0"])
     results = {}
@@ -97,7 +103,13 @@ def test_apply_updates_dom0_updates_available(
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_updates_dom0_no_updates(
-    mocked_info, mocked_error, check_dom0, apply_dom0, apply_vm, write_updated, write_status,
+    mocked_info,
+    mocked_error,
+    check_dom0,
+    apply_dom0,
+    apply_vm,
+    write_updated,
+    write_status,
 ):
     upgrade_generator = updater.apply_updates(["dom0"])
     results = {}
@@ -124,7 +136,12 @@ def test_apply_updates_dom0_no_updates(
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
 def test_apply_updates_required(
-    mocked_info, mocked_error, apply_dom0, apply_vm, write_updated, write_status,
+    mocked_info,
+    mocked_error,
+    apply_dom0,
+    apply_vm,
+    write_updated,
+    write_status,
 ):
     upgrade_generator = updater.apply_updates(["fedora", "sd-app"])
     results = {}
@@ -435,7 +452,8 @@ def test_safely_shutdown(mocked_info, mocked_error, mocked_output, vm):
 
 @pytest.mark.parametrize("vm", current_vms.keys())
 @mock.patch(
-    "subprocess.check_output", side_effect=["0", "0", "0"],
+    "subprocess.check_output",
+    side_effect=["0", "0", "0"],
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
@@ -452,7 +470,8 @@ def test_safely_start(mocked_info, mocked_error, mocked_output, vm):
 
 @pytest.mark.parametrize("vm", current_vms.keys())
 @mock.patch(
-    "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"),
+    "subprocess.check_output",
+    side_effect=subprocess.CalledProcessError(1, "check_output"),
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
@@ -468,7 +487,8 @@ def test_safely_start_fails(mocked_info, mocked_error, mocked_output, vm):
 
 @pytest.mark.parametrize("vm", current_vms.keys())
 @mock.patch(
-    "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"),
+    "subprocess.check_output",
+    side_effect=subprocess.CalledProcessError(1, "check_output"),
 )
 @mock.patch("Updater.sdlog.error")
 @mock.patch("Updater.sdlog.info")
@@ -526,7 +546,8 @@ def test_shutdown_and_start_vms(
 
 
 @mock.patch(
-    "subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"),
+    "subprocess.check_output",
+    side_effect=subprocess.CalledProcessError(1, "check_output"),
 )
 @mock.patch("Updater._safely_start_vm")
 @mock.patch("Updater._safely_shutdown_vm")
