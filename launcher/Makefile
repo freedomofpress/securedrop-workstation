@@ -21,6 +21,9 @@ venv-pyqt4: ## Provision a Python 3 virtualenv for development on a prod-like sy
 	@echo "Virtualenv with system-site-packages is complete."
 	@echo "Then run: source .venv-pyqt4/bin/activate"
 
+.PHONY: check
+check: test black bandit
+
 .PHONY: bandit
 bandit:
 	bandit -ll --exclude ./.venv/ -r .
