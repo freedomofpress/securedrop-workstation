@@ -26,14 +26,14 @@ check: test black bandit
 
 .PHONY: bandit
 bandit:
-	bandit -ll --exclude ./.venv/ -r .
+	bandit -ll --exclude ./.venv/,./.venv-pyqt4 -r .
 
 .PHONY: test
 test:
 	python -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ --cov=sdw_util -v tests/
 
 black: ## Runs the black code formatter on the launcher code
-	black --check --line-length=100 .
+	black --check --exclude .venv-pyqt4 --exclude .venv --line-length=100 .
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
