@@ -44,7 +44,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
 
         self.applyUpdatesButton.setEnabled(True)
         self.applyUpdatesButton.show()
-        self.applyUpdatesButton.clicked.connect(self.apply_all_updates)
+        self.applyUpdatesButton.clicked.connect(self._check_network_and_update)
 
         self.cancelButton.setEnabled(True)
         self.cancelButton.show()
@@ -117,6 +117,34 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self.progress = current_progress
         self.progressBar.setProperty("value", self.progress)
 
+    def _check_network_and_update(self):
+        """
+        Wrapper for `apply_all_updates` that ensures network connectivity
+        before updating, else stops the update and shows a connectivity error
+        message to the user.
+
+        Because this check happens before updates begin, an error at this stage
+        simply stops the update attempt and does not affect the last
+        UpdateStatus or affect the update timestamp.
+        """
+        logger.info("Checking network connectivity")
+        updatevm = _get_update_vm()
+        if updatevm and _is_updatevm_connected(updatevm):
+            logger.info("Network check successful; checking for updates.")
+            self.apply_all_updates()
+        else:
+            logger.error("Network connectivity check failed; cannot check for updates.")
+            self._show_network_error()
+
+    def _show_network_error(self):
+        """
+        Show the network error dialog state.
+        """
+        self.headline.setText(strings.headline_error_network)
+        self.proposedActionDescription.setText(strings.description_error_network)
+        self.cancelButton.setEnabled(True)
+        self.applyUpdatesButton.hide()
+
     def apply_all_updates(self):
         """
         Method used by the applyUpdatesButton that will create and start an
@@ -156,6 +184,48 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         Exits the launcher if the user clicks cancel
         """
         sys.exit()
+
+
+def _get_update_vm() -> str:
+    """
+    Helper function to query qubes-prefs for the designated UpdateVM.
+    """
+    updatevm = None
+
+    try:
+        updatevm_bytes = subprocess.check_output(["qubes-prefs", "updatevm"])
+        if updatevm_bytes:
+            updatevm = updatevm_bytes.decode("utf-8").strip()
+        else:
+            logger.error("qubes-prefs returned null value for UpdateVM")
+    except subprocess.CalledProcessError as e:
+        logger.error("Failed to complete UpdateVM query")
+        logger.error(str(e))
+
+    return updatevm
+
+
+def _is_updatevm_connected(updatevm: str) -> bool:
+    """
+    Helper function to assess network connectivity before launching updater.
+
+    Assess network connectivity by attempting to reach one of sites used for
+    package updates.
+    """
+    curl_commands = [
+        b"curl -fsI https://mirrors.fedoraproject.org --connect-time 2 --max-time 5",
+        b"curl -fsI https://apt.freedom.press --connect-time 2 --max-time 6",
+        b"curl -fsI https://ftp.qubes-os.org --connect-time 3 --max-time 8",
+    ]
+    for command in curl_commands:
+        try:
+            result = subprocess.check_call(["qvm-run", "--quiet", updatevm, command])
+            if result == 0:  # If a network call completes successfully, stop checking
+                return True
+        except subprocess.CalledProcessError:
+            logger.error("{} (connectivity check) failed".format(command.decode("utf-8")))
+
+    return False
 
 
 class UpgradeThread(QThread):
