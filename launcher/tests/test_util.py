@@ -263,7 +263,7 @@ def test_pick_qt(
 
     with mock.patch(
         "Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, os_release_fixture)
-    ), mock.patch.dict("os.environ", mocked_env):
+    ), mock.patch.dict("os.environ", mocked_env, clear=True):
         qt_version = util.get_qt_version()
         if expected_qt_override_result is not None:
             assert qt_version == expected_qt_override_result
