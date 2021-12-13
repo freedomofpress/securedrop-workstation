@@ -50,9 +50,7 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         self.assertTrue(result)
 
     def test_sd_proxy_rpc_spec(self):
-        wanted_lines = [
-            "/usr/bin/sd-proxy /home/user/.securedrop_proxy/sd-proxy.yaml",
-        ]
+        wanted_lines = ["/usr/bin/sd-proxy /home/user/.securedrop_proxy/sd-proxy.yaml"]
         for line in wanted_lines:
             self.assertFileHasLine("/etc/qubes-rpc/securedrop.Proxy", line)
 

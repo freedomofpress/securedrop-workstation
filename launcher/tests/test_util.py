@@ -171,9 +171,7 @@ def test_log():
         assert count == 3
 
 
-@pytest.mark.parametrize(
-    "return_code,expected_result", [(0, True), (1, False)],
-)
+@pytest.mark.parametrize("return_code,expected_result", [(0, True), (1, False)])
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
@@ -265,7 +263,7 @@ def test_pick_qt(
 
     with mock.patch(
         "Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, os_release_fixture)
-    ), mock.patch.dict("os.environ", mocked_env):
+    ), mock.patch.dict("os.environ", mocked_env, clear=True):
         qt_version = util.get_qt_version()
         if expected_qt_override_result is not None:
             assert qt_version == expected_qt_override_result
@@ -277,9 +275,7 @@ def test_pick_qt(
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_pick_bad_qt(
-    mocked_info, mocked_warning, mocked_error, env_override,
-):
+def test_pick_bad_qt(mocked_info, mocked_warning, mocked_error, env_override):
     """
     Test whether we're getting the expected error when specifying an invalid
     version via environment override

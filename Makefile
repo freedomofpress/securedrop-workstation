@@ -145,7 +145,7 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 black: ## Lints all Python files with black
 # Not requiring dom0 since linting requires extra packages,
 # available only in the developer environment, i.e. Work VM.
-	@./scripts/lint-all "black --check"
+	black --check .
 
 .PHONY: flake8
 flake8: ## Lints all Python files with flake8

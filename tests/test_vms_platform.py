@@ -6,13 +6,9 @@ from qubesadmin import Qubes
 from base import WANTED_VMS, CURRENT_FEDORA_TEMPLATE
 
 
-SUPPORTED_SD_PLATFORMS = [
-    "Debian GNU/Linux 10 (buster)",
-]
+SUPPORTED_SD_PLATFORMS = ["Debian GNU/Linux 10 (buster)"]
 
-SUPPORTED_WHONIX_PLATFORMS = [
-    "Debian GNU/Linux 11 (bullseye)",
-]
+SUPPORTED_WHONIX_PLATFORMS = ["Debian GNU/Linux 11 (bullseye)"]
 
 
 apt_url = ""
@@ -244,11 +240,7 @@ sub   rsa4096 2021-05-10 [E] [expires: 2022-07-04]"""
         to ensure critical components such as 'sys-firewall' receive security
         updates.
         """
-        sys_vms = [
-            "sys-firewall",
-            "sys-net",
-            "sys-usb",
-        ]
+        sys_vms = ["sys-firewall", "sys-net", "sys-usb"]
         for vm in sys_vms:
             wanted_template = CURRENT_FEDORA_TEMPLATE
             found_template = self.app.domains[vm].template.name
