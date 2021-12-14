@@ -32,10 +32,11 @@ def launch_securedrop_client():
 
 
 class UpdaterApp(QDialog, Ui_UpdaterDialog):
-    def __init__(self, parent=None):
+    def __init__(self, should_skip_netcheck: bool = False, parent=None):
         super(UpdaterApp, self).__init__(parent)
 
         self.progress = 0
+        self._skip_netcheck = should_skip_netcheck
         self.setupUi(self)
 
         # We use a single dialog with button visibility toggled at different
@@ -127,9 +128,11 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         simply stops the update attempt and does not affect the last
         UpdateStatus or affect the update timestamp.
         """
-        logger.info("Checking network connectivity")
-        updatevm = _get_update_vm()
-        if updatevm and _is_updatevm_connected(updatevm):
+
+        if self._skip_netcheck:
+            logger.info("Network check skipped; launching updater")
+            self.apply_all_updates()
+        elif _is_netcheck_successful():
             logger.info("Network check successful; checking for updates.")
             self.apply_all_updates()
         else:
@@ -186,46 +189,24 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         sys.exit()
 
 
-def _get_update_vm() -> str:
-    """
-    Helper function to query qubes-prefs for the designated UpdateVM.
-    """
-    updatevm = None
-
-    try:
-        updatevm_bytes = subprocess.check_output(["qubes-prefs", "updatevm"])
-        if updatevm_bytes:
-            updatevm = updatevm_bytes.decode("utf-8").strip()
-        else:
-            logger.error("qubes-prefs returned null value for UpdateVM")
-    except subprocess.CalledProcessError as e:
-        logger.error("Failed to complete UpdateVM query")
-        logger.error(str(e))
-
-    return updatevm
-
-
-def _is_updatevm_connected(updatevm: str) -> bool:
+def _is_netcheck_successful() -> bool:
     """
     Helper function to assess network connectivity before launching updater.
 
-    Assess network connectivity by attempting to reach one of sites used for
-    package updates.
+    Assess network connectivity by checking connection status (via nmcli) in
+    sys-net.
     """
-    curl_commands = [
-        b"curl -fsI https://mirrors.fedoraproject.org --connect-time 2 --max-time 5",
-        b"curl -fsI https://apt.freedom.press --connect-time 2 --max-time 6",
-        b"curl -fsI https://ftp.qubes-os.org --connect-time 3 --max-time 8",
-    ]
-    for command in curl_commands:
-        try:
-            result = subprocess.check_call(["qvm-run", "--quiet", updatevm, command])
-            if result == 0:  # If a network call completes successfully, stop checking
-                return True
-        except subprocess.CalledProcessError:
-            logger.error("{} (connectivity check) failed".format(command.decode("utf-8")))
+    command = b"nmcli networking connectivity check"
 
-    return False
+    if not Util.get_qubes_version():
+        logger.error("QubesOS not detected, cannot check network.")
+        return False
+    try:
+        result = subprocess.check_output(["qvm-run", "sys-net", command])
+        return result is not None and result.decode("utf-8") == "full"
+    except subprocess.CalledProcessError:
+        logger.error("{} (connectivity check) failed".format(command.decode("utf-8")))
+        return False
 
 
 class UpgradeThread(QThread):
