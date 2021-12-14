@@ -20,16 +20,17 @@ DEFAULT_INTERVAL = 28800  # 8hr default for update interval
 def parse_argv(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("--skip-delta", type=int)
+    parser.add_argument("--skip-netcheck", action="store_true")
     return parser.parse_args(argv)
 
 
-def launch_updater():
+def launch_updater(should_skip_netcheck: bool = False):
     """
-    Start the updater GUI
+    Start the updater GUI.
     """
 
     app = QApplication(sys.argv)
-    form = UpdaterApp()
+    form = UpdaterApp(should_skip_netcheck)
     form.show()
     sys.exit(app.exec_())
 
@@ -58,7 +59,7 @@ def main(argv):
     interval = int(args.skip_delta)
 
     if should_launch_updater(interval):
-        launch_updater()
+        launch_updater(args.skip_netcheck)
     else:
         launch_securedrop_client()
 
