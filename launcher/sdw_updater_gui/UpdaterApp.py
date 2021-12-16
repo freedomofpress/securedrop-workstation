@@ -202,10 +202,16 @@ def _is_netcheck_successful() -> bool:
         logger.error("QubesOS not detected, cannot check network.")
         return False
     try:
-        result = subprocess.check_output(["qvm-run", "sys-net", command])
-        return result is not None and result.decode("utf-8") == "full"
-    except subprocess.CalledProcessError:
-        logger.error("{} (connectivity check) failed".format(command.decode("utf-8")))
+        # Use of `--pass-io` is required to check on network status, since
+        # nmcli returns 0 for all connection states we need to report back to dom0.
+        result = subprocess.check_output(["qvm-run", "-p", "sys-net", command])
+        return result.decode("utf-8").strip() == "full"
+    except subprocess.CalledProcessError as e:
+        logger.error(
+            "{} (connectivity check) failed; state reported as".format(
+                command.decode("utf-8"), e.output
+            )
+        )
         return False
 
 
