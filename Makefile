@@ -39,8 +39,8 @@ reprotest-ci: ## Runs reprotest for RPMs, with CI-compatible skips in variations
 .PHONY: install-deps
 install-deps: ## Installs apt package dependencies, for building RPMs
 	sudo apt-get install --no-install-recommends -y \
-		python3 python3-setuptools file python3-rpm \
-		rpm rpm-common diffoscope reprotest disorderfs faketime
+		python3 python3-venv python3-setuptools file python3-rpm \
+		rpm rpm-common diffoscope reprotest disorderfs faketime xvfb
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
@@ -145,7 +145,7 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 black: ## Lints all Python files with black
 # Not requiring dom0 since linting requires extra packages,
 # available only in the developer environment, i.e. Work VM.
-	black --check .
+	black --check --line-length 100 .
 
 .PHONY: flake8
 flake8: ## Lints all Python files with flake8
@@ -161,7 +161,7 @@ destroy-all: ## Destroys all VMs managed by Workstation salt config
 
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
-	pip-compile --generate-hashes --output-file requirements.txt requirements.in
+	pip-compile --generate-hashes --upgrade --output-file dev-requirements.txt dev-requirements.in
 
 .PHONY: venv
 venv:  ## Provision and activate a Python 3 virtualenv for development.
