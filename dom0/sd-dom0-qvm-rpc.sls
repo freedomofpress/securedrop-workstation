@@ -21,6 +21,7 @@ dom0-rpc-qubes.ClipboardPaste:
         sd-app @tag:sd-receive-app-clipboard ask
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
+{% if grains['osrelease'] == '4.0' %}
 dom0-rpc-qubes.FeaturesRequest:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.FeaturesRequest
@@ -72,6 +73,7 @@ dom0-rpc-qubes.OpenURL:
     - content: |
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
+{% endif %}
 dom0-rpc-qubes.PdfConvert:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.PdfConvert
@@ -81,6 +83,7 @@ dom0-rpc-qubes.PdfConvert:
     - content: |
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
+{% if grains['osrelease'] == '4.0' %}
 dom0-rpc-qubes.StartApp:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.StartApp
@@ -90,6 +93,7 @@ dom0-rpc-qubes.StartApp:
     - content: |
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
+{% endif %}
 dom0-rpc-qubes.USB:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.USB
@@ -118,6 +122,7 @@ dom0-rpc-qubes.USBAttach:
         @tag:sd-workstation @anyvm deny
     - require:
       - file: dom0-rpc-qubes.ensure.USBAttach
+{% if grains['osrelease'] == '4.0' %}
 dom0-rpc-qubes.VMRootShell:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.VMRootShell
@@ -136,6 +141,7 @@ dom0-rpc-qubes.VMshell:
     - content: |
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
+{% endif %}
 dom0-rpc-qubes.Gpg:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.Gpg
@@ -156,3 +162,48 @@ dom0-rpc-qubes.GpgImportKey:
         @tag:sd-client sd-gpg allow
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
+{% if grains['osrelease'] == '4.1' %}
+# Qubes suggests using files starting with 70- to be the allow policies
+# and 60- deny policies, but due to the way SDW policies are stacked at the
+# moment, we reverse this suggested order
+dom0-rpc-qubes.r5-format-deny:
+  file.managed:
+    - name: /etc/qubes/policy.d/70-securedrop-workstation.policy
+    - contents: |
+        qubes.FeaturesRequest   *           @anyvm @tag:sd-workstation deny
+        qubes.FeaturesRequest   *           @tag:sd-workstation @anyvm deny
+        
+        qubes.Filecopy          *           @anyvm @tag:sd-workstation deny
+        qubes.Filecopy          *           @tag:sd-workstation @anyvm deny
+        
+        qubes.GetImageRGBA      *           @anyvm @tag:sd-workstation deny
+        qubes.GetImageRGBA      *           @tag:sd-workstation @anyvm deny
+        
+        qubes.OpenInVM          *           @anyvm @tag:sd-workstation deny
+        qubes.OpenInVM          *           @tag:sd-workstation @anyvm deny
+        
+        qubes.OpenURL           *           @anyvm @tag:sd-workstation deny
+        qubes.OpenURL           *           @tag:sd-workstation @anyvm deny
+        
+        qubes.StartApp          *           @anyvm @tag:sd-workstation deny
+        qubes.StartApp          *           @tag:sd-workstation @anyvm deny
+        
+        qubes.VMRootShell       *           @anyvm @tag:sd-workstation deny
+        qubes.VMRootShell       *           @tag:sd-workstation @anyvm deny
+        
+        qubes.VMShell           *           @anyvm @tag:sd-workstation deny
+        qubes.VMShell           *           @tag:sd-workstation @anyvm deny
+    - replace: false
+dom0-rpc-qubes.r5-format-ask-allow:
+  file.managed:
+    - name: /etc/qubes/policy.d/60-securedrop-workstation.policy
+    - contents: |
+        qubes.Filecopy          *           sd-log @default ask
+        qubes.Filecopy          *           sd-log @tag:sd-receive-logs ask
+        qubes.Filecopy          *           sd-proxy @tag:sd-client allow
+        
+        qubes.OpenInVM          *           @tag:sd-client @dispvm:sd-viewer allow
+        qubes.OpenInVM          *           @tag:sd-client sd-devices allow
+        qubes.OpenInVM          *           sd-devices @dispvm:sd-viewer allow
+    - replace: false
+{% endif %}

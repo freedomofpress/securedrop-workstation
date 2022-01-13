@@ -52,6 +52,27 @@ dom0-workstation-rpm-repo:
     - require:
       - file: dom0-rpm-test-key
 
+{% if grains['osrelease'] == '4.1' %}
+dom0-workstation-templates-repo:
+  # Using file.blockreplace because /etc/qubes/repo-templates/ is not a .d
+  # style directory, and qvm.template_installed:fromrepo seems to only support
+  # using a repo from this file. Installing manually via a cli-command-instead?
+  file.blockreplace:
+    - name: /etc/qubes/repo-templates/qubes-templates.repo
+    - append_if_not_found: True
+    - marker_start: "### BEGIN securedrop-workstation ###"
+    - marker_end: "### END securedrop-workstation ###"
+    - content: |
+        [securedrop-workstation-templates]
+        gpgcheck=1
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
+        enabled=1
+        baseurl={{ sdvars.dom0_yum_repo_url }}
+        name=SecureDrop Workstation Templates repository
+    - require:
+      - file: dom0-rpm-test-key
+{% endif %}
+
 dom0-remove-securedrop-workstation-stretch-template:
   pkg.removed:
     - pkgs:
@@ -60,9 +81,14 @@ dom0-remove-securedrop-workstation-stretch-template:
       - file: dom0-workstation-rpm-repo
 
 dom0-install-securedrop-workstation-template:
+{% if grains['osrelease'] == '4.1' %}
+  qvm.template_installed:
+    - name: securedrop-workstation-buster
+{% else %}
   pkg.installed:
     - pkgs:
       - qubes-template-securedrop-workstation-buster
+{% endif %}
     - require:
       - file: dom0-workstation-rpm-repo
       - pkg: dom0-remove-securedrop-workstation-stretch-template
