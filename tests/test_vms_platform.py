@@ -234,18 +234,6 @@ sub   rsa4096 2021-05-10 [E] [expires: 2022-07-04]"""
         result = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
         self.assertEqual(result, "sd-viewer")
 
-    def test_sys_vms_use_supported_fedora(self):
-        """
-        The 'sys-*' VMs must be updated to use the latest version of Fedora,
-        to ensure critical components such as 'sys-firewall' receive security
-        updates.
-        """
-        sys_vms = ["sys-firewall", "sys-net", "sys-usb"]
-        for vm in sys_vms:
-            wanted_template = CURRENT_FEDORA_TEMPLATE
-            found_template = self.app.domains[vm].template.name
-            self.assertEqual(wanted_template, found_template)
-
     def test_all_sd_vm_apt_sources(self):
         """
         Test all VMs fpf apt source list iteratively.
