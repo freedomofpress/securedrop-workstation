@@ -68,13 +68,16 @@ sd-{{ sys_vm }}-fedora-version-halt-wait:
     - require:
       - qvm: sd-{{ sys_vm }}-fedora-version-halt
 
-# Will fail on 4.1 systems where sys-* VMs were set to be disposible (a preference one can
-# set during the install process
 sd-{{ sys_vm }}-fedora-version-update:
   qvm.vm:
     - name: {{ sys_vm }}
     - prefs:
+{% if grains['osrelease'] == '4.1' and sys_vm in ['sys-firewall', 'sys-usb'] %}
+# As of Qubes 4.1, certain sys-* VMs will be DispVMs by default.
+      - template: {{ sd_supported_fedora_version }}-dvm
+{% else %}
       - template: {{ sd_supported_fedora_version }}
+{% endif %}
     - require:
       - cmd: sd-{{ sys_vm }}-fedora-version-halt-wait
 
