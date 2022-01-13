@@ -21,57 +21,58 @@ dom0-rpc-qubes.ClipboardPaste:
         sd-app @tag:sd-receive-app-clipboard ask
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
-dom0-rpc-qubes.FeaturesRequest:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.FeaturesRequest
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-dom0-rpc-qubes.Filecopy:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.Filecopy
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        sd-log @default ask
-        sd-log @tag:sd-receive-logs ask
-        sd-proxy @tag:sd-client allow
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-dom0-rpc-qubes.GetImageRGBA:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.GetImageRGBA
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-dom0-rpc-qubes.OpenInVM:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @tag:sd-client @dispvm:sd-viewer allow
-        @tag:sd-client sd-devices allow
-        sd-devices @dispvm:sd-viewer allow
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-dom0-rpc-qubes.OpenURL:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.OpenURL
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
+# Moved to /etc/qubes/policy.d
+#dom0-rpc-qubes.FeaturesRequest:
+#  file.blockreplace:
+#    - name: /etc/qubes-rpc/policy/qubes.FeaturesRequest
+#    - prepend_if_not_found: True
+#    - marker_start: "### BEGIN securedrop-workstation ###"
+#    - marker_end: "### END securedrop-workstation ###"
+#    - content: |
+#        @anyvm @tag:sd-workstation deny
+#        @tag:sd-workstation @anyvm deny
+#dom0-rpc-qubes.Filecopy:
+#  file.blockreplace:
+#    - name: /etc/qubes-rpc/policy/qubes.Filecopy
+#    - prepend_if_not_found: True
+#    - marker_start: "### BEGIN securedrop-workstation ###"
+#    - marker_end: "### END securedrop-workstation ###"
+#    - content: |
+#        sd-log @default ask
+#        sd-log @tag:sd-receive-logs ask
+#        sd-proxy @tag:sd-client allow
+#        @anyvm @tag:sd-workstation deny
+#        @tag:sd-workstation @anyvm deny
+#dom0-rpc-qubes.GetImageRGBA:
+#  file.blockreplace:
+#    - name: /etc/qubes-rpc/policy/qubes.GetImageRGBA
+#    - prepend_if_not_found: True
+#    - marker_start: "### BEGIN securedrop-workstation ###"
+#    - marker_end: "### END securedrop-workstation ###"
+#    - content: |
+#        @anyvm @tag:sd-workstation deny
+#        @tag:sd-workstation @anyvm deny
+#dom0-rpc-qubes.OpenInVM:
+#  file.blockreplace:
+#    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
+#    - prepend_if_not_found: True
+#    - marker_start: "### BEGIN securedrop-workstation ###"
+#    - marker_end: "### END securedrop-workstation ###"
+#    - content: |
+#        @tag:sd-client @dispvm:sd-viewer allow
+#        @tag:sd-client sd-devices allow
+#        sd-devices @dispvm:sd-viewer allow
+#        @anyvm @tag:sd-workstation deny
+#        @tag:sd-workstation @anyvm deny
+#dom0-rpc-qubes.OpenURL:
+#  file.blockreplace:
+#    - name: /etc/qubes-rpc/policy/qubes.OpenURL
+#    - prepend_if_not_found: True
+#    - marker_start: "### BEGIN securedrop-workstation ###"
+#    - marker_end: "### END securedrop-workstation ###"
+#    - content: |
+#        @anyvm @tag:sd-workstation deny
+#        @tag:sd-workstation @anyvm deny
 dom0-rpc-qubes.PdfConvert:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.PdfConvert
@@ -81,15 +82,16 @@ dom0-rpc-qubes.PdfConvert:
     - content: |
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
-dom0-rpc-qubes.StartApp:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.StartApp
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
+# Moved to /etc/qubes/policy.d
+#dom0-rpc-qubes.StartApp:
+#  file.blockreplace:
+#    - name: /etc/qubes-rpc/policy/qubes.StartApp
+#    - prepend_if_not_found: True
+#    - marker_start: "### BEGIN securedrop-workstation ###"
+#    - marker_end: "### END securedrop-workstation ###"
+#    - content: |
+#        @anyvm @tag:sd-workstation deny
+#        @tag:sd-workstation @anyvm deny
 dom0-rpc-qubes.USB:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.USB
@@ -118,24 +120,25 @@ dom0-rpc-qubes.USBAttach:
         @tag:sd-workstation @anyvm deny
     - require:
       - file: dom0-rpc-qubes.ensure.USBAttach
-dom0-rpc-qubes.VMRootShell:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.VMRootShell
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-dom0-rpc-qubes.VMshell:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.VMShell
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
+# Moved to /etc/qubes/policy.d
+#dom0-rpc-qubes.VMRootShell:
+#  file.blockreplace:
+#    - name: /etc/qubes-rpc/policy/qubes.VMRootShell
+#    - prepend_if_not_found: True
+#    - marker_start: "### BEGIN securedrop-workstation ###"
+#    - marker_end: "### END securedrop-workstation ###"
+#    - content: |
+#        @anyvm @tag:sd-workstation deny
+#        @tag:sd-workstation @anyvm deny
+#dom0-rpc-qubes.VMshell:
+#  file.blockreplace:
+#    - name: /etc/qubes-rpc/policy/qubes.VMShell
+#    - prepend_if_not_found: True
+#    - marker_start: "### BEGIN securedrop-workstation ###"
+#    - marker_end: "### END securedrop-workstation ###"
+#    - content: |
+#        @anyvm @tag:sd-workstation deny
+#        @tag:sd-workstation @anyvm deny
 dom0-rpc-qubes.Gpg:
   file.blockreplace:
     - name: /etc/qubes-rpc/policy/qubes.Gpg
@@ -156,3 +159,43 @@ dom0-rpc-qubes.GpgImportKey:
         @tag:sd-client sd-gpg allow
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
+dom0-rpc-qubes.r5-format-deny:
+  file.managed:
+    - name: /etc/qubes/policy.d/25-securedrop-workstation.policy
+    - contents: |
+        qubes.FeaturesRequest   *           @anyvm @tag:sd-workstation deny
+        qubes.FeaturesRequest   *           @tag:sd-workstation @anyvm deny
+        
+        qubes.Filecopy          *           @anyvm @tag:sd-workstation deny
+        qubes.Filecopy          *           @tag:sd-workstation @anyvm deny
+        
+        qubes.GetImageRGBA      *           @anyvm @tag:sd-workstation deny
+        qubes.GetImageRGBA      *           @tag:sd-workstation @anyvm deny
+        
+        qubes.OpenInVM          *           @anyvm @tag:sd-workstation deny
+        qubes.OpenInVM          *           @tag:sd-workstation @anyvm deny
+        
+        qubes.OpenURL           *           @anyvm @tag:sd-workstation deny
+        qubes.OpenURL           *           @tag:sd-workstation @anyvm deny
+        
+        qubes.StartApp          *           @anyvm @tag:sd-workstation deny
+        qubes.StartApp          *           @tag:sd-workstation @anyvm deny
+        
+        qubes.VMRootShell       *           @anyvm @tag:sd-workstation deny
+        qubes.VMRootShell       *           @tag:sd-workstation @anyvm deny
+        
+        qubes.VMShell           *           @anyvm @tag:sd-workstation deny
+        qubes.VMShell           *           @tag:sd-workstation @anyvm deny
+    - replace: false
+dom0-rpc-qubes.r5-format-ask-allow:
+  file.managed:
+    - name: /etc/qubes/policy.d/20-securedrop-workstation.policy
+    - contents: |
+        qubes.Filecopy          *           sd-log @default ask
+        qubes.Filecopy          *           sd-log @sd:sd-receive-logs ask
+        qubes.Filecopy          *           sd-proxy @tag:sd-client allow
+        
+        qubes.OpenInVM          *           @tag:sd-client @dispvm:sd-viewer allow
+        qubes.OpenInVM          *           @tag:sd-client sd-devices allow
+        qubes.OpenInVM          *           sd-devices @dispvm:sd-viewer allow
+    - replace: false
