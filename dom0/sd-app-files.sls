@@ -5,14 +5,15 @@
 # sd-app-files
 # ========
 #
-# Moves files into place on sd-app-template
+# Moves files into place on sd-small-buster-template
 #
 ##
 include:
   - fpf-apt-repo
   - sd-logging-setup
 
-# FPF repo is setup in "securedrop-workstation" template
+# FPF repo is setup in "securedrop-workstation-buster" template,
+# and then cloned as "sd-small-buster-template"
 install-securedrop-client-package:
   pkg.installed:
     - pkgs:
