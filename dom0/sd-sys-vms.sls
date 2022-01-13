@@ -11,15 +11,17 @@ include:
 
 {% set sd_supported_fedora_version = 'fedora-34' %}
 
-# Install latest templates required for SDW VMs.
-#dom0-install-fedora-template:
-#  pkg.installed:
-#    - pkgs:
-#      - qubes-template-{{ sd_supported_fedora_version }}
 
+# Install latest templates required for SDW VMs.
 dom0-install-fedora-template:
+{% if grains['osrelease'] == '4.1' %}
   qvm.template_installed:
     - name: {{ sd_supported_fedora_version }}
+{% else %}
+  pkg.installed:
+    - pkgs:
+      - qubes-template-{{ sd_supported_fedora_version }}
+{% endif %}
 
 # Update the mgmt VM before updating the new Fedora VM. The order is required
 # and listed in the release notes for F32 & F33.
@@ -55,7 +57,13 @@ set-fedora-default-template-version:
 # Now proceed with rebooting all the sys-* VMs, since the new template is up to date.
 
 {% for sys_vm in ['sys-usb', 'sys-net', 'sys-firewall'] %}
-{% if salt['cmd.shell']('qvm-prefs '+sys_vm+' template') != sd_supported_fedora_version %}
+{% if grains['osrelease'] == '4.1' and salt['pillar.get']('qvm:'+sys_vm+':disposable', false) %}
+# As of Qubes 4.1, certain sys-* VMs will be DispVMs by default.
+{% set sd_supported_fedora_template = sd_supported_fedora_version+'-dvm' %}
+{% else %}
+{% set sd_supported_fedora_template = sd_supported_fedora_version %}
+{% endif %}
+{% if salt['cmd.shell']('qvm-prefs '+sys_vm+' template') != sd_supported_fedora_template %}
 sd-{{ sys_vm }}-fedora-version-halt:
   qvm.kill:
     - name: {{ sys_vm }}
@@ -72,12 +80,7 @@ sd-{{ sys_vm }}-fedora-version-update:
   qvm.vm:
     - name: {{ sys_vm }}
     - prefs:
-{% if grains['osrelease'] == '4.1' and sys_vm in ['sys-firewall', 'sys-usb'] %}
-# As of Qubes 4.1, certain sys-* VMs will be DispVMs by default.
-      - template: {{ sd_supported_fedora_version }}-dvm
-{% else %}
-      - template: {{ sd_supported_fedora_version }}
-{% endif %}
+      - template: {{ sd_supported_fedora_template }}
     - require:
       - cmd: sd-{{ sys_vm }}-fedora-version-halt-wait
 

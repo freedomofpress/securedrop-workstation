@@ -83,7 +83,9 @@ dom0-install-securedrop-workstation-template:
     - name: securedrop-workstation-buster
     - require:
       - file: dom0-workstation-rpm-repo
+{% if grains['osrelease'] != '4.1' %}
       - pkg: dom0-remove-securedrop-workstation-stretch-template
+{% endif %}
 
 # Remove the legacy auto updater script
 dom0-remove-legacy-updater:
