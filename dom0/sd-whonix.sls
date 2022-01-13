@@ -5,7 +5,9 @@
 # qvm.sd-whonix
 # ==============
 #
-# Installs 'sd-whonix' ProxyVM for securedrop workstation.
+# Installs 'sd-whonix' ProxyVM for SecureDrop Workstation.
+# This VM will contain the Onion auth info to connect to the
+# SecureDrop Application Server's Journalist API.
 #
 ##
 

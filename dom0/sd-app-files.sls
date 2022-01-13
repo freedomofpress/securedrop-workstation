@@ -12,7 +12,8 @@ include:
   - fpf-apt-repo
   - sd-logging-setup
 
-# FPF repo is setup in "securedrop-workstation-buster" template
+# FPF repo is setup in "securedrop-workstation-buster" template,
+# and then cloned as "sd-small-buster-template"
 install-securedrop-client-package:
   pkg.installed:
     - pkgs:

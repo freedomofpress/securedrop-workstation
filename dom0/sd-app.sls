@@ -2,9 +2,6 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 ##
-# qvm.work
-# ========
-#
 # Installs 'sd-app' AppVM, to persistently store SD data
 # This VM has no network configured.
 ##

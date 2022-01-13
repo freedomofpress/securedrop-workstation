@@ -2,11 +2,8 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 ##
-# qvm.work
-# ========
-#
-# Installs 'sd-journlist' AppVM, for hosting the securedrop workstation app
-#
+# Installs 'sd-proxy' AppVM, for managing connection between SecureDrop Client
+# and the SecureDrop servers.
 ##
 
 include:
