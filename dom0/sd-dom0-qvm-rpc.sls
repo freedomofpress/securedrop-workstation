@@ -192,7 +192,7 @@ dom0-rpc-qubes.r5-format-ask-allow:
     - name: /etc/qubes/policy.d/20-securedrop-workstation.policy
     - contents: |
         qubes.Filecopy          *           sd-log @default ask
-        qubes.Filecopy          *           sd-log @sd:sd-receive-logs ask
+        qubes.Filecopy          *           sd-log @tag:sd-receive-logs ask
         qubes.Filecopy          *           sd-proxy @tag:sd-client allow
         
         qubes.OpenInVM          *           @tag:sd-client @dispvm:sd-viewer allow
