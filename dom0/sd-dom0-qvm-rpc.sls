@@ -198,4 +198,7 @@ dom0-rpc-qubes.r5-format-ask-allow:
         qubes.OpenInVM          *           @tag:sd-client @dispvm:sd-viewer allow
         qubes.OpenInVM          *           @tag:sd-client sd-devices allow
         qubes.OpenInVM          *           sd-devices @dispvm:sd-viewer allow
+
+        qubes.VMRootShell       *           disp-mgmt-sd-small-buster-templ sd-small-buster-template allow
+        qubes.VMRootShell       *           disp-mgmt-sd-large-buster-templ sd-large-buster-template allow
     - replace: false
