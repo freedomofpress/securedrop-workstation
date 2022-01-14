@@ -88,6 +88,9 @@ sd-cleanup-rpc-mgmt-policy:
       - /etc/qubes-rpc/policy/qubes.VMShell
       - /etc/qubes-rpc/policy/qubes.VMRootShell
     - repl: ''
+{% if grains['osrelease'] == '4.1' %}
+    - ignore_if_missing: True
+{% endif %}
     - pattern: '^disp-mgmt-sd-\w+\s+sd-\w+\s+allow,user=root'
 
 {% set sdw_customized_rpc_files = salt['cmd.shell']('grep -rIl "BEGIN securedrop-workstation" /etc/qubes-rpc/ | cat').splitlines() %}
