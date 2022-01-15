@@ -48,6 +48,8 @@ remove-dom0-sdw-config-files:
       - /srv/salt/qa-switch.tar.gz
       - /srv/salt/qa-switch
       - /srv/salt/consolidation-qa-switch.sh
+      - /etc/qubes/policy.d/20-securedrop-workstation.policy
+      - /etc/qubes/policy.d/25-securedrop-workstation.policy
 
 # Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
 remove-rpc-policy-tags:
@@ -59,12 +61,16 @@ sd-cleanup-etc-changes:
     - names:
       - /etc/crontab
       - /etc/systemd/logind.conf
+      - /etc/qubes/repo-templates/qubes-templates.repo
     - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
     - flags:
       - MULTILINE
       - DOTALL
     - repl: ''
     - backup: no
+{% if grains['osrelease'] == '4.0' %}
+    - ignore_if_missing: True
+{% endif %}
 
 {% if d.environment == "prod" or d.environment == "staging" %}
 apply-systemd-changes:
