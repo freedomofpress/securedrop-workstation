@@ -199,6 +199,15 @@ dom0-rpc-qubes.r5-format-ask-allow:
         qubes.OpenInVM          *           @tag:sd-client sd-devices allow
         qubes.OpenInVM          *           sd-devices @dispvm:sd-viewer allow
 
-        qubes.VMRootShell       *           disp-mgmt-sd-small-buster-templ sd-small-buster-template allow
-        qubes.VMRootShell       *           disp-mgmt-sd-large-buster-templ sd-large-buster-template allow
+        qubes.VMRootShell       *           disp-mgmt-sd-small-buster-templ sd-small-buster-template allow user=root
+        qubes.VMRootShell       *           disp-mgmt-sd-large-buster-templ sd-large-buster-template allow user=root
+        qubes.VMRootShell       *           disp-mgmt-securedrop-workstatio securedrop-workstation-buster allow user=root
+        qubes.VMRootShell       *           disp-mgmt-sd-app sd-app allow user=root
+        qubes.VMRootShell       *           disp-mgmt-sd-devices sd-devices allow user=root
+        qubes.VMRootShell       *           disp-mgmt-sd-devices-dvm sd-devices-dvm allow user=root
+        qubes.VMRootShell       *           disp-mgmt-sd-gpg sd-gpg allow user=root
+        qubes.VMRootShell       *           disp-mgmt-sd-log sd-log allow user=root
+        qubes.VMRootShell       *           disp-mgmt-sd-proxy sd-proxy allow user=root
+        qubes.VMRootShell       *           disp-mgmt-sd-viewer sd-viewer allow user=root
+        qubes.VMRootShell       *           disp-mgmt-sd-whonix sd-whonix allow user=root
     - replace: false
