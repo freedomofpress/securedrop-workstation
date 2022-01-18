@@ -2,6 +2,5 @@ bandit
 black
 pip-tools
 pip
-PyQt5==5.11.3
 pytest
 pytest-cov
