@@ -20,10 +20,14 @@ The next version of Qubes will include PyQt5 in dom0, which is why we also suppo
 
 ### PyQt4 instructions
 
+In both cases, make sure to install the appropriate `python3-pyqt{4,5}` package in Debian Buster.
+The use of system-site-packages in the virtualenv config will import it.
+
 To run the preflight updater outside of `dom0`:
+
 1. `cd securedrop-workstation/launcher`
 2. `sudo apt install python3-pyqt4`
-3. Set up your virtual environment by running `make venv-pyqt4 && source .venv-pyqt4/bin/activate`
+3. Set up your virtual environment by running `make venv && source .venv/bin/activate`
 4. `export SDW_UPDATER_QT=4` (in case it was set to `5` when testing against PyQt5)
 5. Now you can run the updater: `./sdw-launcher.py` (it won't actually update VMs unless you are in `dom0`)
 6. You can also run the notifier: `./sdw-notify.py`

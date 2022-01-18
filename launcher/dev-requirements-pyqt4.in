@@ -1,6 +1,0 @@
-bandit
-black
-pip-tools
-pip
-pytest
-pytest-cov
