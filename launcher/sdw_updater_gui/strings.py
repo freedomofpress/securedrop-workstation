@@ -39,3 +39,9 @@ description_status_rebooting = ""
 
 headline_status_error_reboot = "Error rebooting Workstation"
 description_error_reboot = "<p>Please contact your administrator.</p>"
+
+headline_error_network = "Network Unavailable"
+description_error_network = (
+    "<p>A network error was encountered while attempting to update.</p>"
+    "<p>Please check network settings and try again.</p>"
+)

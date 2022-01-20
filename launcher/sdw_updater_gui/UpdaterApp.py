@@ -32,10 +32,11 @@ def launch_securedrop_client():
 
 
 class UpdaterApp(QDialog, Ui_UpdaterDialog):
-    def __init__(self, parent=None):
+    def __init__(self, should_skip_netcheck: bool = False, parent=None):
         super(UpdaterApp, self).__init__(parent)
 
         self.progress = 0
+        self._skip_netcheck = should_skip_netcheck
         self.setupUi(self)
 
         # We use a single dialog with button visibility toggled at different
@@ -44,7 +45,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
 
         self.applyUpdatesButton.setEnabled(True)
         self.applyUpdatesButton.show()
-        self.applyUpdatesButton.clicked.connect(self.apply_all_updates)
+        self.applyUpdatesButton.clicked.connect(self._check_network_and_update)
 
         self.cancelButton.setEnabled(True)
         self.cancelButton.show()
@@ -117,6 +118,36 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self.progress = current_progress
         self.progressBar.setProperty("value", self.progress)
 
+    def _check_network_and_update(self):
+        """
+        Wrapper for `apply_all_updates` that ensures network connectivity
+        before updating, else stops the update and shows a connectivity error
+        message to the user.
+
+        Because this check happens before updates begin, an error at this stage
+        simply stops the update attempt and does not affect the last
+        UpdateStatus or affect the update timestamp.
+        """
+
+        if self._skip_netcheck:
+            logger.info("Network check skipped; launching updater")
+            self.apply_all_updates()
+        elif _is_netcheck_successful():
+            logger.info("Network check successful; checking for updates.")
+            self.apply_all_updates()
+        else:
+            logger.error("Network connectivity check failed; cannot check for updates.")
+            self._show_network_error()
+
+    def _show_network_error(self):
+        """
+        Show the network error dialog state.
+        """
+        self.headline.setText(strings.headline_error_network)
+        self.proposedActionDescription.setText(strings.description_error_network)
+        self.cancelButton.setEnabled(True)
+        self.applyUpdatesButton.hide()
+
     def apply_all_updates(self):
         """
         Method used by the applyUpdatesButton that will create and start an
@@ -156,6 +187,32 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         Exits the launcher if the user clicks cancel
         """
         sys.exit()
+
+
+def _is_netcheck_successful() -> bool:
+    """
+    Helper function to assess network connectivity before launching updater.
+
+    Assess network connectivity by checking connection status (via nmcli) in
+    sys-net.
+    """
+    command = b"nmcli networking connectivity check"
+
+    if not Util.get_qubes_version():
+        logger.error("QubesOS not detected, cannot check network.")
+        return False
+    try:
+        # Use of `--pass-io` is required to check on network status, since
+        # nmcli returns 0 for all connection states we need to report back to dom0.
+        result = subprocess.check_output(["qvm-run", "-p", "sys-net", command])
+        return result.decode("utf-8").strip() == "full"
+    except subprocess.CalledProcessError as e:
+        logger.error(
+            "{} (connectivity check) failed; state reported as".format(
+                command.decode("utf-8"), e.output
+            )
+        )
+        return False
 
 
 class UpgradeThread(QThread):
