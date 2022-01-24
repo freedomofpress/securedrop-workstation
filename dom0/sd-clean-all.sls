@@ -48,8 +48,8 @@ remove-dom0-sdw-config-files:
       - /srv/salt/qa-switch.tar.gz
       - /srv/salt/qa-switch
       - /srv/salt/consolidation-qa-switch.sh
-      - /etc/qubes/policy.d/20-securedrop-workstation.policy
-      - /etc/qubes/policy.d/25-securedrop-workstation.policy
+      - /etc/qubes/policy.d/60-securedrop-workstation.policy
+      - /etc/qubes/policy.d/70-securedrop-workstation.policy
 
 # Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
 remove-rpc-policy-tags:

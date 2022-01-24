@@ -159,9 +159,13 @@ dom0-rpc-qubes.GpgImportKey:
         @tag:sd-client sd-gpg allow
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
+{% if grains['osrelease'] == '4.1' %}
+# Qubes suggests using files starting with 70- to be the allow policies
+# and 60- deny policies, but due to the way SDW policies are stacked at the
+# moment, we reverse this suggested order
 dom0-rpc-qubes.r5-format-deny:
   file.managed:
-    - name: /etc/qubes/policy.d/25-securedrop-workstation.policy
+    - name: /etc/qubes/policy.d/70-securedrop-workstation.policy
     - contents: |
         qubes.FeaturesRequest   *           @anyvm @tag:sd-workstation deny
         qubes.FeaturesRequest   *           @tag:sd-workstation @anyvm deny
@@ -189,7 +193,7 @@ dom0-rpc-qubes.r5-format-deny:
     - replace: false
 dom0-rpc-qubes.r5-format-ask-allow:
   file.managed:
-    - name: /etc/qubes/policy.d/20-securedrop-workstation.policy
+    - name: /etc/qubes/policy.d/60-securedrop-workstation.policy
     - contents: |
         qubes.Filecopy          *           sd-log @default ask
         qubes.Filecopy          *           sd-log @tag:sd-receive-logs ask
@@ -198,16 +202,5 @@ dom0-rpc-qubes.r5-format-ask-allow:
         qubes.OpenInVM          *           @tag:sd-client @dispvm:sd-viewer allow
         qubes.OpenInVM          *           @tag:sd-client sd-devices allow
         qubes.OpenInVM          *           sd-devices @dispvm:sd-viewer allow
-
-        qubes.VMRootShell       *           disp-mgmt-sd-small-buster-templ sd-small-buster-template allow user=root
-        qubes.VMRootShell       *           disp-mgmt-sd-large-buster-templ sd-large-buster-template allow user=root
-        qubes.VMRootShell       *           disp-mgmt-securedrop-workstatio securedrop-workstation-buster allow user=root
-        qubes.VMRootShell       *           disp-mgmt-sd-app sd-app allow user=root
-        qubes.VMRootShell       *           disp-mgmt-sd-devices sd-devices allow user=root
-        qubes.VMRootShell       *           disp-mgmt-sd-devices-dvm sd-devices-dvm allow user=root
-        qubes.VMRootShell       *           disp-mgmt-sd-gpg sd-gpg allow user=root
-        qubes.VMRootShell       *           disp-mgmt-sd-log sd-log allow user=root
-        qubes.VMRootShell       *           disp-mgmt-sd-proxy sd-proxy allow user=root
-        qubes.VMRootShell       *           disp-mgmt-sd-viewer sd-viewer allow user=root
-        qubes.VMRootShell       *           disp-mgmt-sd-whonix sd-whonix allow user=root
     - replace: false
+{% endif %}
