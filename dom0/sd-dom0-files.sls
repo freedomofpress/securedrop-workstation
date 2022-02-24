@@ -52,6 +52,7 @@ dom0-workstation-rpm-repo:
     - require:
       - file: dom0-rpm-test-key
 
+{% if grains['osrelease'] == '4.1' %}
 dom0-workstation-templates-repo:
   # Using file.blockreplace because /etc/qubes/repo-templates/ is not a .d
   # style directory, and qvm.template_installed:fromrepo seems to only support
@@ -70,6 +71,7 @@ dom0-workstation-templates-repo:
         name=SecureDrop Workstation Templates repository
     - require:
       - file: dom0-rpm-test-key
+{% endif %}
 
 dom0-remove-securedrop-workstation-stretch-template:
   pkg.removed:
@@ -79,8 +81,14 @@ dom0-remove-securedrop-workstation-stretch-template:
       - file: dom0-workstation-rpm-repo
 
 dom0-install-securedrop-workstation-template:
+{% if grains['osrelease'] == '4.1' %}
   qvm.template_installed:
     - name: securedrop-workstation-buster
+{% else %}
+  pkg.installed:
+    - pkgs:
+      - qubes-template-securedrop-workstation-buster
+{% endif %}
     - require:
       - file: dom0-workstation-rpm-repo
 {% if grains['osrelease'] != '4.1' %}

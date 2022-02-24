@@ -31,18 +31,31 @@ set-fedora-template-as-default-mgmt-dvm:
         qvm-shutdown --wait default-mgmt-dvm &&
         qvm-prefs default-mgmt-dvm template {{ sd_supported_fedora_version }}
     - require:
+{% if grains['osrelease'] == '4.1' %}
       - qvm: dom0-install-fedora-template
+{% else %}
+      - pkg: dom0-install-fedora-template
+{% endif %}
 
 # If the VM has just been installed via package manager, update it immediately
 update-fedora-template-if-new:
   cmd.wait:
     - name: sudo qubesctl --skip-dom0 --targets {{ sd_supported_fedora_version }} state.sls update.qubes-vm
     - require:
+{% if grains['osrelease'] == '4.1' %}
       - qvm: dom0-install-fedora-template
+{% else %}
+      - pkg: dom0-install-fedora-template
+{% endif %}
       # Update the mgmt-dvm setting first, to avoid problems during first update
       - cmd: set-fedora-template-as-default-mgmt-dvm
     - watch:
+{% if grains['osrelease'] == '4.1' %}
       - qvm: dom0-install-fedora-template
+{% else %}
+      - pkg: dom0-install-fedora-template
+{% endif %}
+
 # qvm.default-dispvm is not strictly required here, but we want it to be
 # updated as soon as possible to ensure make clean completes successfully, as
 # is sets the default_dispvm to the DispVM based on the wanted Fedora version.
@@ -50,7 +63,11 @@ set-fedora-default-template-version:
   cmd.run:
     - name: qubes-prefs default_template {{ sd_supported_fedora_version }}
     - require:
+{% if grains['osrelease'] == '4.1' %}
       - qvm: dom0-install-fedora-template
+{% else %}
+      - pkg: dom0-install-fedora-template
+{% endif %}
       - sls: qvm.default-dispvm
 
 
@@ -68,13 +85,21 @@ sd-{{ sys_vm }}-fedora-version-halt:
   qvm.kill:
     - name: {{ sys_vm }}
     - require:
+{% if grains['osrelease'] == '4.1' %}
       - qvm: dom0-install-fedora-template
+{% else %}
+      - pkg: dom0-install-fedora-template
+{% endif %}
 
 sd-{{ sys_vm }}-fedora-version-halt-wait:
   cmd.run:
     - name: sleep 5
     - require:
-      - qvm: sd-{{ sys_vm }}-fedora-version-halt
+{% if grains['osrelease'] == '4.1' %}
+      - qvm: dom0-install-fedora-template
+{% else %}
+      - pkg: dom0-install-fedora-template
+{% endif %}
 
 sd-{{ sys_vm }}-fedora-version-update:
   qvm.vm:
