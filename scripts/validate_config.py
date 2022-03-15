@@ -7,6 +7,7 @@ import json
 import re
 import os
 import subprocess
+import tempfile
 from qubesadmin import Qubes
 
 
@@ -79,10 +80,24 @@ class SDWConfigValidator(object):
         assert re.match(TOR_V3_AUTH_REGEX, self.config["hidserv"]["key"])
 
     def confirm_submission_privkey_file(self):
+        """
+        Import privkey into temporary keyring, to validate.
+        """
         assert os.path.exists(self.secret_key_filepath)
-        gpg_cmd = ["gpg", self.secret_key_filepath]
-        # Call out to gpg to confirm it's a valid keyfile
-        subprocess.check_call(gpg_cmd, stdout=subprocess.DEVNULL)
+        gpg_cmd = ["gpg", "--import", self.secret_key_filepath]
+        result = False
+        with tempfile.TemporaryDirectory() as d:
+            gpg_env = {"GNUPGHOME": d}
+            # Call out to gpg to confirm it's a valid keyfile
+            try:
+                subprocess.check_call(
+                    gpg_cmd, env=gpg_env, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL
+                )
+                result = True
+            except subprocess.CalledProcessError:
+                # suppress error since "result" is checked next
+                pass
+        assert result, "GPG private key is not valid: {}".format(self.secret_key_filepath)
 
     def confirm_submission_privkey_fingerprint(self):
         assert "submission_key_fpr" in self.config
