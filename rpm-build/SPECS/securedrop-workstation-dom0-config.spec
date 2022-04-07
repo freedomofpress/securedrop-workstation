@@ -133,6 +133,10 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
+* Thu Apr 7 2022 SecureDrop Team <securedrop@freedom.press> - 0.6.0
+- Check for network connection before running preflight updater (#743)
+- Add option to launch updater from sdw-notify script (#740)
+
 * Mon Nov 15 2021 SecureDrop Team <securedrop@freedom.press> - 0.5.7
 - Replace Fedora 33 with Fedora 34 as a default template
 
