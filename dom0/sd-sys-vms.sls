@@ -15,8 +15,9 @@ include:
 # Install latest templates required for SDW VMs.
 dom0-install-fedora-template:
 {% if grains['osrelease'] == '4.1' %}
-  qvm.template_installed:
-    - name: {{ sd_supported_fedora_version }}
+  cmd.run:
+    - name: >
+        qvm-template install fedora-34
 {% else %}
   pkg.installed:
     - pkgs:
@@ -32,7 +33,7 @@ set-fedora-template-as-default-mgmt-dvm:
         qvm-prefs default-mgmt-dvm template {{ sd_supported_fedora_version }}
     - require:
 {% if grains['osrelease'] == '4.1' %}
-      - qvm: dom0-install-fedora-template
+      - cmd: dom0-install-fedora-template
 {% else %}
       - pkg: dom0-install-fedora-template
 {% endif %}
@@ -43,7 +44,7 @@ update-fedora-template-if-new:
     - name: sudo qubesctl --skip-dom0 --targets {{ sd_supported_fedora_version }} state.sls update.qubes-vm
     - require:
 {% if grains['osrelease'] == '4.1' %}
-      - qvm: dom0-install-fedora-template
+      - cmd: dom0-install-fedora-template
 {% else %}
       - pkg: dom0-install-fedora-template
 {% endif %}
@@ -51,7 +52,7 @@ update-fedora-template-if-new:
       - cmd: set-fedora-template-as-default-mgmt-dvm
     - watch:
 {% if grains['osrelease'] == '4.1' %}
-      - qvm: dom0-install-fedora-template
+      - cmd: dom0-install-fedora-template
 {% else %}
       - pkg: dom0-install-fedora-template
 {% endif %}
@@ -64,7 +65,7 @@ set-fedora-default-template-version:
     - name: qubes-prefs default_template {{ sd_supported_fedora_version }}
     - require:
 {% if grains['osrelease'] == '4.1' %}
-      - qvm: dom0-install-fedora-template
+      - cmd: dom0-install-fedora-template
 {% else %}
       - pkg: dom0-install-fedora-template
 {% endif %}
@@ -86,7 +87,7 @@ sd-{{ sys_vm }}-fedora-version-halt:
     - name: {{ sys_vm }}
     - require:
 {% if grains['osrelease'] == '4.1' %}
-      - qvm: dom0-install-fedora-template
+      - cmd: dom0-install-fedora-template
 {% else %}
       - pkg: dom0-install-fedora-template
 {% endif %}

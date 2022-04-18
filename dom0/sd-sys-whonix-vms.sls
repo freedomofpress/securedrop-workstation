@@ -2,10 +2,6 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 include:
-  # Import the upstream Qubes-maintained anon-whonix settings.
-  # The anon-whonix config pulls in sys-whonix and sys-firewall,
-  # as well as ensures the latest versions of Whonix are installed.
-  - qvm.anon-whonix
   - sd-upgrade-templates
 
 # The Qubes logic is too polite about enforcing template
@@ -17,7 +13,6 @@ sys-whonix-template-config:
     - prefs:
       - template: whonix-gw-16
     - require:
-      - sls: qvm.anon-whonix
       - sls: sd-upgrade-templates
 
 anon-whonix-template-config:
@@ -25,5 +20,3 @@ anon-whonix-template-config:
     - name: anon-whonix
     - prefs:
       - template: whonix-ws-16
-    - require:
-      - sls: qvm.anon-whonix

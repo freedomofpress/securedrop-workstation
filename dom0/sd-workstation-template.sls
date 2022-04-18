@@ -21,7 +21,7 @@ sd-workstation-template:
         - service.paxctld
     - require:
 {% if grains['osrelease'] == '4.1' %}
-      - qvm: dom0-install-securedrop-workstation-template
+      - cmd: dom0-install-securedrop-workstation-template
 {% else %}
       - pkg: dom0-install-securedrop-workstation-template
 {% endif %}

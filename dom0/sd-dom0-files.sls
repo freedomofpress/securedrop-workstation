@@ -6,12 +6,6 @@
 # over time. These scripts should be ported to an RPM package.
 ##
 
-include:
-  # Import the upstream Qubes-maintained anon-whonix settings.
-  # The anon-whoni config pulls in sys-whonix and sys-firewall,
-  # as well as ensures the latest versions of Whonix are installed.
-  - qvm.anon-whonix
-
 # Imports "sdvars" for environment config
 {% from 'sd-default-config.sls' import sdvars with context %}
 
@@ -82,8 +76,9 @@ dom0-remove-securedrop-workstation-stretch-template:
 
 dom0-install-securedrop-workstation-template:
 {% if grains['osrelease'] == '4.1' %}
-  qvm.template_installed:
-    - name: securedrop-workstation-buster
+  cmd.run:
+    - name: >
+        qvm-template install securedrop-workstation-buster
 {% else %}
   pkg.installed:
     - pkgs:
@@ -129,16 +124,12 @@ dom0-enabled-apparmor-on-whonix-gw-template:
     - name: whonix-gw-16
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
-    - require:
-      - sls: qvm.anon-whonix
 
 dom0-enabled-apparmor-on-whonix-ws-template:
   qvm.vm:
     - name: whonix-ws-16
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
-    - require:
-      - sls: qvm.anon-whonix
 
 dom0-create-opt-securedrop-directory:
   file.directory:
