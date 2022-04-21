@@ -97,7 +97,7 @@ sd-{{ sys_vm }}-fedora-version-halt-wait:
     - name: sleep 5
     - require:
 {% if grains['osrelease'] == '4.1' %}
-      - qvm: dom0-install-fedora-template
+      - cmd: dom0-install-fedora-template
 {% else %}
       - pkg: dom0-install-fedora-template
 {% endif %}
