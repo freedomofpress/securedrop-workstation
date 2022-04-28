@@ -33,7 +33,7 @@
 
 - policy: qubes.InputMouse
   starts_with: |-
-    sys-usb dom0 allow,user=root
+    sys-usb dom0 ask,user=root,default_target=dom0
     $anyvm $anyvm deny
 
 - policy: /etc/qubes-rpc/policy/qubes.PdfConvert
