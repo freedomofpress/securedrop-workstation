@@ -1,6 +1,7 @@
 import re
 import subprocess
 import unittest
+import tempfile
 
 from base import SD_VM_Local_Test
 
@@ -15,17 +16,22 @@ def find_fp_from_gpg_output(gpg):
         # by a loose regex rather than substring match.
         regex = "\s*(Key fingerprint = )?([A-F0-9\s]{50})$"
         m = re.match(regex, line)
-        if m is not None:
+        if m:
             fp = m.groups()[1]
             return fp
 
 
 def get_local_fp():
-
-    cmd = ["gpg", "--with-fingerprint", "sd-journalist.sec"]
-    p = subprocess.check_output(cmd)
-
-    return find_fp_from_gpg_output(p)
+    with tempfile.TemporaryDirectory() as d:
+        gpg_env = {"GNUPGHOME": d}
+        subprocess.check_call(
+            ["gpg", "--import", "sd-journalist.sec"],
+            env=gpg_env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        results = subprocess.check_output(["gpg", "-k", "--with-fingerprint"], env=gpg_env)
+        return find_fp_from_gpg_output(results)
 
 
 def get_remote_fp():

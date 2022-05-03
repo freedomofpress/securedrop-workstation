@@ -11,7 +11,6 @@ max_concurrency="2"
 
 echo "Configure Fedora-based system VMs"
 sudo qubesctl --show-output state.sls sd-sys-vms
-sudo qubesctl --show-output --skip-dom0 --targets sys-firewall state.sls sd-sys-firewall-files
 
 # Running only against dom0, to ensure the VMs are created (but not yet configured)
 echo "Set up dom0 config files, including RPC policies, and create VMs"

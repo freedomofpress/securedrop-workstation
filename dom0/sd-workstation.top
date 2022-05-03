@@ -36,8 +36,6 @@ base:
   sd-app:
     - sd-app-config
     - sd-mime-handling
-  sys-firewall:
-    - sd-sys-firewall-files
   sd-whonix:
     - sd-whonix-hidserv-key
   securedrop-workstation-buster:

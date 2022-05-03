@@ -12,10 +12,6 @@
 ##
 
 include:
-  # Import the upstream Qubes-maintained anon-whonix settings.
-  # The anon-whonix config pulls in sys-whonix and sys-firewall,
-  # as well as ensures the latest versions of Whonix are installed.
-  - qvm.anon-whonix
   - sd-upgrade-templates
 
 sd-whonix:
@@ -35,5 +31,4 @@ sd-whonix:
         - sd-workstation
         - sd-buster
     - require:
-      - sls: qvm.anon-whonix
       - sls: sd-upgrade-templates

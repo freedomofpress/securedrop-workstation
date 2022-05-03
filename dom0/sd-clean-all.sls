@@ -48,6 +48,8 @@ remove-dom0-sdw-config-files:
       - /srv/salt/qa-switch.tar.gz
       - /srv/salt/qa-switch
       - /srv/salt/consolidation-qa-switch.sh
+      - /etc/qubes/policy.d/60-securedrop-workstation.policy
+      - /etc/qubes/policy.d/70-securedrop-workstation.policy
 
 # Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
 remove-rpc-policy-tags:
@@ -59,12 +61,16 @@ sd-cleanup-etc-changes:
     - names:
       - /etc/crontab
       - /etc/systemd/logind.conf
+      - /etc/qubes/repo-templates/qubes-templates.repo
     - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
     - flags:
       - MULTILINE
       - DOTALL
     - repl: ''
     - backup: no
+{% if grains['osrelease'] == '4.0' %}
+    - ignore_if_missing: True
+{% endif %}
 
 {% if d.environment == "prod" or d.environment == "staging" %}
 apply-systemd-changes:
@@ -88,6 +94,9 @@ sd-cleanup-rpc-mgmt-policy:
       - /etc/qubes-rpc/policy/qubes.VMShell
       - /etc/qubes-rpc/policy/qubes.VMRootShell
     - repl: ''
+{% if grains['osrelease'] == '4.1' %}
+    - ignore_if_missing: True
+{% endif %}
     - pattern: '^disp-mgmt-sd-\w+\s+sd-\w+\s+allow,user=root'
 
 {% set sdw_customized_rpc_files = salt['cmd.shell']('grep -rIl "BEGIN securedrop-workstation" /etc/qubes-rpc/ | cat').splitlines() %}

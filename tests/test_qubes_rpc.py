@@ -3,7 +3,7 @@ import os
 import unittest
 import yaml
 
-QUBES_POLICY_DIR = "/etc/qubes-rpc/policy"
+from base import get_qubes_version
 
 
 class SD_Qubes_Rpc_Tests(unittest.TestCase):
@@ -23,7 +23,13 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
         self.assertFalse(fail), "Policy does not match: " + policy["policy"]
 
     def _startsWith(self, filename, expectedPolicy):
-        filePath = os.path.join(QUBES_POLICY_DIR, filename)
+        filePath = filename
+        # The Qubes 4.0 grants assumed all policies were in the same dir.
+        # Support that for backwards-compatibility on 4.0, but we'll use
+        # absolute paths in the test vars from 4.1 onward.
+        if not filePath.startswith("/"):
+            filePath = os.path.join("/etc/qubes-rpc/policy", filename)
+
         with io.open(filePath, "r") as f:
             actualPolicy = f.read()
             if actualPolicy.startswith(expectedPolicy):
@@ -36,7 +42,14 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
                 return False
 
     def _loadVars(self):
-        filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vars", "qubes-rpc.yml")
+        qubes_version = get_qubes_version()
+        if qubes_version == "4.1":
+            fname = "qubes-rpc-41.yml"
+        elif qubes_version == "4.0":
+            fname = "qubes-rpc.yml"
+        else:
+            raise Exception("Could not determine Qubes OS version")
+        filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vars", fname)
         with io.open(filepath, "r") as f:
             data = yaml.safe_load(f)
         return data

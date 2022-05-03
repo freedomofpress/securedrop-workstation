@@ -1,7 +1,7 @@
 import unittest
 
 from qubesadmin import Qubes
-from base import CURRENT_FEDORA_TEMPLATE, CURRENT_WHONIX_VERSION
+from base import CURRENT_FEDORA_TEMPLATE, CURRENT_WHONIX_VERSION, get_qubes_version
 
 
 class SD_Qubes_VM_Tests(unittest.TestCase):
@@ -22,9 +22,16 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
         an up-to-date version of Fedora.
         """
         sys_vms = ["sys-firewall", "sys-net", "sys-usb", "default-mgmt-dvm"]
+        sys_vms_maybe_disp = ["sys-firewall", "sys-usb"]
+
         for sys_vm in sys_vms:
             vm = self.app.domains[sys_vm]
-            self.assertEqual(vm.template.name, CURRENT_FEDORA_TEMPLATE)
+            wanted_template = CURRENT_FEDORA_TEMPLATE
+            if get_qubes_version() == "4.1" and sys_vm in sys_vms_maybe_disp:
+                wanted_template += "-dvm"
+            self.assertEqual(
+                vm.template.name, wanted_template, "Unexpected template for {}".format(sys_vm)
+            )
 
     def test_current_whonix_vms(self):
         """

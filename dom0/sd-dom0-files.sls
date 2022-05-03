@@ -6,12 +6,6 @@
 # over time. These scripts should be ported to an RPM package.
 ##
 
-include:
-  # Import the upstream Qubes-maintained anon-whonix settings.
-  # The anon-whoni config pulls in sys-whonix and sys-firewall,
-  # as well as ensures the latest versions of Whonix are installed.
-  - qvm.anon-whonix
-
 # Imports "sdvars" for environment config
 {% from 'sd-default-config.sls' import sdvars with context %}
 
@@ -52,6 +46,27 @@ dom0-workstation-rpm-repo:
     - require:
       - file: dom0-rpm-test-key
 
+{% if grains['osrelease'] == '4.1' %}
+dom0-workstation-templates-repo:
+  # Using file.blockreplace because /etc/qubes/repo-templates/ is not a .d
+  # style directory, and qvm.template_installed:fromrepo seems to only support
+  # using a repo from this file. Installing manually via a cli-command-instead?
+  file.blockreplace:
+    - name: /etc/qubes/repo-templates/qubes-templates.repo
+    - append_if_not_found: True
+    - marker_start: "### BEGIN securedrop-workstation ###"
+    - marker_end: "### END securedrop-workstation ###"
+    - content: |
+        [securedrop-workstation-templates]
+        gpgcheck=1
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
+        enabled=1
+        baseurl={{ sdvars.dom0_yum_repo_url }}
+        name=SecureDrop Workstation Templates repository
+    - require:
+      - file: dom0-rpm-test-key
+{% endif %}
+
 dom0-remove-securedrop-workstation-stretch-template:
   pkg.removed:
     - pkgs:
@@ -60,12 +75,20 @@ dom0-remove-securedrop-workstation-stretch-template:
       - file: dom0-workstation-rpm-repo
 
 dom0-install-securedrop-workstation-template:
+{% if grains['osrelease'] == '4.1' %}
+  cmd.run:
+    - name: >
+        qvm-template install securedrop-workstation-buster
+{% else %}
   pkg.installed:
     - pkgs:
       - qubes-template-securedrop-workstation-buster
+{% endif %}
     - require:
       - file: dom0-workstation-rpm-repo
+{% if grains['osrelease'] != '4.1' %}
       - pkg: dom0-remove-securedrop-workstation-stretch-template
+{% endif %}
 
 # Remove the legacy auto updater script
 dom0-remove-legacy-updater:
@@ -101,16 +124,12 @@ dom0-enabled-apparmor-on-whonix-gw-template:
     - name: whonix-gw-16
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
-    - require:
-      - sls: qvm.anon-whonix
 
 dom0-enabled-apparmor-on-whonix-ws-template:
   qvm.vm:
     - name: whonix-ws-16
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
-    - require:
-      - sls: qvm.anon-whonix
 
 dom0-create-opt-securedrop-directory:
   file.directory:
