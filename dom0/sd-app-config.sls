@@ -13,7 +13,7 @@
 
 {% import_json "sd/config.json" as d %}
 
-install-securedrop-proxy-yaml-config:
+install-securedrop-client-config-json:
   file.managed:
     - name: /home/user/.securedrop_client/config.json
     - source: salt://sd/sd-app/config.json.j2
