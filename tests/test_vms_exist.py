@@ -36,6 +36,14 @@ class SD_VM_Tests(unittest.TestCase):
         assert kernel_version.endswith("-grsec-workstation")
         assert kernel_version == EXPECTED_KERNEL_VERSION
 
+        # QubesOS 4.1 stopped requiring u2mfn.ko for HVMs, the packages won't build the respective
+        # kernel module anymore
+        # This portion of the test assumes that 4.1 is always used with templates that use
+        # repositories for 4.1 (in our case, bullseye based templates)
+        with open("/etc/qubes-release") as qubes_release:
+            if "R4.1" in qubes_release.read():
+                return
+
         u2mfn_filepath = "/usr/lib/modules/{}/updates/dkms/u2mfn.ko".format(EXPECTED_KERNEL_VERSION)
         # cmd will raise exception if file not found
         stdout, stderr = vm.run("sudo test -f {}".format(u2mfn_filepath))
