@@ -193,6 +193,8 @@ dom0-rpc-qubes.r5-format-deny:
   file.managed:
     - name: /etc/qubes/policy.d/70-securedrop-workstation.policy
     - contents: |
+        securedrop.Log          *           @anyvm @anyvm deny
+
         qubes.FeaturesRequest   *           @anyvm @tag:sd-workstation deny
         qubes.FeaturesRequest   *           @tag:sd-workstation @anyvm deny
 
@@ -221,6 +223,10 @@ dom0-rpc-qubes.r5-format-ask-allow:
   file.managed:
     - name: /etc/qubes/policy.d/60-securedrop-workstation.policy
     - contents: |
+        # required to suppress unsupported loopback error notifications
+        securedrop.Log          *           sd-log sd-log deny notify=no
+        securedrop.Log          *           @tag:sd-workstation sd-log allow
+
         qubes.Filecopy          *           sd-log @default ask
         qubes.Filecopy          *           sd-log @tag:sd-receive-logs ask
         qubes.Filecopy          *           sd-proxy @tag:sd-client allow
