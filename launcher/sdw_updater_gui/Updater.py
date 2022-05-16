@@ -38,7 +38,7 @@ detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 # as well as their associated TemplateVMs.
 # In the future, we could use qvm-prefs to extract this information.
 current_vms = {
-    "fedora": "fedora-34",
+    "fedora": "fedora-35",
     "sd-viewer": "sd-large-buster-template",
     "sd-app": "sd-small-buster-template",
     "sd-log": "sd-small-buster-template",
