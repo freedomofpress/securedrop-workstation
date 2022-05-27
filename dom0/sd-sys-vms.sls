@@ -9,7 +9,7 @@ include:
   # DispVM is created
   - qvm.default-dispvm
 
-{% set sd_supported_fedora_version = 'fedora-34' %}
+{% set sd_supported_fedora_version = 'fedora-35' %}
 
 
 # Install latest templates required for SDW VMs.
@@ -17,7 +17,7 @@ dom0-install-fedora-template:
 {% if grains['osrelease'] == '4.1' %}
   cmd.run:
     - name: >
-        qvm-template install fedora-34
+        qvm-template install fedora-35
 {% else %}
   pkg.installed:
     - pkgs:

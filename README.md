@@ -188,7 +188,7 @@ When developing on the Workstation, make sure to edit files in `sd-dev`, then co
 
 The staging environment differs from a production envionment in that it builds a local RPM, installs it in dom0, uses the dom0 package repository configuration for future updates of the RPM package from the https://yum-test.securedrop.org repository, and makes it so that you receive the latest nightlies of the workstation components, such as the SecureDrop Client.
 
-#### Update `dom0`, `fedora-34`, `whonix-gw-16` and `whonix-ws-16` templates
+#### Update `dom0`, `fedora-35`, `whonix-gw-16` and `whonix-ws-16` templates
 
 Updates to these VMs will be provided by the installer and updater, but to ensure they are up to date prior to install, it will be easier to debug, should something go wrong.
 
