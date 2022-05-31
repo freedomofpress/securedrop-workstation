@@ -1,5 +1,5 @@
 %global srcname securedrop-workstation-dom0-config
-%global version 0.6.0
+%global version 0.6.1
 %global __python3 /usr/bin/python3
 %global python3_sitelib /usr/lib/%{_python_version}/site-packages
 # For reproducible builds:
@@ -15,13 +15,13 @@
 
 Name:		%{srcname}
 Version:	%{version}
-Release:	1%{?dist}
+Release:	0.rc1.1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	GPLv3+
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.6.0.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.6.1rc1.tar.gz
 
 BuildArch:      noarch
 # Disable declaration of build dependencies, because
@@ -49,7 +49,7 @@ configuration over time.
 %define use_source_date_epoch_as_buildtime 1
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.6.0
+%setup -n securedrop-workstation-dom0-config-0.6.1rc1
 
 %install
 %{__python3} setup.py install --install-lib %{python3_sitelib} --no-compile --root %{buildroot}
@@ -133,6 +133,9 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
+* Tue May 31 2022 SecureDrop Team <securedrop@freedom.press> - 0.6.1-rc1
+- Use Fedora 35 base template (Qubes 4.0)
+
 * Thu Apr 7 2022 SecureDrop Team <securedrop@freedom.press> - 0.6.0
 - Check for network connection before running preflight updater (#743)
 - Add option to launch updater from sdw-notify script (#740)
