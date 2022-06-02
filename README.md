@@ -459,7 +459,7 @@ In an environment sufficient for building production artifacts (if you don’t k
 4. sha256sum the built template (and store hash in the build logs/commit message).
 5. Commit the (unsigned) version of this RPM to a branch in the [securedrop-workstation-prod-rpm-packages-lfs](https://github.com/freedomofpress/securedrop-workstation-prod-rpm-packages-lfs) repository.
 6. Copy the RPM to the signing environment.
-7. Verify integrity of RPM prior to signing (use sha256sums to compare).
+7. Verify integrity of RPM prior to signing (use sha256sums to compare). **Note for reviewers:** Using `rpm --delsign` on a signed artifact (for example, a release candidate) in order to verify the checksum of the unsigned .rpm file must be done in the same type of build environment (Linux distribution and `rpm` version) as the .rpm was built in, or the checksums may not match.
 8. Sign RPM in place (see Signing section below).
 9. Move the signed RPM back to the environment for committing to the lfs repository.
 10. Upload build logs directly to the [build-logs](https://github.com/freedomofpress/build-logs) repository in the workstation directory. Ensure that the sha256sum of the package before and after signing is included in the build log.
