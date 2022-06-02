@@ -527,6 +527,8 @@ rpm -Kv  # Signature lines will now contain OK instead of NOKEY
 
 You can then proceed with distributing the package, via the "test" or "prod" repo,
 as appropriate.
+   
+:warning: Remember to update your `~/.rpmmacros` file with the correct GPG key ID each time you switch between signing an RPM with the test key (required for `yum-test`) and the prod key (required for `yum`).
 
 #### `~/.rpmmacros` file
 
