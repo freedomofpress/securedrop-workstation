@@ -41,7 +41,14 @@ base:
   securedrop-workstation-buster:
     - sd-workstation-template-files
     - sd-logging-setup
+# Depending on whether sys-usb is disposable or not, we want to
+# modify different qubes. If sd-fedora-dvm will only be
+# created by sd-sys-vms.sls if sys-usb is disposable.
+{% if grains['osrelease'] == '4.1' and salt['pillar.get']('qvm:sys-usb:disposable', true) %}
+  sd-fedora-dvm:
+{% else %}
   sys-usb:
+{% endif %}
     - sd-usb-autoattach-add
   sd-log:
     - sd-logging-setup

@@ -52,11 +52,6 @@
 
     $anyvm	dom0	allow
 
-- policy: securedrop.Log
-  starts_with: |-
-    @tag:sd-workstation sd-log allow
-    @anyvm @anyvm deny
-
 - policy: securedrop.Proxy
   starts_with: |-
     sd-app sd-proxy allow
@@ -98,6 +93,10 @@
 
 - policy: /etc/qubes/policy.d/60-securedrop-workstation.policy
   starts_with: |-
+    # required to suppress unsupported loopback error notifications
+    securedrop.Log          *           sd-log sd-log deny notify=no
+    securedrop.Log          *           @tag:sd-workstation sd-log allow
+
     qubes.Filecopy          *           sd-log @default ask
     qubes.Filecopy          *           sd-log @tag:sd-receive-logs ask
     qubes.Filecopy          *           sd-proxy @tag:sd-client allow
@@ -108,6 +107,8 @@
 
 - policy: /etc/qubes/policy.d/70-securedrop-workstation.policy
   starts_with: |-
+    securedrop.Log          *           @anyvm @anyvm deny
+
     qubes.FeaturesRequest   *           @anyvm @tag:sd-workstation deny
     qubes.FeaturesRequest   *           @tag:sd-workstation @anyvm deny
 

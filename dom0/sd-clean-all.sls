@@ -9,8 +9,43 @@ set-fedora-as-default-dispvm:
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
+{% if grains['osrelease'] == '4.1' and salt['pillar.get']('qvm:sys-usb:disposable', true) %}
+restore-sys-usb-dispvm-halt:
+  qvm.kill:
+    - name: sys-usb
+
+restore-sys-usb-dispvm-halt-wait:
+  cmd.run:
+    - name: sleep 5
+    - require:
+      - qvm: restore-sys-usb-dispvm-halt
+
+restore-sys-usb-dispvm:
+  qvm.prefs:
+    - name: sys-usb
+    - template: fedora-35-dvm
+    - require:
+      - cmd: restore-sys-usb-dispvm-halt-wait
+      - cmd: set-fedora-as-default-dispvm
+
+restore-sys-usb-dispvm-start:
+  qvm.start:
+    - name: sys-usb
+    - require:
+      - qvm: restore-sys-usb-dispvm
+
+# autoattach modifications are only present in sd-fedora-dvm
+# so no more sd-usb-autoattach-remove necessary
+remove-sd-fedora-dispvm:
+  qvm.absent:
+    - name: sd-fedora-dvm
+    - require:
+      - qvm: restore-sys-usb-dispvm
+{% else %}
+# If sys-usb is not disposable, clean up after ourselves
 include:
   - sd-usb-autoattach-remove
+{% endif %}
 
 # Reset desktop icon size to its original value
 dom0-reset-icon-size-xfce:

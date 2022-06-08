@@ -23,14 +23,22 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
         """
         sys_vms = ["sys-firewall", "sys-net", "sys-usb", "default-mgmt-dvm"]
         sys_vms_maybe_disp = ["sys-firewall", "sys-usb"]
+        sys_vms_custom_disp = ["sys-usb"]
 
         for sys_vm in sys_vms:
             vm = self.app.domains[sys_vm]
-            wanted_template = CURRENT_FEDORA_TEMPLATE
+            wanted_templates = [CURRENT_FEDORA_TEMPLATE]
             if get_qubes_version() == "4.1" and sys_vm in sys_vms_maybe_disp:
-                wanted_template += "-dvm"
-            self.assertEqual(
-                vm.template.name, wanted_template, "Unexpected template for {}".format(sys_vm)
+                if sys_vm in sys_vms_custom_disp:
+                    wanted_templates.append("sd-fedora-dvm")
+                else:
+                    wanted_templates.append(CURRENT_FEDORA_TEMPLATE + "-dvm")
+
+            self.assertTrue(
+                vm.template.name in wanted_templates,
+                "Unexpected template for {}\n".format(sys_vm)
+                + "Current: {}\n".format(vm.template.name)
+                + "Expected: {}".format(", ".join(wanted_templates)),
             )
 
     def test_current_whonix_vms(self):
