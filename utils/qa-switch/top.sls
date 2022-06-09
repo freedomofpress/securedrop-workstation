@@ -5,29 +5,29 @@ base:
   dom0:
     - sd-dom0-switch
 
-  sd-log-buster-template:
-    - sd-buster-switch
-  sd-devices-buster-template:
-    - sd-buster-switch
+  sd-log-bullseye-template:
+    - sd-bullseye-switch
+  sd-devices-bullseye-template:
+    - sd-bullseye-switch
   sd-gpg:
-    - sd-buster-switch
-  sd-proxy-buster-template:
-    - sd-buster-switch
+    - sd-bullseye-switch
+  sd-proxy-bullseye-template:
+    - sd-bullseye-switch
   sd-app:
-    - sd-buster-switch
-  sd-viewer-buster-template:
-    - sd-buster-switch
-  sd-app-buster-template:
-    - sd-buster-switch
+    - sd-bullseye-switch
+  sd-viewer-bullseye-template:
+    - sd-bullseye-switch
+  sd-app-bullseye-template:
+    - sd-bullseye-switch
   sys-firewall:
-    - sd-buster-switch
+    - sd-bullseye-switch
   sd-whonix:
-    - sd-buster-switch
-  securedrop-workstation-buster:
-    - sd-buster-switch
+    - sd-bullseye-switch
+  securedrop-workstation-bullseye:
+    - sd-bullseye-switch
   sys-usb:
-    - sd-buster-switch
+    - sd-bullseye-switch
   whonix-gw-16:
-    - sd-buster-switch
+    - sd-bullseye-switch
   sd-log:
-    - sd-buster-switch
+    - sd-bullseye-switch
