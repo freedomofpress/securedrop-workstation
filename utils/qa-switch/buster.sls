@@ -1,6 +1,6 @@
 remove-prod-apt-repo:
   pkgrepo.absent:
-    - name: "deb [arch=amd64] https://apt.freedom.press buster main"
+    - name: "deb [arch=amd64] https://apt.freedom.press buster nightlies"
 
 add-test-apt-repo:
   pkgrepo.managed:
