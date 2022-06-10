@@ -517,18 +517,19 @@ Now we'll sign the RPM:
 
 ```
 rpm --resign <rpm>.rpm  # --addsign would allow us to apply multiple signatures to the RPM
-rpm -qi<file.rpm>  # should now show that the file is signed
+rpm -qi <file.rpm>  # should now show that the file is signed
 rpm -Kv  # should contain NOKEY errors in the lines containing Signature
 # This is because the the (public) key of the RPM signing key is not present,
 # and must be added to the RPM client config to verify the signature:
-sudo rpm --import <publicKey>.asc
+sudo rpm --import <publicKey>.asc  # Keys are in the lfs repos
 rpm -Kv  # Signature lines will now contain OK instead of NOKEY
+rpm qi <file.rpm> | grep -oP "key ID \K\w+"" | xargs gpg -k  # Verify the RPM was signed with the correct key
 ```
 
 You can then proceed with distributing the package, via the "test" or "prod" repo,
 as appropriate.
    
-:warning: Remember to update your `~/.rpmmacros` file with the correct GPG key ID each time you switch between signing an RPM with the test key (required for `yum-test`) and the prod key (required for `yum`).
+:warning: Remember that you hard-coded a GPG key ID in your `~/.rpmmacros` file to be used any time you sign an RPM from your Fedora machine/VM. If you have to switch between keys, you'll want to either update that file or use a different environment for the other key.
 
 #### `~/.rpmmacros` file
 
