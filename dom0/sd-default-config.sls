@@ -14,8 +14,23 @@
 {% import_json "sd/config.json" as d %}
 
 # Respect "dev" env if provided, default to "prod"
-{% if d.environment == "dev" or d.environment == "staging" %}
-  {% set sdvars = sdvars_defaults["dev"] %}
+{% if d.environment == "dev" %}
+  # use apt-test and nightlies
+  {% set sdvars = sdvars_defaults["test"] %}
+  {% set _ = sdvars.update({"component": "nightlies"}) %} 
+{% elif d.environment == "staging" %}
+  # use apt-test and main (RC/test builds)
+  {% set sdvars = sdvars_defaults["test"] %}
+  {% set _ = sdvars.update({"component": "main"}) %} 
 {% else %}
   {% set sdvars = sdvars_defaults["prod"] %}
+  {% set _ = sdvars.update({"component": "main"}) %} 
 {% endif %}
+
+# Append repo URL with appropriate dom0 Fedora version
+{% if grains['osrelease'] == '4.1' %}
+  {% set fedora_repo = "f32" %}
+{% else %}
+  {% set fedora_repo = "f24" %}
+{% endif %}
+{% set _ = sdvars.update({"dom0_yum_repo_url": sdvars["dom0_yum_repo_url"] + fedora_repo}) %}
