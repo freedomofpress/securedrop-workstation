@@ -17,20 +17,22 @@
 {% if d.environment == "dev" %}
   # use apt-test and nightlies
   {% set sdvars = sdvars_defaults["test"] %}
-  {% set _ = sdvars.update({"component": "nightlies"}) %} 
+  {% set _ = sdvars.update({"component": "nightlies"}) %}
 {% elif d.environment == "staging" %}
   # use apt-test and main (RC/test builds)
   {% set sdvars = sdvars_defaults["test"] %}
-  {% set _ = sdvars.update({"component": "main"}) %} 
+  {% set _ = sdvars.update({"component": "main"}) %}
 {% else %}
   {% set sdvars = sdvars_defaults["prod"] %}
-  {% set _ = sdvars.update({"component": "main"}) %} 
+  {% set _ = sdvars.update({"component": "main"}) %}
 {% endif %}
 
 # Append repo URL with appropriate dom0 Fedora version
 {% if grains['osrelease'] == '4.1' %}
   {% set fedora_repo = "f32" %}
+  {% set _ = sdvars.update({"distribution": "bullseye"}) %}
 {% else %}
   {% set fedora_repo = "f24" %}
+  {% set _ = sdvars.update({"distribution": "buster"}) %}
 {% endif %}
 {% set _ = sdvars.update({"dom0_yum_repo_url": sdvars["dom0_yum_repo_url"] + fedora_repo}) %}

@@ -11,6 +11,9 @@
 # This VM has no network configured.
 ##
 
+# Imports "sdvars" for environment config
+{% from 'sd-default-config.sls' import sdvars with context %}
+
 include:
   - sd-workstation-template
   - sd-upgrade-templates
@@ -19,10 +22,10 @@ sd-viewer:
   qvm.vm:
     - name: sd-viewer
     - present:
-      - template: sd-large-buster-template
+      - template: sd-large-{{ sdvars.distribution }}-template
       - label: green
     - prefs:
-      - template: sd-large-buster-template
+      - template: sd-large-{{ sdvars.distribution }}-template
       - netvm: ""
       - template_for_dispvms: True
       - default_dispvm: ""
@@ -30,12 +33,12 @@ sd-viewer:
       - add:
         - sd-workstation
         - sd-viewer-vm
-        - sd-buster
+        - sd-{{ sdvars.distribution }}
     - features:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-large-buster-template
+      - qvm: sd-large-{{ sdvars.distribution }}-template
 
 sd-viewer-default-dispvm:
   cmd.run:

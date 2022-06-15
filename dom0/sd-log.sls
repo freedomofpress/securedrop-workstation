@@ -6,6 +6,10 @@
 # from all SecureDrop related VMs.
 # This VM has no network configured.
 ##
+
+# Imports "sdvars" for environment config
+{% from 'sd-default-config.sls' import sdvars with context %}
+
 include:
   - sd-workstation-template
   - sd-upgrade-templates
@@ -14,10 +18,10 @@ sd-log:
   qvm.vm:
     - name: sd-log
     - present:
-      - template: sd-small-buster-template
+      - template: sd-small-{{ sdvars.distribution }}-template
       - label: red
     - prefs:
-      - template: sd-small-buster-template
+      - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""
       - autostart: true
     - tags:
@@ -29,7 +33,7 @@ sd-log:
         - service.redis
         - service.securedrop-log
     - require:
-      - qvm: sd-small-buster-template
+      - qvm: sd-small-{{ sdvars.distribution }}-template
 
 {% if grains['osrelease'] == '4.0' %}
 # Allow any SecureDrop VM to log to the centralized log VM

@@ -17,7 +17,10 @@ echo "Set up dom0 config files, including RPC policies, and create VMs"
 sudo qubesctl --show-output state.highstate
 
 echo "Set up logging VMs early"
-sudo qubesctl --show-output --skip-dom0 --targets sd-log,sd-small-buster-template state.highstate
+grep -q "R4.1" /etc/qubes-release && \
+  sudo qubesctl --show-output --skip-dom0 --targets sd-log,sd-small-bullseye-template state.highstate || \
+  sudo qubesctl --show-output --skip-dom0 --targets sd-log,sd-small-buster-template state.highstate
+
 # Reboot sd-log so it's ready to receive logs from other VMs about to be configured
 qvm-shutdown --wait sd-log && qvm-start sd-log
 

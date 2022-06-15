@@ -6,16 +6,18 @@ from qubesadmin import Qubes
 from base import WANTED_VMS, CURRENT_FEDORA_TEMPLATE
 
 
-SUPPORTED_SD_PLATFORMS = ["Debian GNU/Linux 10 (buster)"]
+with open("/etc/qubes-release") as qubes_release:
+    if "R4.1" in qubes_release.read():
+        SUPPORTED_SD_PLATFORMS = ["Debian GNU/Linux 11 (bullseye)"]
+    else:
+        SUPPORTED_SD_PLATFORMS = ["Debian GNU/Linux 10 (buster)"]
 
 SUPPORTED_WHONIX_PLATFORMS = ["Debian GNU/Linux 11 (bullseye)"]
 
 
 apt_url = ""
-FPF_APT_SOURCES_STRETCH_DEV = "deb [arch=amd64] https://apt-test.freedom.press stretch nightlies"
-FPF_APT_SOURCES_BUSTER_DEV = "deb [arch=amd64] https://apt-test.freedom.press buster nightlies"
-FPF_APT_SOURCES_STRETCH = "deb [arch=amd64] https://apt.freedom.press stretch main"
-FPF_APT_SOURCES_BUSTER = "deb [arch=amd64] https://apt.freedom.press buster main"
+FPF_APT_TEST_SOURCES = "deb [arch=amd64] https://apt-test.freedom.press {dist} {component}"
+FPF_APT_SOURCES = "deb [arch=amd64] https://apt.freedom.press {dist} {component}"
 APT_SOURCES_FILE = "/etc/apt/sources.list.d/securedrop_workstation.list"
 
 
@@ -27,10 +29,17 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             if "environment" not in config:
                 config["environment"] = "dev"
 
+            if "buster" in SUPPORTED_SD_PLATFORMS:
+                dist = "buster"
+            elif "bullseye" in SUPPORTED_SD_PLATFORMS:
+                dist = "bullseye"
+
             if config["environment"] == "prod":
-                self.apt_url = FPF_APT_SOURCES_BUSTER
+                self.apt_url = FPF_APT_SOURCES.format(dist=dist, component="main")
+            elif config["environment"] == "staging":
+                self.apt_url = FPF_APT_TEST_SOURCES.format(dist=dist, component="main")
             else:
-                self.apt_url = FPF_APT_SOURCES_BUSTER_DEV
+                self.apt_url = FPF_APT_TEST_SOURCES.format(dist=dist, component="nightlies")
 
     def tearDown(self):
         pass
@@ -76,7 +85,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         contents = stdout.decode("utf-8").rstrip("\n")
 
         self.assertTrue(self.apt_url in contents)
-        self.assertFalse(FPF_APT_SOURCES_STRETCH in contents)
+        self.assertFalse(FPF_APT_SOURCES.format(dist="stretch", component="main") in contents)
         # Old alpha URL for apt repo should be absent
         self.assertFalse("apt-test-qubes.freedom.press" in contents)
 

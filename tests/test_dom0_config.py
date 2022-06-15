@@ -17,12 +17,17 @@ DEPRECATED_TEMPLATES = [
     "sd-log-buster-template",
 ]
 
+DEBIAN_VERSION = "bullseye"
+with open("/etc/qubes-release") as qubes_release:
+    if "R4.0" in qubes_release.read():
+        DEBIAN_VERSION = "buster"
+
 VMS_TO_UPDATE = [
-    "sd-large-buster-template",
-    "sd-small-buster-template",
+    "sd-large-{}-template".format(DEBIAN_VERSION),
+    "sd-small-{}-template".format(DEBIAN_VERSION),
     "whonix-ws-16",
     "whonix-gw-16",
-    "securedrop-workstation-buster",
+    "securedrop-workstation-{}".format(DEBIAN_VERSION),
 ]
 
 

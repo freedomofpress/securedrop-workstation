@@ -7,6 +7,11 @@ from base import WANTED_VMS
 
 EXPECTED_KERNEL_VERSION = "4.14.241-grsec-workstation"
 
+DEBIAN_VERSION = "bullseye"
+with open("/etc/qubes-release") as qubes_release:
+    if "R4.0" in qubes_release.read():
+        DEBIAN_VERSION = "buster"
+
 
 class SD_VM_Tests(unittest.TestCase):
     def setUp(self):
@@ -40,9 +45,8 @@ class SD_VM_Tests(unittest.TestCase):
         # kernel module anymore
         # This portion of the test assumes that 4.1 is always used with templates that use
         # repositories for 4.1 (in our case, bullseye based templates)
-        with open("/etc/qubes-release") as qubes_release:
-            if "R4.1" in qubes_release.read():
-                return
+        if DEBIAN_VERSION == "bullseye":
+            return
 
         u2mfn_filepath = "/usr/lib/modules/{}/updates/dkms/u2mfn.ko".format(EXPECTED_KERNEL_VERSION)
         # cmd will raise exception if file not found
@@ -76,7 +80,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-proxy"]
         nvm = vm.netvm
         self.assertTrue(nvm.name == "sd-whonix")
-        self.assertTrue(vm.template == "sd-small-buster-template")
+        self.assertTrue(vm.template == "sd-small-{}-template".format(DEBIAN_VERSION))
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -86,7 +90,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-app"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-small-buster-template")
+        self.assertTrue(vm.template == "sd-small-{}-template".format(DEBIAN_VERSION))
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
@@ -104,7 +108,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-viewer"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-large-buster-template")
+        self.assertTrue(vm.template == "sd-large-{}-template".format(DEBIAN_VERSION))
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
         # sd-viewer should not be able to create other disposable VMs
@@ -118,7 +122,7 @@ class SD_VM_Tests(unittest.TestCase):
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         # No sd-gpg-template, since keyring is managed in $HOME
-        self.assertTrue(vm.template == "sd-small-buster-template")
+        self.assertTrue(vm.template == "sd-small-{}-template".format(DEBIAN_VERSION))
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -129,7 +133,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-log"]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
-        self.assertTrue(vm.template == "sd-small-buster-template")
+        self.assertTrue(vm.template == "sd-small-{}-template".format(DEBIAN_VERSION))
         self.assertTrue(vm.autostart is True)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -146,7 +150,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
     def test_sd_workstation_template(self):
-        vm = self.app.domains["securedrop-workstation-buster"]
+        vm = self.app.domains["securedrop-workstation-{}".format(DEBIAN_VERSION)]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue(vm.virt_mode == "hvm")
@@ -156,27 +160,27 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_service_running(vm, "paxctld")
 
     def test_sd_proxy_template(self):
-        vm = self.app.domains["sd-small-buster-template"]
+        vm = self.app.domains["sd-small-{}-template".format(DEBIAN_VERSION)]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)
 
     def sd_app_template(self):
-        vm = self.app.domains["sd-small-buster-template"]
+        vm = self.app.domains["sd-small-{}-template".format(DEBIAN_VERSION)]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)
         self._check_kernel(vm)
 
     def sd_viewer_template(self):
-        vm = self.app.domains["sd-large-buster-template"]
+        vm = self.app.domains["sd-large-{}-template".format(DEBIAN_VERSION)]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)
         self.assertTrue(vm.template_for_dispvms)
 
     def sd_export_template(self):
-        vm = self.app.domains["sd-large-buster-template"]
+        vm = self.app.domains["sd-large-{}-template".format(DEBIAN_VERSION)]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)
@@ -200,7 +204,7 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_kernel(vm)
 
     def sd_small_template(self):
-        vm = self.app.domains["sd-small-buster-template"]
+        vm = self.app.domains["sd-small-{}-template".format(DEBIAN_VERSION)]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)
@@ -208,7 +212,7 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_kernel(vm)
 
     def sd_large_template(self):
-        vm = self.app.domains["sd-large-buster-template"]
+        vm = self.app.domains["sd-large-{}-template".format(DEBIAN_VERSION)]
         nvm = vm.netvm
         self.assertTrue(nvm is None)
         self.assertTrue("sd-workstation" in vm.tags)

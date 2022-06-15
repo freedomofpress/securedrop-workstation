@@ -78,11 +78,11 @@ dom0-install-securedrop-workstation-template:
 {% if grains['osrelease'] == '4.1' %}
   cmd.run:
     - name: >
-        qvm-template install securedrop-workstation-buster
+        qvm-template install securedrop-workstation-{{ sdvars.distribution }}
 {% else %}
   pkg.installed:
     - pkgs:
-      - qubes-template-securedrop-workstation-buster
+      - qubes-template-securedrop-workstation-{{ sdvars.distribution }}
 {% endif %}
     - require:
       - file: dom0-workstation-rpm-repo

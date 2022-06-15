@@ -9,6 +9,9 @@
 # This VM has no network configured.
 ##
 
+# Imports "sdvars" for environment config
+{% from 'sd-default-config.sls' import sdvars with context %}
+
 include:
   - sd-workstation-template
   - sd-upgrade-templates
@@ -17,10 +20,10 @@ sd-gpg:
   qvm.vm:
     - name: sd-gpg
     - present:
-      - template: sd-small-buster-template
+      - template: sd-small-{{ sdvars.distribution }}-template
       - label: purple
     - prefs:
-      - template: sd-small-buster-template
+      - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""
       - autostart: true
     - tags:

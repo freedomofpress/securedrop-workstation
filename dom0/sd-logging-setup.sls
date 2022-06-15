@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
-{% if grains['id'] in ["securedrop-workstation-buster", "sd-small-buster-template", "sd-large-buster-template"] %}
+{% if grains['id'] in ["securedrop-workstation-{}".format(grains['oscodename']), "sd-small-{}-template".format(grains['oscodename']), "sd-large-{}-template".format(grains['oscodename'])] %}
 include:
   - fpf-apt-repo
 
@@ -21,7 +21,7 @@ configure-rsyslog-for-sd:
 
 {% endif %}
 
-{% if grains['id'] == "sd-small-buster-template" %}
+{% if grains['id'] == "sd-small-{}-template".format(grains['oscodename']) %}
 install-redis-for-sd-log-template:
   pkg.installed:
     - pkgs:
