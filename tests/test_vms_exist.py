@@ -5,12 +5,12 @@ from qubesadmin import Qubes
 from base import WANTED_VMS
 
 
-EXPECTED_KERNEL_VERSION = "4.14.241-grsec-workstation"
-
 DEBIAN_VERSION = "bullseye"
+EXPECTED_KERNEL_VERSION = "5.15.41-grsec-workstation"
 with open("/etc/qubes-release") as qubes_release:
     if "R4.0" in qubes_release.read():
         DEBIAN_VERSION = "buster"
+        EXPECTED_KERNEL_VERSION = "4.14.241-grsec-workstation"
 
 
 class SD_VM_Tests(unittest.TestCase):

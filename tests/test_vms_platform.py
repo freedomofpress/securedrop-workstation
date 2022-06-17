@@ -6,13 +6,15 @@ from qubesadmin import Qubes
 from base import WANTED_VMS, CURRENT_FEDORA_TEMPLATE
 
 
-with open("/etc/qubes-release") as qubes_release:
-    if "R4.1" in qubes_release.read():
-        SUPPORTED_SD_PLATFORMS = ["Debian GNU/Linux 11 (bullseye)"]
-    else:
-        SUPPORTED_SD_PLATFORMS = ["Debian GNU/Linux 10 (buster)"]
+BULLSEYE_STRING = "Debian GNU/Linux 11 (bullseye)"
+BUSTER_STRING = "Debian GNU/Linux 10 (buster)"
 
-SUPPORTED_WHONIX_PLATFORMS = ["Debian GNU/Linux 11 (bullseye)"]
+SUPPORTED_SD_PLATFORMS = [BULLSEYE_STRING]
+with open("/etc/qubes-release") as qubes_release:
+    if "R4.0" in qubes_release.read():
+        SUPPORTED_SD_PLATFORMS = [BUSTER_STRING]
+
+SUPPORTED_WHONIX_PLATFORMS = [BULLSEYE_STRING]
 
 
 apt_url = ""
@@ -29,10 +31,9 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             if "environment" not in config:
                 config["environment"] = "dev"
 
-            if "buster" in SUPPORTED_SD_PLATFORMS:
+            dist = "bullseye"
+            if BUSTER_STRING in SUPPORTED_SD_PLATFORMS:
                 dist = "buster"
-            elif "bullseye" in SUPPORTED_SD_PLATFORMS:
-                dist = "bullseye"
 
             if config["environment"] == "prod":
                 self.apt_url = FPF_APT_SOURCES.format(dist=dist, component="main")
