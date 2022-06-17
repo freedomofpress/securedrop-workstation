@@ -2,6 +2,14 @@ import json
 import unittest
 
 
+DEBIAN_VERSION = "bullseye"
+FEDORA_VERSION = "f32"
+with open("/etc/qubes-release") as qubes_release:
+    if "R4.0" in qubes_release.read():
+        DEBIAN_VERSION = "buster"
+        FEDORA_VERSION = "f25"
+
+
 class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
 
     pubkey_wanted = ""
@@ -9,8 +17,8 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
     pubkey_actual = "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation"  # noqa
     pubkey_wanted_prod = "sd-workstation/securedrop-release-signing-pubkey-2021.asc"
     pubkey_wanted_test = "sd-workstation/apt-test-pubkey.asc"
-    yum_repo_url_prod = "https://yum.securedrop.org/workstation/dom0/f25"
-    yum_repo_url_test = "https://yum-test.securedrop.org/workstation/dom0/f25"
+    yum_repo_url_prod = f"https://yum.securedrop.org/workstation/dom0/{FEDORA_VERSION}"
+    yum_repo_url_test = f"https://yum-test.securedrop.org/workstation/dom0/{FEDORA_VERSION}"
 
     def setUp(self):
         # Enable full diff output in test report, to aid in debugging
