@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
-{% if grains['id'] in ["securedrop-workstation-{}".format(grains['oscodename']), "sd-small-{}-template".format(grains['oscodename']), "sd-large-{}-template".format(grains['oscodename'])] %}
+{% if grains['id'] in ["securedrop-workstation-bullseye", "sd-small-bullseye-template", "sd-large-bullseye-template"] %}
 include:
   - fpf-apt-repo
 

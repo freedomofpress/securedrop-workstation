@@ -35,24 +35,6 @@ sd-log:
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
-{% if grains['osrelease'] == '4.0' %}
-# Allow any SecureDrop VM to log to the centralized log VM
-sd-log-dom0-securedrop.Log:
-  file.prepend:
-    - name: /etc/qubes-rpc/policy/securedrop.Log
-    - text: |
-        @tag:sd-workstation sd-log allow
-        @anyvm @anyvm deny
-{% elif grains['osrelease'] == '4.1' %}
-# In 4.1 this policy is handled in the more central app policy
-# files added by sd-dom0-qvm-rpc.sls, no need to keep this
-# around in 4.0 if we migrated
-sd-log-dom0-remove-old-securedrop.Log-policy:
-  file.absent:
-    - names:
-      - /etc/qubes-rpc/policy/securedrop.Log
-{% endif %}
-
 {% import_json "sd/config.json" as d %}
 
 # The private volume size should be set in config.json

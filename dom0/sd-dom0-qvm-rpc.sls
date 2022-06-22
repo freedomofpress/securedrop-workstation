@@ -96,96 +96,6 @@ dom0-rpc-qubes.GpgImportKey:
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
 
-# Some legacy RPC files were moved under Qubes 4.1, to /etc/qubes/policy.d/.
-# We'll continue to configure them under the legacy path for 4.0 hosts.
-{% if grains['osrelease'] == '4.0' %}
-dom0-rpc-qubes.FeaturesRequest:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.FeaturesRequest
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-
-dom0-rpc-qubes.Filecopy:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.Filecopy
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        sd-log @default ask
-        sd-log @tag:sd-receive-logs ask
-        sd-proxy @tag:sd-client allow
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-
-dom0-rpc-qubes.GetImageRGBA:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.GetImageRGBA
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-
-dom0-rpc-qubes.OpenInVM:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.OpenInVM
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @tag:sd-client @dispvm:sd-viewer allow
-        @tag:sd-client sd-devices allow
-        sd-devices @dispvm:sd-viewer allow
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-
-dom0-rpc-qubes.OpenURL:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.OpenURL
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-
-dom0-rpc-qubes.StartApp:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.StartApp
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-
-dom0-rpc-qubes.VMRootShell:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.VMRootShell
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-
-dom0-rpc-qubes.VMshell:
-  file.blockreplace:
-    - name: /etc/qubes-rpc/policy/qubes.VMShell
-    - prepend_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        @anyvm @tag:sd-workstation deny
-        @tag:sd-workstation @anyvm deny
-
-{% elif grains['osrelease'] == '4.1' %}
 # Qubes suggests using files starting with 70- to be the allow policies
 # and 60- deny policies, but due to the way SDW policies are stacked at the
 # moment, we reverse this suggested order
@@ -234,5 +144,3 @@ dom0-rpc-qubes.r5-format-ask-allow:
         qubes.OpenInVM          *           @tag:sd-client @dispvm:sd-viewer allow
         qubes.OpenInVM          *           @tag:sd-client sd-devices allow
         qubes.OpenInVM          *           sd-devices @dispvm:sd-viewer allow
-
-{% endif %}

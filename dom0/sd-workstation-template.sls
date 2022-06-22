@@ -23,11 +23,7 @@ sd-workstation-template:
       - enable:
         - service.paxctld
     - require:
-{% if grains['osrelease'] == '4.1' %}
       - cmd: dom0-install-securedrop-workstation-template
-{% else %}
-      - pkg: dom0-install-securedrop-workstation-template
-{% endif %}
 
 # Installs consolidated templateVMs:
 # - sd-small-{{ sdvars.distribution }}-template, to be used for

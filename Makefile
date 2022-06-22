@@ -58,20 +58,20 @@ remove-usb-autoattach: prep-dev ## Removes udev rules and scripts from sys-usb
 	sudo qubesctl --show-output state.sls sd-usb-autoattach-remove
 
 sd-workstation-template: prep-dev ## Provisions base template for SDW AppVMs
-	sudo qubesctl --show-output state.sls sd-workstation-buster-template
-	sudo qubesctl --show-output --skip-dom0 --targets sd-workstation-buster-template state.highstate
+	sudo qubesctl --show-output state.sls sd-workstation-bullseye-template
+	sudo qubesctl --show-output --skip-dom0 --targets sd-workstation-bullseye-template state.highstate
 
 sd-proxy: prep-dev ## Provisions SD Proxy VM
 	sudo qubesctl --show-output state.sls sd-proxy
-	sudo qubesctl --show-output --skip-dom0 --targets sd-small-buster-template,sd-proxy state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bullseye-template,sd-proxy state.highstate
 
 sd-gpg: prep-dev ## Provisions SD GPG keystore VM
 	sudo qubesctl --show-output state.sls sd-gpg
-	sudo qubesctl --show-output --skip-dom0 --targets sd-workstation-buster-template,sd-gpg state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets sd-workstation-bullseye-template,sd-gpg state.highstate
 
 sd-app: prep-dev ## Provisions SD APP VM
 	sudo qubesctl --show-output state.sls sd-app
-	sudo qubesctl --show-output --skip-dom0 --targets sd-small-buster-template,sd-app state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bullseye-template,sd-app state.highstate
 
 sd-whonix: prep-dev ## Provisions SD Whonix VM
 	sudo qubesctl --show-output state.sls sd-whonix
@@ -79,15 +79,15 @@ sd-whonix: prep-dev ## Provisions SD Whonix VM
 
 sd-viewer: prep-dev ## Provisions SD Submission Viewing VM
 	sudo qubesctl --show-output state.sls sd-viewer
-	sudo qubesctl --show-output --skip-dom0 --targets sd-viewer-buster-template,sd-viewer state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets sd-viewer-bullseye-template,sd-viewer state.highstate
 
 sd-devices: prep-dev ## Provisions SD Export VM
 	sudo qubesctl --show-output state.sls sd-devices
-	sudo qubesctl --show-output --skip-dom0 --targets sd-devices-buster-template,sd-devices,sd-devices-dvm state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets sd-devices-bullseye-template,sd-devices,sd-devices-dvm state.highstate
 
 sd-log: prep-dev ## Provisions SD logging VM
 	sudo qubesctl --show-output state.sls sd-log
-	sudo qubesctl --show-output --skip-dom0 --targets sd-small-buster-template,sd-log state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bullseye-template,sd-log state.highstate
 
 prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./scripts/prep-dev

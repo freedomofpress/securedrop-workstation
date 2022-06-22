@@ -1,4 +1,4 @@
-- policy: qubes.ClipboardPaste
+- policy: /etc/qubes-rpc/policy/qubes.ClipboardPaste
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @tag:sd-send-app-clipboard sd-app ask
@@ -7,48 +7,9 @@
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: qubes.FeaturesRequest
+- policy: /etc/qubes-rpc/policy/qubes.GetDate
   starts_with: |-
-    ### BEGIN securedrop-workstation ###
-    @anyvm @tag:sd-workstation deny
-    @tag:sd-workstation @anyvm deny
-    ### END securedrop-workstation ###
-
-- policy: qubes.Filecopy
-  starts_with: |-
-    ### BEGIN securedrop-workstation ###
-    sd-log @default ask
-    sd-log @tag:sd-receive-logs ask
-    sd-proxy @tag:sd-client allow
-    @anyvm @tag:sd-workstation deny
-    @tag:sd-workstation @anyvm deny
-    ### END securedrop-workstation ###
-
-- policy: qubes.GetDate
-  starts_with: |-
-    ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
-
-    ## Please use a single # to start your custom comments
-
-    $tag:anon-vm	$anyvm	deny
-    $anyvm	$anyvm	allow,target=dom0
-
-- policy: qubes.GetImageRGBA
-  starts_with: |-
-    ### BEGIN securedrop-workstation ###
-    @anyvm @tag:sd-workstation deny
-    @tag:sd-workstation @anyvm deny
-    ### END securedrop-workstation ###
-
-- policy: qubes.GetRandomizedTime
-  starts_with: |-
-    ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
-
-    ## Please use a single # to start your custom comments
-
-    $anyvm	dom0	allow
+    $tag:anon-vm $anyvm deny
 
 - policy: qubes.Gpg
   starts_with: |-
@@ -72,45 +33,10 @@
 
 - policy: qubes.InputMouse
   starts_with: |-
-    sys-usb dom0 allow,user=root
+    sys-usb dom0 ask,user=root,default_target=dom0
     $anyvm $anyvm deny
 
-- policy: qubes.NotifyTools
-  starts_with: |-
-    ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
-
-    ## Please use a single # to start your custom comments
-
-    $anyvm	dom0	allow
-
-- policy: qubes.NotifyUpdates
-  starts_with: |-
-    ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
-
-    ## Please use a single # to start your custom comments
-
-    $anyvm	dom0	allow
-
-- policy: qubes.OpenInVM
-  starts_with: |-
-    ### BEGIN securedrop-workstation ###
-    @tag:sd-client @dispvm:sd-viewer allow
-    @tag:sd-client sd-devices allow
-    sd-devices @dispvm:sd-viewer allow
-    @anyvm @tag:sd-workstation deny
-    @tag:sd-workstation @anyvm deny
-    ### END securedrop-workstation ###
-
-- policy: qubes.OpenURL
-  starts_with: |-
-    ### BEGIN securedrop-workstation ###
-    @anyvm @tag:sd-workstation deny
-    @tag:sd-workstation @anyvm deny
-    ### END securedrop-workstation ###
-
-- policy: qubes.PdfConvert
+- policy: /etc/qubes-rpc/policy/qubes.PdfConvert
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     @anyvm @tag:sd-workstation deny
@@ -126,22 +52,10 @@
 
     $anyvm	dom0	allow
 
-- policy: securedrop.Log
-  starts_with: |-
-    @tag:sd-workstation sd-log allow
-    @anyvm @anyvm deny
-
 - policy: securedrop.Proxy
   starts_with: |-
     sd-app sd-proxy allow
     @anyvm @anyvm deny
-
-- policy: qubes.StartApp
-  starts_with: |-
-    ### BEGIN securedrop-workstation ###
-    @anyvm @tag:sd-workstation deny
-    @tag:sd-workstation @anyvm deny
-    ### END securedrop-workstation ###
 
 - policy: qubes.SyncAppMenus
   starts_with: |-
@@ -152,28 +66,12 @@
 
     $anyvm	dom0	allow
 
-- policy: qubes.UpdatesProxy
+- policy: /etc/qubes-rpc/policy/qubes.UpdatesProxy
   starts_with: |-
-    ## Note that policy parsing stops at the first match,
-    ## so adding anything below "$anyvm $anyvm action" line will have no effect
-
-    ## Please use a single # to start your custom comments
-
-    # Upgrade all TemplateVMs through sys-whonix.
-    #$type:TemplateVM $default allow,target=sys-whonix
-
-    # Upgrade Whonix TemplateVMs through sys-whonix.
     $tag:whonix-updatevm $default allow,target=sys-whonix
-
-    # Deny Whonix TemplateVMs using UpdatesProxy of any other VM.
     $tag:whonix-updatevm $anyvm deny
 
-    # Default rule for all TemplateVMs - direct the connection to sys-net
-    $type:TemplateVM $default allow,target=sys-net
-
-    $anyvm $anyvm deny
-
-- policy: qubes.USB
+- policy: /etc/qubes-rpc/policy/qubes.USB
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     sd-devices sys-usb allow
@@ -181,7 +79,7 @@
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: qubes.USBAttach
+- policy: /etc/qubes-rpc/policy/qubes.USBAttach
   starts_with: |-
     ### BEGIN securedrop-workstation ###
     sys-usb sd-devices allow,user=root
@@ -189,20 +87,49 @@
     @tag:sd-workstation @anyvm deny
     ### END securedrop-workstation ###
 
-- policy: qubes.VMRootShell
-  starts_with: |-
-    ### BEGIN securedrop-workstation ###
-    @anyvm @tag:sd-workstation deny
-    @tag:sd-workstation @anyvm deny
-    ### END securedrop-workstation ###
-
-- policy: qubes.VMShell
-  starts_with: |-
-    ### BEGIN securedrop-workstation ###
-    @anyvm @tag:sd-workstation deny
-    @tag:sd-workstation @anyvm deny
-    ### END securedrop-workstation ###
-
 - policy: qubes.WindowIconUpdater
   starts_with: |-
     $anyvm dom0 allow
+
+- policy: /etc/qubes/policy.d/60-securedrop-workstation.policy
+  starts_with: |-
+    # required to suppress unsupported loopback error notifications
+    securedrop.Log          *           sd-log sd-log deny notify=no
+    securedrop.Log          *           @tag:sd-workstation sd-log allow
+
+    qubes.Filecopy          *           sd-log @default ask
+    qubes.Filecopy          *           sd-log @tag:sd-receive-logs ask
+    qubes.Filecopy          *           sd-proxy @tag:sd-client allow
+
+    qubes.OpenInVM          *           @tag:sd-client @dispvm:sd-viewer allow
+    qubes.OpenInVM          *           @tag:sd-client sd-devices allow
+    qubes.OpenInVM          *           sd-devices @dispvm:sd-viewer allow
+
+- policy: /etc/qubes/policy.d/70-securedrop-workstation.policy
+  starts_with: |-
+    securedrop.Log          *           @anyvm @anyvm deny
+
+    qubes.FeaturesRequest   *           @anyvm @tag:sd-workstation deny
+    qubes.FeaturesRequest   *           @tag:sd-workstation @anyvm deny
+
+    qubes.Filecopy          *           @anyvm @tag:sd-workstation deny
+    qubes.Filecopy          *           @tag:sd-workstation @anyvm deny
+
+    qubes.GetImageRGBA      *           @anyvm @tag:sd-workstation deny
+    qubes.GetImageRGBA      *           @tag:sd-workstation @anyvm deny
+
+    qubes.OpenInVM          *           @anyvm @tag:sd-workstation deny
+    qubes.OpenInVM          *           @tag:sd-workstation @anyvm deny
+
+    qubes.OpenURL           *           @anyvm @tag:sd-workstation deny
+    qubes.OpenURL           *           @tag:sd-workstation @anyvm deny
+
+    qubes.StartApp          *           @anyvm @tag:sd-workstation deny
+    qubes.StartApp          *           @tag:sd-workstation @anyvm deny
+
+    qubes.VMRootShell       *           @anyvm @tag:sd-workstation deny
+    qubes.VMRootShell       *           @tag:sd-workstation @anyvm deny
+
+    qubes.VMShell           *           @anyvm @tag:sd-workstation deny
+    qubes.VMShell           *           @tag:sd-workstation @anyvm deny
+

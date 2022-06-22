@@ -4,10 +4,6 @@ import unittest
 
 DEBIAN_VERSION = "bullseye"
 FEDORA_VERSION = "f32"
-with open("/etc/qubes-release") as qubes_release:
-    if "R4.0" in qubes_release.read():
-        DEBIAN_VERSION = "buster"
-        FEDORA_VERSION = "f25"
 
 
 class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):

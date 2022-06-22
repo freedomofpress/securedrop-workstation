@@ -14,15 +14,9 @@ include:
 
 # Install latest templates required for SDW VMs.
 dom0-install-fedora-template:
-{% if grains['osrelease'] == '4.1' %}
   cmd.run:
     - name: >
-        qvm-template install fedora-35
-{% else %}
-  pkg.installed:
-    - pkgs:
-      - qubes-template-{{ sd_supported_fedora_version }}
-{% endif %}
+        qvm-template install {{ sd_supported_fedora_version }}
 
 # Update the mgmt VM before updating the new Fedora VM. The order is required
 # and listed in the release notes for F32 & F33.
@@ -32,30 +26,18 @@ set-fedora-template-as-default-mgmt-dvm:
         qvm-shutdown --wait default-mgmt-dvm &&
         qvm-prefs default-mgmt-dvm template {{ sd_supported_fedora_version }}
     - require:
-{% if grains['osrelease'] == '4.1' %}
       - cmd: dom0-install-fedora-template
-{% else %}
-      - pkg: dom0-install-fedora-template
-{% endif %}
 
 # If the VM has just been installed via package manager, update it immediately
 update-fedora-template-if-new:
   cmd.wait:
     - name: sudo qubesctl --skip-dom0 --targets {{ sd_supported_fedora_version }} state.sls update.qubes-vm
     - require:
-{% if grains['osrelease'] == '4.1' %}
       - cmd: dom0-install-fedora-template
-{% else %}
-      - pkg: dom0-install-fedora-template
-{% endif %}
       # Update the mgmt-dvm setting first, to avoid problems during first update
       - cmd: set-fedora-template-as-default-mgmt-dvm
     - watch:
-{% if grains['osrelease'] == '4.1' %}
       - cmd: dom0-install-fedora-template
-{% else %}
-      - pkg: dom0-install-fedora-template
-{% endif %}
 
 # qvm.default-dispvm is not strictly required here, but we want it to be
 # updated as soon as possible to ensure make clean completes successfully, as
@@ -64,11 +46,7 @@ set-fedora-default-template-version:
   cmd.run:
     - name: qubes-prefs default_template {{ sd_supported_fedora_version }}
     - require:
-{% if grains['osrelease'] == '4.1' %}
       - cmd: dom0-install-fedora-template
-{% else %}
-      - pkg: dom0-install-fedora-template
-{% endif %}
       - sls: qvm.default-dispvm
 
 # On 4.1, several sys qubes are disposable by default - since we also want to
@@ -78,7 +56,6 @@ set-fedora-default-template-version:
 # sys-usb is also disposable by default but a special case as we want to
 # customize the underlying DispVM template for usability purposes: we want to
 # consistently auto-attach USB devices to our sd-devices qube
-{% if grains['osrelease'] == '4.1' %}
 {% set required_dispvms = [ sd_supported_fedora_version + '-dvm' ] %}
 {% if salt['pillar.get']('qvm:sys-usb:disposable', true) %}
   {% set _ = required_dispvms.append("sd-fedora-dvm") %}
@@ -100,13 +77,12 @@ create-{{ required_dispvm }}:
     - require:
       - cmd: dom0-install-fedora-template
 {% endfor %}
-{% endif %}
 
 
 # Now proceed with rebooting all the sys-* VMs, since the new template is up to date.
 
 {% for sys_vm in ['sys-usb', 'sys-net', 'sys-firewall'] %}
-{% if grains['osrelease'] == '4.1' and salt['pillar.get']('qvm:' + sys_vm + ':disposable', false) %}
+{% if salt['pillar.get']('qvm:' + sys_vm + ':disposable', false) %}
 # As of Qubes 4.1, certain sys-* VMs will be DispVMs by default.
   {% if sys_vm == 'sys-usb' %}
     # If sys-usb is disposable, we want it to use the template we just created so we
@@ -123,21 +99,13 @@ sd-{{ sys_vm }}-fedora-version-halt:
   qvm.kill:
     - name: {{ sys_vm }}
     - require:
-{% if grains['osrelease'] == '4.1' %}
       - cmd: dom0-install-fedora-template
-{% else %}
-      - pkg: dom0-install-fedora-template
-{% endif %}
 
 sd-{{ sys_vm }}-fedora-version-halt-wait:
   cmd.run:
     - name: sleep 5
     - require:
-{% if grains['osrelease'] == '4.1' %}
       - cmd: dom0-install-fedora-template
-{% else %}
-      - pkg: dom0-install-fedora-template
-{% endif %}
 
 sd-{{ sys_vm }}-fedora-version-update:
   qvm.vm:

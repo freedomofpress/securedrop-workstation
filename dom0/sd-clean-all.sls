@@ -9,7 +9,7 @@ set-fedora-as-default-dispvm:
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
-{% if grains['osrelease'] == '4.1' and salt['pillar.get']('qvm:sys-usb:disposable', true) %}
+{% if salt['pillar.get']('qvm:sys-usb:disposable', true) %}
 restore-sys-usb-dispvm-halt:
   qvm.kill:
     - name: sys-usb
@@ -103,9 +103,6 @@ sd-cleanup-etc-changes:
       - DOTALL
     - repl: ''
     - backup: no
-{% if grains['osrelease'] == '4.0' %}
-    - ignore_if_missing: True
-{% endif %}
 
 {% if d.environment == "prod" or d.environment == "staging" %}
 apply-systemd-changes:
@@ -129,9 +126,7 @@ sd-cleanup-rpc-mgmt-policy:
       - /etc/qubes-rpc/policy/qubes.VMShell
       - /etc/qubes-rpc/policy/qubes.VMRootShell
     - repl: ''
-{% if grains['osrelease'] == '4.1' %}
     - ignore_if_missing: True
-{% endif %}
     - pattern: '^disp-mgmt-sd-\w+\s+sd-\w+\s+allow,user=root'
 
 {% set sdw_customized_rpc_files = salt['cmd.shell']('grep -rIl "BEGIN securedrop-workstation" /etc/qubes-rpc/ | cat').splitlines() %}

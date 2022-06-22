@@ -28,11 +28,6 @@
 {% endif %}
 
 # Append repo URL with appropriate dom0 Fedora version
-{% if grains['osrelease'] == '4.1' %}
-  {% set fedora_repo = "f32" %}
-  {% set _ = sdvars.update({"distribution": "bullseye"}) %}
-{% else %}
-  {% set fedora_repo = "f24" %}
-  {% set _ = sdvars.update({"distribution": "buster"}) %}
-{% endif %}
+{% set fedora_repo = "f32" %}
+{% set _ = sdvars.update({"distribution": "bullseye"}) %}
 {% set _ = sdvars.update({"dom0_yum_repo_url": sdvars["dom0_yum_repo_url"] + fedora_repo}) %}

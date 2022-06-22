@@ -18,9 +18,6 @@ DEPRECATED_TEMPLATES = [
 ]
 
 DEBIAN_VERSION = "bullseye"
-with open("/etc/qubes-release") as qubes_release:
-    if "R4.0" in qubes_release.read():
-        DEBIAN_VERSION = "buster"
 
 VMS_TO_UPDATE = [
     "sd-large-{}-template".format(DEBIAN_VERSION),

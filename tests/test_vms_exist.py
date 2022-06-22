@@ -7,10 +7,6 @@ from base import WANTED_VMS
 
 DEBIAN_VERSION = "bullseye"
 EXPECTED_KERNEL_VERSION = "5.15.41-grsec-workstation"
-with open("/etc/qubes-release") as qubes_release:
-    if "R4.0" in qubes_release.read():
-        DEBIAN_VERSION = "buster"
-        EXPECTED_KERNEL_VERSION = "4.14.241-grsec-workstation"
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -40,19 +36,6 @@ class SD_VM_Tests(unittest.TestCase):
         kernel_version = stdout.decode("utf-8").rstrip()
         assert kernel_version.endswith("-grsec-workstation")
         assert kernel_version == EXPECTED_KERNEL_VERSION
-
-        # QubesOS 4.1 stopped requiring u2mfn.ko for HVMs, the packages won't build the respective
-        # kernel module anymore
-        # This portion of the test assumes that 4.1 is always used with templates that use
-        # repositories for 4.1 (in our case, bullseye based templates)
-        if DEBIAN_VERSION == "bullseye":
-            return
-
-        u2mfn_filepath = "/usr/lib/modules/{}/updates/dkms/u2mfn.ko".format(EXPECTED_KERNEL_VERSION)
-        # cmd will raise exception if file not found
-        stdout, stderr = vm.run("sudo test -f {}".format(u2mfn_filepath))
-        assert stdout == b""
-        assert stderr == b""
 
     def _check_service_running(self, vm, service):
         """

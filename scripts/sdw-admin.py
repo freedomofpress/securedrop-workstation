@@ -16,9 +16,6 @@ sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator, ValidationError  # noqa: E402
 
 DEBIAN_VERSION = "bullseye"
-with open("/etc/qubes-release") as qubes_release:
-    if "R4.0" in qubes_release.read():
-        DEBIAN_VERSION = "buster"
 
 
 def parse_args():
@@ -121,18 +118,6 @@ def perform_uninstall(keep_template_rpm=False):
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-all"])
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/clean-salt")])
-        if not keep_template_rpm and DEBIAN_VERSION == "buster":
-            print("Uninstalling Template")
-            subprocess.check_call(
-                [
-                    "sudo",
-                    "dnf",
-                    "-y",
-                    "-q",
-                    "remove",
-                    "qubes-template-securedrop-workstation-buster",
-                ]
-            )
         print("Uninstalling dom0 config package")
         subprocess.check_call(
             ["sudo", "dnf", "-y", "-q", "remove", "securedrop-workstation-dom0-config"]

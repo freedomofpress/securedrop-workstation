@@ -7,13 +7,8 @@ from base import WANTED_VMS, CURRENT_FEDORA_TEMPLATE
 
 
 BULLSEYE_STRING = "Debian GNU/Linux 11 (bullseye)"
-BUSTER_STRING = "Debian GNU/Linux 10 (buster)"
 
-SUPPORTED_SD_PLATFORMS = [BULLSEYE_STRING]
-with open("/etc/qubes-release") as qubes_release:
-    if "R4.0" in qubes_release.read():
-        SUPPORTED_SD_PLATFORMS = [BUSTER_STRING]
-
+SUPPORTED_SD_DEBIAN_DIST = "bullseye"
 SUPPORTED_WHONIX_PLATFORMS = [BULLSEYE_STRING]
 
 
@@ -31,9 +26,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             if "environment" not in config:
                 config["environment"] = "dev"
 
-            dist = "bullseye"
-            if BUSTER_STRING in SUPPORTED_SD_PLATFORMS:
-                dist = "buster"
+            dist = SUPPORTED_SD_DEBIAN_DIST
 
             if config["environment"] == "prod":
                 self.apt_url = FPF_APT_SOURCES.format(dist=dist, component="main")
@@ -63,13 +56,14 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         Asserts that the given AppVM is based on an OS listed in the
         SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
         sd-whonix is based on the whonix-16 template.
-        All other workstation-provisioned VMs should be buster based.
+        All other workstation-provisioned VMs should be
+        SUPPORTED_SD_DEBIAN_DIST based.
         """
         platform = self._get_platform_info(vm)
         if vm.name in ["sd-whonix"]:
             self.assertIn(platform, SUPPORTED_WHONIX_PLATFORMS)
         else:
-            self.assertIn(platform, SUPPORTED_SD_PLATFORMS)
+            self.assertIn(SUPPORTED_SD_DEBIAN_DIST, platform)
 
     def _validate_apt_sources(self, vm):
         """
@@ -86,9 +80,6 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         contents = stdout.decode("utf-8").rstrip("\n")
 
         self.assertTrue(self.apt_url in contents)
-        self.assertFalse(FPF_APT_SOURCES.format(dist="stretch", component="main") in contents)
-        # Old alpha URL for apt repo should be absent
-        self.assertFalse("apt-test-qubes.freedom.press" in contents)
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
