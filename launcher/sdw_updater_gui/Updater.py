@@ -39,13 +39,13 @@ detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 # In the future, we could use qvm-prefs to extract this information.
 current_vms = {
     "fedora": "fedora-35",
-    "sd-viewer": "sd-large-buster-template",
-    "sd-app": "sd-small-buster-template",
-    "sd-log": "sd-small-buster-template",
-    "sd-devices": "sd-large-buster-template",
-    "sd-proxy": "sd-small-buster-template",
+    "sd-viewer": "sd-large-bullseye-template",
+    "sd-app": "sd-small-bullseye-template",
+    "sd-log": "sd-small-bullseye-template",
+    "sd-devices": "sd-large-bullseye-template",
+    "sd-proxy": "sd-small-bullseye-template",
     "sd-whonix": "whonix-gw-16",
-    "sd-gpg": "sd-small-buster-template",
+    "sd-gpg": "sd-small-bullseye-template",
 }
 
 current_templates = set([val for key, val in current_vms.items() if key != "dom0"])
