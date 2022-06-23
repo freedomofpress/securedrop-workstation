@@ -22,6 +22,8 @@ relpath_util = "../sdw_util/Util.py"
 path_to_util = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_util)
 util = SourceFileLoader("Util", path_to_util).load_module()
 
+DEBIAN_VERSION = "bullseye"
+
 
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
@@ -200,7 +202,6 @@ def test_for_conflicting_process(
 @pytest.mark.parametrize(
     "os_release_fixture,version_contains",
     [
-        ("os-release-qubes-4.0", "4.0"),
         ("os-release-qubes-4.1", "4.1"),
         ("os-release-ubuntu", None),
         ("no-such-file", None),
@@ -209,7 +210,7 @@ def test_for_conflicting_process(
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0"))
+@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.1"))
 def test_detect_qubes(
     mocked_info, mocked_warning, mocked_error, os_release_fixture, version_contains
 ):
@@ -232,7 +233,6 @@ def test_detect_qubes(
 @pytest.mark.parametrize(
     "os_release_fixture,expected_qt_version",
     [
-        ("os-release-qubes-4.0", 4),
         ("os-release-qubes-4.1", 5),
         ("os-release-ubuntu", 4),
         ("no-such-file", 4),
@@ -242,7 +242,7 @@ def test_detect_qubes(
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0"))
+@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.1"))
 def test_pick_qt(
     mocked_info,
     mocked_warning,
@@ -282,7 +282,7 @@ def test_pick_bad_qt(mocked_info, mocked_warning, mocked_error, env_override):
     """
     mocked_env = {"SDW_UPDATER_QT": env_override}
     with mock.patch.dict("os.environ", mocked_env), mock.patch(
-        "Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0")
+        "Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.1")
     ), pytest.raises(ValueError):
         util.get_qt_version()
 
@@ -303,13 +303,12 @@ def test_get_logger():
 @pytest.mark.parametrize(
     "os_release_fixture,version_contains",
     [
-        ("os-release-qubes-4.0", "4.0"),
         ("os-release-qubes-4.1", "4.1"),
         ("os-release-ubuntu", None),
         ("no-such-file", None),
     ],
 )
-@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0"))
+@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.1"))
 def test_is_sdapp_halted_yes(os_release_fixture, version_contains):
     """
     When sd-app state is 'Halted'
@@ -317,7 +316,7 @@ def test_is_sdapp_halted_yes(os_release_fixture, version_contains):
     """
     output = bytes(
         "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
-        "    Halted    AppVM   yellow     sd-small-buster-template\n",
+        "    Halted    AppVM   yellow     sd-small-{}-template\n".format(DEBIAN_VERSION),
         "utf-8",
     )
 
@@ -329,13 +328,12 @@ def test_is_sdapp_halted_yes(os_release_fixture, version_contains):
 @pytest.mark.parametrize(
     "os_release_fixture,version_contains",
     [
-        ("os-release-qubes-4.0", "4.0"),
         ("os-release-qubes-4.1", "4.1"),
         ("os-release-ubuntu", None),
         ("no-such-file", None),
     ],
 )
-@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0"))
+@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.1"))
 def test_is_sdapp_halted_no(os_release_fixture, version_contains):
     """
     When sd-app is not Halted (i.e. Running, Pasued)
@@ -343,7 +341,7 @@ def test_is_sdapp_halted_no(os_release_fixture, version_contains):
     """
     output = bytes(
         "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
-        "    Paused    AppVM   yellow     sd-small-buster-template\n",
+        "    Paused    AppVM   yellow     sd-small-{}-template\n".format(DEBIAN_VERSION),
         "utf-8",
     )
 
@@ -355,13 +353,12 @@ def test_is_sdapp_halted_no(os_release_fixture, version_contains):
 @pytest.mark.parametrize(
     "os_release_fixture,version_contains",
     [
-        ("os-release-qubes-4.0", "4.0"),
         ("os-release-qubes-4.1", "4.1"),
         ("os-release-ubuntu", None),
         ("no-such-file", None),
     ],
 )
-@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.0"))
+@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.1"))
 @mock.patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"))
 def test_is_sdapp_halted_error(patched_subprocess, os_release_fixture, version_contains):
     """
