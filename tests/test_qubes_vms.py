@@ -1,7 +1,7 @@
 import unittest
 
 from qubesadmin import Qubes
-from base import CURRENT_FEDORA_TEMPLATE, CURRENT_WHONIX_VERSION, get_qubes_version
+from base import CURRENT_FEDORA_TEMPLATE, CURRENT_WHONIX_VERSION
 
 
 class SD_Qubes_VM_Tests(unittest.TestCase):
@@ -28,7 +28,7 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
         for sys_vm in sys_vms:
             vm = self.app.domains[sys_vm]
             wanted_templates = [CURRENT_FEDORA_TEMPLATE]
-            if get_qubes_version() == "4.1" and sys_vm in sys_vms_maybe_disp:
+            if sys_vm in sys_vms_maybe_disp:
                 if sys_vm in sys_vms_custom_disp:
                     wanted_templates.append("sd-fedora-dvm")
                 else:

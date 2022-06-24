@@ -5,6 +5,10 @@
 # Installs 'sd-app' AppVM, to persistently store SD data
 # This VM has no network configured.
 ##
+
+# Imports "sdvars" for environment config
+{% from 'sd-default-config.sls' import sdvars with context %}
+
 include:
   - sd-workstation-template
   - sd-upgrade-templates
@@ -15,7 +19,7 @@ sd-app:
     - present:
       - label: yellow
     - prefs:
-      - template: sd-small-buster-template
+      - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""
     - tags:
       - add:
@@ -25,7 +29,7 @@ sd-app:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-small-buster-template
+      - qvm: sd-small-{{ sdvars.distribution }}-template
 
 {% import_json "sd/config.json" as d %}
 
@@ -42,9 +46,9 @@ sd-app-private-volume-size:
 sd-app-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start --skip-if-running sd-small-buster-template &&
-        qvm-sync-appmenus sd-small-buster-template
+        qvm-start --skip-if-running sd-small-{{ sdvars.distribution }}-template &&
+        qvm-sync-appmenus sd-small-{{ sdvars.distribution }}-template
     - require:
-      - qvm: sd-small-buster-template
+      - qvm: sd-small-{{ sdvars.distribution }}-template
     - onchanges:
-      - qvm: sd-small-buster-template
+      - qvm: sd-small-{{ sdvars.distribution }}-template

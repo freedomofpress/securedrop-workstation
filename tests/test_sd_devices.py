@@ -17,6 +17,7 @@ class SD_Devices_Tests(SD_VM_Local_Test):
     def test_sd_export_package_installed(self):
         self.assertTrue(self._package_is_installed("cryptsetup"))
         self.assertTrue(self._package_is_installed("printer-driver-brlaser"))
+        self.assertTrue(self._package_is_installed("printer-driver-hpcups"))
         self.assertTrue(self._package_is_installed("securedrop-export"))
         self.assertTrue(self._package_is_installed("gnome-disk-utility"))
 

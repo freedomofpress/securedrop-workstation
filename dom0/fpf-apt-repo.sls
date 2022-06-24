@@ -13,6 +13,7 @@
 #  - update.qubes-vm
 #  - sd-default-config
 
+# Imports "sdvars" for environment config
 {% from 'sd-default-config.sls' import sdvars with context %}
 
 # Debian Buster was changed from 'stable' to 'oldstable' on 2021-08,
@@ -39,7 +40,9 @@ install-python-apt-for-repo-config:
 
 configure-fpf-apt-repo:
   pkgrepo.managed:
-    - name: "deb [arch=amd64] {{ sdvars.apt_repo_url }} {{ grains['oscodename'] }} main"
+    # Can't reuse sdvars.distribution here because this queries grains from VMs
+    # rather than dom0
+    - name: "deb [arch=amd64] {{ sdvars.apt_repo_url }} {{ grains['oscodename'] }} {{ sdvars.component }}"
     - file: /etc/apt/sources.list.d/securedrop_workstation.list
     - key_url: "salt://sd/sd-workstation/{{ sdvars.signing_key_filename }}"
     - clean_file: True # squash file to ensure there are no duplicates

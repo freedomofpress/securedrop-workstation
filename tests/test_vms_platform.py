@@ -6,16 +6,15 @@ from qubesadmin import Qubes
 from base import WANTED_VMS, CURRENT_FEDORA_TEMPLATE
 
 
-SUPPORTED_SD_PLATFORMS = ["Debian GNU/Linux 10 (buster)"]
+BULLSEYE_STRING = "Debian GNU/Linux 11 (bullseye)"
 
-SUPPORTED_WHONIX_PLATFORMS = ["Debian GNU/Linux 11 (bullseye)"]
+SUPPORTED_SD_DEBIAN_DIST = "bullseye"
+SUPPORTED_WHONIX_PLATFORMS = [BULLSEYE_STRING]
 
 
 apt_url = ""
-FPF_APT_SOURCES_STRETCH_DEV = "deb [arch=amd64] https://apt-test.freedom.press stretch main"
-FPF_APT_SOURCES_BUSTER_DEV = "deb [arch=amd64] https://apt-test.freedom.press buster main"
-FPF_APT_SOURCES_STRETCH = "deb [arch=amd64] https://apt.freedom.press stretch main"
-FPF_APT_SOURCES_BUSTER = "deb [arch=amd64] https://apt.freedom.press buster main"
+FPF_APT_TEST_SOURCES = "deb [arch=amd64] https://apt-test.freedom.press {dist} {component}"
+FPF_APT_SOURCES = "deb [arch=amd64] https://apt.freedom.press {dist} {component}"
 APT_SOURCES_FILE = "/etc/apt/sources.list.d/securedrop_workstation.list"
 
 
@@ -27,10 +26,14 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             if "environment" not in config:
                 config["environment"] = "dev"
 
+            dist = SUPPORTED_SD_DEBIAN_DIST
+
             if config["environment"] == "prod":
-                self.apt_url = FPF_APT_SOURCES_BUSTER
+                self.apt_url = FPF_APT_SOURCES.format(dist=dist, component="main")
+            elif config["environment"] == "staging":
+                self.apt_url = FPF_APT_TEST_SOURCES.format(dist=dist, component="main")
             else:
-                self.apt_url = FPF_APT_SOURCES_BUSTER_DEV
+                self.apt_url = FPF_APT_TEST_SOURCES.format(dist=dist, component="nightlies")
 
     def tearDown(self):
         pass
@@ -53,13 +56,14 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         Asserts that the given AppVM is based on an OS listed in the
         SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
         sd-whonix is based on the whonix-16 template.
-        All other workstation-provisioned VMs should be buster based.
+        All other workstation-provisioned VMs should be
+        SUPPORTED_SD_DEBIAN_DIST based.
         """
         platform = self._get_platform_info(vm)
         if vm.name in ["sd-whonix"]:
             self.assertIn(platform, SUPPORTED_WHONIX_PLATFORMS)
         else:
-            self.assertIn(platform, SUPPORTED_SD_PLATFORMS)
+            self.assertIn(SUPPORTED_SD_DEBIAN_DIST, platform)
 
     def _validate_apt_sources(self, vm):
         """
@@ -76,9 +80,6 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         contents = stdout.decode("utf-8").rstrip("\n")
 
         self.assertTrue(self.apt_url in contents)
-        self.assertFalse(FPF_APT_SOURCES_STRETCH in contents)
-        # Old alpha URL for apt repo should be absent
-        self.assertFalse("apt-test-qubes.freedom.press" in contents)
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
@@ -144,15 +145,10 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         results = stdout.rstrip().decode("utf-8")
         fpf_gpg_pub_key_info = """/etc/apt/trusted.gpg.d/securedrop-keyring.gpg
 ---------------------------------------------
-pub   rsa4096 2016-10-20 [SC] [expired: 2021-06-30]
-      2224 5C81 E3BA EB41 38B3  6061 310F 5612 00F4 AD77
-uid           [ expired] SecureDrop Release Signing Key
-uid           [ expired] SecureDrop Release Signing Key <securedrop-release-key@freedom.press>
-
-pub   rsa4096 2021-05-10 [SC] [expires: 2022-07-04]
+pub   rsa4096 2021-05-10 [SC] [expires: 2023-07-04]
       2359 E653 8C06 13E6 5295  5E6C 188E DD3B 7B22 E6A3
 uid           [ unknown] SecureDrop Release Signing Key <securedrop-release-key-2021@freedom.press>
-sub   rsa4096 2021-05-10 [E] [expires: 2022-07-04]"""
+sub   rsa4096 2021-05-10 [E] [expires: 2023-07-04]"""
         # display any differences
         self.maxDiff = None
         self.assertEqual(results, fpf_gpg_pub_key_info), "Keyring incorrect in " + vm.name

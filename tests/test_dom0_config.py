@@ -17,12 +17,14 @@ DEPRECATED_TEMPLATES = [
     "sd-log-buster-template",
 ]
 
+DEBIAN_VERSION = "bullseye"
+
 VMS_TO_UPDATE = [
-    "sd-large-buster-template",
-    "sd-small-buster-template",
+    "sd-large-{}-template".format(DEBIAN_VERSION),
+    "sd-small-{}-template".format(DEBIAN_VERSION),
     "whonix-ws-16",
     "whonix-gw-16",
-    "securedrop-workstation-buster",
+    "securedrop-workstation-{}".format(DEBIAN_VERSION),
 ]
 
 

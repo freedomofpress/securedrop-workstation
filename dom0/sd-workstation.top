@@ -20,12 +20,14 @@ base:
     - sd-whonix
     - sd-remove-unused-templates
 
-  sd-small-buster-template:
+  sd-small-bullseye-template:
+    - match: pcre
     - sd-logging-setup
     - sd-workstation-template-files
     - sd-app-files
     - sd-proxy-template-files
-  sd-large-buster-template:
+  sd-large-bullseye-template:
+    - match: pcre
     - sd-logging-setup
     - sd-workstation-template-files
     - sd-devices-files
@@ -38,23 +40,16 @@ base:
     - sd-mime-handling
   sd-whonix:
     - sd-whonix-hidserv-key
-  securedrop-workstation-buster:
+  securedrop-workstation-bullseye:
+    - match: pcre
     - sd-workstation-template-files
     - sd-logging-setup
-# Depending on whether sys-usb is disposable or not, we want to
-# modify different qubes. If sd-fedora-dvm will only be
-# created by sd-sys-vms.sls if sys-usb is disposable.
-{% if grains['osrelease'] == '4.1' and salt['pillar.get']('qvm:sys-usb:disposable', true) %}
-  sd-fedora-dvm:
-{% else %}
-  sys-usb:
-{% endif %}
+  'sd-fedora-dvm,sys-usb':
+    - match: list
     - sd-usb-autoattach-add
   sd-log:
     - sd-logging-setup
   sd-viewer:
-    - sd-mime-handling
-  sd-devices:
     - sd-mime-handling
   sd-devices-dvm:
     - sd-mime-handling

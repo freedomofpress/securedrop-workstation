@@ -42,14 +42,7 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
                 return False
 
     def _loadVars(self):
-        qubes_version = get_qubes_version()
-        if qubes_version == "4.1":
-            fname = "qubes-rpc-41.yml"
-        elif qubes_version == "4.0":
-            fname = "qubes-rpc.yml"
-        else:
-            raise Exception("Could not determine Qubes OS version")
-        filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vars", fname)
+        filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vars", "qubes-rpc.yml")
         with io.open(filepath, "r") as f:
             data = yaml.safe_load(f)
         return data

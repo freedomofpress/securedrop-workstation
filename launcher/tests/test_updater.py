@@ -27,6 +27,8 @@ debian_based_vms = [
     "sd-devices",
 ]
 
+DEBIAN_VERSION = "bullseye"
+
 TEST_RESULTS_OK = {
     "dom0": UpdateStatus.UPDATES_OK,
     "fedora": UpdateStatus.UPDATES_OK,
@@ -491,8 +493,8 @@ def test_shutdown_and_start_vms(
     ]
     template_vm_calls = [
         call("fedora-35"),
-        call("sd-large-buster-template"),
-        call("sd-small-buster-template"),
+        call("sd-large-{}-template".format(DEBIAN_VERSION)),
+        call("sd-small-{}-template".format(DEBIAN_VERSION)),
         call("whonix-gw-16"),
     ]
     app_vm_calls = [
@@ -537,8 +539,8 @@ def test_shutdown_and_start_vms_sysvm_fail(
     ]
     template_vm_calls = [
         call("fedora-35"),
-        call("sd-large-buster-template"),
-        call("sd-small-buster-template"),
+        call("sd-large-{}-template".format(DEBIAN_VERSION)),
+        call("sd-small-{}-template".format(DEBIAN_VERSION)),
         call("whonix-gw-16"),
     ]
     error_calls = [

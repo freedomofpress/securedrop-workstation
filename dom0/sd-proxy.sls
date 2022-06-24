@@ -6,6 +6,9 @@
 # and the SecureDrop servers.
 ##
 
+# Imports "sdvars" for environment config
+{% from 'sd-default-config.sls' import sdvars with context %}
+
 include:
   - sd-whonix
   - sd-upgrade-templates
@@ -16,16 +19,16 @@ sd-proxy:
     - present:
       - label: blue
     - prefs:
-      - template: sd-small-buster-template
+      - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: sd-whonix
       - autostart: true
     - tags:
       - add:
         - sd-workstation
-        - sd-buster
+        - sd-{{ sdvars.distribution }}
     - require:
       - qvm: sd-whonix
-      - qvm: sd-small-buster-template
+      - qvm: sd-small-{{ sdvars.distribution }}-template
 
 # Permit the SecureDrop Proxy to manage Client connections
 sd-proxy-dom0-securedrop.Proxy:

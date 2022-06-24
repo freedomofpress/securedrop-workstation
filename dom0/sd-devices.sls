@@ -5,6 +5,10 @@
 # Installs 'sd-devices' AppVM, to persistently store SD data
 # This VM has no network configured.
 ##
+
+# Imports "sdvars" for environment config
+{% from 'sd-default-config.sls' import sdvars with context %}
+
 include:
   - sd-workstation-template
   - sd-upgrade-templates
@@ -13,33 +17,33 @@ sd-devices-dvm:
   qvm.vm:
     - name: sd-devices-dvm
     - present:
-      - template: sd-large-buster-template
+      - template: sd-large-{{ sdvars.distribution }}-template
       - label: red
     - prefs:
-      - template: sd-large-buster-template
+      - template: sd-large-{{ sdvars.distribution }}-template
       - netvm: ""
       - template_for_dispvms: True
     - tags:
       - add:
         - sd-workstation
-        - sd-buster
+        - sd-{{ sdvars.distribution }}
     - features:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-large-buster-template
+      - qvm: sd-large-{{ sdvars.distribution }}-template
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.
 sd-devices-template-sync-appmenus:
   cmd.run:
     - name: >
-        qvm-start --skip-if-running sd-large-buster-template &&
-        qvm-sync-appmenus sd-large-buster-template
+        qvm-start --skip-if-running sd-large-{{ sdvars.distribution }}-template &&
+        qvm-sync-appmenus sd-large-{{ sdvars.distribution }}-template
     - require:
-      - qvm: sd-large-buster-template
+      - qvm: sd-large-{{ sdvars.distribution }}-template
     - onchanges:
-      - qvm: sd-large-buster-template
+      - qvm: sd-large-{{ sdvars.distribution }}-template
 
 sd-devices-create-named-dispvm:
   qvm.vm:

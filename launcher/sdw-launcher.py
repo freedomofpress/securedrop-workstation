@@ -8,7 +8,6 @@ import sys
 import argparse
 
 if Util.get_qt_version() == 5:
-    print("Using Qt5 (experimental)")
     from PyQt5.QtWidgets import QApplication
 else:
     from PyQt4.QtGui import QApplication

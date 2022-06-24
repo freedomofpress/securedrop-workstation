@@ -11,6 +11,9 @@
 #
 ##
 
+# Imports "sdvars" for environment config
+{% from 'sd-default-config.sls' import sdvars with context %}
+
 include:
   - sd-upgrade-templates
 
@@ -29,6 +32,6 @@ sd-whonix:
     - tags:
       - add:
         - sd-workstation
-        - sd-buster
+        - sd-{{ sdvars.distribution }}
     - require:
       - sls: sd-upgrade-templates
