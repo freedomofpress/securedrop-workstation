@@ -27,22 +27,14 @@ export SOURCE_DATE_EPOCH
 # Place tarball where rpmbuild will find it
 cp dist/*.tar.gz rpm-build/SOURCES/
 
-# Build for Qubes 4.0.x and 4.1.x, for which dom0 is based on
-# fedora-25 and fedora-32, respectively.
-for i in 25 32; do
-    # dom0 defaults to python3.5 in fedora-25
-    python_version="python3.5"
-    if [[ $i = 32 ]]; then
-        python_version="python3.8"
-    fi
-    dist=".fc${i}"
-    rpmbuild \
-        --quiet \
-        --define "_topdir $PWD/rpm-build" \
-        --define "dist $dist" \
-        --define "_python_version $python_version" \
-        -bb --clean "rpm-build/SPECS/securedrop-workstation-dom0-config.spec"
-done
+python_version="python3.8"
+dist=".fc32"
+rpmbuild \
+    --quiet \
+    --define "_topdir $PWD/rpm-build" \
+    --define "dist $dist" \
+    --define "_python_version $python_version" \
+    -bb --clean "rpm-build/SPECS/securedrop-workstation-dom0-config.spec"
 
 printf '\nBuild complete! RPMs and their checksums are:\n\n'
 find rpm-build/ -type f -iname '*.rpm' -print0 | sort -zV | xargs -0 sha256sum

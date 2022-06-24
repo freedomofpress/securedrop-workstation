@@ -39,7 +39,7 @@ class TestUpdaterApp(TestCase):
     def tearDownClass(cls):
         cls._app.quit()
 
-    @mock.patch("UpdaterApp.Util.get_qubes_version", return_value="4.0")
+    @mock.patch("UpdaterApp.Util.get_qubes_version", return_value="4.1")
     @mock.patch("UpdaterApp.subprocess.check_output", return_value=b"none")
     def test_netcheck_no_network_should_fail(self, mocked_output, mocked_qubes_version):
         """
@@ -61,7 +61,7 @@ class TestUpdaterApp(TestCase):
         assert mocked_error.called
 
     @mock.patch("subprocess.check_output", return_value=b"full")
-    @mock.patch("UpdaterApp.Util.get_qubes_version", return_value="4.0")
+    @mock.patch("UpdaterApp.Util.get_qubes_version", return_value="4.1")
     def test_netcheck_should_succeed(self, mocked_qubes_version, mocked_output):
         """
         When the network connectivity check is run in Qubes
@@ -70,7 +70,7 @@ class TestUpdaterApp(TestCase):
         """
         assert updater_app._is_netcheck_successful()
 
-    @mock.patch("UpdaterApp.Util.get_qubes_version", return_value="4.0")
+    @mock.patch("UpdaterApp.Util.get_qubes_version", return_value="4.1")
     @mock.patch("UpdaterApp.logger.error")
     @mock.patch("subprocess.check_output", return_value=b"none")
     def test_updater_app_with_no_connectivity_should_error(
@@ -85,7 +85,7 @@ class TestUpdaterApp(TestCase):
         updater_app_dialog._check_network_and_update()
         assert self._is_network_fail_view(updater_app_dialog)
 
-    @mock.patch("UpdaterApp.Util.get_qubes_version", return_value="4.0")
+    @mock.patch("UpdaterApp.Util.get_qubes_version", return_value="4.1")
     @mock.patch("subprocess.check_output", return_value=b"full")
     @mock.patch("UpdaterApp.logger.info")
     @mock.patch("UpdaterApp.UpgradeThread")
