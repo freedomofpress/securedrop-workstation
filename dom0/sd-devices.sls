@@ -30,6 +30,7 @@ sd-devices-dvm:
     - features:
       - enable:
         - service.paxctld
+        - service.cups
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
 
