@@ -12,11 +12,10 @@ include:
 {% set sd_supported_fedora_version = 'fedora-35' %}
 
 
-# Install latest templates required for SDW VMs.
-dom0-install-fedora-template:
-  cmd.run:
-    - name: >
-        qvm-template install {{ sd_supported_fedora_version }}
+# Ensure the latest templates required for SDW VMs are installed.
+dom0-fedora-template-is-installed:
+  qvm.template_installed:
+    - name: {{ sd_supported_fedora_version }}
 
 # Update the mgmt VM before updating the new Fedora VM. The order is required
 # and listed in the release notes for F32 & F33.
