@@ -133,10 +133,10 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
-* Thu Jul 5 2022 SecureDrop Team <securedrop@freedom.press> - 0.7.0
+* Tue Jul 5 2022 SecureDrop Team <securedrop@freedom.press> - 0.7.0
 - Fix support for Qubes 4.1
 
-* Thu Jun 8 2022 SecureDrop Team <securedrop@freedom.press> - 0.6.3
+* Wed Jun 8 2022 SecureDrop Team <securedrop@freedom.press> - 0.6.3
 - Add support for Qubes 4.1
 
 * Thu Jun 2 2022 SecureDrop Team <securedrop@freedom.press> - 0.6.2
