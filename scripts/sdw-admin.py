@@ -82,6 +82,8 @@ def provision_all():
     except subprocess.CalledProcessError:
         raise SDWAdminException("Error during provision-all")
 
+    print("Provisioning complete. Please reboot to complete the installation.")
+
 
 def validate_config(path):
     """
