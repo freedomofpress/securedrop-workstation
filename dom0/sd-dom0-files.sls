@@ -65,26 +65,12 @@ dom0-workstation-templates-repo:
     - require:
       - file: dom0-rpm-test-key
 
-dom0-remove-securedrop-workstation-stretch-template:
-  pkg.removed:
-    - pkgs:
-      - qubes-template-securedrop-workstation
-    - require:
-      - file: dom0-workstation-rpm-repo
-
 dom0-install-securedrop-workstation-template:
   cmd.run:
     - name: >
         qvm-template install securedrop-workstation-{{ sdvars.distribution }}
     - require:
       - file: dom0-workstation-rpm-repo
-
-# Remove the legacy auto updater script
-dom0-remove-legacy-updater:
-  file.absent:
-    - names:
-      - /usr/bin/securedrop-update
-      - /etc/cron.daily/securedrop-update-cron
 
 # Create directory for storing SecureDrop-specific icons
 dom0-securedrop-icons-directory:
@@ -101,7 +87,7 @@ dom0-securedrop-icons-directory:
 dom0-securedrop-icon:
   file.managed:
     - name: /usr/share/securedrop/icons/sd-logo.png
-    - source: salt://sd/sd-proxy/logo-small.png
+    - source: salt://sd/sd-workstation/logo-small.png
     - user: root
     - group: root
     - mode: 644
@@ -163,20 +149,6 @@ dom0-login-autostart-script:
     - user: root
     - group: root
     - mode: 755
-
-dom0-tag-whonix-ws-16:
-  qvm.vm:
-    - name: whonix-ws-16
-    - tags:
-      - add:
-        - sd-workstation-updates
-
-dom0-tag-whonix-gw-16:
-  qvm.vm:
-    - name: whonix-gw-16
-    - tags:
-      - add:
-        - sd-workstation-updates
 
 dom0-securedrop-launcher-directory:
   file.recurse:

@@ -96,6 +96,15 @@ dom0-rpc-qubes.GpgImportKey:
         @anyvm @tag:sd-workstation deny
         @tag:sd-workstation @anyvm deny
 
+
+# Permit the SecureDrop Proxy to manage Client connections
+dom0-rpc-securedrop.Proxy:
+  file.prepend:
+    - name: /etc/qubes-rpc/policy/securedrop.Proxy
+    - text: |
+        sd-app sd-proxy allow
+        @anyvm @anyvm deny
+
 # Qubes suggests using files starting with 70- to be the allow policies
 # and 60- deny policies, but due to the way SDW policies are stacked at the
 # moment, we reverse this suggested order
