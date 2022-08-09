@@ -66,7 +66,7 @@ Currently, the following VMs are provisioned:
 - `sd-app` is a non-networked VM in which the *SecureDrop Client* runs used to store and explore submissions after they're unarchived and decrypted. Any files opened in this VM are opened in a disposable VM.
 - `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the *Journalist Interface*.
 - `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
-- `sd-dispvm` is an AppVM used as the template for the disposable VMs used for processing and opening files.
+- `sd-viewer` is an AppVM used as the template for the disposable VMs used for processing and opening files.
 - `sd-log` is an AppVM used for centralized logging - logs will appear in `~/QubesIncomingLogs` from each AppVM using the centralized logging service.
 
 Submissions are processed in the following steps:
@@ -81,7 +81,7 @@ See below for a closer examination of this process, and see `docs/images` for sc
 
 ## What's In This Repo?
 
-This project can be broken neatly into two parts: 1) a set of salt states and `top` files which configure the various VMs, and 2) scripts and system configuration files which set up the document handling process.
+This repository can be broken into three parts: 1) a set of salt states and `top` files which configure the various VMs, 2) scripts and system configuration files which set up the document handling process, and 3) the pre-flight updater used to update all VMs relevant to the SecureDrop Workstation.
 
 Qubes uses SaltStack internally for VM provisionining and configuration management (see https://www.qubes-os.org/doc/salt/), so it's natural for us to use it as well. The `dom0` directory contains salt `.top` and `.sls` files used to provision the VMs noted above.
 - `Makefile` is used with the `make` command on `dom0` to build the Qubes/SecureDrop installation, and also contains some development and testing features.
@@ -90,16 +90,17 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 - Within `sd-app`, the *SecureDrop Client* will open all submissions in the `sd-viewer` disposable VM.
 - `config.json.example` is an example config file for the provisioning process. Before use, you should copy it to `config.json`, and adjust to reflect your environment.
 - `sd-journalist.sec.example` is an example GPG private key for use in decrypting submissions. It must match the public key set on a SecureDrop server used for testing. Before use, you should copy it to `sd-journalist.sec`, or store the submission key used with your SecureDrop server as `sd-journalist.sec`.
+- `launcher/` contains the pre-flight updater component (`sdw-launcher`), which updates all TemplateVMs relevant to the SecureDrop Workstation prior to use, as well as the `sdw-notify` script, which reminds the user to update the system if they have not done so recently.
 
 ## Installation
 
-Installing this project is involved. It requires an up-to-date Qubes 4.0 installation running on a machine with at least 16GB of RAM (32 GB recommended). You'll need access to a SecureDrop staging server as well.
+Installing this project is involved. It requires an up-to-date Qubes 4.1 installation running on a machine with at least 16GB of RAM (32 GB recommended). You'll need access to a SecureDrop staging server as well.
 
 The project is currently in a closed beta, and we do not recommend installing it for production purposes. Documentation for end users is being developed [here](https://workstation.securedrop.org). The instructions below are intended for developers.
 
 ### Install Qubes
 
-Before trying to use this project, install [Qubes 4.0.4](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
+Before trying to use this project, install [Qubes 4.1.1](https://www.qubes-os.org/downloads/) on your development machine. Accept the default VM configuration during the install process.
 
 After installing Qubes, you must update both dom0 and the base templates to include the latest versions of apt packages. Open a terminal in `dom0` by clicking on the Qubes menu top-right of the screen and left-clicking on Terminal Emulator and run:
 
@@ -112,11 +113,16 @@ After dom0 updates complete, reboot your computer to ensure the updates have bee
 qubes-update-gui
 ```
 
-Select all VMs marked as **updates available**, then click **Next**. Once all updates have been applied, you're ready to proceed.
+Select all VMs marked as **updates available**, then click **Next**. Once all updates have been applied, you're ready to proceed. Choose the environment that you wish to set up and then follow the applicable instructions:
+
+- The staging environment uses the `yum-test.securedrop.org` and `apt-test.freedom.press` repositories, and is configured to use the `main` component for apt packages. It will typically install the most recent release candidate packages (which could be more recent than the production packages if a release is underway).
+
+- The development environment uses the `yum-test.securedrop.org` and `apt-test.freedom.press` repositories, and is configured to use the `nightly` component for apt package. It does not alter power management settings on your laptop to prevent suspension to disk (a security measure for production environments, which the staging environment preserves to be more faithful to prod-like settings).
+
+- The production environment uses `yum.securedrop.org` and `apt.freedom.press` repositories, verified using the production signing key. Its setup is not covered below; see our [production install docs](https://workstation.securedrop.org/en/stable/admin/install.html) for details.
+
 
 ### Development Environment
-
-The development environment is just like the [Staging Environment](#staging-environment) except that it does not alter power management settings on your laptop to prevent suspension to disk, since developers probably want to suspend their laptops when running the workstation all day. The reasoning for disabling suspension in a production environment is that it's unsafe -- an attacker who gains access to a suspended laptop may be able to bypass full-disk encryption.
 
 #### Download, Configure, Copy to `dom0`
 
@@ -150,6 +156,8 @@ After that initial manual step, the code in your development VM may be copied in
 [dom0]$ make clone    # build RPM package and copy repo to dom0
 ```
 
+**NOTE:** The destination directory on `dom0` is not customizable; it must be `securedrop-workstation` in your home directory.
+
 If you plan to work on the [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) code, also run this command in `dom0`:
 
 ```
@@ -158,11 +166,11 @@ qvm-tags sd-dev add sd-client
 
 Doing so will permit the `sd-dev` AppVM to make RPC calls with the same privileges as the `sd-app` AppVM.
 
-**NOTE:** The destination directory on `dom0` is not customizable; it must be `securedrop-workstation` in your home directory.
-
 #### Provision the VMs
 
-Once the configuration is done and this directory is copied to `dom0`, you must update existing Qubes templates and use `make` to handle all provisioning and configuration by your unprivileged user:
+Once the configuration is done and this directory is copied to `dom0`, you must update existing Qubes templates and use `make` to handle all provisioning and configuration by your unprivileged user. Before you do so, you may wish to increase the scrollback in the dom0 terminal from 1000 (the default) to 100000 or unlimited, to ensure you can review any errors in the verbose output.
+
+Then run the following command to set up a development environment:
 
 ```
 make dev
@@ -170,14 +178,8 @@ make dev
 
 Note that this target automatically sets the `environment` variable in `config.json` to `dev`, regardless of its current value, before provisioning.
 
-The build process takes quite a while. You will be presented with a dialog asking how to connect to Tor: you should be able to select the default option and continue. You may wish to increase the scrollback in the dom0 terminal from 1000 (the default) to 100000, to ensure you can review any errors in the verbose output. If you want to refer back to the provisioning log for a given
+The build process takes quite a while. You will be presented with a dialog asking how to connect to Tor: you should be able to select the default option and continue. If you want to refer back to the provisioning log for a given
 VM, go to `/var/log/qubes/mgmt-<vm name>.log` in `dom0`. You can also monitor logs as they're being written via `journalctl -ef`. This will display logs across the entire system so it can be noisy. It's best used when you know what to look for, at least somewhat, or if you're provisioning one VM at a time.
-
-**NOTE:** Due to [issue #202](https://github.com/freedomofpress/securedrop-workstation/issues/202), the installation may fail with disk quota errors. If this happens, reboot the entire workstation and run `make dev` again. The error will contain the following informating in your dom0 terminal:
-
-```
-qfile-agent : Fatal error: File copy: Disk quota exceeded; Last file: <...> (error type: Disk quota exceeded) '/usr/lib/qubes/qrexec-client-vm dom0 qubes.Receiveupdates /usr/lib/qubes/qfile-agent /var/lib/qubes/dom0-updates/packages/*.rpm' failed with exit code 1!
-```
 
 When the installation process completes, a number of new VMs will be available on your machine, all prefixed with `sd-`.
 
@@ -186,11 +188,9 @@ When developing on the Workstation, make sure to edit files in `sd-dev`, then co
 
 ### Staging Environment
 
-The staging environment differs from a production envionment in that it builds a local RPM, installs it in dom0, uses the dom0 package repository configuration for future updates of the RPM package from the https://yum-test.securedrop.org repository, and makes it so that you receive the latest nightlies of the workstation components, such as the SecureDrop Client.
-
 #### Update `dom0`, `fedora-36`, `whonix-gw-16` and `whonix-ws-16` templates
 
-Updates to these VMs will be provided by the installer and updater, but to ensure they are up to date prior to install, it will be easier to debug, should something go wrong.
+Updates to these VMs will be performed by the installer and updater, but updating them prior to install makes it easier to debug any errors.
 
 Before proceeding to updates, we must ensure that `sys-whonix` can bootstrap to the Tor network. In the Qubes menu, navigate to `sys-whonix` and click on `Anon Connection Wizard` and click `Next` and ensure the Tor Bootstrap process completes successfully.
 
@@ -223,7 +223,7 @@ Populate `/etc/yum.repos.d/securedrop-temp.repo` with the following contents:
 ```
 [securedrop-workstation-temporary]
 enabled=1
-baseurl=https://yum-test.securedrop.org/workstation/dom0/f25
+baseurl=https://yum-test.securedrop.org/workstation/dom0/f32
 name=SecureDrop Workstation Qubes initial install bootstrap
 ```
 
@@ -237,13 +237,13 @@ The RPM file will be downloaded to your current working directory.
 4. Verify RPM package signature
 
 ```
-[user@work ~]$ rpm -Kv securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm
+[user@work ~]$ rpm -Kv securedrop-workstation-dom0-config-x.y.z-1.fc32.noarch.rpm
 ```
 
 The output should match the following, and return `OK` for all lines as follows:
 
 ```
-securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm:
+securedrop-workstation-dom0-config-x.y.z-1.fc32.noarch.rpm:
     Header V4 RSA/SHA256 Signature, key ID 2211b03c: OK
     Header SHA1 digest: OK
     V4 RSA/SHA256 Signature, key ID 2211b03c: OK
@@ -257,7 +257,7 @@ securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm:
 In `dom0`, run the following commands (changing the version number to its current value):
 
 ```
-[dom0]$ qvm-run --pass-io work 'cat /home/user/securedrop-workstation-dom0-config-x.y.z-1.fc25.noarch.rpm' > securedrop-workstation.rpm
+[dom0]$ qvm-run --pass-io work 'cat /home/user/securedrop-workstation-dom0-config-x.y.z-1.fc32.noarch.rpm' > securedrop-workstation.rpm
 sudo dnf install securedrop-workstation.rpm
 ```
 
@@ -282,9 +282,9 @@ In a terminal in `dom0`, run the following commands:
 
 This project's development requires different workflows for working on provisioning components and working on submission-handling scripts.
 
-For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to package and copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make dev` to rebuild the full installation. Current valid target VM names are `sd-proxy`, `sd-gpg`, `sd-whonix`, and `disp-vm`. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
+For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to package and copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make dev` to rebuild the full installation. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
 
-For developing submission processing scripts, work is done directly in the virtual machine running the component. To commit, copy the updated files to a development VM with `qvm-copy-to-vm`and move the copied files into place in the repo. (This process is a little awkward, and it would be nice to make it better.)
+For work on components such as the SecureDrop Client, see their respective repositories for developer documentation.
 
 ### Testing
 
@@ -298,15 +298,17 @@ These tests assert that expected scripts and configuration files are in the corr
 
 Note that since tests confirm the states of provisioned VMs, they should be run _after_ all the VMs have been built with `make dev`.
 
-Individual tests can be run with `make <test-name>`, where `test-name` is one of `test-app`, `test-journalist`, `test-whonix`, or `test-disp`.
+Individual tests can be run with `make <test-name>`, where `test-name` is one of `test-base`,  `test-app`, `test-proxy`, `test-whonix` or `test-gpg`.
 
 Be aware that running tests *will* power down running SecureDrop VMs, and may result in *data loss*. Only run tests in a development / testing environment.
 
 ### Automatic updates
 
-Double-clicking the "SecureDrop" desktop icon will launch a preflight updater that applies any necessary updates to VMs, and may prompt a reboot.
+Double-clicking the "SecureDrop" desktop icon will launch a preflight updater that applies any necessary updates to VMs, and may prompt a reboot. In a development environment, this will install the latest nightly packages, and the latest RPM published to `yum-test`.
 
-To update workstation provisioning logic in a development environment, one must use the `sd-dev` AppVM that was created during the install. From your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
+### Manually updating dom0 code
+
+To update code in `dom0` manually, e.g., to a specific branch or tag of this repository, use the `sd-dev` AppVM that was created during the install. For example, to build a specific tag, from your checkout directory, run the following commands (replace `<tag>` with the tag of the release you are working with):
 
 ```
 git fetch --tags
@@ -369,7 +371,7 @@ Some of these subprojects have a corresponding release guide in the project's RE
 In addition, we have the following (Debian) metapackages, which are stored in the [securedrop-debian-packaging](https://github.com/freedomofpress/securedrop-debian-packaging) repository:
 * [`securedrop-workstation-config`](https://github.com/freedomofpress/securedrop-debian-packaging/tree/master/securedrop-workstation-config/debian)
 * [`securedrop-workstation-grsec`](https://github.com/freedomofpress/securedrop-debian-packaging/tree/master/securedrop-workstation-grsec)
-* [`securedrop-workstation-svs-disp`](https://github.com/freedomofpress/securedrop-debian-packaging/tree/master/securedrop-workstation-svs-disp)
+* [`securedrop-workstation-viewer`](https://github.com/freedomofpress/securedrop-debian-packaging/tree/master/securedrop-workstation-viewer)
 
 The release process for a metapackage is generally to bump the version, update the debian changelog, and then tag `securedrop-debian-packaging` (see below).
 
@@ -430,7 +432,7 @@ Finally, perform the final build. You should follow one of the sections below ba
 
 #### Debian package
 
-In an environment sufficient for building production artifacts (if you don’t know what this means talk to @redshiftzero or @emkll):
+In an environment sufficient for building production artifacts (if unsure, check with a technical lead):
 
 1. Clone the [securedrop-debian-packaging](https://github.com/freedomofpress/securedrop-debian-packaging) repository.
 2. Determine which version of the packaging logic and tarballs you want to use. You probably created the tag in the previous step, else inspect the tag annotation to determine which is the right version.
