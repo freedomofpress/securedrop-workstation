@@ -18,7 +18,6 @@ sd-workstation-template:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
-        - sd-workstation-updates
     - features:
       - enable:
         - service.paxctld
@@ -40,7 +39,6 @@ sd-small-{{ sdvars.distribution }}-template:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
-        - sd-workstation-updates
     - require:
       - qvm: sd-workstation-template
 
@@ -54,6 +52,5 @@ sd-large-{{ sdvars.distribution }}-template:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
-        - sd-workstation-updates
     - require:
       - qvm: sd-workstation-template

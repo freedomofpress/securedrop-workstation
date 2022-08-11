@@ -113,22 +113,6 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             results = "".join(stdout_lines)
             self.assertEqual(results, "", fail_msg)
 
-    def _ensure_jessie_backports_disabled(self, vm):
-        """
-        Ensures that there are no Debian Jessie repos configured in
-        apt source lists. This is only relevant for Debian Stretch,
-        on which misconfigured apt sources containing Jessie references
-        will cause apt commands to fail.
-        """
-        # Use a fileglob to account for /etc/apt/sources.list.d/, as well.
-        # Add `|| true` to ensure dom0 receives a zero exit code.
-        cmd = "grep -i jessie /etc/apt/sources.list* || true"
-        # Will raise CalledProcessError if no hits found
-        stdout, stderr = vm.run(cmd)
-        results = stdout.rstrip().decode("utf-8")
-        # We expect zero hits, so confirm output is empty string.
-        self.assertEqual(results, "")
-
     def _ensure_keyring_package_exists_and_has_correct_key(self, vm):
         """
         Inspect the securedrop-keyring used by apt to ensure the correct key
@@ -155,24 +139,17 @@ sub   rsa4096 2021-05-10 [E] [expires: 2023-07-04]"""
 
     def _ensure_trusted_keyring_securedrop_key_removed(self, vm):
         """
-        Ensures the production key is no longer found in the default apt keyring
-        In testeing dev/staging, that keyring will be used for the test apt key,
-        the goal is to reduce of the production key
+        Ensures the production key is no longer found in the default apt keyring.
+        In dev/staging environments, that keyring will be used for the test apt key,
+        so we only check against the production fingerprint. The goal is to ensure
+        the production key is kept separate from other keys.
         """
         # apt-key finger doesnt work here due to stdout/terminal
         cmd = "gpg --no-default-keyring --keyring /etc/apt/trusted.gpg -k"
         stdout, stderr = vm.run(cmd)
         results = stdout.rstrip().decode("utf-8")
-        fpf_gpg_pub_key_fp = "22245C81E3BAEB4138B36061310F561200F4AD77"
+        fpf_gpg_pub_key_fp = "2359E6538C0613E652955E6C188EDD3B7B22E6A3"
         self.assertFalse(fpf_gpg_pub_key_fp in results)
-
-    def test_all_jessie_backports_disabled(self):
-        """
-        Asserts that all VMs lack references to Jessie in apt config.
-        """
-        for vm_name in WANTED_VMS:
-            vm = self.app.domains[vm_name]
-            self._ensure_jessie_backports_disabled(vm)
 
     def test_all_sd_vms_uptodate(self):
         """

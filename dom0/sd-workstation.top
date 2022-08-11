@@ -21,13 +21,11 @@ base:
     - sd-remove-unused-templates
 
   sd-small-bullseye-template:
-    - match: pcre
     - sd-logging-setup
     - sd-workstation-template-files
     - sd-app-files
     - sd-proxy-template-files
   sd-large-bullseye-template:
-    - match: pcre
     - sd-logging-setup
     - sd-workstation-template-files
     - sd-devices-files
@@ -41,7 +39,6 @@ base:
   sd-whonix:
     - sd-whonix-hidserv-key
   securedrop-workstation-bullseye:
-    - match: pcre
     - sd-workstation-template-files
     - sd-logging-setup
   'sd-fedora-dvm,sys-usb':

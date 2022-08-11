@@ -12,9 +12,3 @@ install-securedrop-proxy-package:
       - securedrop-proxy
     - require:
       - sls: fpf-apt-repo
-
-# Remove the legacy config file location
-remove-legacy-sd-proxy-config:
-  file.absent:
-    - names:
-      - /etc/sd-proxy.yaml
