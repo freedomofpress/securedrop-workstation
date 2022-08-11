@@ -126,6 +126,8 @@ Select all VMs marked as **updates available**, then click **Next**. Once all up
 
 #### Download, Configure, Copy to `dom0`
 
+This repository contains the specification for an RPM package, which contains the provisioning logic. By following the instructions below, you will build this RPM package locally from a `git` checkout in your development VM, copy it to `dom0`, install it, and run the provisioning code to set up a SecureDrop Workstation in the development environment configuration.
+
 Decide on a VM to use for development. We recommend creating a standalone VM called `sd-dev` by following [these instructions](https://docs.securedrop.org/en/stable/development/setup_development.html#qubes).
 
 Clone this repo to your preferred location on that VM.
@@ -176,7 +178,7 @@ Then run the following command to set up a development environment:
 make dev
 ```
 
-Note that this target automatically sets the `environment` variable in `config.json` to `dev`, regardless of its current value, before provisioning.
+Note that this target automatically sets the `environment` variable in `config.json` to `dev`, regardless of its current value, before provisioning. It identifies the latest RPM you have built (using `scripts/prep-dev`), installs it, and runs the `sdw-admin --apply` command to provision the SecureDrop Workstation.
 
 The build process takes quite a while. You will be presented with a dialog asking how to connect to Tor: you should be able to select the default option and continue. If you want to refer back to the provisioning log for a given
 VM, go to `/var/log/qubes/mgmt-<vm name>.log` in `dom0`. You can also monitor logs as they're being written via `journalctl -ef`. This will display logs across the entire system so it can be noisy. It's best used when you know what to look for, at least somewhat, or if you're provisioning one VM at a time.
@@ -282,7 +284,12 @@ In a terminal in `dom0`, run the following commands:
 
 This project's development requires different workflows for working on provisioning components and working on submission-handling scripts.
 
-For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project, `make clone` is used to package and copy over the updated files; `make <vm-name>` to rebuild an individual VM; and `make dev` to rebuild the full installation. Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
+For developing salt states and other provisioning components, work is done in a development VM and changes are made to individual state and top files there. In the `dom0` copy of this project:
+- `make clone` is used to build a new version of the RPM and copy the contents of your working directory (including the RPM) from your development VM to `dom0`
+- `make <vm-name>` can be used to rebuild an individual VM
+- `make dev` installs the latest locally present RPM and performs the full installation.
+
+Note that `make clone` requires two environment variables to be set: `SECUREDROP_DEV_VM` must be set to the name of the VM where you've been working on the code, the `SECUREDROP_DEV_DIR` should be set to the directory where the code is checked out on your development VM.
 
 For work on components such as the SecureDrop Client, see their respective repositories for developer documentation.
 
