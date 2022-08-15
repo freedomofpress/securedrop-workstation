@@ -105,12 +105,14 @@ class SDWConfigValidator(object):
         assert re.match("^[a-fA-F0-9]{40}$", self.config["submission_key_fpr"])
         gpg_cmd = ["gpg2", "--show-keys", self.secret_key_filepath]
         try:
-            out = subprocess.check_output(gpg_cmd).decode(sys.stdout.encoding)
+            out = subprocess.check_output(gpg_cmd, stderr=subprocess.STDOUT).decode(
+                sys.stdout.encoding
+            )
             match = "      {}".format(self.config["submission_key_fpr"])
             assert re.search(match, out), "Configured fingerprint does not match key!"
 
         except subprocess.CalledProcessError as e:
-            assert False, "Fingerprint validation failed with error: {}".format(e.output)
+            assert False, "Key validation failed: {}".format(e.output.decode(sys.stdout.encoding))
 
     def read_config_file(self):
         with open(self.config_filepath, "r") as f:
