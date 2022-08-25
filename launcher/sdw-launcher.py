@@ -7,10 +7,7 @@ from sdw_updater_gui.Updater import should_launch_updater
 import sys
 import argparse
 
-if Util.get_qt_version() == 5:
-    from PyQt5.QtWidgets import QApplication
-else:
-    from PyQt4.QtGui import QApplication
+from PyQt5.QtWidgets import QApplication
 
 
 DEFAULT_INTERVAL = 28800  # 8hr default for update interval

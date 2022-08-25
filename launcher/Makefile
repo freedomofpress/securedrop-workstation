@@ -3,7 +3,7 @@ update-pip-requirements: ## Updates all Python requirements files via pip-compil
 	pip-compile --allow-unsafe --generate-hashes --output-file=dev-requirements.txt dev-requirements.in
 
 .PHONY: venv
-venv: ## Provision a Python 3 virtualenv for development (run apt-get install python3-pyqt4)
+venv: ## Provision a Python 3 virtualenv for development (run apt-get install python3-pyqt5)
 	python3 -m venv .venv --system-site-packages
 	.venv/bin/pip install --upgrade pip wheel
 	.venv/bin/pip install --require-hashes -r "dev-requirements.txt"
