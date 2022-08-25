@@ -150,31 +150,6 @@ def get_qubes_version():
     return version
 
 
-def get_qt_version():
-    """
-    Determine the version of Qt appropriate for the environment we're in.
-    """
-    qubes_version = get_qubes_version()
-
-    # For now we must support both Qt4 and Qt5. We default to Qt4, because
-    # that's used in Qubes 4.0, the current stable version.
-    if qubes_version is not None and "4.1" in qubes_version:
-        default_version = 5
-    else:
-        default_version = 4
-
-    version_str = os.getenv("SDW_UPDATER_QT", default_version)
-    try:
-        version = int(version_str)
-    except ValueError:
-        version = None
-
-    if version in [4, 5]:
-        return version
-    else:
-        raise ValueError("Qt version not supported: {}".format(version_str))
-
-
 def get_logger(prefix=SD_LOGGER_PREFIX, module=None):
     if module is None:
         return logging.getLogger(prefix)

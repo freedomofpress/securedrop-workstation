@@ -7,11 +7,7 @@ from enum import Enum
 from sdw_util import Util
 from sdw_notify import Notify, strings
 
-if Util.get_qt_version() == 5:
-    print("Using Qt5 (experimental)")
-    from PyQt5.QtWidgets import QMessageBox
-else:
-    from PyQt4.QtGui import QMessageBox
+from PyQt5.QtWidgets import QMessageBox
 
 sdlog = Util.get_logger(Notify.LOG_FILE)
 

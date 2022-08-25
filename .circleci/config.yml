@@ -52,8 +52,6 @@ jobs:
             cd launcher/
             make venv && source .venv/bin/activate
             make check
-          environment:
-            SDW_UPDATER_QT: 5
 
 workflows:
   version: 2
