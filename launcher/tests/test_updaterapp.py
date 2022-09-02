@@ -6,18 +6,9 @@ from unittest import mock
 from unittest.mock import call
 from importlib.machinery import SourceFileLoader
 
-# Set at commandline to allow for testing of PyQt4 or PyQt5
-# (PyQt4 support will be dropped when Qubes 4.0 is no longer supported)
-PYQT_ENV = "SDW_UPDATER_QT"
-
-if os.environ.get(PYQT_ENV) == "5":
-    from PyQt5.QtWidgets import QApplication, QDialog
-    from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
-    from sdw_updater_gui.UpdaterAppUiQt5 import Ui_UpdaterDialog
-else:
-    from PyQt4.QtGui import QApplication, QDialog
-    from PyQt4.QtCore import QThread, pyqtSignal, pyqtSlot
-    from sdw_updater_gui.UpdaterAppUi import Ui_UpdaterDialog
+from PyQt5.QtWidgets import QApplication, QDialog
+from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+from sdw_updater_gui.UpdaterAppUiQt5 import Ui_UpdaterDialog
 
 relpath_updaterapp_script = "../sdw_updater_gui/UpdaterApp.py"
 path_to_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updaterapp_script)

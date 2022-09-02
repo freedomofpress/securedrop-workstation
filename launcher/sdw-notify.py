@@ -9,11 +9,7 @@ from sdw_notify import Notify, NotifyApp
 from sdw_updater_gui import Updater, UpdaterApp
 from sdw_util import Util
 
-if Util.get_qt_version() == 5:
-    print("Using Qt5 (experimental)")
-    from PyQt5.QtWidgets import QApplication
-else:
-    from PyQt4.QtGui import QApplication
+from PyQt5.QtWidgets import QApplication
 
 Util.configure_logging(Notify.LOG_FILE)
 log = Util.get_logger(Notify.LOG_FILE)
