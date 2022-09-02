@@ -227,66 +227,6 @@ def test_detect_qubes(
             assert qubes_version is None
 
 
-@pytest.mark.parametrize(
-    "env_override,expected_qt_override_result", [(None, None), ("4", 4), ("5", 5)]
-)
-@pytest.mark.parametrize(
-    "os_release_fixture,expected_qt_version",
-    [
-        ("os-release-qubes-4.1", 5),
-        ("os-release-ubuntu", 4),
-        ("no-such-file", 4),
-        ("bad-os-release-file", 4),
-    ],
-)
-@mock.patch("Util.sdlog.error")
-@mock.patch("Util.sdlog.warning")
-@mock.patch("Util.sdlog.info")
-@mock.patch("Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.1"))
-def test_pick_qt(
-    mocked_info,
-    mocked_warning,
-    mocked_error,
-    os_release_fixture,
-    expected_qt_version,
-    env_override,
-    expected_qt_override_result,
-):
-    """
-    Test whether we're using the expected Qt version based on the operating system
-    and the environment variable, which should take precedence if defined.
-    """
-    if env_override is None:
-        mocked_env = {}
-    else:
-        mocked_env = {"SDW_UPDATER_QT": env_override}
-
-    with mock.patch(
-        "Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, os_release_fixture)
-    ), mock.patch.dict("os.environ", mocked_env, clear=True):
-        qt_version = util.get_qt_version()
-        if expected_qt_override_result is not None:
-            assert qt_version == expected_qt_override_result
-        else:
-            assert qt_version == expected_qt_version
-
-
-@pytest.mark.parametrize("env_override", ["3", "3000", "GTK"])
-@mock.patch("Util.sdlog.error")
-@mock.patch("Util.sdlog.warning")
-@mock.patch("Util.sdlog.info")
-def test_pick_bad_qt(mocked_info, mocked_warning, mocked_error, env_override):
-    """
-    Test whether we're getting the expected error when specifying an invalid
-    version via environment override
-    """
-    mocked_env = {"SDW_UPDATER_QT": env_override}
-    with mock.patch.dict("os.environ", mocked_env), mock.patch(
-        "Util.OS_RELEASE_FILE", os.path.join(FIXTURES_PATH, "os-release-qubes-4.1")
-    ), pytest.raises(ValueError):
-        util.get_qt_version()
-
-
 def test_get_logger():
     """
     Test whether the logging utility functions returns namespaced loggers in

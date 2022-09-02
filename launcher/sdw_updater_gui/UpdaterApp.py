@@ -5,15 +5,9 @@ from sdw_util import Util
 import subprocess
 import sys
 
-if Util.get_qt_version() == 5:
-    from PyQt5.QtWidgets import QDialog
-    from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
-    from sdw_updater_gui.UpdaterAppUiQt5 import Ui_UpdaterDialog
-else:
-    from PyQt4.QtGui import QDialog
-    from PyQt4.QtCore import QThread, pyqtSignal, pyqtSlot
-    from sdw_updater_gui.UpdaterAppUi import Ui_UpdaterDialog
-
+from PyQt5.QtWidgets import QDialog
+from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+from sdw_updater_gui.UpdaterAppUiQt5 import Ui_UpdaterDialog
 
 logger = Util.get_logger(module=__name__)
 
