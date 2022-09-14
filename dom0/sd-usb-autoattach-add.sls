@@ -6,15 +6,6 @@
 # USB devices to sd-devices.
 ##
 
-# If sys-usb is disposable, we have already set up sd-fedora-dvm to make our
-# modifications in, so we only want to modify sys-usb if it is a regular AppVM
-
-{% set apply = True %}
-{% if grains['id'] == 'sys-usb' and salt['pillar.get']('qvm:sys-usb:disposable', true) %}
-  {% set apply = False %}
-{% endif %}
-
-{% if apply %}
 sd-udev-rules:
   file.managed:
     - name: /rw/config/sd/etc/udev/rules.d/99-sd-devices.rules
@@ -48,4 +39,3 @@ sd-attach-export-device:
     - user: root
     - group: root
     - mode: 0555
-{% endif %}

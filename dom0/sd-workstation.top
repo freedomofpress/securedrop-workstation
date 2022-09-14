@@ -41,8 +41,7 @@ base:
   securedrop-workstation-bullseye:
     - sd-workstation-template-files
     - sd-logging-setup
-  'sd-fedora-dvm,sys-usb':
-    - match: list
+  sd-fedora-dvm:
     - sd-usb-autoattach-add
   sd-log:
     - sd-logging-setup
