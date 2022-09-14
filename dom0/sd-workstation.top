@@ -35,7 +35,7 @@ base:
     - sd-logging-setup
   sd-app:
     - sd-app-config
-    - sd-mime-handling
+    - sd-app-mime-handling
   sd-whonix:
     - sd-whonix-hidserv-key
   securedrop-workstation-bullseye:
@@ -46,12 +46,12 @@ base:
   sd-log:
     - sd-logging-setup
   sd-viewer:
-    - sd-mime-handling
+    - sd-viewer-mime-handling
   sd-devices-dvm:
-    - sd-mime-handling
+    - sd-devices-mime-handling
   sd-proxy:
     - sd-proxy-files
-    - sd-mime-handling
+    - sd-proxy-mime-handling
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.
