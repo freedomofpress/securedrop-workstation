@@ -117,3 +117,6 @@ builder/packages/securedrop-workstation-grsec/debian/files
 *.tar.gz
 rpm-build/BUILD/
 rpm-build/BUILDROOT/
+
+# IDEs
+.vscode
