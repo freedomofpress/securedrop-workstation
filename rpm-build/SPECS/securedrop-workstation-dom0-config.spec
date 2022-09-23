@@ -19,7 +19,7 @@ Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
-License:	GPLv3+
+License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
 Source0:	securedrop-workstation-dom0-config-0.7.0.tar.gz
 
