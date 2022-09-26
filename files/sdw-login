@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 """
-Utility script for SecureDrop Workstation config. Launches the SecureDrop
+Utility script for SecureDrop Workstation. Launches the SecureDrop
 Workstation updater on boot. It will prompt users to apply template and
-dom0 updates
-
-The update process is intended to run at XFCE login, via a desktop file.
+dom0 updates.
 """
 import os
 import subprocess
 import logging
 import time
 
-LAUNCHER_PATH = "/opt/securedrop/launcher/sdw-launcher.py"
 SCRIPT_NAME = os.path.basename(__file__)
 logger = logging.getLogger(SCRIPT_NAME)
 logging.basicConfig(level=logging.INFO)
@@ -23,5 +20,4 @@ if __name__ == "__main__":
     # to the user.
     time.sleep(5)
 
-    cmd = ["python3", LAUNCHER_PATH]
-    subprocess.check_call(cmd)
+    subprocess.check_call(["sdw-updater"])

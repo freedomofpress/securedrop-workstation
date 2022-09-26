@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from sdw_updater_gui.UpdaterApp import UpdaterApp
+from sdw_updater.UpdaterApp import UpdaterApp
 from sdw_util import Util
-from sdw_updater_gui import Updater
-from sdw_updater_gui.UpdaterApp import launch_securedrop_client
-from sdw_updater_gui.Updater import should_launch_updater
+from sdw_updater import Updater
+from sdw_updater.UpdaterApp import launch_securedrop_client
+from sdw_updater.Updater import should_launch_updater
 import sys
 import argparse
 

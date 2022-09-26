@@ -34,7 +34,7 @@ rpmbuild \
     --define "_topdir $PWD/rpm-build" \
     --define "dist $dist" \
     --define "_python_version $python_version" \
-    -bb --clean "rpm-build/SPECS/securedrop-workstation-dom0-config.spec"
+    -bb --clean "rpm-build/SPECS/securedrop-updater.spec"
 
 printf '\nBuild complete! RPMs and their checksums are:\n\n'
 find rpm-build/ -type f -iname '*.rpm' -print0 | sort -zV | xargs -0 sha256sum
