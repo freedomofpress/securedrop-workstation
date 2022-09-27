@@ -21,7 +21,7 @@ git clean -fdX rpm-build/ dist/
 # SOURCE_DATE_EPOCH="$(git tag | sort -V | tail -n 1 | xargs git log -1 --format=%at)"
 # Use the epoch time of the most recent commit. If works in dev,
 # as well as building from signed tags.
-SOURCE_DATE_EPOCH="$(git log -1 --format=%at HEAD)"
+SOURCE_DATE_EPOCH="$(git log -1 --format=%at HEAD | tail -n 1)"
 export SOURCE_DATE_EPOCH
 
 # Place tarball where rpmbuild will find it

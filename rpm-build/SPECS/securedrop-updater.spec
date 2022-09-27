@@ -61,10 +61,12 @@ install -m 644 sdw_util/*py %{buildroot}%{python3_sitelib}/sdw_util/
 install -m 755 -d %{buildroot}/%{_bindir}
 install -m 755 -d %{buildroot}/usr/share/applications/
 install -m 755 -d %{buildroot}/usr/share/icons/hicolor/128x128/
+install -m 755 -d %{buildroot}/usr/share/icons/hicolor/scalable/
 # Create doc dir manually, because %doc macro doesn't honor SOURCE_DATE_EPOCH.
 install -m 755 -d %{buildroot}/%{_custom_docdir}
 install -m 644 files/sdw-updater.desktop %{buildroot}/usr/share/applications/
-install -m 644 files/securedrop.png %{buildroot}/usr/share/icons/hicolor/128x128/
+install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/icons/hicolor/128x128/securedrop.png
+install -m 644 files/securedrop-scalable.svg %{buildroot}/usr/share/icons/hicolor/scalable/securedrop.svg
 install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
@@ -81,6 +83,7 @@ find %{buildroot} -exec touch -m -d @%{_source_date_epoch} {} +
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
 /usr/share/icons/hicolor/128x128/securedrop.png
+/usr/share/icons/hicolor/scalable/securedrop.svg
 %{_custom_docdir}/LICENSE
 %{_custom_docdir}/README.md
 
