@@ -72,28 +72,6 @@ dom0-install-securedrop-workstation-template:
     - require:
       - file: dom0-workstation-rpm-repo
 
-# Create directory for storing SecureDrop-specific icons
-dom0-securedrop-icons-directory:
-  file.directory:
-    - name: /usr/share/securedrop/icons
-    - user: root
-    - group: root
-    - mode: 755
-    - makedirs: True
-
-# Copy SecureDrop icon for use in GUI feedback. It's also present in
-# the Salt directory, but the permissions on that dir don't permit
-# normal user reads.
-dom0-securedrop-icon:
-  file.managed:
-    - name: /usr/share/securedrop/icons/sd-logo.png
-    - source: salt://sd/sd-workstation/logo-small.png
-    - user: root
-    - group: root
-    - mode: 644
-    - require:
-      - file: dom0-securedrop-icons-directory
-
 dom0-enabled-apparmor-on-whonix-gw-template:
   qvm.vm:
     - name: whonix-gw-16
@@ -106,10 +84,6 @@ dom0-enabled-apparmor-on-whonix-ws-template:
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
 
-dom0-create-opt-securedrop-directory:
-  file.directory:
-    - name: /opt/securedrop
-
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
 # Increase the default icon size for the GUI user for usability/accessibility reasons
@@ -119,54 +93,33 @@ dom0-adjust-desktop-icon-size-xfce:
     - args: adjust-icon-size
     - runas: {{ gui_user }}
 
-dom0-login-autostart-directory:
-  file.directory:
-    - name: /home/{{ gui_user }}/.config/autostart
-    - user: {{ gui_user }}
-    - group: {{ gui_user }}
-    - mode: 700
-    - makedirs: True
+dom0-install-securedrop-updater:
+  pkg.installed:
+    - name: securedrop-updater
+    - require:
+      - file: dom0-workstation-rpm-repo
 
 dom0-login-autostart-desktop-file:
-  file.managed:
-    - name: /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
-    - source: "salt://dom0-xfce-desktop-file.j2"
-    - template: jinja
-    - context:
-        desktop_name: SDWLogin
-        desktop_comment: Updates SecureDrop Workstation DispVMs at login
-        desktop_exec: /usr/bin/securedrop-login
+  file.symlink:
+    - name: /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
+    - source: /usr/share/applications/press.freedom.SecureDropUpdater.desktop
     - user: {{ gui_user }}
     - group: {{ gui_user }}
-    - mode: 664
+    - makedirs: True
     - require:
-      - file: dom0-login-autostart-directory
+      - pkg: dom0-install-securedrop-updater
 
-dom0-login-autostart-script:
-  file.managed:
-    - name: /usr/bin/securedrop-login
-    - source: "salt://securedrop-login"
-    - user: root
-    - group: root
-    - mode: 755
-
-dom0-securedrop-launcher-executables:
-  file.managed:
-    - names:
-      - /opt/securedrop/launcher/sdw-launcher.py
-      - /opt/securedrop/launcher/sdw-notify.py
-    - user: root
-    - group: root
-    - mode: 755
-    - replace: false
-
-dom0-securedrop-launcher-desktop-shortcut:
-  file.managed:
-    - name: /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
-    - source: "salt://securedrop-launcher.desktop"
+# If this were a symlink, XFCE would show symlink and lock overlays on top of
+# the SD icon - which we definitely do not want
+dom0-securedrop-updater-desktop-shortcut:
+  file.copy:
+    - name: /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
+    - source: /usr/share/applications/press.freedom.SecureDropUpdater.desktop
     - user: {{ gui_user }}
     - group: {{ gui_user }}
     - mode: 755
+    - require:
+      - pkg: dom0-install-securedrop-updater
 
 {% import_json "sd/config.json" as d %}
 {% if d.environment != "dev" %}

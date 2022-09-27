@@ -32,22 +32,6 @@ jobs:
       - run:
           name: Check reproducibility
           command: make reprotest
-  launcher-tests:
-    docker:
-      - image: fedora:32
-    steps:
-      - run: dnf install -y make
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            make install-deps
-            pip3 install --require-hashes -r launcher/dev-requirements.txt
-      - run:
-          name: Run launcher tests
-          command: |
-            cd launcher/
-            make check
 
 workflows:
   version: 2
@@ -55,4 +39,3 @@ workflows:
     jobs:
       - lint
       - build-rpm
-      - launcher-tests

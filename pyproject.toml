@@ -11,7 +11,6 @@ scripts_are_modules = true
 files = [
     "*.py",
     "dom0/remove-tags",
-    "dom0/securedrop-login",
     "scripts/*.py",
     "files/*.py",
     "scripts/configure-environment",

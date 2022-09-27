@@ -76,8 +76,8 @@ remove-dom0-sdw-config-files:
       - /usr/bin/securedrop-login
       - /etc/qubes-rpc/policy/securedrop.Log
       - /etc/qubes-rpc/policy/securedrop.Proxy
-      - /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
-      - /home/{{ gui_user }}/.securedrop_launcher
+      - /home/{{ gui_user }}/Desktop/sdw-updater.desktop
+      - /home/{{ gui_user }}/.securedrop_updater
       - /srv/salt/qa-switch.tar.gz
       - /srv/salt/qa-switch
       - /srv/salt/consolidation-qa-switch.sh
@@ -92,7 +92,6 @@ remove-rpc-policy-tags:
 sd-cleanup-etc-changes:
   file.replace:
     - names:
-      - /etc/crontab
       - /etc/systemd/logind.conf
       - /etc/qubes/repo-templates/qubes-templates.repo
     - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'

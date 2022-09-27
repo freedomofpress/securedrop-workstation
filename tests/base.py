@@ -12,7 +12,7 @@ CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION
 CURRENT_WHONIX_VERSION = "16"
 
 
-# Lifted from launcher/sdw_util/Util.py
+# Lifted from securedrop-updater:sdw_util/Util.py
 def get_qubes_version():
     """
     Helper function for checking the Qubes version. Returns None if not on Qubes.
