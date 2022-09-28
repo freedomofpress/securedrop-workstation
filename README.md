@@ -12,21 +12,10 @@ This project aims to improve journalists' experience using SecureDrop, by moving
 We are currently piloting this project with a small number of news organizations; see [our blog post](https://securedrop.org/news/piloting-securedrop-workstation-qubes-os/) for additional information.
 
 1. [Detailed Rationale](#detailed-rationale)
-2. [Architecture](#architecture)
-3. [What's In This Repo?](#whats-in-this-repo)
-2. [Installation](#installation)
-   - [Install Qubes](#install-qubes)
-   - [Development Environment](#development-environment)
-   - [Staging Environment](#staging-environment)
-3. [Development](#development)
-   - [Testing](#testing)
-   - [Automatic Updates](#automatic-updates)
-   - [Building the Templates](#building-the-templates)
-   - [Building workstation deb packages](#building-workstation-deb-packages)
-   - [Building workstation rpm packages](#building-workstation-deb-packages)
-4. [Using the *SecureDrop Client*](#using-the-securedrop-client)
-5. [Distributing and Releasing](#distributing-and-releasing-workstation-and-its-subprojects)
-6. [Threat model](#threat-model)
+1. [Architecture](#architecture)
+1. [What's In This Repo?](#whats-in-this-repo)
+1. [Installation](#installation)
+1. [Threat model](#threat-model)
 
 ## Detailed Rationale
 
