@@ -21,7 +21,7 @@ bandit:
 
 .PHONY: test
 test:
-	xvfb-run python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ --cov=sdw_util -v tests/
+	xvfb-run python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater/ --cov=sdw_util -v tests/
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
@@ -31,7 +31,7 @@ test:
 # 5. Format columns with colon as delimiter.
 .PHONY: help
 help: ## Prints this message and exits
-	@printf "Makefile for developing and testing SecureDrop Workstation.\n"
+	@printf "Makefile for developing and testing SecureDrop Updater.\n"
 	@printf "Subcommands:\n\n"
 	@perl -F':.*##\s+' -lanE '$$F[1] and say "\033[36m$$F[0]\033[0m : $$F[1]"' $(MAKEFILE_LIST) \
 		| sort \

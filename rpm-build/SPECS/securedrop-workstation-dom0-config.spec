@@ -92,19 +92,12 @@ install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts
 install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 
-install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_notify/
-install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_updater/
-install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_util/
-install -m 644 launcher/sdw_notify/*py %{buildroot}%{python3_sitelib}/sdw_notify/
-install -m 644 launcher/sdw_updater/*py %{buildroot}%{python3_sitelib}/sdw_updater/
-install -m 644 launcher/sdw_util/*py %{buildroot}%{python3_sitelib}/sdw_util/
 install -m 755 -d %{buildroot}/%{_bindir}
 install -m 755 -d %{buildroot}/usr/share/applications/
 install -m 755 -d %{buildroot}/usr/share/icons/hicolor/128x128/
 # Create doc dir manually, because %doc macro doesn't honor SOURCE_DATE_EPOCH.
 install -m 755 -d %{buildroot}/%{_custom_docdir}
 install -m 644 files/sdw-updater.desktop %{buildroot}/usr/share/applications/
-install -m 644 files/securedrop.png %{buildroot}/usr/share/icons/hicolor/128x128/
 install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
@@ -137,7 +130,6 @@ find %{buildroot} -type d -iname '*.egg-info' -print0 | xargs -0 -r rm -rf
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
-/usr/share/icons/hicolor/128x128/securedrop.png
 
 
 %post
