@@ -21,7 +21,7 @@ Summary:	SecureDrop Workstation
 Group:		Library
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-updater
-Source0:	securedrop-updater-0.7.0.tar.gz
+Source0:	securedrop-updater-%{version}.tar.gz
 
 BuildArch:      noarch
 # Disable declaration of build dependencies, because
@@ -49,15 +49,10 @@ configuration over time.
 %define use_source_date_epoch_as_buildtime 1
 
 %prep
-%setup -n securedrop-updater-0.7.0
+%setup -n securedrop-updater-%{version}
 
 %install
-install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_notify/
-install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_updater/
-install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_util/
-install -m 644 sdw_notify/*py %{buildroot}%{python3_sitelib}/sdw_notify/
-install -m 644 sdw_updater/*py %{buildroot}%{python3_sitelib}/sdw_updater/
-install -m 644 sdw_util/*py %{buildroot}%{python3_sitelib}/sdw_util/
+%{__python3} setup.py install --install-lib %{python3_sitelib} --no-compile --root %{buildroot}
 install -m 755 -d %{buildroot}/%{_bindir}
 install -m 755 -d %{buildroot}/usr/share/applications/
 install -m 755 -d %{buildroot}/usr/share/icons/hicolor/128x128/
