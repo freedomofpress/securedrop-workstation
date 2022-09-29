@@ -55,13 +55,13 @@ configuration over time.
 %{__python3} setup.py install --install-lib %{python3_sitelib} --no-compile --root %{buildroot}
 install -m 755 -d %{buildroot}/%{_bindir}
 install -m 755 -d %{buildroot}/usr/share/applications/
-install -m 755 -d %{buildroot}/usr/share/icons/hicolor/128x128/
-install -m 755 -d %{buildroot}/usr/share/icons/hicolor/scalable/
+install -m 755 -d %{buildroot}/usr/share/icons/hicolor/128x128/apps/
+install -m 755 -d %{buildroot}/usr/share/icons/hicolor/scalable/apps/
 # Create doc dir manually, because %doc macro doesn't honor SOURCE_DATE_EPOCH.
 install -m 755 -d %{buildroot}/%{_custom_docdir}
 install -m 644 files/sdw-updater.desktop %{buildroot}/usr/share/applications/
-install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/icons/hicolor/128x128/securedrop.png
-install -m 644 files/securedrop-scalable.svg %{buildroot}/usr/share/icons/hicolor/scalable/securedrop.svg
+install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/icons/hicolor/128x128/apps/securedrop.png
+install -m 644 files/securedrop-scalable.svg %{buildroot}/usr/share/icons/hicolor/scalable/apps/securedrop.svg
 install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
@@ -77,13 +77,13 @@ find %{buildroot} -exec touch -m -d @%{_source_date_epoch} {} +
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
-/usr/share/icons/hicolor/128x128/securedrop.png
-/usr/share/icons/hicolor/scalable/securedrop.svg
+/usr/share/icons/hicolor/128x128/apps/securedrop.png
+/usr/share/icons/hicolor/scalable/apps/securedrop.svg
 %{_custom_docdir}/LICENSE
 %{_custom_docdir}/README.md
 
 
 %changelog
-* Fri Oct 26 2022 SecureDrop Team <securedrop@freedom.press> - 0.7.0-1
+* Fri Sept 30 2022 SecureDrop Team <securedrop@freedom.press> - 0.7.0-1
 - First release of securedrop-updater (split off of
   securedrop-workstation-dom0-config)
