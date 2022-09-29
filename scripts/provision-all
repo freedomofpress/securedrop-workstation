@@ -24,7 +24,7 @@ qvm-shutdown --wait sd-log && qvm-start sd-log
 
 # Format list of all VMs comma-separated, for use as qubesctl target
 # We run this after dom0's highstate, so that the VMs are available for listing by tag.
-all_sdw_vms_target="$(qvm-ls --tags sd-workstation --raw-list | perl -npE 's/\n/,/g' | perl -npE 's/,$//' )"
+all_sdw_vms_target="$(qvm-ls --tags sd-workstation --raw-list | grep -v "sd-devices$" | perl -npE 's/\n/,/g' | perl -npE 's/,$//' )"
 
 # We skip dom0 in the task below, since dom0 highstate was enforced in the previous command.
 echo "Provision all SecureDrop Workstation VMs with service-specific configs"
