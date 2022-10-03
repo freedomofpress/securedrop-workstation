@@ -13,7 +13,7 @@ jobs:
             make install-deps
             python3 -m venv .venv
             source .venv/bin/activate
-            pip install --require-hashes -r dev-requirements.txt
+            pip install --require-hashes -r requirements/dev-requirements.txt
             sudo apt-get install -y file
             make black
   buildrpm:
