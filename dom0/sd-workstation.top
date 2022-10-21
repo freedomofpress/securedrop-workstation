@@ -42,8 +42,6 @@ base:
   'sd-fedora-39-dvm,sys-usb':
     - match: list
     - sd-usb-autoattach-add
-  sd-log:
-    - sd-logging-setup
   sd-viewer:
     - sd-mime-handling
   sd-devices-dvm:

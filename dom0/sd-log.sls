@@ -31,7 +31,8 @@ sd-log:
       - enable:
         - service.paxctld
         - service.redis
-        - service.securedrop-log
+        - service.securedrop-logging-disabled
+        - service.securedrop-log-server
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
