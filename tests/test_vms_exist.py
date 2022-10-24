@@ -37,7 +37,7 @@ class SD_VM_Tests(unittest.TestCase):
         assert kernel_version.endswith("-grsec-workstation")
         assert kernel_version == EXPECTED_KERNEL_VERSION
 
-    def _check_service_running(self, vm, service):
+    def _check_service_running(self, vm, service, running=True):
         """
         Ensures a given service is running inside a given VM.
         Uses systemctl is-active to query the service state.
@@ -45,7 +45,7 @@ class SD_VM_Tests(unittest.TestCase):
         cmd = "systemctl is-active {}".format(service)
         stdout, stderr = vm.run(cmd)
         service_status = stdout.decode("utf-8").rstrip()
-        assert service_status == "active"
+        self.assertTrue(service_status == "active" if running else "inactive")
 
     def test_sd_whonix_config(self):
         vm = self.app.domains["sd-whonix"]
@@ -78,6 +78,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
+        self._check_service_running(vm, "securedrop-log", False)
         self.assertTrue("sd-workstation" in vm.tags)
         self.assertTrue("sd-client" in vm.tags)
         # Check the size of the private volume
@@ -98,6 +99,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertIsNone(vm.default_dispvm)
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
+        self._check_service_running(vm, "securedrop-log", False)
         self.assertTrue("sd-workstation" in vm.tags)
 
     def test_sd_gpg_config(self):
@@ -110,6 +112,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
+        self._check_service_running(vm, "securedrop-log", False)
         self.assertTrue("sd-workstation" in vm.tags)
 
     def test_sd_log_config(self):
@@ -141,6 +144,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue("sd-workstation" in vm.tags)
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
+        self._check_service_running(vm, "securedrop-log", False)
 
     def test_sd_proxy_template(self):
         vm = self.app.domains["sd-small-{}-template".format(DEBIAN_VERSION)]
