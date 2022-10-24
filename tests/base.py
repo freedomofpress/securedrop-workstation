@@ -114,6 +114,16 @@ class SD_VM_Local_Test(unittest.TestCase):
 
         return True
 
+    def _service_is_active(self, service):
+        try:
+            results = self._run(f"sudo systemctl is-active {service}")
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 3:
+                return False  # exit code 3 == inactive
+            else:
+                raise e
+        return results == "active"
+
     def assertFilesMatch(self, remote_path, local_path):
         remote_content = self._get_file_contents(remote_path)
 
@@ -167,6 +177,9 @@ class SD_VM_Local_Test(unittest.TestCase):
         """
         Make sure rsyslog is configured to send in data to sd-log vm.
         """
+        # Logging is not disabled
+        self.assertFalse(self._fileExists("/var/run/qubes-service/securedrop-logging-disabled"))
+
         self.assertTrue(self._package_is_installed("securedrop-log"))
         self.assertTrue(self._fileExists("/usr/sbin/sd-rsyslog"))
         self.assertTrue(self._fileExists("/etc/rsyslog.d/sdlog.conf"))

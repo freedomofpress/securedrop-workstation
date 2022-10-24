@@ -16,19 +16,17 @@ class SD_Log_Tests(SD_VM_Local_Test):
         self.assertTrue(self._package_is_installed("redis-server"))
 
     def test_log_utility_installed(self):
-        self.assertTrue(self._fileExists("/usr/sbin/securedrop-log"))
+        self.assertTrue(self._fileExists("/usr/sbin/securedrop-log-saver"))
         self.assertTrue(self._fileExists("/etc/qubes-rpc/securedrop.Log"))
 
     def test_sd_log_has_no_custom_rsyslog(self):
         self.assertFalse(self._fileExists("/etc/rsyslog.d/sdlog.conf"))
 
     def test_sd_log_service_running(self):
-        results = self._run("sudo systemctl is-active securedrop-log")
-        assert results == "active"
+        self.assertTrue(self._service_is_active("securedrop-log-server"))
 
     def test_redis_service_running(self):
-        results = self._run("sudo systemctl is-active redis")
-        assert results == "active"
+        self.assertTrue(self._service_is_active("redis"))
 
     def test_logs_are_flowing(self):
         cmd_output = self._run("ls -1 /home/user/QubesIncomingLogs")
