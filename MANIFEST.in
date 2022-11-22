@@ -18,3 +18,4 @@ include sdw_notify/*.py
 include sdw_util/*.py
 include usb-autoattach/*
 include files/*
+include setup.py

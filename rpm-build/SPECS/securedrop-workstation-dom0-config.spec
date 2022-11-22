@@ -97,7 +97,7 @@ install -m 755 -d %{buildroot}/usr/share/applications/
 install -m 755 -d %{buildroot}/usr/share/icons/hicolor/128x128/
 # Create doc dir manually, because %doc macro doesn't honor SOURCE_DATE_EPOCH.
 install -m 755 -d %{buildroot}/%{_custom_docdir}
-install -m 644 files/sdw-updater.desktop %{buildroot}/usr/share/applications/
+install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/usr/share/applications/
 install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
@@ -126,7 +126,7 @@ find %{buildroot} -type d -iname '*.egg-info' -print0 | xargs -0 -r rm -rf
 %attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/sdw-updater
-%attr(644, root, root) /usr/share/applications/sdw-updater.desktop
+%attr(644, root, root) /usr/share/applications/press.freedom.SecureDropUpdater.desktop
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
