@@ -1,89 +1,87 @@
-%global srcname securedrop-updater
-%global version 0.7.0
-%global __python3 /usr/bin/python3
-%global python3_sitelib /usr/lib/%{_python_version}/site-packages
+Name:		securedrop-updater
+Version:	0.7.0
+Release:	1%{?dist}
+Summary:	SecureDrop Updater
+
 # For reproducible builds:
 #
-#   * _buildhost is hostname, will vary based on environment
-#   * _source_date_epoch will be defined via env var
-#   * _custom_docdir is a workaround for %docs not supporting SOURCE_DATE_EPOCH
-#   * optflags is for multi-arch support: otherwise rpmbuild sets 'OPTFLAGS: -O2 -g -march=i386 -mtune=i686'
-%global _buildhost %{srcname}
-%global _source_date_epoch %{getenv:SOURCE_DATE_EPOCH}
-%global _custom_docdir /usr/share/doc/%{srcname}
-%global optflags -O2 -g
-
-Name:		%{srcname}
-Version:	%{version}
-Release:	1%{?dist}
-Summary:	SecureDrop Workstation
-
-Group:		Library
-License:	AGPLv3
-URL:		https://github.com/freedomofpress/securedrop-updater
-Source0:	securedrop-updater-%{version}.tar.gz
-
-BuildArch:      noarch
-# Disable declaration of build dependencies, because
-# we build on Debian stable.
-#BuildRequires:	python3-setuptools
-#BuildRequires:	python3-devel
-
-# This package installs all standard VMs in Qubes
-Requires:       qubes-mgmt-salt-dom0-virtual-machines
-
-%description
-
-This package contains VM configuration files for the Qubes-based
-SecureDrop Workstation project. The package should be installed
-in dom0, or AdminVM, context, in order to manage updates to the VM
-configuration over time.
-
-# To ensure forward-compatibility of RPMs regardless of updates to the system
-# Python, we disable the creation of bytecode at build time via the build
-# root policy.
+#   * Ensure that SOURCE_DATE_EPOCH env is honored.
+%define use_source_date_epoch_as_buildtime 1
+#   * _buildhost varies based on environment, we build via Docker but ensure
+#     this is the same regardless
+%global _buildhost %{name}
+#   * _custom_docdir and _custom_licensedir are workarounds for their respecitve
+#      macros not supporting SOURCE_DATE_EPOCH
+%global _custom_docdir /usr/share/doc/%{name}
+%global _custom_licensedir /usr/share/licenses/%{name}
+#   * compiling Python bytecode is not reproducible at the time of writing
 %undefine py_auto_byte_compile
 
-# Ensure that SOURCE_DATE_EPOCH is honored. Does not appear to affect
-# use of %doc macro, so we use _custom_docdir instead.
-%define use_source_date_epoch_as_buildtime 1
+License:	AGPLv3
+URL:		https://github.com/freedomofpress/%{name}
+# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/SourceURL/#_troublesome_urls
+Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
+
+BuildArch:		noarch
+BuildRequires:	python3-devel
+BuildRequires:	python3-pip
+BuildRequires:	python3-setuptools
+BuildRequires:	python3-wheel
+
+# SecureDrop Updater triggers Salt to update templates and has a Qt5 based UI
+Requires:		qubes-mgmt-salt-dom0-virtual-machines
+Requires:		python3-qt5
+
+
+%description
+SecureDrop Updater enforces the update policy for SecureDrop Workstation.
+
 
 %prep
-%setup -n securedrop-updater-%{version}
+%setup -q -n %{name}-%{version}
+
+
+%build
+# No building necessary here, but this soothes rpmlint
+
 
 %install
-%{__python3} setup.py install --install-lib %{python3_sitelib} --no-compile --root %{buildroot}
+%{python3} -m pip install --no-compile --no-index --no-build-isolation --root %{buildroot} .
 install -m 755 -d %{buildroot}/%{_bindir}
-install -m 755 -d %{buildroot}/usr/share/applications/
-install -m 755 -d %{buildroot}/usr/share/icons/hicolor/128x128/apps/
-install -m 755 -d %{buildroot}/usr/share/icons/hicolor/scalable/apps/
-# Create doc dir manually, because %doc macro doesn't honor SOURCE_DATE_EPOCH.
+install -m 755 -d %{buildroot}/%{_datadir}/applications/
+install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/
+install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/
+install -m 755 -d %{buildroot}/%{_sharedstatedir}/%{name}/
+# Create doc dir manually, because doc macro doesn't honor SOURCE_DATE_EPOCH.
 install -m 755 -d %{buildroot}/%{_custom_docdir}
-install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/usr/share/applications/
-install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/icons/hicolor/128x128/apps/securedrop.png
-install -m 644 files/securedrop-scalable.svg %{buildroot}/usr/share/icons/hicolor/scalable/apps/securedrop.svg
+install -m 755 -d %{buildroot}/%{_custom_licensedir}
+install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
+install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
+install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
-install -m 644 README.md LICENSE %{buildroot}/%{_custom_docdir}/
-find %{buildroot} -type d -iname '*.egg-info' -print0 | xargs -0 -r rm -rf
-find %{buildroot} -exec touch -m -d @%{_source_date_epoch} {} +
+install -m 644 README.md %{buildroot}/%{_custom_docdir}/
+install -m 644 LICENSE %{buildroot}/%{_custom_licensedir}/
+find %{buildroot} -type d \( -iname '*.egg-info' -o -iname '*.dist-info' \) -print0 | xargs -0 -r rm -rf
+find %{buildroot} -exec touch -m -d @%{getenv:SOURCE_DATE_EPOCH} {} +
+
 
 %files
 %attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/sdw-updater
-%attr(644, root, root) /usr/share/applications/press.freedom.SecureDropUpdater.desktop
+%attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
-/usr/share/icons/hicolor/128x128/apps/securedrop.png
-/usr/share/icons/hicolor/scalable/apps/securedrop.svg
-%{_custom_docdir}/LICENSE
+%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
+%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %{_custom_docdir}/README.md
+%{_custom_licensedir}/LICENSE
 
 
 %changelog
-* Fri Sept 30 2022 SecureDrop Team <securedrop@freedom.press> - 0.7.0-1
+* Tue Jan 17 2023 SecureDrop Team <securedrop@freedom.press> - 0.7.0-1
 - First release of securedrop-updater (split off of
   securedrop-workstation-dom0-config)
