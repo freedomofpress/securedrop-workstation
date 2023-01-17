@@ -5,11 +5,12 @@ for too long without checking for security updates. Writes output to a logfile,
 not stdout. All settings are in Notify utility module.
 """
 import sys
+
+from PyQt5.QtWidgets import QApplication
+
 from sdw_notify import Notify, NotifyApp
 from sdw_updater import Updater, UpdaterApp
 from sdw_util import Util
-
-from PyQt5.QtWidgets import QApplication
 
 Util.configure_logging(Notify.LOG_FILE)
 log = Util.get_logger(Notify.LOG_FILE)
