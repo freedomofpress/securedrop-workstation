@@ -1,13 +1,13 @@
-from sdw_updater import strings
-from sdw_updater import Updater
-from sdw_updater.Updater import UpdateStatus
-from sdw_util import Util
 import subprocess
 import sys
 
-from PyQt5.QtWidgets import QDialog
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import QDialog
+
+from sdw_updater import Updater, strings
+from sdw_updater.Updater import UpdateStatus
 from sdw_updater.UpdaterAppUiQt5 import Ui_UpdaterDialog
+from sdw_util import Util
 
 logger = Util.get_logger(module=__name__)
 
@@ -202,7 +202,7 @@ def _is_netcheck_successful() -> bool:
         return result.decode("utf-8").strip() == "full"
     except subprocess.CalledProcessError as e:
         logger.error(
-            "{} (connectivity check) failed; state reported as".format(
+            "{} (connectivity check) failed; state reported as {}".format(
                 command.decode("utf-8"), e.output
             )
         )
