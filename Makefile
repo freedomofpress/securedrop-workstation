@@ -71,7 +71,7 @@ flake8: ## Validate PEP8 compliance for Python source files
 
 .PHONY: rpmlint
 rpmlint: ## Runs rpmlint on the spec file
-	rpmlint rpm-build/SPECS/securedrop-updater.spec
+	$(CONTAINER) rpmlint rpm-build/SPECS/securedrop-updater.spec
 
 .PHONY: shellcheck
 shellcheck: ## Runs shellcheck on all shell scripts
