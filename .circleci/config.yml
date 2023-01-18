@@ -39,7 +39,7 @@ jobs:
       - run: dnf install -y make
       - checkout
       - run:
-          name: Install dependencies and run tests
+          name: Install dependencies
           command: |
             make install-deps
             pip3 install --require-hashes -r requirements/dev-requirements.txt
