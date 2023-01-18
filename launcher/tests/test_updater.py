@@ -1,12 +1,13 @@
 import json
 import os
-import pytest
 import subprocess
-from importlib.machinery import SourceFileLoader
 from datetime import datetime, timedelta
+from importlib.machinery import SourceFileLoader
 from tempfile import TemporaryDirectory
 from unittest import mock
 from unittest.mock import call
+
+import pytest
 
 relpath_updater_script = "../sdw_updater/Updater.py"
 path_to_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updater_script)

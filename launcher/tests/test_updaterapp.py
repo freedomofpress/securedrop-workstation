@@ -1,8 +1,7 @@
 import os
 import unittest
-from unittest import TestCase
-from unittest import mock
 from importlib.machinery import SourceFileLoader
+from unittest import TestCase, mock
 
 from PyQt5.QtWidgets import QApplication
 

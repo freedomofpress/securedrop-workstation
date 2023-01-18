@@ -4,8 +4,8 @@ in some time.
 """
 
 import os
-
 from datetime import datetime
+
 from sdw_util import Util
 
 sdlog = Util.get_logger(module=__name__)

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Utility library for checking and applying SecureDrop Workstation VM updates.
 
@@ -12,6 +11,7 @@ import os
 import subprocess
 from datetime import datetime, timedelta
 from enum import Enum
+
 from sdw_util import Util
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"

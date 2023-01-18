@@ -8,4 +8,5 @@ mypy
 pip-tools
 pip
 pytest
+pytest-cov
 reprotest

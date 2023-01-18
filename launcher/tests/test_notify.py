@@ -1,11 +1,11 @@
 import datetime
 import os
-import pytest
 import re
-
-from unittest import mock
 from importlib.machinery import SourceFileLoader
 from tempfile import TemporaryDirectory
+from unittest import mock
+
+import pytest
 
 relpath_notify = "../sdw_notify/Notify.py"
 path_to_notify = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_notify)

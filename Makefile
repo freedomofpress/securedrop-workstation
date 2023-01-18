@@ -149,12 +149,43 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 # Not requiring dom0 for linting as that requires extra packages, which we're
 # not installing on dom0, so are only in the developer environment, i.e. Work VM
 
+prep-dom0: prep-dev # Copies dom0 config files
+	sudo qubesctl --show-output --targets dom0 state.highstate
+
+destroy-all: ## Destroys all VMs managed by Workstation salt config
+	./scripts/destroy-vm --all
+
+.PHONY: update-pip-requirements
+update-pip-requirements: ## Updates all Python requirements files via pip-compile.
+	pip-compile --allow-unsafe --generate-hashes --output-file=requirements/dev-requirements.txt requirements/dev-requirements.in
+
+.PHONY: venv
+venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt5)
+	$(PYTHON3) -m venv .venv --system-site-packages
+	.venv/bin/pip install --upgrade pip wheel
+	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
+	@echo "#################"
+	@echo "Virtualenv with system-packages is complete."
+	@echo "Make sure to either install the OS package for PyQt5 or install PyQt5==5.14.2 into this virtual environment."
+	@echo "Then run: source .venv/bin/activate"
+
+.PHONY: check
+check: lint test ## Runs linters and tests
+
+.PHONY: lint
+lint: check-black check-isort flake8 bandit mypy rpmlint shellcheck ## Runs linters (black, isort, flake8, bandit rpmlint, and shellcheck)
+
+.PHONY: bandit
+bandit: ## Runs the bandit security linter
+	bandit -ll --exclude ./.venv,./launcher/.venv -r .
+
+.PHONY: test-launcher
+test-launcher: ## Runs tests with the X Virtual framebuffer
+	$(CONTAINER) xvfb-run python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util -v tests/
+
 .PHONY: check-black
 check-black: ## Check Python source code formatting with black
 	black --check --diff .
-
-.PHONY: lint
-lint: flake8 black mypy ## Runs all linters
 
 .PHONY: black
 black: ## Update Python source code formatting with black
@@ -169,9 +200,7 @@ isort: ## Update Python import organization with isort
 	isort --diff .
 
 .PHONY: flake8
-flake8: ## Lints all Python files with flake8
-# Not requiring dom0 since linting requires extra packages,
-# available only in the developer environment, i.e. Work VM.
+flake8: ## Validate PEP8 compliance for Python source files
 	flake8
 
 mypy: ## Type checks Python files
@@ -186,25 +215,6 @@ rpmlint: ## Runs rpmlint on the spec file
 .PHONY: shellcheck
 shellcheck: ## Runs shellcheck on all shell scripts
 	./scripts/shellcheck.sh
-
-prep-dom0: prep-dev # Copies dom0 config files
-	sudo qubesctl --show-output --targets dom0 state.highstate
-
-destroy-all: ## Destroys all VMs managed by Workstation salt config
-	./scripts/destroy-vm --all
-
-.PHONY: update-pip-requirements
-update-pip-requirements: ## Updates all Python requirements files via pip-compile.
-	pip-compile --allow-unsafe --generate-hashes --output-file=requirements/dev-requirements.txt requirements/dev-requirements.in
-
-.PHONY: venv
-venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt5)
-	$(PYTHON3) -m venv .venv
-	.venv/bin/pip install --upgrade pip wheel
-	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
-	@echo "#################"
-	@echo "Virtualenv is complete."
-	@echo "Run: source .venv/bin/activate"
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.

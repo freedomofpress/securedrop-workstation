@@ -9,7 +9,7 @@ venv: ## Provision a Python 3 virtualenv for development (run apt-get install py
 	.venv/bin/pip install --require-hashes -r "dev-requirements.txt"
 	@echo "#################"
 	@echo "Virtualenv with Debian system-packages is complete."
-	@echo "Make sure to install the apt packages for system Qt."
+	@echo "Make sure to either install the OS package for PyQt5 or install PyQt5==5.14.2 into this virtual environment."
 	@echo "Then run: source .venv/bin/activate"
 
 .PHONY: check

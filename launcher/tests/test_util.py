@@ -1,11 +1,11 @@
 import os
-import pytest
 import re
 import subprocess
-
-from unittest import mock
 from importlib.machinery import SourceFileLoader
 from tempfile import TemporaryDirectory
+from unittest import mock
+
+import pytest
 
 # Regex for lock conflicts
 BUSY_LOCK_REGEX = r"Error obtaining lock on '.*'."
