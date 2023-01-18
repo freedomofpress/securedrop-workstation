@@ -1,52 +1,81 @@
-.PHONY: dom0-rpm
-dom0-rpm: ## Builds rpm package to be installed on dom0
-	@./scripts/build-dom0-rpm
+DEFAULT_GOAL: help
+# We prefer to use python3.8 if it's availabe, as that is the version shipped
+# with Fedora 32, but we're also OK with just python3 if that's all we've got
+PYTHON3 := $(if $(shell bash -c "command -v python3.8"), python3.8, python3)
+# If we're on anything but Fedora 32, execute some commands in a container
+CONTAINER := $(if $(shell grep "Thirty Two" /etc/fedora-release),,./scripts/container.sh)
+
+.PHONY: build-rpm
+build-rpm: ## Build RPM package
+	$(CONTAINER) ./scripts/build-rpm.sh
 
 .PHONY: reprotest
-reprotest: ## Runs reprotest for RPMs with all variations
-	reprotest -c "make dom0-rpm" . "rpm-build/RPMS/noarch/*.rpm"
+reprotest: ## Check RPM package reproducibility
+	TERM=xterm-256color $(CONTAINER) bash -c "sudo ln -s $$PWD/scripts/fake-setarch.py /usr/local/bin/setarch && sudo reprotest 'make build-rpm' 'rpm-build/RPMS/noarch/*.rpm' --variations '+all,-fileordering,-domain_host,-kernel'"
 
-.PHONY: reprotest-ci
-reprotest-ci: ## Runs reprotest for RPMs, with CI-compatible skips in variations
-	# Disable a few variations, to support CircleCI container environments.
-	# Requires a sed hack to reprotest, see .circle/config.yml
-	TERM=xterm-256color reprotest --variations "+all, +kernel, -domain_host, -fileordering" \
-		 -c "make dom0-rpm" . "rpm-build/RPMS/noarch/*.rpm"
-
+# Installs Fedora 32 package dependencies, to build RPMs and run tests,
+# primarily useful in CI/containers
 .PHONY: install-deps
-install-deps: ## Installs apt package dependencies, for building RPMs
-	sudo apt-get install --no-install-recommends -y \
-		python3 python3-venv python3-setuptools file python3-rpm \
-		rpm rpm-common diffoscope reprotest disorderfs faketime xvfb \
-		python3-pyqt5
+install-deps:
+	sudo dnf install -y \
+        git file python3-devel python3-pip python3-qt5 python3-wheel \
+		xorg-x11-server-Xvfb rpmdevtools rpmlint which libfaketime ShellCheck
 
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
 	pip-compile --allow-unsafe --generate-hashes --output-file=requirements/dev-requirements.txt requirements/dev-requirements.in
 
 .PHONY: venv
-venv: ## Provision a Python 3 virtualenv for development (run apt-get install python3-pyqt5)
-	python3 -m venv .venv --system-site-packages
+venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt5)
+	$(PYTHON3) -m venv .venv --system-site-packages
 	.venv/bin/pip install --upgrade pip wheel
 	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
 	@echo "#################"
-	@echo "Virtualenv with Debian system-packages is complete."
-	@echo "Make sure to install the apt packages for system Qt."
+	@echo "Virtualenv with system-packages is complete."
+	@echo "Make sure to either install the OS package for PyQt5 or install PyQt5==5.14.2 into this virtual environment."
 	@echo "Then run: source .venv/bin/activate"
 
 .PHONY: check
-check: test black bandit
+check: lint test ## Runs linters and tests
+
+.PHONY: lint
+lint: check-black check-isort flake8 bandit rpmlint shellcheck ## Runs linters (black, isort, flake8, bandit rpmlint, and shellcheck)
 
 .PHONY: bandit
-bandit:
+bandit: ## Runs the bandit security linter
 	bandit -ll --exclude ./.venv/ -r .
 
 .PHONY: test
-test:
-	xvfb-run python -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util -v tests/
+test: ## Runs tests with the X Virtual framebuffer
+	$(CONTAINER) xvfb-run python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util -v tests/
 
-black: ## Runs the black code formatter on the launcher code
-	black --check --exclude .venv --line-length=100 .
+.PHONY: check-black
+check-black: ## Check Python source code formatting with black
+	black --check --diff .
+
+.PHONY: black
+black: ## Update Python source code formatting with black
+	black .
+
+.PHONY: check-isort
+check-isort: ## Check Python import organization with isort
+	isort --check-only --diff .
+
+.PHONY: isort
+isort: ## Update Python import organization with isort
+	isort --diff .
+
+.PHONY: flake8
+flake8: ## Validate PEP8 compliance for Python source files
+	flake8
+
+.PHONY: rpmlint
+rpmlint: ## Runs rpmlint on the spec file
+	$(CONTAINER) rpmlint rpm-build/SPECS/securedrop-updater.spec
+
+.PHONY: shellcheck
+shellcheck: ## Runs shellcheck on all shell scripts
+	./scripts/shellcheck.sh
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.

@@ -1,6 +1,10 @@
 bandit
 black
+diffoscope
+flake8
+isort
 pip-tools
 pip
 pytest
 pytest-cov
+reprotest
