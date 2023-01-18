@@ -6,7 +6,7 @@ PYTHON3 := $(if $(shell bash -c "command -v python3.8"), python3.8, python3)
 CONTAINER := $(if $(shell grep "Thirty Two" /etc/fedora-release),,./scripts/container.sh)
 
 .PHONY: build-rpm
-build-rpm:
+build-rpm: ## Build RPM package
 	$(CONTAINER) ./scripts/build-rpm.sh
 
 .PHONY: reprotest
