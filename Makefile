@@ -51,11 +51,11 @@ test: ## Runs tests with the X Virtual framebuffer
 
 .PHONY: check-black
 check-black: ## Check Python source code formatting with black
-	black --check --exclude .venv --line-length=100 .
+	black --check --diff .
 
 .PHONY: black
 black: ## Update Python source code formatting with black
-	black --exclude .venv --line-length=100 .
+	black .
 
 .PHONY: check-isort
 check-isort: ## Check Python import organization with isort
