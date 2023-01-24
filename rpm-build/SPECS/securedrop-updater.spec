@@ -5,15 +5,23 @@ Summary:	SecureDrop Updater
 
 # For reproducible builds:
 #
-#   * Ensure that SOURCE_DATE_EPOCH env is honored.
+#   * Ensure that SOURCE_DATE_EPOCH env is honored and inherited from the
+#     last changelog entry, and enforced for package content mtimes
+%define source_date_epoch_from_changelog 1
 %define use_source_date_epoch_as_buildtime 1
+%define clamp_mtime_to_source_date_epoch 1
+#   * By default, changelog entries for the last two years of the current time
+#     (_not_ SOURCE_DATE_EPOCH) are included, everything else is discarded.
+#     For easy reproducibility we'll keep everything
+%define _changelog_trimtime 0
+%define _changelog_trimage 0
 #   * _buildhost varies based on environment, we build via Docker but ensure
 #     this is the same regardless
 %global _buildhost %{name}
 #   * _custom_docdir and _custom_licensedir are workarounds for their respecitve
 #      macros not supporting SOURCE_DATE_EPOCH
-%global _custom_docdir /usr/share/doc/%{name}
-%global _custom_licensedir /usr/share/licenses/%{name}
+%global _custom_docdir %{_datadir}/doc/%{name}
+%global _custom_licensedir %{_datadir}/licenses/%{name}
 #   * compiling Python bytecode is not reproducible at the time of writing
 %undefine py_auto_byte_compile
 
@@ -63,14 +71,6 @@ install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
 install -m 644 README.md %{buildroot}/%{_custom_docdir}/
 install -m 644 LICENSE %{buildroot}/%{_custom_licensedir}/
-find %{buildroot} -type d \( -iname '*.egg-info' -o -iname '*.dist-info' \) -print0 | xargs -0 -r rm -rf
-# Usually, the __spec_install_post macro is automatically expanded at the end of
-# the install scriplet, but it can also affect the mtime of files/folders
-%{__spec_install_post}
-# Enforce mtimes for reproducibility
-find %{buildroot} -exec touch -m -d @%{getenv:SOURCE_DATE_EPOCH} {} +
-# Don't run __spec_install_post again
-%global __spec_install_post %{nil}
 
 
 %files
@@ -81,6 +81,8 @@ find %{buildroot} -exec touch -m -d @%{getenv:SOURCE_DATE_EPOCH} {} +
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
+# The name of the dist-info dir uses _ instead of -, so we use wildcards
+%{python3_sitelib}/*%{version}.dist-info/*
 %{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %{_custom_docdir}/README.md
@@ -88,6 +90,6 @@ find %{buildroot} -exec touch -m -d @%{getenv:SOURCE_DATE_EPOCH} {} +
 
 
 %changelog
-* Tue Jan 17 2023 SecureDrop Team <securedrop@freedom.press> - 0.7.0-1
+* Mon Jan 23 2023 SecureDrop Team <securedrop@freedom.press> - 0.7.0-1
 - First release of securedrop-updater (split off of
   securedrop-workstation-dom0-config)
