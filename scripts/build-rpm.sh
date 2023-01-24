@@ -14,11 +14,6 @@ git clean -fdX rpm-build/ dist/
 # Place tarball where rpmbuild will find it
 cp dist/*.tar.gz rpm-build/SOURCES/
 
-# Use the epoch time of the most recent commit. It works in dev,
-# as well as building from signed tags.
-SOURCE_DATE_EPOCH="$(git log -1 --format=%at HEAD | tail -n 1)"
-export SOURCE_DATE_EPOCH
-
 rpmbuild \
     --quiet \
     --define "_topdir $PWD/rpm-build" \
