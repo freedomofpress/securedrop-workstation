@@ -64,7 +64,13 @@ install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
 install -m 644 README.md %{buildroot}/%{_custom_docdir}/
 install -m 644 LICENSE %{buildroot}/%{_custom_licensedir}/
 find %{buildroot} -type d \( -iname '*.egg-info' -o -iname '*.dist-info' \) -print0 | xargs -0 -r rm -rf
+# Usually, the __spec_install_post macro is automatically expanded at the end of
+# the install scriplet, but it can also affect the mtime of files/folders
+%{__spec_install_post}
+# Enforce mtimes for reproducibility
 find %{buildroot} -exec touch -m -d @%{getenv:SOURCE_DATE_EPOCH} {} +
+# Don't run __spec_install_post again
+%global __spec_install_post %{nil}
 
 
 %files
