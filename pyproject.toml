@@ -1,5 +1,6 @@
 [tool.black]
 line-length = 100
+extend-exclude = ".venv"
 
 [tool.mypy]
 python_version = "3.8"
@@ -12,10 +13,15 @@ files = [
     "dom0/remove-tags",
     "dom0/securedrop-login",
     "scripts/*.py",
+    "files/*.py",
     "scripts/configure-environment",
-    "scripts/destroy-vm",
+    "files/destroy-vm",
 ]
 exclude = [
     "launcher/",  # Moving to sd-updater
     "tests/"
 ]
+
+[tool.isort]
+line_length = 100
+profile = "black"

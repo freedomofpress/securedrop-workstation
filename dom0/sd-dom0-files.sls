@@ -150,15 +150,6 @@ dom0-login-autostart-script:
     - group: root
     - mode: 755
 
-dom0-securedrop-launcher-directory:
-  file.recurse:
-    - name: /opt/securedrop/launcher
-    - source: "salt://launcher"
-    - user: root
-    - group: root
-    - file_mode: 644
-    - dir_mode: 755
-
 dom0-securedrop-launcher-executables:
   file.managed:
     - names:

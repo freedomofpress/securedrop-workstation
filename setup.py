@@ -17,6 +17,7 @@ setuptools.setup(
     license="AGPLv3",
     python_requires=">=3.5",
     url="https://github.com/freedomofpress/securdrop-workstation",
+    packages=setuptools.find_packages(exclude=["tests", "dom0"]),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Programming Language :: Python :: 3",

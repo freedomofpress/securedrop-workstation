@@ -1,80 +1,70 @@
-%global srcname securedrop-workstation-dom0-config
-%global version 0.8.0
-%global __python3 /usr/bin/python3
-%global python3_sitelib /usr/lib/%{_python_version}/site-packages
-# For reproducible builds:
-#
-#   * _buildhost is hostname, will vary based on environment
-#   * _source_date_epoch will be defined via env var
-#   * _custom_docdir is a workaround for %docs not supporting SOURCE_DATE_EPOCH
-#   * optflags is for multi-arch support: otherwise rpmbuild sets 'OPTFLAGS: -O2 -g -march=i386 -mtune=i686'
-%global _buildhost %{srcname}
-%global _source_date_epoch %{getenv:SOURCE_DATE_EPOCH}
-%global _custom_docdir /usr/share/doc/%{srcname}
-%global optflags -O2 -g
-
-Name:		%{srcname}
-Version:	%{version}
+Name:		securedrop-workstation-dom0-config
+Version:	0.8.0
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
-Group:		Library
+# For reproducible builds:
+#
+#   * Ensure that SOURCE_DATE_EPOCH env is honored and inherited from the
+#     last changelog entry, and enforced for package content mtimes
+%define source_date_epoch_from_changelog 1
+%define use_source_date_epoch_as_buildtime 1
+%define clamp_mtime_to_source_date_epoch 1
+#   * By default, the changelog for the last two years of the current time
+#     (_not_ SOURCE_DATE_EPOCH) is included, everything else is discarded.
+#     For reproducibility we'll keep everything
+%define _changelog_trimtime 0
+%define _changelog_trimage 0
+#   * _buildhost varies based on environment, we build via Docker but ensure
+#     this is the same regardless
+%global _buildhost %{name}
+#   * compiling Python bytecode is not reproducible at the time of writing
+%undefine py_auto_byte_compile
+
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.8.0.tar.gz
+# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/SourceURL/#_troublesome_urls
+Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
-BuildArch:      noarch
-# Disable declaration of build dependencies, because
-# we build on Debian stable.
-#BuildRequires:	python3-setuptools
-#BuildRequires:	python3-devel
+BuildArch:		noarch
+BuildRequires:	python3-devel
+BuildRequires:	python3-pip
+BuildRequires:	python3-setuptools
+BuildRequires:	python3-wheel
 
 # This package installs all standard VMs in Qubes
-Requires:       qubes-mgmt-salt-dom0-virtual-machines
+Requires:		qubes-mgmt-salt-dom0-virtual-machines
+Requires:		python3-qt5
 
 %description
-
 This package contains VM configuration files for the Qubes-based
 SecureDrop Workstation project. The package should be installed
 in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
 
-# To ensure forward-compatibility of RPMs regardless of updates to the system
-# Python, we disable the creation of bytecode at build time via the build
-# root policy.
-%undefine py_auto_byte_compile
-
-# Ensure that SOURCE_DATE_EPOCH is honored. Does not appear to affect
-# use of %doc macro, so we use _custom_docdir instead.
-%define use_source_date_epoch_as_buildtime 1
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.8.0
+%setup -q -n %{name}-%{version}
+
+
+%build
+# No building necessary here, but this soothes rpmlint
+
 
 %install
-%{__python3} setup.py install --install-lib %{python3_sitelib} --no-compile --root %{buildroot}
-install -m 755 -d %{buildroot}/opt/securedrop/launcher
+%{python3} -m pip install --no-compile --no-index --no-build-isolation --root %{buildroot} .
 install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_updater_gui
 install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_notify
 install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_util
-install -m 755 -d %{buildroot}/srv
-install -m 755 -d %{buildroot}/srv/salt/sd
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-app
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-proxy
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-journalist
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-whonix
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-workstation
 install -m 755 -d %{buildroot}/srv/salt/sd/sys-firewall
-install -m 755 -d %{buildroot}/usr/share/%{name}/scripts
 install -m 755 -d %{buildroot}/srv/salt/sd/usb-autoattach
-install -m 755 -d %{buildroot}/srv/salt/launcher
-install -m 755 -d %{buildroot}/srv/salt/launcher/sdw_updater_gui
-install -m 755 -d %{buildroot}/srv/salt/launcher/sdw_notify
-install -m 755 -d %{buildroot}/srv/salt/launcher/sdw_util
+install -m 755 -d %{buildroot}/%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}/%{_bindir}
-install -m 755 -d %{buildroot}/usr/share/%{srcname}
-# Create doc dir manually, because %doc macro doesn't honor SOURCE_DATE_EPOCH.
-install -m 755 -d %{buildroot}/%{_custom_docdir}
 install -m 644 dom0/*.sls %{buildroot}/srv/salt/
 install -m 644 dom0/*.top %{buildroot}/srv/salt/
 install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
@@ -86,37 +76,35 @@ install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
 install -m 755 dom0/securedrop-check-migration %{buildroot}/srv/salt/
 install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
-install -m 755 scripts/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
 install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
 install -m 644 sd-whonix/* %{buildroot}/srv/salt/sd/sd-whonix/
 install -m 644 sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
 install -m 644 sys-firewall/* %{buildroot}/srv/salt/sd/sys-firewall/
-install -m 644 usb-autoattach/99-sd-devices.rules %{buildroot}/srv/salt/sd/usb-autoattach/
 install -m 755 usb-autoattach/sd-attach-export-device %{buildroot}/srv/salt/sd/usb-autoattach/
-install -m 755 scripts/* %{buildroot}/usr/share/%{name}/scripts/
-# For the updater scripts, we want to provision them via rpm *and* also salt, since there's a salt step that will provision this
+install -m 644 usb-autoattach/99-sd-devices.rules %{buildroot}/srv/salt/sd/usb-autoattach/
+install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
+install -m 755 files/destroy-vm %{buildroot}/%{_datadir}/%{name}/scripts/
+install -m 755 files/provision-all %{buildroot}/%{_datadir}/%{name}/scripts/
+install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 644 launcher/*.py %{buildroot}/opt/securedrop/launcher/
-install -m 644 launcher/*.py %{buildroot}/srv/salt/launcher/
 install -m 644 launcher/sdw_updater_gui/*.py %{buildroot}/opt/securedrop/launcher/sdw_updater_gui/
-install -m 644 launcher/sdw_updater_gui/*.py %{buildroot}/srv/salt/launcher/sdw_updater_gui/
 install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw_notify/
-install -m 644 launcher/sdw_notify/*.py %{buildroot}/srv/salt/launcher/sdw_notify/
 install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
-install -m 644 launcher/sdw_util/*.py %{buildroot}/srv/salt/launcher/sdw_util/
-install -m 644 config.json.example %{buildroot}/usr/share/%{srcname}/
-install -m 644 README.md LICENSE %{buildroot}/%{_custom_docdir}/
-find %{buildroot} -type d -iname '*.egg-info' -print0 | xargs -0 -r rm -rf
-find %{buildroot} -exec touch -m -d @%{_source_date_epoch} {} +
+install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
+install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
+find %{buildroot} -type d \( -iname '*.egg-info' -o -iname '*.dist-info' \) -print0 | xargs -0 -r rm -rf
+
 
 %files
 %attr(755, root, root) /opt/securedrop/launcher/sdw-launcher.py
 %attr(755, root, root) /opt/securedrop/launcher/sdw-notify.py
+%attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
+%attr(755, root, root) %{_datadir}/%{name}/scripts/destroy-vm
+%attr(755, root, root) %{_datadir}/%{name}/scripts/provision-all
+%attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
 %attr(755, root, root) %{_bindir}/sdw-admin
-%{_datadir}/%{name}
-%{_custom_docdir}/LICENSE
-%{_custom_docdir}/README.md
-/usr/share/%{srcname}/config.json.example
+%{_datadir}/%{name}/config.json.example
 /opt/securedrop/launcher/**/*.py
 /srv/salt/sd*
 /srv/salt/dom0-xfce-desktop-file.j2
@@ -124,7 +112,9 @@ find %{buildroot} -exec touch -m -d @%{_source_date_epoch} {} +
 /srv/salt/securedrop-*
 /srv/salt/update-xfce-settings
 /srv/salt/fpf*
-/srv/salt/launcher*
+%doc README.md
+%license LICENSE
+
 
 %post
 find /srv/salt -maxdepth 1 -type f -iname '*.top' \
