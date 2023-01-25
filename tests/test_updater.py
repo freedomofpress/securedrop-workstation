@@ -165,12 +165,9 @@ def test_write_updates_status_flag_to_disk(
     )
 
     assert os.path.exists(flag_file_dom0)
-    try:
-        with open(flag_file_dom0, "r") as f:
-            contents = json.load(f)
-            assert contents["status"] == status.value
-    except Exception:
-        pytest.fail("Error reading file")
+    with open(flag_file_dom0, "r") as f:
+        contents = json.load(f)
+        assert contents["status"] == status.value
     assert "tmp" in flag_file_dom0
     assert not mocked_error.called
 
@@ -225,11 +222,8 @@ def test_write_last_updated_flags_to_disk(mocked_info, mocked_error, mocked_call
     mocked_call.assert_called_once_with(subprocess_command)
     assert not mocked_error.called
     assert os.path.exists(flag_file_dom0)
-    try:
-        contents = open(flag_file_dom0, "r").read()
-        assert contents == current_time
-    except Exception:
-        pytest.fail("Error reading file")
+    contents = open(flag_file_dom0, "r").read()
+    assert contents == current_time
 
 
 @mock.patch("os.path.expanduser", return_value=temp_dir)
@@ -572,12 +566,9 @@ def test_read_dom0_update_flag_from_disk(
     flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_STATUS_DOM0)
 
     assert os.path.exists(flag_file_dom0)
-    try:
-        with open(flag_file_dom0, "r") as f:
-            contents = json.load(f)
-            assert contents["status"] == status.value
-    except Exception:
-        pytest.fail("Error reading file")
+    with open(flag_file_dom0, "r") as f:
+        contents = json.load(f)
+        assert contents["status"] == status.value
     assert "tmp" in flag_file_dom0
 
     assert updater.read_dom0_update_flag_from_disk() == status
@@ -596,11 +587,8 @@ def test_read_dom0_update_flag_from_disk_fails(
 ):
 
     flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_STATUS_DOM0)
-    try:
-        with open(flag_file_dom0, "w") as f:
-            f.write("something")
-    except Exception:
-        pytest.fail("Error writing file")
+    with open(flag_file_dom0, "w") as f:
+        f.write("something")
 
     info_calls = [call("Cannot read dom0 status flag, assuming first run")]
 
