@@ -11,7 +11,7 @@ build-rpm: ## Build RPM package
 
 .PHONY: reprotest
 reprotest: ## Check RPM package reproducibility
-	TERM=xterm-256color $(CONTAINER) bash -c "sudo ln -s $$PWD/scripts/fake-setarch.py /usr/local/bin/setarch && sudo reprotest 'make build-rpm' 'rpm-build/RPMS/noarch/*.rpm' --variations '+all,-fileordering,-domain_host,-kernel'"
+	TERM=xterm-256color $(CONTAINER) bash -c "sudo ln -s $$PWD/scripts/fake-setarch.py /usr/local/bin/setarch && sudo reprotest 'make build-rpm' 'rpm-build/RPMS/noarch/*.rpm' --variations '+all,+kernel,-domain_host,-fileordering'"
 
 # Installs Fedora 32 package dependencies, to build RPMs and run tests,
 # primarily useful in CI/containers
