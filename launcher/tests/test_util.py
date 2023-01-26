@@ -2,7 +2,6 @@ import os
 import re
 import subprocess
 from importlib.machinery import SourceFileLoader
-from tempfile import TemporaryDirectory
 from unittest import mock
 
 import pytest
@@ -28,11 +27,11 @@ DEBIAN_VERSION = "bookworm"
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_obtain_lock(mocked_info, mocked_warning, mocked_error):
+def test_obtain_lock(mocked_info, mocked_warning, mocked_error, tmpdir):
     """
     Test whether we can successfully obtain an exclusive lock
     """
-    with TemporaryDirectory() as tmpdir, mock.patch("Util.LOCK_DIRECTORY", tmpdir):
+    with mock.patch("Util.LOCK_DIRECTORY", tmpdir):
 
         basename = "test-obtain-lock.lock"
         pid_str = str(os.getpid())
@@ -59,7 +58,7 @@ def test_obtain_lock(mocked_info, mocked_warning, mocked_error):
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_cannot_obtain_exclusive_lock_when_busy(mocked_info, mocked_warning, mocked_error):
+def test_cannot_obtain_exclusive_lock_when_busy(mocked_info, mocked_warning, mocked_error, tmpdir):
     """
     Test whether only a single process can obtan an exclusive lock (basic
     lockfile behavior).
@@ -67,7 +66,7 @@ def test_cannot_obtain_exclusive_lock_when_busy(mocked_info, mocked_warning, moc
     This is used to prevent multiple preflight updaters or multiple notifiers
     from being instantiated.
     """
-    with TemporaryDirectory() as tmpdir, mock.patch("Util.LOCK_DIRECTORY", tmpdir):
+    with mock.patch("Util.LOCK_DIRECTORY", tmpdir):
 
         basename = "test-exclusive-lock.lock"
         lh1 = util.obtain_lock(basename)  # noqa: F841
@@ -85,7 +84,7 @@ def test_cannot_obtain_exclusive_lock_when_busy(mocked_info, mocked_warning, moc
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_cannot_obtain_shared_lock_when_busy(mocked_info, mocked_warning, mocked_error):
+def test_cannot_obtain_shared_lock_when_busy(mocked_info, mocked_warning, mocked_error, tmpdir):
     """
     Test whether an exlusive lock on a lock file is successfully detected
     by means of attempting to obtain a shared, nonexclusive lock on the same
@@ -94,7 +93,7 @@ def test_cannot_obtain_shared_lock_when_busy(mocked_info, mocked_warning, mocked
     In the preflight updater / notifier, this is used to prevent the notification
     from being displayed when the preflight updater is already open.
     """
-    with TemporaryDirectory() as tmpdir, mock.patch("Util.LOCK_DIRECTORY", tmpdir):
+    with mock.patch("Util.LOCK_DIRECTORY", tmpdir):
 
         basename = "test-conflict.lock"
         lh = util.obtain_lock(basename)  # noqa: F841
@@ -112,13 +111,13 @@ def test_cannot_obtain_shared_lock_when_busy(mocked_info, mocked_warning, mocked
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_no_lockfile_no_problems(mocked_info, mocked_warning, mocked_error):
+def test_no_lockfile_no_problems(mocked_info, mocked_warning, mocked_error, tmpdir):
     """
     Test whether our shared lock test succeeds even when there's no lockfile
     (which means the process has not run recently, or ever, and it's safe to
     run the potentially conflicting process).
     """
-    with TemporaryDirectory() as tmpdir, mock.patch("Util.LOCK_DIRECTORY", tmpdir):
+    with mock.patch("Util.LOCK_DIRECTORY", tmpdir):
         lock_result = util.can_obtain_lock("404.lock")
         assert lock_result is True
 
@@ -142,12 +141,12 @@ def test_permission_error_is_handled(mocked_info, mocked_warning, mocked_error):
 @mock.patch("Util.sdlog.error")
 @mock.patch("Util.sdlog.warning")
 @mock.patch("Util.sdlog.info")
-def test_stale_lockfile_has_no_effect(mocked_info, mocked_warning, mocked_error):
+def test_stale_lockfile_has_no_effect(mocked_info, mocked_warning, mocked_error, tmpdir):
     """
     Test whether we can get a shared lock when a lockfile exists, but nobody
     is accessing it.
     """
-    with TemporaryDirectory() as tmpdir, mock.patch("Util.LOCK_DIRECTORY", tmpdir):
+    with mock.patch("Util.LOCK_DIRECTORY", tmpdir):
 
         # Because we're not assigning the return value, it will be immediately released
         basename = "test-stale.lock"
@@ -156,11 +155,11 @@ def test_stale_lockfile_has_no_effect(mocked_info, mocked_warning, mocked_error)
         assert lock_result is True
 
 
-def test_log():
+def test_log(tmpdir):
     """
     Test whether we can successfully write to a log file
     """
-    with TemporaryDirectory() as tmpdir, mock.patch("Util.LOG_DIRECTORY", tmpdir):
+    with mock.patch("Util.LOG_DIRECTORY", tmpdir):
         basename = "test.log"
         # configure_logging is expected to re-create the directory.
         os.rmdir(tmpdir)
