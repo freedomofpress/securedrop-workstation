@@ -10,7 +10,6 @@ Summary:	SecureDrop Workstation
 %define source_date_epoch_from_changelog 1
 %define use_source_date_epoch_as_buildtime 1
 %define clamp_mtime_to_source_date_epoch 1
-%define clamp_mtime_to_source_date_epoch 1
 #   * By default, changelog entries for the last two years of the current time
 #     (_not_ SOURCE_DATE_EPOCH) are included, everything else is discarded.
 #     For easy reproducibility we'll keep everything
@@ -19,10 +18,6 @@ Summary:	SecureDrop Workstation
 #   * _buildhost varies based on environment, we build with containers but
 #     ensure this is the same regardless
 %global _buildhost %{name}
-#   * _custom_docdir and _custom_licensedir are workarounds for their respecitve
-#      macros not supporting SOURCE_DATE_EPOCH
-%global _custom_docdir /%{_datadir}/doc/%{name}
-%global _custom_licensedir /%{_datadir}/licenses/%{name}
 #   * optflags is for multi-arch support: otherwise rpmbuild sets 'OPTFLAGS: -O2 -g -march=i386 -mtune=i686'
 %global optflags -O2 -g
 # To ensure forward-compatibility of RPMs regardless of updates to the system
@@ -99,17 +94,12 @@ install -m 755 -d %{buildroot}/%{_datadir}/applications/
 install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/
 install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/
 install -m 755 -d %{buildroot}/%{_sharedstatedir}/%{name}/
-# Create doc dir manually, because %doc macro doesn't honor SOURCE_DATE_EPOCH.
-install -m 755 -d %{buildroot}/%{_custom_docdir}
-install -m 755 -d %{buildroot}/%{_custom_licensedir}
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
 install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
-install -m 644 README.md %{buildroot}/%{_custom_docdir}/
-install -m 644 LICENSE %{buildroot}/%{_custom_licensedir}/
 
 
 %files
@@ -137,8 +127,8 @@ install -m 644 LICENSE %{buildroot}/%{_custom_licensedir}/
 %{python3_sitelib}/*%{version}.dist-info/*
 %{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
-%doc %{_custom_docdir}/README.md
-%license %{_custom_licensedir}/LICENSE
+%doc README.md
+%license LICENSE
 
 
 %post
