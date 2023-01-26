@@ -46,8 +46,8 @@ bandit: ## Runs the bandit security linter
 	bandit -ll --exclude ./.venv/ -r .
 
 .PHONY: test
-test: ## Runs tests with the X Virtual framebuffer
-	$(CONTAINER) xvfb-run python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util -v tests/
+test: ## Runs tests
+	$(CONTAINER) python3 -m pytest -v
 
 .PHONY: check-black
 check-black: ## Check Python source code formatting with black
