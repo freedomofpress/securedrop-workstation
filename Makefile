@@ -197,7 +197,7 @@ check-isort: ## Check Python import organization with isort
 
 .PHONY: isort
 isort: ## Update Python import organization with isort
-	isort --diff .
+	isort .
 
 .PHONY: flake8
 flake8: ## Validate PEP8 compliance for Python source files
