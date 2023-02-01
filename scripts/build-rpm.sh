@@ -15,6 +15,7 @@ git clean -fdX rpm-build/ dist/
 cp dist/*.tar.gz rpm-build/SOURCES/
 
 rpmbuild \
+    --quiet \
     --define "_topdir $PWD/rpm-build" \
     -bb --clean "rpm-build/SPECS/${PROJECT}.spec"
 

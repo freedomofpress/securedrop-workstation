@@ -93,7 +93,6 @@ install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw
 install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
 install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
-find %{buildroot} -type d \( -iname '*.egg-info' -o -iname '*.dist-info' \) -print0 | xargs -0 -r rm -rf
 
 
 %files
@@ -104,6 +103,8 @@ find %{buildroot} -type d \( -iname '*.egg-info' -o -iname '*.dist-info' \) -pri
 %attr(755, root, root) %{_datadir}/%{name}/scripts/provision-all
 %attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
 %attr(755, root, root) %{_bindir}/sdw-admin
+# The name of the dist-info dir uses _ instead of -, so we use wildcards
+%{python3_sitelib}/*%{version}.dist-info/*
 %{_datadir}/%{name}/config.json.example
 /opt/securedrop/launcher/**/*.py
 /srv/salt/sd*
