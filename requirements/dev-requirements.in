@@ -8,3 +8,7 @@ pip
 pytest
 pytest-cov
 reprotest
+
+mypy
+PyQt5-stubs
+types-setuptools

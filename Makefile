@@ -39,7 +39,7 @@ venv: ## Provision a Python 3 virtualenv for development (ensure to also install
 check: lint test ## Runs linters and tests
 
 .PHONY: lint
-lint: check-black check-isort flake8 bandit rpmlint shellcheck ## Runs linters (black, isort, flake8, bandit rpmlint, and shellcheck)
+lint: check-black check-isort flake8 mypy bandit rpmlint shellcheck ## Runs linters (black, isort, flake8, mypy, bandit rpmlint, and shellcheck)
 
 .PHONY: bandit
 bandit: ## Runs the bandit security linter
@@ -68,6 +68,10 @@ isort: ## Update Python import organization with isort
 .PHONY: flake8
 flake8: ## Validate PEP8 compliance for Python source files
 	flake8
+
+.PHONY: mypy
+mypy:  ## Type check Python files
+	mypy .
 
 .PHONY: rpmlint
 rpmlint: ## Runs rpmlint on the spec file
