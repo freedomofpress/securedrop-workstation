@@ -3,8 +3,6 @@ import os
 import unittest
 import yaml
 
-from base import get_qubes_version
-
 
 class SD_Qubes_Rpc_Tests(unittest.TestCase):
     def setUp(self):

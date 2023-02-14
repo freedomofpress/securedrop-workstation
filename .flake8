@@ -1,5 +1,5 @@
 [flake8]
-ignore: W605
+ignore: W605,W503
 max-line-length = 100
 extend-exclude = .venv
 filename =

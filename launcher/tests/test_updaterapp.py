@@ -1,14 +1,10 @@
 import os
-import pytest
-import subprocess
+import unittest
 from unittest import TestCase
 from unittest import mock
-from unittest.mock import call
 from importlib.machinery import SourceFileLoader
 
-from PyQt5.QtWidgets import QApplication, QDialog
-from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
-from sdw_updater_gui.UpdaterAppUiQt5 import Ui_UpdaterDialog
+from PyQt5.QtWidgets import QApplication
 
 relpath_updaterapp_script = "../sdw_updater_gui/UpdaterApp.py"
 path_to_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updaterapp_script)
