@@ -6,5 +6,8 @@ extend-exclude = ".venv"
 line_length = 100
 profile = "black"
 
+[tool.mypy]
+python_version = "3.8"
+
 [tool.pytest.ini_options]
 addopts = "--cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util"
