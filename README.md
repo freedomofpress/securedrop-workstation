@@ -17,6 +17,7 @@ To run the notifier that pops up if `/proc/uptime` (how long the system has been
 ## Developer environment
 
 Install the following packages in Debian Bullseye: `make`, `python3-venv`, `xvfb` and `python3-pyqt5`.
+For non-Fedora-based systems, ensure Docker or Podman is installed. The updater build process will default to Podman if both are installed.
 
 To run the preflight updater outside of `dom0`:
 
