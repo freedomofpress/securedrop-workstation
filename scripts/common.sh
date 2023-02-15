@@ -1,6 +1,6 @@
 TOPLEVEL=$(git rev-parse --show-toplevel)
 export TOPLEVEL
-PROJECT=$(git remote get-url origin | sed -e 's,.*/\(.*\)\.git,\1,')
+PROJECT=$(git remote get-url origin | xargs basename -s .git)
 export PROJECT
 
 OCI_RUN_ARGUMENTS="${OCI_RUN_ARGUMENTS:-}"
