@@ -1,3 +1,10 @@
 [flake8]
-ignore: W605
+ignore: W605,W503
 max-line-length = 100
+extend-exclude = .venv
+filename =
+    *.py
+    dom0/remove-tags
+    dom0/securedrop-login
+    scripts/configure-environment
+    scripts/destroy-vm

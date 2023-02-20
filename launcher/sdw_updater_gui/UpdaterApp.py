@@ -202,7 +202,7 @@ def _is_netcheck_successful() -> bool:
         return result.decode("utf-8").strip() == "full"
     except subprocess.CalledProcessError as e:
         logger.error(
-            "{} (connectivity check) failed; state reported as".format(
+            "{} (connectivity check) failed; state reported as {}".format(
                 command.decode("utf-8"), e.output
             )
         )

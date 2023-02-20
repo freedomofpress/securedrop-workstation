@@ -1,2 +1,21 @@
 [tool.black]
 line-length = 100
+
+[tool.mypy]
+python_version = "3.8"
+# No stubs for qubesadmin
+ignore_missing_imports = true
+# These are individual scripts, not a package/modules
+scripts_are_modules = true
+files = [
+    "*.py",
+    "dom0/remove-tags",
+    "dom0/securedrop-login",
+    "scripts/*.py",
+    "scripts/configure-environment",
+    "scripts/destroy-vm",
+]
+exclude = [
+    "launcher/",  # Moving to sd-updater
+    "tests/"
+]

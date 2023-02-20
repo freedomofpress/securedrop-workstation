@@ -141,6 +141,9 @@ test-gpg: assert-dom0 ## Runs tests for SD GPG functionality
 validate: assert-dom0 ## Checks for local requirements in dev env
 	@./scripts/validate_config.py
 
+.PHONY: lint
+lint: flake8 black mypy ## Runs all linters
+
 .PHONY: black
 black: ## Lints all Python files with black
 # Not requiring dom0 since linting requires extra packages,
@@ -151,7 +154,12 @@ black: ## Lints all Python files with black
 flake8: ## Lints all Python files with flake8
 # Not requiring dom0 since linting requires extra packages,
 # available only in the developer environment, i.e. Work VM.
-	@./scripts/lint-all "flake8"
+	flake8
+
+mypy: ## Type checks Python files
+# Not requiring dom0 since linting requires extra packages,
+# available only in the developer environment, i.e. Work VM.
+	mypy
 
 prep-dom0: prep-dev # Copies dom0 config files
 	sudo qubesctl --show-output --targets dom0 state.highstate
