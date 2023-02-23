@@ -29,3 +29,6 @@ sd-proxy:
     - require:
       - qvm: sd-whonix
       - qvm: sd-small-{{ sdvars.distribution }}-template
+    - features:
+      - set:
+        - internal: 1

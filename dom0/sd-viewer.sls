@@ -35,6 +35,8 @@ sd-viewer:
         - sd-viewer-vm
         - sd-{{ sdvars.distribution }}
     - features:
+      - set:
+        - internal: 1
       - enable:
         - service.paxctld
     - require:
