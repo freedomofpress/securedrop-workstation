@@ -8,6 +8,7 @@
 
 # Imports "sdvars" for environment config
 {% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
+{% import_json "securedrop_salt/config.json" as d %}
 
 include:
   - securedrop_salt.sd-whonix
@@ -23,6 +24,11 @@ sd-proxy-dvm:
       - netvm: sd-whonix
       - template_for_dispvms: True
       - default_dispvm: ""
+  {% if d.environment == "prod" %}
+    - features:
+      - set:
+        - internal: 1
+  {% endif %}
     - tags:
       - add:
         - sd-workstation
@@ -47,14 +53,15 @@ sd-proxy-create-named-dispvm:
         - service.securedrop-mime-handling
       - set:
           - vm-config.SD_MIME_HANDLING: default
+      {% if d.environment == "prod" %}
+          - internal: 1
+      {% endif %}
     - tags:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
     - require:
       - qvm: sd-proxy-dvm
-
-{% import_json "securedrop_salt/config.json" as d %}
 
 sd-proxy-config:
   qvm.features:
