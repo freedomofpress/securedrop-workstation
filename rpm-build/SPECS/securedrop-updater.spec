@@ -54,6 +54,7 @@ install -m 755 -d %{buildroot}/%{_bindir}
 install -m 755 -d %{buildroot}/%{_datadir}/applications/
 install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/
 install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/
+install -m 755 -d %{buildroot}/%{_libexecdir}/%{name}/migrations/
 install -m 755 -d %{buildroot}/%{_sharedstatedir}/%{name}/
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
 install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
@@ -61,6 +62,9 @@ install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hico
 install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
+install -m 755 files/migrations.py %{buildroot}/%{_libexecdir}/%{name}/
+install -m 644 files/migration_steps.py %{buildroot}/%{_libexecdir}/%{name}/
+install -m 644 migrations/* %{buildroot}/%{_libexecdir}/%{name}/migrations/
 
 
 %files
@@ -68,6 +72,9 @@ install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
 %attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/sdw-updater
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
+%attr(755, root, root) %{_libexecdir}/%{name}/migrations.py
+%{_libexecdir}/%{name}/migration_steps.py
+%{_libexecdir}/%{name}/migrations/*
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
@@ -77,9 +84,22 @@ install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %doc README.md
 %license LICENSE
+%{_sharedstatedir}/%{name}/
+
+
+%post
+# If we're upgrading this package, run migrations and/or update the version
+# file.
+# Migrations will not be triggered during a reinstall
+%{_libexecdir}/%{name}/migrations.py %{name} ${1} %{version} || :
+
+
+%preun
+# The version file isn't part of the package contents, so we remove it manually
+[ $1 -eq 0 ] && rm -r %{_sharedstatedir}/%{name}/version
 
 
 %changelog
-* Mon Jan 23 2023 SecureDrop Team <securedrop@freedom.press> - 0.7.0-1
+* Mon Feb 27 2023 SecureDrop Team <securedrop@freedom.press> - 0.7.0-1
 - First release of securedrop-updater (split off of
   securedrop-workstation-dom0-config)

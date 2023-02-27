@@ -4,10 +4,6 @@ include VERSION
 include sdw_notify/*.py
 include sdw_updater/*.py
 include sdw_util/*.py
-include files/securedrop-128x128.png
-include files/securedrop-scalable.svg
-include files/sdw-login
-include files/sdw-notify
-include files/sdw-updater
-include files/press.freedom.SecureDropUpdater.desktop
+include files/*
+include migrations/*
 include setup.py
