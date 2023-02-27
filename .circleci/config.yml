@@ -46,6 +46,18 @@ jobs:
       - run:
           name: Run tests
           command: make test
+  test-install-rpm:
+    docker:
+      - image: fedora:32
+    steps:
+      - run: dnf install -y make
+      - checkout
+      - run:
+          name: Install dependencies
+          command: make install-deps
+      - run:
+          name: Run migration tests
+          command: make test-install-rpm
 
 workflows:
   version: 2
@@ -54,3 +66,4 @@ workflows:
       - lint
       - build-rpm
       - test
+      - test-install-rpm
