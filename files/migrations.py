@@ -5,13 +5,16 @@ Runs migration scripts for this project
 Intended to be triggered by the %post rpm scriptlet rather than manually.
 """
 
-import logging as log
+import logging
 import shutil
 import sys
 import tempfile
 from importlib.machinery import SourceFileLoader
 from importlib.util import module_from_spec, spec_from_loader
 from pathlib import Path
+from typing import List
+
+from migration_steps import MigrationStep
 
 
 class Version:
@@ -21,13 +24,12 @@ class Version:
     Reads version strings, and sorts by major.minor.patch[.etc[.etc …]]
     """
 
-    def __init__(self, version):
+    def __init__(self, version: str) -> None:
         """
         Read version numbers into lists of ints, discard anything that comes
-        after the first character that is neither a period or a digit
+        after the first character that is neither a period nor a digit
         """
         chunks = []
-        # Opting for minimal code over execution speed
         for part in version.split("."):
             digits = ""
             for char in part:
@@ -39,22 +41,20 @@ class Version:
             chunks.append(int(digits))
         self.version = tuple(chunks)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return ".".join(str(v) for v in self.version)
 
 
-class Migration(Version):
+class Migration:
     """
-    A sortable runnable migration
-
-    Subclass of Version so that we can sort migrations just as easily as version strings
+    A runnable migration with a target version
     """
 
-    def __init__(self, path):
-        super().__init__(path.name.rsplit(".", 1)[0])
+    def __init__(self, path: Path) -> None:
+        self.target = Version(path.name.rsplit(".", 1)[0])
         self.path = path
 
-    def run_and_update_version_file(self, version_file):
+    def run_and_update_version_file(self, version_file: Path) -> None:
         """
         Run this migration
         """
@@ -62,124 +62,126 @@ class Migration(Version):
         try:
             loader = SourceFileLoader("migration", str(self.path))
             spec = spec_from_loader("migration", loader)
+            assert spec is not None
             migration = module_from_spec(spec)
             loader.exec_module(migration)
-            log.info(f"Running migration for {self}")
-            migrate(migration.steps)
-        except Exception as error:
-            log.error(f"{error}")
-            log.error(f"Failed to load migration: {self.path}")
-            exit(2)
+        except Exception:
+            logging.exception(f"Failed to load migration: {self.path}")
+            sys.exit(2)
+
+        logging.info(f"Running migration for {self}")
+        migrate(migration.steps)
 
         # If we successfully ran the migration, we are now in a new state that we want to see
         # reflected in case a subsequent migration fails
-        update_version(self, version_file)
+        update_version(self.target, version_file)
 
 
-def update_version(target, version_file):
+def update_version(target: Version, version_file: Path) -> None:
     version_file.write_text(f"{target}")
 
 
-def _rollback_steps(steps, failed_index, tmpdir):
-    for i, step in reversed(list(enumerate(steps[:failed_index]))):
+def rollback_steps(steps: List[MigrationStep], failed_index: int, tmpdir_parent: Path) -> None:
+    for index, step in reversed(list(enumerate(steps[:failed_index]))):
         try:
-            step.rollback(tmpdir / f"{step.__class__.__name__}{i}")
-        except Exception as error:
-            log.error(f"{error}")
-            log.error(f"Failed to roll back step {i}: {step}")
-            pass
+            step.rollback(step.tmpdir(tmpdir_parent, index))
+        except Exception:
+            logging.exception(f"Failed to roll back step {index}: {step}")
 
 
-def _validate(steps, tmpdir):
+def validate(steps: List[MigrationStep]) -> None:
     # Before attempting to run anything, ensure that the required state is met
-    for i, step in enumerate(steps):
+    for index, step in enumerate(steps):
         try:
             if not step.validate():
-                log.error(f"Failed to validate step {i}: {step}")
-                exit(2)
-        except Exception as error:
-            log.error(f"{error}")
-            log.error(f"Encountered error during validation step {i}: {step}")
-            exit(2)
+                logging.error(f"Failed to validate step {index}: {step}")
+                sys.exit(2)
+        except Exception:
+            logging.exception(f"Encountered error during validation step {index}: {step}")
+            sys.exit(2)
 
 
-def _snapshot(steps, tmpdir):
-    for i, step in enumerate(steps):
-        tmpdir_step = tmpdir / f"{step.__class__.__name__}{i}"
-        tmpdir_step.mkdir()
+def snapshot(steps: List[MigrationStep], tmpdir_parent: Path) -> None:
+    for index, step in enumerate(steps):
+        tmpdir = step.tmpdir(tmpdir_parent, index)
+        tmpdir.mkdir()
         try:
-            step.snapshot(tmpdir_step)
-        except Exception as error:
-            log.error(f"{error}")
-            _rollback_steps(steps, i, tmpdir)
-            log.error(f"Failed to snapshot step {i}: {step}")
-            exit(2)
+            step.snapshot(tmpdir)
+        except Exception:
+            logging.exception(f"Failed to snapshot step {index}: {step}")
+            sys.exit(2)
 
 
-def _cleanup(steps, tmpdir):
+def cleanup(steps: List[MigrationStep], tmpdir_parent: Path) -> None:
     # Snapshotting large files or VMs is not always feasible. To avoid destructive actions, they may
     # be renamed but left "in place" instead. This allows rollback, but necessitates a separate
     # cleanup step.
-    for i, step in reversed(list(enumerate(steps))):
+    for index, step in reversed(list(enumerate(steps))):
         try:
-            step.cleanup(tmpdir)
+            step.cleanup(step.tmpdir(tmpdir_parent, index))
         # Cleanups may fail, but then should not conflict with the desired state of the migration.
         # We do however want to know how they failed, if they failed.
-        except Exception as error:
-            log.error(f"{error}")
-            log.error(f"Failed to clean up step {i}: {step}")
-            pass
-    shutil.rmtree(tmpdir)
+        except Exception:
+            logging.exception(f"Failed to clean up step {index}: {step}")
+    shutil.rmtree(tmpdir_parent)
 
 
-def migrate(steps):
+def migrate(steps: List[MigrationStep]) -> None:
     with tempfile.TemporaryDirectory(prefix="updater-migrations") as tmpdir:
-        tmpdir = Path(tmpdir)
-        _validate(steps, tmpdir)
-        _snapshot(steps, tmpdir)
+        tmpdir_parent = Path(tmpdir)
+        validate(steps)
+        snapshot(steps, tmpdir_parent)
 
-        for i, step in enumerate(steps):
+        for index, step in enumerate(steps):
             try:
-                log.info(f"Running: {step}")
+                logging.info(f"Running: {step}")
                 step.run()
-            except Exception as error:
-                log.error(f"{error}: Rolling back preceding steps")
-                _rollback_steps(steps, i, tmpdir)
-                log.error(f"Failed to run migration step {i}: {step}")
-                exit(2)
+            except Exception:
+                logging.exception(f"Failed to run migration step {index}: {step}")
+                logging.error("Rolling back preceding steps")
+                rollback_steps(steps, index, tmpdir_parent)
+                sys.exit(2)
 
-        _cleanup(steps, tmpdir)
+        cleanup(steps, tmpdir_parent)
 
 
-def main(version_file, migrations_dir, action, version_target):
-    VERSION_BASE = None
+def main(version_file: Path, migrations_dir: Path, action: int, version_target: Version) -> None:
+    """
+    Migration main entry point
+
+    Either:
+    - returns successfully
+    - aborts with returncode 2 if there's been a problem with any step of the attempted migrations
+    - aborts with returncode 3 if action is UPGRADE but version_file does not exist
+    """
+    version_base = None
     if version_file.exists():
-        with version_file.open("r") as version:
-            VERSION_BASE = Version(version.read().strip())
+        version_base = Version(version_file.read_text().strip())
 
         # The following glob implies that no Python file names in this folder may end in a number
         # except migrations named after the version of the state that they establish.
         migrations = sorted(
-            [Migration(p) for p in migrations_dir.glob("*[0-9].py")], key=lambda m: m.version
+            [Migration(path) for path in migrations_dir.glob("*[0-9].py")],
+            key=lambda migration: migration.target.version,
         )
 
         for migration in migrations:
-            if VERSION_BASE.version < migration.version <= version_target.version:
+            if version_base.version < migration.target.version <= version_target.version:
                 migration.run_and_update_version_file(version_file)
     # action: 1: install, 2: upgrade
     elif action == 2:
         # See https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/#_syntax
-        log.error(f"Aborting: cannot upgrade without version file: '{version_file}'")
+        logging.error(f"Aborting: cannot upgrade without version file: '{version_file}'")
         sys.exit(3)
 
     # If we're installing or if all migrations ran successfully, we can set the target version
     update_version(version_target, version_file)
-    log.info(f"Successfully upgraded to {version_target}")
+    logging.info(f"Successfully upgraded to {version_target}")
 
 
 if __name__ == "__main__":  # pragma: no cover
     PROJECT = sys.argv[1]
-    log.basicConfig(filename=f"/var/log/{PROJECT}-migrations.log", level=log.INFO)
+    logging.basicConfig(filename=f"/var/log/{PROJECT}-migrations.log", level=logging.INFO)
     main(
         Path(f"/var/lib/{PROJECT}/version"),
         Path(f"/usr/libexec/{PROJECT}/migrations/"),
