@@ -64,7 +64,8 @@ install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
 install -m 755 files/migrations.py %{buildroot}/%{_libexecdir}/%{name}/
 install -m 644 files/migration_steps.py %{buildroot}/%{_libexecdir}/%{name}/
-install -m 644 migrations/* %{buildroot}/%{_libexecdir}/%{name}/migrations/
+# Uncomment and replace $ with % when migrations are added:
+# install -m 644 migrations/*.py ${buildroot}/${_libexecdir}/${name}/migrations/
 
 
 %files
@@ -74,7 +75,9 @@ install -m 644 migrations/* %{buildroot}/%{_libexecdir}/%{name}/migrations/
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
 %attr(755, root, root) %{_libexecdir}/%{name}/migrations.py
 %{_libexecdir}/%{name}/migration_steps.py
-%{_libexecdir}/%{name}/migrations/*
+%dir %{_libexecdir}/%{name}/migrations/
+# Uncomment and replace $ with % when migrations are added:
+# ${_libexecdir}/${name}/migrations/*.py
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
@@ -84,7 +87,7 @@ install -m 644 migrations/* %{buildroot}/%{_libexecdir}/%{name}/migrations/
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %doc README.md
 %license LICENSE
-%{_sharedstatedir}/%{name}/
+%dir %{_sharedstatedir}/%{name}/
 
 
 %post
