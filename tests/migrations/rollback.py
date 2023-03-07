@@ -13,17 +13,23 @@ class ExampleRollback(MigrationStep):
         return not self.path.exists()
 
     def run(self):
-        self.path.open("w").write("roll me back please!")
+        self.path.write_text("roll me back please!")
 
     def rollback(self, _tmpdir):
-        # This file hasn't existed before so it shouldn't exist if we
+        # This file hasn't existed before so it shouldn't exist if we roll back. We're only
+        # theoretically keeping files, as the only invocation is after ExampleFail
         if not self.keep:
             self.path.unlink()
 
 
-class ExampleFail(MigrationStep):
+class ExampleFailTriggerRollback(MigrationStep):
     def run(self):
         raise Exception("Intentionally failing")
 
 
-steps = [ExampleRollback(1), ExampleRollback(2), ExampleFail(), ExampleRollback(3, True)]
+steps = [
+    ExampleRollback(1),
+    ExampleRollback(2),
+    ExampleFailTriggerRollback(),
+    ExampleRollback(3, True),
+]

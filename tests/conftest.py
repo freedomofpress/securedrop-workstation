@@ -1,15 +1,6 @@
 import os
-import shutil
-from pathlib import Path
 
 import pytest
-
-TEST_ROOT = Path(__file__).resolve().parent
-
-
-def copy_migrations(migration, target_dir):
-    migration = TEST_ROOT / "migrations" / f"{migration}.py"
-    shutil.copy(migration, target_dir / "0.0.1.py")
 
 
 @pytest.fixture
@@ -20,56 +11,6 @@ def tmp_migrations(tmp_path):
     os.chdir(tmp_path)
     yield tmp_path
     os.chdir(cwd)
-
-
-# Same as tmp_success_if_valid just to clarify from fixture names that a failing test may be
-# expected
-@pytest.fixture
-def tmp_success(tmp_migrations):
-    copy_migrations("success-if-valid", tmp_migrations)
-    yield tmp_migrations
-
-
-@pytest.fixture
-def tmp_success_if_valid(tmp_migrations):
-    copy_migrations("success-if-valid", tmp_migrations)
-    yield tmp_migrations
-
-
-@pytest.fixture
-def tmp_failure(tmp_migrations):
-    copy_migrations("failure", tmp_migrations)
-    yield tmp_migrations
-
-
-@pytest.fixture
-def tmp_snapshot_failure(tmp_migrations):
-    copy_migrations("snapshot-failure", tmp_migrations)
-    yield tmp_migrations
-
-
-@pytest.fixture
-def tmp_rollback(tmp_migrations):
-    copy_migrations("rollback", tmp_migrations)
-    yield tmp_migrations
-
-
-@pytest.fixture
-def tmp_rollback_failure(tmp_migrations):
-    copy_migrations("rollback-failure", tmp_migrations)
-    yield tmp_migrations
-
-
-@pytest.fixture
-def tmp_cleanup(tmp_migrations):
-    copy_migrations("cleanup", tmp_migrations)
-    yield tmp_migrations
-
-
-@pytest.fixture
-def tmp_cleanup_failure(tmp_migrations):
-    copy_migrations("cleanup-failure", tmp_migrations)
-    yield tmp_migrations
 
 
 def create_file(folder, name="example.txt"):

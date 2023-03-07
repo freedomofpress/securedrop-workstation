@@ -6,7 +6,7 @@ from migration_steps import MigrationStep, path_snapshot
 class ExampleSnapshot(MigrationStep):
     def __init__(self):
         self.path = Path(__file__).parent / "example-snapshot-file.txt"
-        self.path.open("w").write("Snapshot me!")
+        self.path.write_text("Snapshot me!")
 
     def snapshot(self, tmpdir):
         path_snapshot(self.path, tmpdir)

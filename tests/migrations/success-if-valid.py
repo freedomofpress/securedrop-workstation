@@ -1,10 +1,13 @@
 """
 success-if-valid test migration
 
-This a reusable, multi-use migration. By default it will be copied to 0.0.1.py by the fixture, but
-in addition can also be copied to 0.0.2.py, 0.0.3.py, 0.0.4.py and so on and will still work.
+Stores the patch version of its own filename in example-file.txt and, if its version is bigger than
+0.0.1, verifies that the current value is one less than the version being migrated to.
 
-However, if the sequence is broken up, as in 0.0.[1-24].py, this test will fail validation.
+This makes it multi-use migration. By default it is expected to be copied to 0.0.1.py, but can also
+be copied to 0.0.2.py, 0.0.3.py, 0.0.4.py and so on and will still work.
+
+However, if the sequence is broken up (0.0.1.py, 0.0.3.py) this test will fail validation.
 """
 
 from pathlib import Path
@@ -25,12 +28,12 @@ class ExampleFile(MigrationStep):
         if path_validate(self.path, self.check_exists):
             if PATCH_VERSION > 1:
                 # Ensure that we're attempting to increment the example migration by one
-                return int(self.path.open().read()[-1]) == (PATCH_VERSION - 1)
+                return int(self.path.read_text()[-1]) == (PATCH_VERSION - 1)
             return True
         return False
 
     def run(self):
-        self.path.open("w").write(f"0.0.{self.patch}")
+        self.path.write_text(f"0.0.{self.patch}")
 
 
 steps = [ExampleFile(PATCH_VERSION != 1)]

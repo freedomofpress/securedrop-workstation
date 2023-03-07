@@ -3,7 +3,7 @@ from pathlib import Path
 from migration_steps import MigrationStep
 
 
-class ExampleRollback(MigrationStep):
+class ExampleRollbackSuccess(MigrationStep):
     def __init__(self, step):
         self.path = Path(__file__).parent / f"example-rollback-{step}.txt"
 
@@ -11,7 +11,7 @@ class ExampleRollback(MigrationStep):
         pass
 
     def rollback(self, _tmpdir):
-        self.path.open("w").write("I was rolled back!")
+        self.path.write_text("I was rolled back!")
 
 
 class ExampleRollbackFail(MigrationStep):
@@ -22,15 +22,15 @@ class ExampleRollbackFail(MigrationStep):
         raise Exception("Intentionally failing")
 
 
-class ExampleFail(MigrationStep):
+class ExampleFailTriggerFailingRollback(MigrationStep):
     def run(self):
         raise Exception("Intentionally failing")
 
 
 steps = [
-    ExampleRollback(1),
+    ExampleRollbackSuccess(1),
     ExampleRollbackFail(),
-    ExampleRollback(2),
-    ExampleFail(),
-    ExampleRollback(3),
+    ExampleRollbackSuccess(2),
+    ExampleFailTriggerFailingRollback(),
+    ExampleRollbackSuccess(3),
 ]

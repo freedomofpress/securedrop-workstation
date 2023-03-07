@@ -81,7 +81,7 @@ class Absent(MigrationStep):
     """
 
     def __init__(self, path: Path, check_exists: Optional[bool] = None) -> None:
-        self.path = Path(path)
+        self.path = path
         self.check_exists = check_exists
         self.rolled_back = False
 
@@ -106,8 +106,8 @@ class Move(MigrationStep):
     """Move a path (file or folder) to a target"""
 
     def __init__(self, path: Path, target: Path, check_exists: Optional[bool] = True):
-        self.path = Path(path)
-        self.target = Path(target)
+        self.path = path
+        self.target = target
         self.check_exists = check_exists
 
     def validate(self) -> bool:
@@ -129,8 +129,8 @@ class Symlink(MigrationStep):
     """Create a symlink target to path (file or folder)"""
 
     def __init__(self, path: Path, target: Path, check_exists: Optional[bool] = True):
-        self.path = Path(path)
-        self.target = Path(target)
+        self.path = path
+        self.target = target
         self.check_exists = check_exists
         self.target_existed = False
 

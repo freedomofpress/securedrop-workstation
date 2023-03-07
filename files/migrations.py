@@ -67,7 +67,7 @@ class Migration:
             loader.exec_module(migration)
         except Exception:
             logging.exception(f"Failed to load migration: {self.path}")
-            sys.exit(2)
+            sys.exit(4)
 
         logging.info(f"Running migration for {self}")
         migrate(migration.steps)
@@ -95,10 +95,10 @@ def validate(steps: List[MigrationStep]) -> None:
         try:
             if not step.validate():
                 logging.error(f"Failed to validate step {index}: {step}")
-                sys.exit(2)
+                sys.exit(5)
         except Exception:
             logging.exception(f"Encountered error during validation step {index}: {step}")
-            sys.exit(2)
+            sys.exit(5)
 
 
 def snapshot(steps: List[MigrationStep], tmpdir_parent: Path) -> None:
@@ -109,7 +109,7 @@ def snapshot(steps: List[MigrationStep], tmpdir_parent: Path) -> None:
             step.snapshot(tmpdir)
         except Exception:
             logging.exception(f"Failed to snapshot step {index}: {step}")
-            sys.exit(2)
+            sys.exit(6)
 
 
 def cleanup(steps: List[MigrationStep], tmpdir_parent: Path) -> None:
@@ -151,8 +151,12 @@ def main(version_file: Path, migrations_dir: Path, action: int, version_target: 
 
     Either:
     - returns successfully
-    - aborts with returncode 2 if there's been a problem with any step of the attempted migrations
+    - aborts with returncode 2 if there's been a problem while running migration steps
     - aborts with returncode 3 if action is UPGRADE but version_file does not exist
+    - aborts with returncode 4 if a given migration is not a valid Python module
+    - aborts with returncode 5 if a migration step could not be validated or it encountered an error
+      during validation
+    - aborts with returncode 6 if an error is enounctered during snapshotting
     """
     version_base = None
     if version_file.exists():

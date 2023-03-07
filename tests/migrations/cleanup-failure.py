@@ -11,7 +11,7 @@ class ExampleCleanupFailure(MigrationStep):
         return not self.path.exists()
 
     def run(self):
-        self.path.open("w").write("Clean me up!")
+        self.path.write_text("Clean me up!")
 
     def cleanup(self, _tmpdir):
         raise Exception("Intentionally failing")

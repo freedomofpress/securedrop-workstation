@@ -11,10 +11,10 @@ class ExampleCleanup(MigrationStep):
         return not self.path.exists()
 
     def run(self):
-        self.path.open("w").write("Clean me up!")
+        self.path.write_text("Clean me up!")
 
     def cleanup(self, _tmpdir):
-        self.path.open("w").write("This is clean, trust me")
+        self.path.write_text("This is clean, trust me")
 
 
 steps = [ExampleCleanup()]
