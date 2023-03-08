@@ -81,6 +81,10 @@ rpmlint: ## Runs rpmlint on the spec file
 shellcheck: ## Runs shellcheck on all shell scripts
 	./scripts/shellcheck.sh
 
+.PHONY: test-install-rpm
+test-install-rpm: ## Tests installing the RPM in CI/container
+	$(CONTAINER) ./scripts/test-install-rpm.sh
+
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
 # 2. Check for second field matching, skip otherwise.
