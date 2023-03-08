@@ -5,5 +5,5 @@
 from subprocess import run
 from sys import argv
 
-start = 3 if argv[2] == "-R" else 2
-run(argv[start:])
+if "sh" in argv:
+    run(argv[argv.index("sh") :])
