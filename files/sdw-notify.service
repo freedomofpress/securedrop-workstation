@@ -1,0 +1,6 @@
+[Unit]
+Description=SecureDrop Updater GUI Notification
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sdw-notify

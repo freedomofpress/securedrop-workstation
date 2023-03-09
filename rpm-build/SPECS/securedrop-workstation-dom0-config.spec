@@ -35,6 +35,7 @@ BuildRequires:	python3-devel
 BuildRequires:	python3-pip
 BuildRequires:	python3-setuptools
 BuildRequires:	python3-wheel
+BuildRequires:	systemd-rpm-macros
 
 # This package installs all standard VMs in Qubes
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
@@ -94,12 +95,15 @@ install -m 755 -d %{buildroot}/%{_datadir}/applications/
 install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/
 install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/
 install -m 755 -d %{buildroot}/%{_sharedstatedir}/%{name}/
+install -m 755 -d %{buildroot}/%{_userunitdir}/
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
 install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
 install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
+install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
+install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 
 
 %files
@@ -127,6 +131,8 @@ install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
 %{python3_sitelib}/*%{version}.dist-info/*
 %{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
+%{_userunitdir}/sdw-notify.service
+%{_userunitdir}/sdw-notify.timer
 %doc README.md
 %license LICENSE
 
