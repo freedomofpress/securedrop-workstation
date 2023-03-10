@@ -32,9 +32,11 @@ BuildRequires:	python3-setuptools
 BuildRequires:	python3-wheel
 BuildRequires:	systemd-rpm-macros
 
-# SecureDrop Updater triggers Salt to update templates and has a Qt5 based UI
+# SecureDrop Updater triggers Salt to update templates and has a Qt5 based UI,
+# migrations log to systemd-journal
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
 Requires:		python3-qt5
+Requires:		python3-systemd
 
 
 %description
