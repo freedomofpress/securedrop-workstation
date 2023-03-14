@@ -9,7 +9,7 @@ include:
   # DispVM is created
   - qvm.default-dispvm
 
-{% set sd_supported_fedora_version = 'fedora-36' %}
+{% set sd_supported_fedora_version = 'fedora-37' %}
 
 
 # Install latest templates required for SDW VMs.
@@ -61,7 +61,10 @@ set-fedora-default-template-version:
   {% set _ = required_dispvms.append("sd-fedora-dvm") %}
 {% endif %}
 
+{% set existing_vms = salt['cmd.shell']('qvm-ls --raw-list').split('\n') %}
+
 {% for required_dispvm in required_dispvms %}
+{% if required_dispvm not in existing_vms %}
 create-{{ required_dispvm }}:
   qvm.vm:
     - name: {{ required_dispvm }}
@@ -76,6 +79,7 @@ create-{{ required_dispvm }}:
 {% endif %}
     - require:
       - cmd: dom0-install-fedora-template
+{% endif %}
 {% endfor %}
 
 
@@ -94,7 +98,9 @@ create-{{ required_dispvm }}:
 {% else %}
   {% set sd_supported_fedora_template = sd_supported_fedora_version %}
 {% endif %}
-{% if salt['cmd.shell']('qvm-prefs ' + sys_vm + ' template') != sd_supported_fedora_template %}
+{% set vm_needs_updating = salt['cmd.shell']('qvm-prefs ' + sys_vm + ' template') != sd_supported_fedora_template %}
+{% set dvm_needs_updating = sys_vm == 'sys-usb' and 'sd-fedora-dvm' in existing_vms and salt['cmd.shell']('qvm-prefs sd-fedora-dvm template') != sd_supported_fedora_version %}
+{% if vm_needs_updating or dvm_needs_updating %}
 sd-{{ sys_vm }}-fedora-version-halt:
   qvm.kill:
     - name: {{ sys_vm }}
@@ -107,6 +113,17 @@ sd-{{ sys_vm }}-fedora-version-halt-wait:
     - require:
       - cmd: dom0-install-fedora-template
 
+# Since sys-usb uses sd-fedora-dvm, we can only change the latter's template
+# when it's not running
+{% if sys_vm == 'sys-usb' %}
+  qvm.vm:
+    - name: sd-fedora-dvm
+    - prefs:
+      - template: {{ sd_supported_fedora_version }}
+    - require:
+      - cmd: sd-{{ sys_vm }}-fedora-version-halt-wait
+{% endif %}
+
 sd-{{ sys_vm }}-fedora-version-update:
   qvm.vm:
     - name: {{ sys_vm }}
@@ -114,7 +131,7 @@ sd-{{ sys_vm }}-fedora-version-update:
       - template: {{ sd_supported_fedora_template }}
     - require:
       - cmd: sd-{{ sys_vm }}-fedora-version-halt-wait
-{% if sd_supported_fedora_template.endswith("-dvm") %}
+{% if not dvm_needs_updating and sd_supported_fedora_template.endswith("-dvm") %}
       - qvm: create-{{ sd_supported_fedora_template }}
 {% endif %}
 

@@ -492,7 +492,7 @@ def test_shutdown_and_start_vms(
         call("sys-usb"),
     ]
     template_vm_calls = [
-        call("fedora-36"),
+        call("fedora-37"),
         call("sd-large-{}-template".format(DEBIAN_VERSION)),
         call("sd-small-{}-template".format(DEBIAN_VERSION)),
         call("whonix-gw-16"),
@@ -538,7 +538,7 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call("sd-log"),
     ]
     template_vm_calls = [
-        call("fedora-36"),
+        call("fedora-37"),
         call("sd-large-{}-template".format(DEBIAN_VERSION)),
         call("sd-small-{}-template".format(DEBIAN_VERSION)),
         call("whonix-gw-16"),

@@ -5,7 +5,7 @@
 
 set-fedora-as-default-dispvm:
   cmd.run:
-    - name: qvm-check fedora-36-dvm && qubes-prefs default_dispvm fedora-36-dvm || qubes-prefs default_dispvm ''
+    - name: qvm-check fedora-37-dvm && qubes-prefs default_dispvm fedora-37-dvm || qubes-prefs default_dispvm ''
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
@@ -23,7 +23,7 @@ restore-sys-usb-dispvm-halt-wait:
 restore-sys-usb-dispvm:
   qvm.prefs:
     - name: sys-usb
-    - template: fedora-36-dvm
+    - template: fedora-37-dvm
     - require:
       - cmd: restore-sys-usb-dispvm-halt-wait
       - cmd: set-fedora-as-default-dispvm
