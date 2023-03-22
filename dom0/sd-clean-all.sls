@@ -34,11 +34,11 @@ restore-sys-usb-dispvm-start:
     - require:
       - qvm: restore-sys-usb-dispvm
 
-# autoattach modifications are only present in sd-fedora-dvm
+# autoattach modifications are only present in sd-fedora-37-dvm
 # so no more sd-usb-autoattach-remove necessary
 remove-sd-fedora-dispvm:
   qvm.absent:
-    - name: sd-fedora-dvm
+    - name: sd-fedora-37-dvm
     - require:
       - qvm: restore-sys-usb-dispvm
 {% else %}
