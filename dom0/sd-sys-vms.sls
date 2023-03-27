@@ -118,17 +118,18 @@ sd-{{ sys_vm }}-fedora-version-update:
       - template: {{ sd_supported_fedora_template }}
     - require:
       - cmd: sd-{{ sys_vm }}-fedora-version-halt-wait
-{% if not dvm_needs_updating and sd_supported_fedora_template.endswith("-dvm") %}
+{% if sd_supported_fedora_template.endswith("-dvm") %}
       - qvm: create-{{ sd_supported_fedora_template }}
 {% endif %}
 
 # We're numbering our VMs now even though its contents wouldn't change, to work
 # around Salt's limitations, so the non-numbered VM should be removed.
 {% if sys_vm == "sys-usb" %}
+remove-old-fedora-dvm:
   qvm.absent:
     - name: sd-fedora-dvm
     - require:
-        qvm: sd-sys-usb-fedora-version-update
+      - qvm: sd-sys-usb-fedora-version-update
 {% endif %}
 
 sd-{{ sys_vm }}-fedora-version-start:
