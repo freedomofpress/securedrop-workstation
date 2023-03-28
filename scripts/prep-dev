@@ -14,7 +14,7 @@ function find_latest_rpm() {
     # Look up which version of dom0 we're using.
     # Qubes 4.0 is fedora-25, Qubes 4.1 will be fedora-32.
     fedora_version="$(rpm --eval '%{fedora}')"
-    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "*fc${fedora_version}.noarch.rpm" -print0 | xargs -0 ls -t | head -n 1
+    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
 }
 
 latest_rpm="$(find_latest_rpm)"
