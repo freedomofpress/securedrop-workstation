@@ -125,7 +125,7 @@ sd-{{ sys_vm }}-fedora-version-update:
 # We're numbering our VMs now even though its contents wouldn't change, to work
 # around Salt's limitations, so the non-numbered VM should be removed.
 {% if sys_vm == "sys-usb" %}
-remove-old-fedora-dvm:
+remove-sd-fedora-dvm:
   qvm.absent:
     - name: sd-fedora-dvm
     - require:
