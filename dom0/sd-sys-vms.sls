@@ -61,10 +61,7 @@ set-fedora-default-template-version:
   {% set _ = required_dispvms.append("sd-" + sd_supported_fedora_version + "-dvm") %}
 {% endif %}
 
-{% set existing_vms = salt['cmd.shell']('qvm-ls --raw-list').split('\n') %}
-
 {% for required_dispvm in required_dispvms %}
-{% if required_dispvm not in existing_vms %}
 create-{{ required_dispvm }}:
   qvm.vm:
     - name: {{ required_dispvm }}
@@ -79,9 +76,7 @@ create-{{ required_dispvm }}:
 {% endif %}
     - require:
       - cmd: dom0-install-fedora-template
-{% endif %}
 {% endfor %}
-
 
 # Now proceed with rebooting all the sys-* VMs, since the new template is up to date.
 
