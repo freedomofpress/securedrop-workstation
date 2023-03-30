@@ -31,8 +31,8 @@ echo "Provision all SecureDrop Workstation VMs with service-specific configs"
 sudo qubesctl --show-output --max-concurrency "$max_concurrency" --skip-dom0 --targets "$all_sdw_vms_target" state.highstate
 
 echo "Add SecureDrop export device handling to sys-usb"
-# If sd-fedora-dvm exists it's because salt determined that sys-usb was disposable
-qvm-check --quiet sd-fedora-dvm 2> /dev/null && \
-  sudo qubesctl --show-output --skip-dom0 --targets sd-fedora-dvm state.highstate && \
+# If sd-fedora-37-dvm exists it's because salt determined that sys-usb was disposable
+qvm-check --quiet sd-fedora-37-dvm 2> /dev/null && \
+  sudo qubesctl --show-output --skip-dom0 --targets sd-fedora-37-dvm state.highstate && \
   qvm-shutdown --wait sys-usb && qvm-start sys-usb || \
   sudo qubesctl --show-output --skip-dom0 --targets sys-usb state.highstate

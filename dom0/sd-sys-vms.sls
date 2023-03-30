@@ -9,7 +9,7 @@ include:
   # DispVM is created
   - qvm.default-dispvm
 
-{% set sd_supported_fedora_version = 'fedora-36' %}
+{% set sd_supported_fedora_version = 'fedora-37' %}
 
 
 # Install latest templates required for SDW VMs.
@@ -58,7 +58,7 @@ set-fedora-default-template-version:
 # consistently auto-attach USB devices to our sd-devices qube
 {% set required_dispvms = [ sd_supported_fedora_version + '-dvm' ] %}
 {% if salt['pillar.get']('qvm:sys-usb:disposable', true) %}
-  {% set _ = required_dispvms.append("sd-fedora-dvm") %}
+  {% set _ = required_dispvms.append("sd-" + sd_supported_fedora_version + "-dvm") %}
 {% endif %}
 
 {% for required_dispvm in required_dispvms %}
@@ -71,13 +71,12 @@ create-{{ required_dispvm }}:
     - prefs:
       - template: {{ sd_supported_fedora_version }}
       - template_for_dispvms: True
-{% if required_dispvm == 'sd-fedora-dvm' %}
+{% if required_dispvm == 'sd-' + sd_supported_fedora_version + '-dvm' %}
       - netvm: ""
 {% endif %}
     - require:
       - cmd: dom0-install-fedora-template
 {% endfor %}
-
 
 # Now proceed with rebooting all the sys-* VMs, since the new template is up to date.
 
@@ -87,7 +86,7 @@ create-{{ required_dispvm }}:
   {% if sys_vm == 'sys-usb' %}
     # If sys-usb is disposable, we want it to use the template we just created so we
     # can customize it later in the process
-    {% set sd_supported_fedora_template = 'sd-fedora-dvm' %}
+    {% set sd_supported_fedora_template = 'sd-' + sd_supported_fedora_version + '-dvm' %}
   {% else %}
     {% set sd_supported_fedora_template = sd_supported_fedora_version + '-dvm' %}
   {% endif %}
@@ -116,6 +115,16 @@ sd-{{ sys_vm }}-fedora-version-update:
       - cmd: sd-{{ sys_vm }}-fedora-version-halt-wait
 {% if sd_supported_fedora_template.endswith("-dvm") %}
       - qvm: create-{{ sd_supported_fedora_template }}
+{% endif %}
+
+# We're numbering our VMs now even though its contents wouldn't change, to work
+# around Salt's limitations, so the non-numbered VM should be removed.
+{% if sys_vm == "sys-usb" %}
+remove-sd-fedora-dvm:
+  qvm.absent:
+    - name: sd-fedora-dvm
+    - require:
+      - qvm: sd-sys-usb-fedora-version-update
 {% endif %}
 
 sd-{{ sys_vm }}-fedora-version-start:
