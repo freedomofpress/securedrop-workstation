@@ -133,6 +133,9 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
+* Mon Apr 3 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.0-rc1
+- Use Fedora 37 base template
+
 * Mon Nov 28 2022 SecureDrop Team <securedrop@freedom.press> - 0.7.1
 - Support for nightly builds of the client
 
