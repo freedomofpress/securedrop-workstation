@@ -6,8 +6,9 @@ import tempfile
 from base import SD_VM_Local_Test
 
 
-def find_fp_from_gpg_output(gpg):
+def find_fps_from_gpg_output(gpg):
 
+    fingerprints = []
     lines = gpg.decode("utf-8").split("\n")
 
     for line in lines:
@@ -18,7 +19,9 @@ def find_fp_from_gpg_output(gpg):
         m = re.match(regex, line)
         if m:
             fp = m.groups()[1]
-            return fp
+            fingerprints.append(fp)
+
+    return fingerprints
 
 
 def get_local_fp():
@@ -31,15 +34,21 @@ def get_local_fp():
             stderr=subprocess.DEVNULL,
         )
         results = subprocess.check_output(["gpg", "-k", "--with-fingerprint"], env=gpg_env)
-        return find_fp_from_gpg_output(results)
+        fingerprints = find_fps_from_gpg_output(results)
+        if len(fingerprints) == 1:
+            return fingerprints[0]
 
 
-def get_remote_fp():
+def get_remote_fp(expected_fp=None):
     cmd = ["qvm-run", "-p", "sd-gpg", "/usr/bin/gpg --list-secret-keys --fingerprint"]
 
     p = subprocess.check_output(cmd)
 
-    return find_fp_from_gpg_output(p)
+    fingerprints = find_fps_from_gpg_output(p)
+
+    if expected_fp and expected_fp in fingerprints:
+        return expected_fp
+
 
 
 class SD_GPG_Tests(SD_VM_Local_Test):
@@ -52,7 +61,11 @@ class SD_GPG_Tests(SD_VM_Local_Test):
         self.assertFileHasLine("/home/user/.profile", line)
 
     def test_we_have_the_key(self):
-        self.assertEqual(get_local_fp(), get_remote_fp())
+        local_fp = get_local_fp()
+        remote_fp = get_remote_fp()
+
+        self.assertIsNotNone(local_fp, "Local key not found")
+        self.assertEqual(local_fp, remote_fp)
 
     def test_logging_disabled(self):
         # Logging to sd-log should be disabled on sd-gpg
