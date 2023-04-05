@@ -12,9 +12,6 @@ def find_fps_from_gpg_output(gpg):
     lines = gpg.decode("utf-8").split("\n")
 
     for line in lines:
-        # dom0 uses Fedora25 with gpg 1.4.22, whereas AppVMs
-        # use Debian9 with gpg 2.1.18, so we'll match fingerprint
-        # by a loose regex rather than substring match.
         regex = r"\s*(Key fingerprint = )?([A-F0-9\s]{50})$"
         m = re.match(regex, line)
         if m:
@@ -35,20 +32,23 @@ def get_local_fp():
         )
         results = subprocess.check_output(["gpg", "-k", "--with-fingerprint"], env=gpg_env)
         fingerprints = find_fps_from_gpg_output(results)
+
+        # Because we imported this key into a temporary directory,
+        # we should only have one key in the keyring.
         if len(fingerprints) == 1:
             return fingerprints[0]
 
 
-def get_remote_fp(expected_fp=None):
+def get_remote_fp(expected_fp):
     cmd = ["qvm-run", "-p", "sd-gpg", "/usr/bin/gpg --list-secret-keys --fingerprint"]
 
     p = subprocess.check_output(cmd)
 
     fingerprints = find_fps_from_gpg_output(p)
 
+    # Especially during development, sd-gpg may contain more than one key
     if expected_fp and expected_fp in fingerprints:
         return expected_fp
-
 
 
 class SD_GPG_Tests(SD_VM_Local_Test):
@@ -62,7 +62,7 @@ class SD_GPG_Tests(SD_VM_Local_Test):
 
     def test_we_have_the_key(self):
         local_fp = get_local_fp()
-        remote_fp = get_remote_fp()
+        remote_fp = get_remote_fp(expected_fp=local_fp)
 
         self.assertIsNotNone(local_fp, "Local key not found")
         self.assertEqual(local_fp, remote_fp)
