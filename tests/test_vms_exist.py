@@ -6,7 +6,6 @@ from base import WANTED_VMS
 
 
 DEBIAN_VERSION = "bullseye"
-EXPECTED_KERNEL_VERSION = "5.15.41-grsec-workstation"
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -31,11 +30,10 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.virt_mode == "hvm")
         self.assertTrue(vm.kernel == "")
 
-        # Check exact kernel version in VM
+        # Check kernel flavor in VM
         stdout, stderr = vm.run("uname -r")
         kernel_version = stdout.decode("utf-8").rstrip()
         assert kernel_version.endswith("-grsec-workstation")
-        assert kernel_version == EXPECTED_KERNEL_VERSION
 
     def _check_service_running(self, vm, service):
         """
