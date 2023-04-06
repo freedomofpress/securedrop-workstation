@@ -1,5 +1,7 @@
 ---
-version: 2
+version: 2.1
+orbs:
+  slack: circleci/slack@4.4.4
 jobs:
   lint:
     docker:
@@ -15,6 +17,10 @@ jobs:
       - run:
           name: Run linters
           command: make lint
+      - slack/notify:
+          channel: C01EY9C1X45
+          event: fail
+          template: basic_fail_1
   build-rpm:
     docker:
       - image: fedora:32
@@ -32,6 +38,10 @@ jobs:
       - run:
           name: Check reproducibility
           command: make reprotest
+      - slack/notify:
+          channel: C01EY9C1X45
+          event: fail
+          template: basic_fail_1
   test:
     docker:
       - image: fedora:32
@@ -46,6 +56,10 @@ jobs:
       - run:
           name: Run tests
           command: make test
+      - slack/notify:
+          channel: C01EY9C1X45
+          event: fail
+          template: basic_fail_1
   test-install-rpm:
     docker:
       - image: fedora:32
@@ -58,12 +72,23 @@ jobs:
       - run:
           name: Run migration tests
           command: make test-install-rpm
-
+      - slack/notify:
+          channel: C01EY9C1X45
+          event: fail
+          template: basic_fail_1
 workflows:
   version: 2
   securedrop_updater_ci:
     jobs:
-      - lint
-      - build-rpm
-      - test
-      - test-install-rpm
+      - lint:
+          context:
+            - circleci-slack
+      - build-rpm:
+          context:
+            - circleci-slack
+      - test:
+          context:
+            - circleci-slack
+      - test-install-rpm:
+          context:
+            - circleci-slack
