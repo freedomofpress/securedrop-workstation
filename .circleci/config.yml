@@ -2,6 +2,15 @@
 version: 2.1
 orbs:
   slack: circleci/slack@4.4.4
+
+
+slack-fail-post-step: &slack-fail-post-step
+  post-steps:
+    - slack/notify:
+        channel: C01EY9C1X45
+        event: fail
+        template: basic_fail_1
+
 jobs:
   lint:
     docker:
@@ -17,10 +26,6 @@ jobs:
       - run:
           name: Run linters
           command: make lint
-      - slack/notify:
-          channel: C01EY9C1X45
-          event: fail
-          template: basic_fail_1
   build-rpm:
     docker:
       - image: fedora:32
@@ -38,10 +43,6 @@ jobs:
       - run:
           name: Check reproducibility
           command: make reprotest
-      - slack/notify:
-          channel: C01EY9C1X45
-          event: fail
-          template: basic_fail_1
   test:
     docker:
       - image: fedora:32
@@ -71,9 +72,12 @@ workflows:
       - lint:
           context:
             - circleci-slack
+          <<: *slack-fail-post-step
       - build-rpm:
           context:
             - circleci-slack
+          <<: *slack-fail-post-step
       - test:
           context:
             - circleci-slack
+          <<: *slack-fail-post-step
