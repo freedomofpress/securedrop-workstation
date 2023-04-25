@@ -19,7 +19,8 @@ reprotest: ## Check RPM package reproducibility
 install-deps:
 	sudo dnf install -y \
         git file python3-devel python3-pip python3-qt5 python3-wheel \
-		xorg-x11-server-Xvfb rpmdevtools rpmlint which libfaketime ShellCheck
+		xorg-x11-server-Xvfb rpmdevtools rpmlint which libfaketime ShellCheck \
+		python3-systemd
 
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.

@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import List
 
 from migration_steps import MigrationStep
+from systemd.journal import JournalHandler  # type: ignore
 
 
 class Version:
@@ -185,7 +186,9 @@ def main(version_file: Path, migrations_dir: Path, action: int, version_target: 
 
 if __name__ == "__main__":  # pragma: no cover
     PROJECT = sys.argv[1]
-    logging.basicConfig(filename=f"/var/log/{PROJECT}-migrations.log", level=logging.INFO)
+    log = logging.getLogger()
+    log.addHandler(JournalHandler(SYSLOG_IDENTIFIER=f"{PROJECT}-migrations"))
+    log.setLevel(logging.INFO)
     main(
         Path(f"/var/lib/{PROJECT}/version"),
         Path(f"/usr/libexec/{PROJECT}/migrations/"),
