@@ -1,8 +1,15 @@
+DEFAULT_GOAL: help
+# We prefer to use python3.8 if it's availabe, as that is the version shipped
+# with Fedora 32, but we're also OK with just python3 if that's all we've got
+PYTHON3 := $(if $(shell bash -c "command -v python3.8"), python3.8, python3)
+# If we're on anything but Fedora 32, execute some commands in a container
+CONTAINER := $(if $(shell grep "Thirty Two" /etc/fedora-release),,./scripts/container.sh)
+
 HOST=$(shell hostname)
 
 assert-dom0: ## Confirms command is being run under dom0
 ifneq ($(HOST),dom0)
-	@echo "     ------ securedrop-workstation's makefile must be used only on dom0! ------"
+	@echo "     ------ Some targets of securedrop-workstation's makefile must be used only on dom0! ------"
 	exit 1
 endif
 
@@ -21,26 +28,22 @@ dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 	$(MAKE) prep-dev
 	sdw-admin --apply
 
-.PHONY: dom0-rpm
-dom0-rpm: ## Builds rpm package to be installed on dom0
-	@./scripts/build-dom0-rpm
+.PHONY: build-rpm
+build-rpm: ## Build RPM package
+	@$(CONTAINER) ./scripts/build-rpm.sh
 
 .PHONY: reprotest
-reprotest: ## Runs reprotest for RPMs with all variations
-	reprotest -c "make dom0-rpm" . "rpm-build/RPMS/noarch/*.rpm"
+reprotest: ## Check RPM package reproducibility
+	TERM=xterm-256color $(CONTAINER) bash -c "sudo ln -s $$PWD/scripts/fake-setarch.py /usr/local/bin/setarch && sudo reprotest 'make build-rpm' 'rpm-build/RPMS/noarch/*.rpm' --variations '+all,+kernel,-fileordering,-domain_host'"
 
-.PHONY: reprotest-ci
-reprotest-ci: ## Runs reprotest for RPMs, with CI-compatible skips in variations
-	# Disable a few variations, to support CircleCI container environments.
-	# Requires a sed hack to reprotest, see .circle/config.yml
-	TERM=xterm-256color reprotest --variations "+all, +kernel, -domain_host, -fileordering" \
-		 -c "make dom0-rpm" . "rpm-build/RPMS/noarch/*.rpm"
-
+# Installs Fedora 32 package dependencies, to build RPMs and run tests,
+# primarily useful in CI/containers
 .PHONY: install-deps
-install-deps: ## Installs apt package dependencies, for building RPMs
-	sudo apt-get install --no-install-recommends -y \
-		python3 python3-venv python3-setuptools file python3-rpm \
-		rpm rpm-common diffoscope reprotest disorderfs faketime xvfb
+install-deps:
+	sudo dnf install -y \
+        git file python3-devel python3-pip python3-qt5 python3-wheel \
+		xorg-x11-server-Xvfb rpmdevtools rpmlint which libfaketime ShellCheck \
+		hostname
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
@@ -91,7 +94,7 @@ sd-log: prep-dev ## Provisions SD logging VM
 
 prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./scripts/prep-dev
-	@./scripts/validate_config.py
+	@./files/validate_config.py
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
 	@./scripts/destroy-vm sd-whonix
@@ -139,16 +142,29 @@ test-gpg: assert-dom0 ## Runs tests for SD GPG functionality
 	python3 -m unittest discover -v tests -p test_gpg.py
 
 validate: assert-dom0 ## Checks for local requirements in dev env
-	@./scripts/validate_config.py
+	@./files/validate_config.py
+
+# Not requiring dom0 for linting as that requires extra packages, which we're
+# not installing on dom0, so are only in the developer environment, i.e. Work VM
+
+.PHONY: check-black
+check-black: ## Check Python source code formatting with black
+	black --check --diff .
 
 .PHONY: lint
 lint: flake8 black mypy ## Runs all linters
 
 .PHONY: black
-black: ## Lints all Python files with black
-# Not requiring dom0 since linting requires extra packages,
-# available only in the developer environment, i.e. Work VM.
-	black --check --line-length 100 .
+black: ## Update Python source code formatting with black
+	black .
+
+.PHONY: check-isort
+check-isort: ## Check Python import organization with isort
+	isort --check-only --diff .
+
+.PHONY: isort
+isort: ## Update Python import organization with isort
+	isort --diff .
 
 .PHONY: flake8
 flake8: ## Lints all Python files with flake8
@@ -161,6 +177,14 @@ mypy: ## Type checks Python files
 # available only in the developer environment, i.e. Work VM.
 	mypy
 
+.PHONY: rpmlint
+rpmlint: ## Runs rpmlint on the spec file
+	$(CONTAINER) rpmlint rpm-build/SPECS/*.spec
+
+.PHONY: shellcheck
+shellcheck: ## Runs shellcheck on all shell scripts
+	./scripts/shellcheck.sh
+
 prep-dom0: prep-dev # Copies dom0 config files
 	sudo qubesctl --show-output --targets dom0 state.highstate
 
@@ -169,12 +193,16 @@ destroy-all: ## Destroys all VMs managed by Workstation salt config
 
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
-	pip-compile --generate-hashes --upgrade --output-file dev-requirements.txt dev-requirements.in
+	pip-compile --allow-unsafe --generate-hashes --output-file=requirements/dev-requirements.txt requirements/dev-requirements.in
 
 .PHONY: venv
-venv:  ## Provision and activate a Python 3 virtualenv for development.
-	python3 -m venv .venv
-	.venv/bin/pip install --require-hashes -r dev-requirements.txt
+venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt5)
+	$(PYTHON3) -m venv .venv
+	.venv/bin/pip install --upgrade pip wheel
+	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
+	@echo "#################"
+	@echo "Virtualenv is complete."
+	@echo "Run: source .venv/bin/activate"
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.

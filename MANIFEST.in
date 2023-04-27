@@ -9,7 +9,6 @@ include dom0/securedrop-launcher.desktop
 include dom0/securedrop-handle-upgrade
 include dom0/securedrop-check-migration
 include dom0/update-xfce-settings
-include config.json.example
 include README.md
 include LICENSE
 include VERSION
@@ -17,13 +16,10 @@ include sd-proxy/*
 include sd-whonix/*
 include sd-app/*
 include sd-workstation/*
-include scripts/*
 include sys-firewall/*
 include launcher/*.py
 include launcher/sdw_updater_gui/*.py
 include launcher/sdw_notify/*.py
 include launcher/sdw_util/*.py
 include usb-autoattach/*
-exclude scripts/build-dom0-rpm
-exclude scripts/clone-to-dom0
-exclude scripts/prep-dev
+include files/*

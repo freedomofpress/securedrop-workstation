@@ -14,7 +14,7 @@ def find_fp_from_gpg_output(gpg):
         # dom0 uses Fedora25 with gpg 1.4.22, whereas AppVMs
         # use Debian9 with gpg 2.1.18, so we'll match fingerprint
         # by a loose regex rather than substring match.
-        regex = "\s*(Key fingerprint = )?([A-F0-9\s]{50})$"
+        regex = r"\s*(Key fingerprint = )?([A-F0-9\s]{50})$"
         m = re.match(regex, line)
         if m:
             fp = m.groups()[1]

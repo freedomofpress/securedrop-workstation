@@ -1,0 +1,10 @@
+bandit
+black
+diffoscope
+flake8
+isort
+mypy
+pip-tools
+pip
+pytest
+reprotest
