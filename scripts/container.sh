@@ -17,6 +17,11 @@ if [[ "$(uname -sm)" != "Linux x86_64" ]]; then
     OCI_BUILD_ARGUMENTS="${OCI_RUN_ARGUMENTS} --platform linux/amd64"
 fi
 
+# Pass -it if we're a tty
+if test -t 0; then
+    OCI_RUN_ARGUMENTS="${OCI_RUN_ARGUMENTS} -it"
+fi
+
 function oci_image() {
     NAME="${1}"
 
@@ -63,7 +68,7 @@ function oci_run() {
            --workdir "${TOPLEVEL}" \
            --name "${NAME}" \
            --hostname "${NAME}" \
-           -ti $OCI_RUN_ARGUMENTS "${NAME}" "${@:2}"
+           $OCI_RUN_ARGUMENTS "${NAME}" "${@:2}"
 }
 
 oci_image "${PROJECT}"
