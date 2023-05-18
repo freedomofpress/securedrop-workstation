@@ -134,6 +134,9 @@ def perform_uninstall(keep_template_rpm=False):
 
 
 def main():
+    if os.geteuid() == 0:
+        print("Please do not run this script as root.")
+        sys.exit(0)
     args = parse_args()
     if args.validate:
         print("Validating...")
