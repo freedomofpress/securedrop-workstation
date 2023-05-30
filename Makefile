@@ -121,7 +121,7 @@ remove-sd-log: assert-dom0 ## Destroys SD logging VM
 clean: assert-dom0 prep-dev ## Destroys all SD VMs
 # Use the local script path, since system PATH location will be absent
 # if clean has already been run.
-	./scripts/sdw-admin.py --uninstall --keep-template-rpm --force
+	./files/sdw-admin.py --uninstall --keep-template-rpm --force
 
 test: assert-dom0 ## Runs all application tests (no integration tests yet)
 	python3 -m unittest discover -v tests
