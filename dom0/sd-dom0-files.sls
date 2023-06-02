@@ -68,7 +68,7 @@ dom0-workstation-templates-repo:
 dom0-install-securedrop-workstation-template:
   cmd.run:
     - name: >
-        qvm-template install securedrop-workstation-{{ sdvars.distribution }}
+        qvm-template info --machine-readable securedrop-workstation-{{ sdvars.distribution }} | grep -q "installed|securedrop-workstation-{{ sdvars.distribution }}|" || qvm-template install securedrop-workstation-{{ sdvars.distribution }}
     - require:
       - file: dom0-workstation-rpm-repo
 
