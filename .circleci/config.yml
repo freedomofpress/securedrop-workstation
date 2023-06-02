@@ -3,7 +3,7 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: fedora:32
+      - image: fedora:37
     steps:
       - run: dnf install -y make
       - checkout
@@ -17,7 +17,7 @@ jobs:
           command: make lint
   build-rpm:
     docker:
-      - image: fedora:32
+      - image: fedora:37
     steps:
       - run: dnf install -y make
       - checkout
@@ -34,7 +34,7 @@ jobs:
           command: make reprotest
   launcher-tests:
     docker:
-      - image: fedora:32
+      - image: fedora:37
     steps:
       - run: dnf install -y make
       - checkout

@@ -19,7 +19,6 @@ dom0-install-fedora-template:
         qvm-template install {{ sd_supported_fedora_version }}
 
 # Update the mgmt VM before updating the new Fedora VM. The order is required
-# and listed in the release notes for F32 & F33.
 set-fedora-template-as-default-mgmt-dvm:
   cmd.run:
     - name: >
