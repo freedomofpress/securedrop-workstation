@@ -1,9 +1,9 @@
 DEFAULT_GOAL: help
-# We prefer to use python3.8 if it's availabe, as that is the version shipped
-# with Fedora 32, but we're also OK with just python3 if that's all we've got
-PYTHON3 := $(if $(shell bash -c "command -v python3.8"), python3.8, python3)
-# If we're on anything but Fedora 32, execute some commands in a container
-CONTAINER := $(if $(shell grep "Thirty Two" /etc/fedora-release),,./scripts/container.sh)
+PYTHON3 := $(if $(shell bash -c "command -v python3.11"), python3.11, python3)
+# If we're on anything but Fedora 37, execute some commands in a container
+# Note: if your development environment is Fedora 37 based, you may want to
+# manually prepend ./scripts/container.sh to commands you want to execute
+CONTAINER := $(if $(shell grep "Thirty Seven" /etc/fedora-release),,./scripts/container.sh)
 
 HOST=$(shell hostname)
 
@@ -36,7 +36,7 @@ build-rpm: ## Build RPM package
 reprotest: ## Check RPM package reproducibility
 	TERM=xterm-256color $(CONTAINER) bash -c "sudo ln -s $$PWD/scripts/fake-setarch.py /usr/local/bin/setarch && sudo reprotest 'make build-rpm' 'rpm-build/RPMS/noarch/*.rpm' --variations '+all,+kernel,-fileordering,-domain_host'"
 
-# Installs Fedora 32 package dependencies, to build RPMs and run tests,
+# Installs Fedora 37 package dependencies, to build RPMs and run tests,
 # primarily useful in CI/containers
 .PHONY: install-deps
 install-deps:

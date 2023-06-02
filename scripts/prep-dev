@@ -12,7 +12,7 @@ dom0_dev_dir="$HOME/securedrop-workstation"
 
 function find_latest_rpm() {
     # Look up which version of dom0 we're using.
-    # Qubes 4.0 is fedora-25, Qubes 4.1 will be fedora-32.
+    # Qubes 4.1 is fedora-32, Qubes 4.2 fedora-37.
     fedora_version="$(rpm --eval '%{fedora}')"
     find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
 }
