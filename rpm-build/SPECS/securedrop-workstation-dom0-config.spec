@@ -54,9 +54,6 @@ configuration over time.
 # direct_url.json is is not reproducible and not strictly needed
 rm %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/direct_url.json
 sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/RECORD
-install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_updater_gui
-install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_notify
-install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_util
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-app
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-proxy
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-journalist
@@ -72,8 +69,6 @@ install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
 install -m 644 dom0/*.yml %{buildroot}/srv/salt/
 install -m 644 dom0/*.conf %{buildroot}/srv/salt/
 install -m 755 dom0/remove-tags %{buildroot}/srv/salt/
-install -m 644 dom0/securedrop-login %{buildroot}/srv/salt/
-install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
 install -m 755 dom0/securedrop-check-migration %{buildroot}/srv/salt/
 install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
@@ -88,17 +83,11 @@ install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/destroy-vm %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/provision-all %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 644 launcher/*.py %{buildroot}/opt/securedrop/launcher/
-install -m 644 launcher/sdw_updater_gui/*.py %{buildroot}/opt/securedrop/launcher/sdw_updater_gui/
-install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw_notify/
-install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
 install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 
 
 %files
-%attr(755, root, root) /opt/securedrop/launcher/sdw-launcher.py
-%attr(755, root, root) /opt/securedrop/launcher/sdw-notify.py
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
 %attr(755, root, root) %{_datadir}/%{name}/scripts/destroy-vm
 %attr(755, root, root) %{_datadir}/%{name}/scripts/provision-all
@@ -107,7 +96,6 @@ install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 # The name of the dist-info dir uses _ instead of -, so we use wildcards
 %{python3_sitelib}/*%{version}.dist-info/*
 %{_datadir}/%{name}/config.json.example
-/opt/securedrop/launcher/**/*.py
 /srv/salt/sd*
 /srv/salt/dom0-xfce-desktop-file.j2
 /srv/salt/remove-tags
