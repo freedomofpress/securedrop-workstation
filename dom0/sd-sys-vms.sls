@@ -27,17 +27,6 @@ set-fedora-template-as-default-mgmt-dvm:
     - require:
       - cmd: dom0-install-fedora-template
 
-# If the VM has just been installed via package manager, update it immediately
-update-fedora-template-if-new:
-  cmd.wait:
-    - name: sudo qubesctl --skip-dom0 --targets {{ sd_supported_fedora_version }} state.sls update.qubes-vm
-    - require:
-      - cmd: dom0-install-fedora-template
-      # Update the mgmt-dvm setting first, to avoid problems during first update
-      - cmd: set-fedora-template-as-default-mgmt-dvm
-    - watch:
-      - cmd: dom0-install-fedora-template
-
 # qvm.default-dispvm is not strictly required here, but we want it to be
 # updated as soon as possible to ensure make clean completes successfully, as
 # is sets the default_dispvm to the DispVM based on the wanted Fedora version.
