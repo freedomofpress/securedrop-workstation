@@ -9,7 +9,7 @@ include:
   # DispVM is created
   - qvm.default-dispvm
 
-{% set sd_supported_fedora_version = 'fedora-37' %}
+{% set sd_supported_fedora_version = 'fedora-38' %}
 
 
 # Install latest templates required for SDW VMs.
