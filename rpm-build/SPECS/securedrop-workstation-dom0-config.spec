@@ -1,5 +1,5 @@
 %global srcname securedrop-workstation-dom0-config
-%global version 0.8.0
+%global version 0.8.1
 %global __python3 /usr/bin/python3
 %global python3_sitelib /usr/lib/%{_python_version}/site-packages
 # For reproducible builds:
@@ -21,7 +21,7 @@ Summary:	SecureDrop Workstation
 Group:		Library
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.8.0.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.8.1.tar.gz
 
 BuildArch:      noarch
 # Disable declaration of build dependencies, because
@@ -49,7 +49,7 @@ configuration over time.
 %define use_source_date_epoch_as_buildtime 1
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.8.0
+%setup -n securedrop-workstation-dom0-config-0.8.1
 
 %install
 %{__python3} setup.py install --install-lib %{python3_sitelib} --no-compile --root %{buildroot}
@@ -135,6 +135,9 @@ mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/f37-update
 
 %changelog
+* Wed Apr 5 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.1
+- Update the SecureDrop release signing key
+
 * Wed Apr 5 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.0
 - Use Fedora 37 base template
 
