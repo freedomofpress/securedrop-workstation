@@ -129,10 +129,10 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         results = stdout.rstrip().decode("utf-8")
         fpf_gpg_pub_key_info = """/etc/apt/trusted.gpg.d/securedrop-keyring.gpg
 ---------------------------------------------
-pub   rsa4096 2021-05-10 [SC] [expires: 2023-07-04]
+pub   rsa4096 2021-05-10 [SC] [expires: 2024-07-08]
       2359 E653 8C06 13E6 5295  5E6C 188E DD3B 7B22 E6A3
 uid           [ unknown] SecureDrop Release Signing Key <securedrop-release-key-2021@freedom.press>
-sub   rsa4096 2021-05-10 [E] [expires: 2023-07-04]"""
+sub   rsa4096 2021-05-10 [E] [expires: 2024-07-08]"""
         # display any differences
         self.maxDiff = None
         self.assertEqual(results, fpf_gpg_pub_key_info), "Keyring incorrect in " + vm.name
