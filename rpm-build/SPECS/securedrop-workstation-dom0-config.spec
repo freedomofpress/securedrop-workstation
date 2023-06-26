@@ -15,13 +15,13 @@
 
 Name:		%{srcname}
 Version:	%{version}
-Release:	1%{?dist}
+Release:	0.rc1.1%{?dist}
 Summary:	SecureDrop Workstation
 
 Group:		Library
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.8.1.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.8.1rc1.tar.gz
 
 BuildArch:      noarch
 # Disable declaration of build dependencies, because
@@ -49,7 +49,7 @@ configuration over time.
 %define use_source_date_epoch_as_buildtime 1
 
 %prep
-%setup -n securedrop-workstation-dom0-config-0.8.1
+%setup -n securedrop-workstation-dom0-config-0.8.1rc1
 
 %install
 %{__python3} setup.py install --install-lib %{python3_sitelib} --no-compile --root %{buildroot}
@@ -135,7 +135,7 @@ mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/f37-update
 
 %changelog
-* Wed Apr 5 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.1
+* Mon Jun 23 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.1-rc1
 - Update the SecureDrop release signing key
 
 * Wed Apr 5 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.0
