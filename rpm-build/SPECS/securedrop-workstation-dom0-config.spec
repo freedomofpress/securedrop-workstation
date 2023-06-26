@@ -1,6 +1,6 @@
 Name:		securedrop-workstation-dom0-config
 Version:	0.8.1
-Release:	1%{?dist}
+Release:	0.rc1.1%{?dist}
 Summary:	SecureDrop Workstation
 
 # For reproducible builds:
@@ -24,7 +24,7 @@ Summary:	SecureDrop Workstation
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
 # See: https://docs.fedoraproject.org/en-US/packaging-guidelines/SourceURL/#_troublesome_urls
-Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
+Source:		%{url}/archive/refs/tags/%{version}-rc1.tar.gz#/%{name}-%{version}-rc1.tar.gz
 
 BuildArch:		noarch
 BuildRequires:	python3-devel
@@ -44,7 +44,7 @@ configuration over time.
 
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q -n %{name}-%{version}-rc1
 
 
 %build
@@ -124,7 +124,7 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
-* Wed Apr 5 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.1
+* Mon Jun 23 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.1-rc1
 - Update the SecureDrop release signing key
 
 * Wed Apr 5 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.0
