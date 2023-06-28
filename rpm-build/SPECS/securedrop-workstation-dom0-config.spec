@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.8.0
+Version:	0.8.1
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -124,6 +124,9 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 %changelog
+* Mon Jun 26 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.1
+- Update the SecureDrop release signing key
+
 * Wed Apr 5 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.0
 - Use Fedora 37 base template
 
