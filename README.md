@@ -83,7 +83,7 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 
 Installing this project is involved. It requires an up-to-date Qubes 4.1 installation running on a machine with at least 16GB of RAM (32 GB recommended).
 
-The project is currently in a closed beta, and we do not recommend installing it for production purposes. If you are participating in our beta program, please consult our *[end user documentation](https://workstation.securedrop.org)* for detailed setup instructions, and do not hesitate to reach out for assistance.
+The project is currently in a closed beta, and we do not recommend installing it independently for production purposes. If you are participating in our beta program, please consult our *[end user documentation](https://workstation.securedrop.org)* for detailed setup instructions, and do not hesitate to reach out for assistance. If you are interested in joining the beta, please contact us via securedrop@freedom.press or our support portal.
 
 To install a development version (using test data on the server and a test encryption key to decrypt it), in summary, you will need to:
 

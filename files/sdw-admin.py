@@ -133,15 +133,29 @@ def perform_uninstall(keep_template_rpm=False):
     )
 
 
+def show_warning():
+    print(
+        "This script will provision the SecureDrop Workstation.\n\n"
+        "The SecureDrop Workstation is currently in a closed beta.\n"
+        "We do not recommend installing it in production independently until\n"
+        "the project has reached general availability.\n\n"
+        "If you are not part of the beta program, but are interested in joining,\n"
+        "please contact us at securedrop@freedom.press or via our support portal."
+    )
+    input("Press [Enter] to proceed…")
+
+
 def main():
     if os.geteuid() == 0:
         print("Please do not run this script as root.")
         sys.exit(0)
+
     args = parse_args()
     if args.validate:
         print("Validating...")
         validate_config(SCRIPTS_PATH)
     elif args.apply:
+        show_warning()
         print("Applying configuration...")
         validate_config(SCRIPTS_PATH)
         copy_config()
