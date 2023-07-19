@@ -1,6 +1,6 @@
-FROM fedora:32
+FROM fedora:37
 LABEL org="Freedom of the Press"
-LABEL image_name="securedrop-workstation-qubes-4.1"
+LABEL image_name="securedrop-workstation-qubes-4.2"
 
 ARG USER_NAME
 ENV USER_NAME ${USER_NAME:-root}

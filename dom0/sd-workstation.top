@@ -5,7 +5,6 @@ base:
   dom0:
     - sd-sys-vms
     - sd-dom0-files
-    - sd-dom0-crontab
     - sd-dom0-systemd
     - sd-workstation-template
     - sd-upgrade-templates
@@ -41,7 +40,7 @@ base:
   securedrop-workstation-bullseye:
     - sd-workstation-template-files
     - sd-logging-setup
-  'sd-fedora-37-dvm,sys-usb':
+  'sd-fedora-38-dvm,sys-usb':
     - match: list
     - sd-usb-autoattach-add
   sd-log:

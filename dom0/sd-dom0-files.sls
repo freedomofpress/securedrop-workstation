@@ -68,7 +68,7 @@ dom0-workstation-templates-repo:
 dom0-install-securedrop-workstation-template:
   cmd.run:
     - name: >
-        qvm-template install securedrop-workstation-{{ sdvars.distribution }}
+        qvm-template info --machine-readable securedrop-workstation-{{ sdvars.distribution }} | grep -q "installed|securedrop-workstation-{{ sdvars.distribution }}|" || qvm-template install securedrop-workstation-{{ sdvars.distribution }}
     - require:
       - file: dom0-workstation-rpm-repo
 
@@ -118,55 +118,6 @@ dom0-adjust-desktop-icon-size-xfce:
     - name: salt://update-xfce-settings
     - args: adjust-icon-size
     - runas: {{ gui_user }}
-
-dom0-login-autostart-directory:
-  file.directory:
-    - name: /home/{{ gui_user }}/.config/autostart
-    - user: {{ gui_user }}
-    - group: {{ gui_user }}
-    - mode: 700
-    - makedirs: True
-
-dom0-login-autostart-desktop-file:
-  file.managed:
-    - name: /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
-    - source: "salt://dom0-xfce-desktop-file.j2"
-    - template: jinja
-    - context:
-        desktop_name: SDWLogin
-        desktop_comment: Updates SecureDrop Workstation DispVMs at login
-        desktop_exec: /usr/bin/securedrop-login
-    - user: {{ gui_user }}
-    - group: {{ gui_user }}
-    - mode: 664
-    - require:
-      - file: dom0-login-autostart-directory
-
-dom0-login-autostart-script:
-  file.managed:
-    - name: /usr/bin/securedrop-login
-    - source: "salt://securedrop-login"
-    - user: root
-    - group: root
-    - mode: 755
-
-dom0-securedrop-launcher-executables:
-  file.managed:
-    - names:
-      - /opt/securedrop/launcher/sdw-launcher.py
-      - /opt/securedrop/launcher/sdw-notify.py
-    - user: root
-    - group: root
-    - mode: 755
-    - replace: false
-
-dom0-securedrop-launcher-desktop-shortcut:
-  file.managed:
-    - name: /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
-    - source: "salt://securedrop-launcher.desktop"
-    - user: {{ gui_user }}
-    - group: {{ gui_user }}
-    - mode: 755
 
 {% import_json "sd/config.json" as d %}
 {% if d.environment != "dev" %}

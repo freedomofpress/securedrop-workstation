@@ -3,7 +3,7 @@ import unittest
 
 
 DEBIAN_VERSION = "bullseye"
-FEDORA_VERSION = "f32"
+FEDORA_VERSION = "f37"
 
 
 class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):

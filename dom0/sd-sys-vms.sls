@@ -9,34 +9,22 @@ include:
   # DispVM is created
   - qvm.default-dispvm
 
-{% set sd_supported_fedora_version = 'fedora-37' %}
+{% set sd_supported_fedora_version = 'fedora-38' %}
 
 
 # Install latest templates required for SDW VMs.
 dom0-install-fedora-template:
   cmd.run:
     - name: >
-        qvm-template install {{ sd_supported_fedora_version }}
+        qvm-template info --machine-readable {{ sd_supported_fedora_version }} | grep -q "installed|{{ sd_supported_fedora_version }}|" || qvm-template install {{ sd_supported_fedora_version }}
 
 # Update the mgmt VM before updating the new Fedora VM. The order is required
-# and listed in the release notes for F32 & F33.
 set-fedora-template-as-default-mgmt-dvm:
   cmd.run:
     - name: >
         qvm-shutdown --wait default-mgmt-dvm &&
         qvm-prefs default-mgmt-dvm template {{ sd_supported_fedora_version }}
     - require:
-      - cmd: dom0-install-fedora-template
-
-# If the VM has just been installed via package manager, update it immediately
-update-fedora-template-if-new:
-  cmd.wait:
-    - name: sudo qubesctl --skip-dom0 --targets {{ sd_supported_fedora_version }} state.sls update.qubes-vm
-    - require:
-      - cmd: dom0-install-fedora-template
-      # Update the mgmt-dvm setting first, to avoid problems during first update
-      - cmd: set-fedora-template-as-default-mgmt-dvm
-    - watch:
       - cmd: dom0-install-fedora-template
 
 # qvm.default-dispvm is not strictly required here, but we want it to be
