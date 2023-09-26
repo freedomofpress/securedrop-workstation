@@ -123,6 +123,10 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | sed -e 's/\.top$$//g' \
     | xargs qubesctl top.enable > /dev/null
 
+# Force full run of all Salt states
+mkdir -p /tmp/sdw-migrations
+touch /tmp/sdw-migrations/f38-update
+
 %changelog
 * Mon Jun 26 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.1
 - Update the SecureDrop release signing key
