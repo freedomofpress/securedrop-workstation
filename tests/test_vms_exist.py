@@ -130,6 +130,7 @@ class SD_VM_Tests(unittest.TestCase):
         vol = vm.volumes["private"]
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
+    # TODO: drop this or replace with debian-12 equivalen
     def test_sd_workstation_template(self):
         vm = self.app.domains["securedrop-workstation-{}".format(DEBIAN_VERSION)]
         nvm = vm.netvm
