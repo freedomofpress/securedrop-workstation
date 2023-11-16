@@ -1,4 +1,4 @@
-FROM fedora:38
+FROM fedora:37
 LABEL org="Freedom of the Press"
 LABEL image_name="securedrop-workstation-qubes-4.2"
 
