@@ -18,7 +18,7 @@ include:
 dom0-install-fedora-template:
   cmd.run:
     - name: >
-        qvm-template info --machine-readable {{ sd_supported_fedora_version }} | grep -q "installed|{{ sd_fedora_base_template }}|" || qvm-template install {{ sd_fedora_base_template }}
+        qvm-template info --machine-readable {{ sd_fedora_base_template }} | grep -q "installed|{{ sd_fedora_base_template }}|" || qvm-template install {{ sd_fedora_base_template }}
 
 # Update the mgmt VM before updating the new Fedora VM. The order is required
 set-fedora-template-as-default-mgmt-dvm:
