@@ -11,7 +11,7 @@ sys-whonix-template-config:
   qvm.vm:
     - name: sys-whonix
     - prefs:
-      - template: whonix-gw-16
+      - template: whonix-gateway-17
     - require:
       - sls: sd-upgrade-templates
 
@@ -19,4 +19,4 @@ anon-whonix-template-config:
   qvm.vm:
     - name: anon-whonix
     - prefs:
-      - template: whonix-ws-16
+      - template: whonix-workstation-17

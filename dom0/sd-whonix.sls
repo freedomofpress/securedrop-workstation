@@ -24,7 +24,7 @@ sd-whonix:
       - label: purple
       - mem: 500
     - prefs:
-      - template: whonix-gw-16
+      - template: whonix-gateway-17
       - provides-network: true
       - netvm: "sys-firewall"
       - autostart: true

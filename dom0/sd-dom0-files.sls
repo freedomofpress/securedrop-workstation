@@ -96,13 +96,13 @@ dom0-securedrop-icon:
 
 dom0-enabled-apparmor-on-whonix-gw-template:
   qvm.vm:
-    - name: whonix-gw-16
+    - name: whonix-gateway-17
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
 
 dom0-enabled-apparmor-on-whonix-ws-template:
   qvm.vm:
-    - name: whonix-ws-16
+    - name: whonix-workstation-17
     - prefs:
       - kernelopts: "nopat apparmor=1 security=apparmor"
 
