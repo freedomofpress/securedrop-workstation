@@ -23,7 +23,7 @@ Summary:	SecureDrop Workstation
 
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.8.1.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.9.0rc1.tar.gz
 
 BuildArch:		noarch
 BuildRequires:	python3-devel
@@ -43,7 +43,7 @@ configuration over time.
 
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q -n securedrop-workstation-dom0-config-0.9.0rc1
 
 
 %build
@@ -103,7 +103,7 @@ install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 %attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
 %attr(755, root, root) %{_bindir}/sdw-admin
 # The name of the dist-info dir uses _ instead of -, so we use wildcards
-%{python3_sitelib}/*%{version}.dist-info/*
+%{python3_sitelib}/*0.9.0rc1.dist-info/*
 %{_datadir}/%{name}/config.json.example
 /opt/securedrop/launcher/**/*.py
 /srv/salt/sd*
