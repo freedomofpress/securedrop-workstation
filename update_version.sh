@@ -39,19 +39,21 @@ fi
 CLEAN_VERSION="$(sed 's/-//' <<< "$NEW_VERSION")"
 
 # Update the version in rpm-build/SPECS/securedrop-workstation-dom0-config.spec and setup.py
-# We change the Version, Release, and Source0 fields in the rpm spec. The spec file also contains the changelog entries,
+# We change the Version and Release fields in the rpm spec. The spec file also contains the changelog entries,
 # and we don't want to increment those versions.
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # The empty '' after sed -i is required on macOS to indicate no backup file should be saved.
     sed -i '' "s@$(echo "${OLD_VERSION}" | sed 's/\./\\./g')@$NEW_VERSION@g" VERSION
-    sed -i '' -e "/Source0/s/Source0:.*/Source0:\tsecuredrop-workstation-dom0-config-${CLEAN_VERSION}.tar.gz/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
-    sed -i '' -r -e "s/^(%global version ).*/\1$VERSION_FIELD/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i '' -r -e "/^Version/s/Version.*/Version:\t${VERSION_FIELD}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
     sed -i '' -r -e "/^Release/s/Release.*/Release:\t${RELEASE_FIELD}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
-    sed -i '' -r -e "/\%setup/s/%setup.*/%setup -n securedrop-workstation-dom0-config-${CLEAN_VERSION}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i '' -e "/Source0/s/Source0:.*/Source0:\tsecuredrop-workstation-dom0-config-${CLEAN_VERSION}.tar.gz/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i '' -r -e "/\%setup/s/%setup.*/%setup -q -n securedrop-workstation-dom0-config-${CLEAN_VERSION}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i '' -r -e "/\%\{python3_sitelib\}/s/%\{python3_sitelib\}.*/%\{python3_sitelib\}/*${CLEAN_VERSION}.dist-info/*/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
 else
     sed -i "s@$(echo "${OLD_VERSION}" | sed 's/\./\\./g')@$NEW_VERSION@g" VERSION
-    sed -i -e "/Source0/s/Source0:.*/Source0:\tsecuredrop-workstation-dom0-config-${CLEAN_VERSION}.tar.gz/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
-    sed -i -r -e "s/^(%global version ).*/\1$VERSION_FIELD/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i -r -e "/^Version/s/Version.*/Version:\t${VERSION_FIELD}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
     sed -i -r -e "/^Release/s/Release.*/Release:\t${RELEASE_FIELD}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
-    sed -i -r -e "/\%setup/s/%setup.*/%setup -n securedrop-workstation-dom0-config-${CLEAN_VERSION}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+        sed -i -e "/Source0/s/Source0:.*/Source0:\tsecuredrop-workstation-dom0-config-${CLEAN_VERSION}.tar.gz/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i -r -e "/\%setup/s/%setup.*/%setup -q -n securedrop-workstation-dom0-config-${CLEAN_VERSION}/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+    sed -i -r -e "/\%\{python3_sitelib\}/s/%\{python3_sitelib\}.*/%\{python3_sitelib\}\/*${CLEAN_VERSION}.dist-info\/*/" rpm-build/SPECS/securedrop-workstation-dom0-config.spec
 fi
