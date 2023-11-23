@@ -9,7 +9,7 @@ include:
   # DispVM is created
   - qvm.default-dispvm
 
-{% set sd_supported_fedora_version = 'fedora-37' %}
+{% set sd_supported_fedora_version = 'fedora-38' %}
 
 
 # Install latest templates required for SDW VMs.
@@ -125,6 +125,15 @@ remove-sd-fedora-dvm:
     - name: sd-fedora-dvm
     - require:
       - qvm: sd-sys-usb-fedora-version-update
+
+# Finally, remove the old supported fedora DVM we created. We won't uninstall
+# the template, in case it's being used elsewhere, but the `sd-` VMs we can
+# reasonably manage (remove) ourselves.
+remove-sd-fedora-37-dvm:
+  qvm.absent:
+    - name: sd-fedora-37-dvm
+    - require:
+      - qvm: sd-sys-usb-fedora-version-update
 {% endif %}
 
 sd-{{ sys_vm }}-fedora-version-start:
@@ -134,3 +143,4 @@ sd-{{ sys_vm }}-fedora-version-start:
       - qvm: sd-{{ sys_vm }}-fedora-version-update
 {% endif %}
 {% endfor %}
+

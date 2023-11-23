@@ -6,7 +6,7 @@
 # USB devices to sd-devices.
 ##
 
-# If sys-usb is disposable, we have already set up sd-fedora-37-dvm to make our
+# If sys-usb is disposable, we have already set up sd-{supported-fedora-version}-dvm to make our
 # modifications in, so we only want to modify sys-usb if it is a regular AppVM
 
 {% set apply = True %}
