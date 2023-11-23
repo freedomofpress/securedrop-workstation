@@ -23,8 +23,7 @@ Summary:	SecureDrop Workstation
 
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
-# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/SourceURL/#_troublesome_urls
-Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
+Source0:	securedrop-workstation-dom0-config-0.8.1.tar.gz
 
 BuildArch:		noarch
 BuildRequires:	python3-devel
