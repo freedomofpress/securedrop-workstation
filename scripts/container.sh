@@ -22,6 +22,11 @@ if test -t 0; then
     OCI_RUN_ARGUMENTS="${OCI_RUN_ARGUMENTS} -it"
 fi
 
+# Whether to use the container intended for RPM builds
+# or the one with development dependencies
+USE_BUILD_CONTAINER="${USE_BUILD_CONTAINER:-}"
+
+
 function oci_image() {
     NAME="${1}"
 
@@ -32,12 +37,24 @@ function oci_image() {
            -t "${NAME}" \
            --file "${TOPLEVEL}/bootstrap/Dockerfile" \
            "${TOPLEVEL}"
+    if [[ -z $USE_BUILD_CONTAINER ]]; then
+        $OCI_BIN build \
+               ${OCI_BUILD_ARGUMENTS:-} \
+               --build-arg=USER_ID="$(id -u)" \
+               --build-arg=USER_NAME="${USER:-root}" \
+               -t "${NAME}-dev" \
+               --file "${TOPLEVEL}/bootstrap/DevDockerfile" \
+               "${TOPLEVEL}"
+    fi
 }
 
 function oci_run() {
     find . \( -name '*.pyc' -o -name __pycache__ \) -delete
 
     NAME="${1}"
+    if [[ -z $USE_BUILD_CONTAINER ]]; then
+        NAME="${NAME}-dev"
+    fi
 
     # If this is a CI run, pass CodeCov's required vars into the container.
     if [ -n "${CIRCLE_BRANCH:-}" ] ; then
