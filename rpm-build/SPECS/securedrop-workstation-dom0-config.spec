@@ -1,6 +1,6 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.9.0
-Release:	0.rc1.1%{?dist}
+Version:	0.9.0rc2
+Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
 # For reproducible builds:
@@ -23,7 +23,8 @@ Summary:	SecureDrop Workstation
 
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
-Source0:	securedrop-workstation-dom0-config-0.9.0rc1.tar.gz
+# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/SourceURL/#_troublesome_urls
+Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
 BuildArch:		noarch
 BuildRequires:	python3-devel
@@ -43,7 +44,7 @@ configuration over time.
 
 
 %prep
-%setup -q -n securedrop-workstation-dom0-config-0.9.0rc1
+%setup -q -n %{name}-%{version}
 
 
 %build
@@ -103,7 +104,7 @@ install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 %attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
 %attr(755, root, root) %{_bindir}/sdw-admin
 # The name of the dist-info dir uses _ instead of -, so we use wildcards
-%{python3_sitelib}/*0.9.0rc1.dist-info/*
+%{python3_sitelib}/*%{version}.dist-info/*
 %{_datadir}/%{name}/config.json.example
 /opt/securedrop/launcher/**/*.py
 /srv/salt/sd*
@@ -122,7 +123,7 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | sed -e 's/\.top$$//g' \
     | xargs qubesctl top.enable > /dev/null
 
-# Force full run of all Salt states
+# Force full run of all Salt states - uncomment in release branch
 mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/f38-update
 
