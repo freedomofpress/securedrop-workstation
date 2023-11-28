@@ -1,0 +1,4 @@
+FROM securedrop-workstation-dom0-config
+
+COPY requirements requirements
+RUN pip3 install --no-deps --require-hashes -r requirements/dev-requirements.txt

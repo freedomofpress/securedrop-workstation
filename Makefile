@@ -30,7 +30,7 @@ dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 
 .PHONY: build-rpm
 build-rpm: ## Build RPM package
-	@$(CONTAINER) ./scripts/build-rpm.sh
+	USE_BUILD_CONTAINER=true $(CONTAINER) ./scripts/build-rpm.sh
 
 .PHONY: reprotest
 reprotest: ## Check RPM package reproducibility

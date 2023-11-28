@@ -13,7 +13,4 @@ COPY Makefile Makefile
 
 RUN make install-deps
 
-COPY requirements requirements
-RUN pip3 install --no-deps --require-hashes -r requirements/dev-requirements.txt
-
 RUN if test $USER_NAME != root ; then useradd --no-create-home --home-dir /tmp --uid $USER_ID $USER_NAME && echo "$USER_NAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers ; fi
