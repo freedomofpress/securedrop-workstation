@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.8.1
+Version:	0.9.0
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -128,6 +128,9 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
 # touch /tmp/sdw-migrations/f38-update
 
 %changelog
+* Thu Nov 23 2023 SecureDrop Team <securedrop@freedom.press> - 0.9.0
+- Use Fedora 38 base template
+
 * Mon Jun 26 2023 SecureDrop Team <securedrop@freedom.press> - 0.8.1
 - Update the SecureDrop release signing key
 
