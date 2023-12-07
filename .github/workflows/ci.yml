@@ -1,0 +1,49 @@
+---
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:32
+    steps:
+      - run: dnf install -y make
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          make install-deps
+          pip install --require-hashes -r requirements/dev-requirements.txt
+      - name: Run linters
+        run: make lint
+  build-rpm:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:32
+    steps:
+      - run: dnf install -y make git
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          make install-deps
+          pip install --require-hashes -r requirements/dev-requirements.txt
+      - name: Build RPM
+        run: make build-rpm
+      - name: Check reproducibility
+        run: make reprotest
+  launcher-tests:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:32
+    steps:
+      - run: dnf install -y make
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          make install-deps
+          pip install --require-hashes -r launcher/dev-requirements.txt
+      - name: Run launcher tests
+        run: |
+          cd launcher/
+          make check
