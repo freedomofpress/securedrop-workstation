@@ -10,7 +10,7 @@ jobs:
       image: registry.fedoraproject.org/fedora:32
     steps:
       - run: dnf install -y make
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           make install-deps
@@ -23,7 +23,7 @@ jobs:
       image: registry.fedoraproject.org/fedora:32
     steps:
       - run: dnf install -y make git
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           make install-deps
@@ -38,7 +38,7 @@ jobs:
       image: registry.fedoraproject.org/fedora:32
     steps:
       - run: dnf install -y make
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           make install-deps
