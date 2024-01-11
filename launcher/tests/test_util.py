@@ -1,11 +1,11 @@
 import os
-import pytest
 import re
 import subprocess
-
-from unittest import mock
 from importlib.machinery import SourceFileLoader
 from tempfile import TemporaryDirectory
+from unittest import mock
+
+import pytest
 
 # Regex for lock conflicts
 BUSY_LOCK_REGEX = r"Error obtaining lock on '.*'."
@@ -33,7 +33,6 @@ def test_obtain_lock(mocked_info, mocked_warning, mocked_error):
     Test whether we can successfully obtain an exclusive lock
     """
     with TemporaryDirectory() as tmpdir, mock.patch("Util.LOCK_DIRECTORY", tmpdir):
-
         basename = "test-obtain-lock.lock"
         pid_str = str(os.getpid())
         lh = util.obtain_lock(basename)  # noqa: F841
@@ -68,7 +67,6 @@ def test_cannot_obtain_exclusive_lock_when_busy(mocked_info, mocked_warning, moc
     from being instantiated.
     """
     with TemporaryDirectory() as tmpdir, mock.patch("Util.LOCK_DIRECTORY", tmpdir):
-
         basename = "test-exclusive-lock.lock"
         lh1 = util.obtain_lock(basename)  # noqa: F841
 
@@ -95,7 +93,6 @@ def test_cannot_obtain_shared_lock_when_busy(mocked_info, mocked_warning, mocked
     from being displayed when the preflight updater is already open.
     """
     with TemporaryDirectory() as tmpdir, mock.patch("Util.LOCK_DIRECTORY", tmpdir):
-
         basename = "test-conflict.lock"
         lh = util.obtain_lock(basename)  # noqa: F841
 
@@ -148,7 +145,6 @@ def test_stale_lockfile_has_no_effect(mocked_info, mocked_warning, mocked_error)
     is accessing it.
     """
     with TemporaryDirectory() as tmpdir, mock.patch("Util.LOCK_DIRECTORY", tmpdir):
-
         # Because we're not assigning the return value, it will be immediately released
         basename = "test-stale.lock"
         util.obtain_lock(basename)

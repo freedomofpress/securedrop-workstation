@@ -1,13 +1,11 @@
 import json
 import unittest
 
-
 DEBIAN_VERSION = "bullseye"
 FEDORA_VERSION = "f32"
 
 
 class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
-
     pubkey_wanted = ""
     yum_repo_url = ""
     pubkey_actual = "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation"  # noqa
@@ -32,7 +30,6 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
                 self.yum_repo_url = self.yum_repo_url_test
 
     def test_rpm_repo_public_key(self):
-
         with open(self.pubkey_actual, "r") as f:
             pubkey_actual_contents = f.readlines()
 

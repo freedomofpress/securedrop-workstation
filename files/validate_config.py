@@ -4,13 +4,13 @@ Utility to verify that SecureDrop Workstation config is properly structured.
 Checks for
 """
 import json
-import re
 import os
-import sys
+import re
 import subprocess
+import sys
 import tempfile
-from qubesadmin import Qubes
 
+from qubesadmin import Qubes
 
 TOR_V3_HOSTNAME_REGEX = r"^[a-z2-7]{56}\.onion$"
 TOR_V3_AUTH_REGEX = r"^[A-Z2-7]{52}$"

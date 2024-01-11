@@ -1,11 +1,11 @@
 import datetime
 import os
-import pytest
 import re
-
-from unittest import mock
 from importlib.machinery import SourceFileLoader
 from tempfile import TemporaryDirectory
+from unittest import mock
+
+import pytest
 
 relpath_notify = "../sdw_notify/Notify.py"
 path_to_notify = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_notify)
@@ -54,7 +54,6 @@ def test_warning_shown_if_updater_never_ran(mocked_info, mocked_warning, mocked_
     with TemporaryDirectory() as tmpdir, mock.patch(
         "Notify.LAST_UPDATED_FILE", os.path.join(tmpdir, "not-a-file")
     ):
-
         warning_should_be_shown = notify.is_update_check_necessary()
 
         # No handled errors should occur

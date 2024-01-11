@@ -1,13 +1,12 @@
-from sdw_updater_gui import strings
-from sdw_updater_gui import Updater
-from sdw_updater_gui.Updater import UpdateStatus
-from sdw_util import Util
 import subprocess
 import sys
 
-from PyQt5.QtWidgets import QDialog
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import QDialog
+from sdw_updater_gui import Updater, strings
+from sdw_updater_gui.Updater import UpdateStatus
 from sdw_updater_gui.UpdaterAppUiQt5 import Ui_UpdaterDialog
+from sdw_util import Util
 
 logger = Util.get_logger(module=__name__)
 
@@ -222,7 +221,6 @@ class UpgradeThread(QThread):
         QThread.__init__(self)
 
     def run(self):
-
         # Update dom0 first, then apply dom0 state. If full state run
         # is required, the dom0 state will drop a flag.
         self.progress_signal.emit(5)

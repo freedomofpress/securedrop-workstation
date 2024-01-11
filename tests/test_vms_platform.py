@@ -1,10 +1,9 @@
 import json
-import unittest
 import subprocess
+import unittest
 
+from base import CURRENT_FEDORA_TEMPLATE, WANTED_VMS
 from qubesadmin import Qubes
-from base import WANTED_VMS, CURRENT_FEDORA_TEMPLATE
-
 
 BULLSEYE_STRING = "Debian GNU/Linux 11 (bullseye)"
 

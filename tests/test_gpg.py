@@ -1,13 +1,12 @@
 import re
 import subprocess
-import unittest
 import tempfile
+import unittest
 
 from base import SD_VM_Local_Test
 
 
 def find_fp_from_gpg_output(gpg):
-
     lines = gpg.decode("utf-8").split("\n")
 
     for line in lines:

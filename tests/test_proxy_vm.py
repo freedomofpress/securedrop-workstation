@@ -1,6 +1,6 @@
-import unittest
 import json
 import subprocess
+import unittest
 
 from base import SD_VM_Local_Test
 

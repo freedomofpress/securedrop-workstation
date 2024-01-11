@@ -1,9 +1,8 @@
-import unittest
 import json
+import unittest
 
-from qubesadmin import Qubes
 from base import WANTED_VMS
-
+from qubesadmin import Qubes
 
 DEBIAN_VERSION = "bullseye"
 

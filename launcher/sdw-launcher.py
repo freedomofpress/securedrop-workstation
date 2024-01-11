@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-from sdw_updater_gui.UpdaterApp import UpdaterApp
-from sdw_util import Util
-from sdw_updater_gui import Updater
-from sdw_updater_gui.UpdaterApp import launch_securedrop_client
-from sdw_updater_gui.Updater import should_launch_updater
-import sys
 import argparse
+import sys
 
 from PyQt5.QtWidgets import QApplication
-
+from sdw_updater_gui import Updater
+from sdw_updater_gui.Updater import should_launch_updater
+from sdw_updater_gui.UpdaterApp import UpdaterApp, launch_securedrop_client
+from sdw_util import Util
 
 DEFAULT_INTERVAL = 28800  # 8hr default for update interval
 

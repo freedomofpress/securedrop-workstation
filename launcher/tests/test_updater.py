@@ -1,12 +1,13 @@
 import json
 import os
-import pytest
 import subprocess
-from importlib.machinery import SourceFileLoader
 from datetime import datetime, timedelta
+from importlib.machinery import SourceFileLoader
 from tempfile import TemporaryDirectory
 from unittest import mock
 from unittest.mock import call
+
+import pytest
 
 relpath_updater_script = "../sdw_updater_gui/Updater.py"
 path_to_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updater_script)
@@ -182,7 +183,6 @@ def test_write_updates_status_flag_to_disk(
 def test_write_updates_status_flag_to_disk_failure_app(
     mocked_info, mocked_error, mocked_call, mocked_expand, status
 ):
-
     error_calls = [
         call("Error writing update status flag to sd-app"),
         call("Command 'check_call' returned non-zero exit status 1."),
@@ -200,7 +200,6 @@ def test_write_updates_status_flag_to_disk_failure_app(
 def test_write_updates_status_flag_to_disk_failure_dom0(
     mocked_info, mocked_error, mocked_call, mocked_expand, mocked_open, status
 ):
-
     error_calls = [call("Error writing update status flag to dom0"), call("os_error")]
     updater._write_updates_status_flag_to_disk(status)
     mocked_error.assert_has_calls(error_calls)
@@ -593,7 +592,6 @@ def test_read_dom0_update_flag_from_disk(
 def test_read_dom0_update_flag_from_disk_fails(
     mocked_info, mocked_error, mocked_expanduser, mocked_subprocess
 ):
-
     flag_file_dom0 = updater.get_dom0_path(updater.FLAG_FILE_STATUS_DOM0)
     try:
         with open(flag_file_dom0, "w") as f:

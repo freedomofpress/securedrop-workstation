@@ -6,9 +6,9 @@ dom0 updates
 
 The update process is intended to run at XFCE login, via a desktop file.
 """
+import logging
 import os
 import subprocess
-import logging
 import time
 
 LAUNCHER_PATH = "/opt/securedrop/launcher/sdw-launcher.py"

@@ -3,11 +3,10 @@ Utility functions used by both the launcher and notifier scripts
 """
 
 import fcntl
-import os
 import logging
+import os
 import re
 import subprocess
-
 from logging.handlers import TimedRotatingFileHandler
 
 # The directory where status files and logs are stored
