@@ -1,5 +1,5 @@
 DEFAULT_GOAL: help
-# We prefer to use python3.8 if it's availabe, as that is the version shipped
+# We prefer to use python3.8 if it's available, as that is the version shipped
 # with Fedora 32, but we're also OK with just python3 if that's all we've got
 PYTHON3 := $(if $(shell bash -c "command -v python3.8"), python3.8, python3)
 # If we're on anything but Fedora 32, execute some commands in a container
@@ -149,33 +149,33 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 
 .PHONY: check-black
 check-black: ## Check Python source code formatting with black
-	black --check --diff .
+	poetry run black --check --diff .
 
 .PHONY: lint
-lint: flake8 black mypy ## Runs all linters
+lint: flake8 check-black check-isort mypy ## Runs all linters
 
 .PHONY: black
 black: ## Update Python source code formatting with black
-	black .
+	poetry run black .
 
 .PHONY: check-isort
 check-isort: ## Check Python import organization with isort
-	isort --check-only --diff .
+	poetry run isort --check-only --diff .
 
 .PHONY: isort
 isort: ## Update Python import organization with isort
-	isort --diff .
+	poetry run isort .
 
 .PHONY: flake8
 flake8: ## Lints all Python files with flake8
 # Not requiring dom0 since linting requires extra packages,
 # available only in the developer environment, i.e. Work VM.
-	flake8
+	poetry run flake8
 
 mypy: ## Type checks Python files
 # Not requiring dom0 since linting requires extra packages,
 # available only in the developer environment, i.e. Work VM.
-	mypy
+	poetry run mypy
 
 .PHONY: rpmlint
 rpmlint: ## Runs rpmlint on the spec file
@@ -190,19 +190,6 @@ prep-dom0: prep-dev # Copies dom0 config files
 
 destroy-all: ## Destroys all VMs managed by Workstation salt config
 	./scripts/destroy-vm --all
-
-.PHONY: update-pip-requirements
-update-pip-requirements: ## Updates all Python requirements files via pip-compile.
-	pip-compile --allow-unsafe --generate-hashes --output-file=requirements/dev-requirements.txt requirements/dev-requirements.in
-
-.PHONY: venv
-venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt5)
-	$(PYTHON3) -m venv .venv
-	.venv/bin/pip install --upgrade pip wheel
-	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
-	@echo "#################"
-	@echo "Virtualenv is complete."
-	@echo "Run: source .venv/bin/activate"
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.

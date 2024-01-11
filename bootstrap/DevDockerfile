@@ -1,4 +1,6 @@
 FROM securedrop-workstation-dom0-config
 
-COPY requirements requirements
-RUN pip3 install --no-deps --require-hashes -r requirements/dev-requirements.txt
+RUN pip install poetry==1.6.1
+COPY pyproject.toml pyproject.toml
+COPY poetry.lock poetry.lock
+RUN poetry install

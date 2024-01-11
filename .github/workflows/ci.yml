@@ -14,7 +14,8 @@ jobs:
       - name: Install dependencies
         run: |
           make install-deps
-          pip install --require-hashes -r requirements/dev-requirements.txt
+          pip install poetry==1.6.1
+          poetry install
       - name: Run linters
         run: make lint
   build-rpm:
@@ -27,7 +28,8 @@ jobs:
       - name: Install dependencies
         run: |
           make install-deps
-          pip install --require-hashes -r requirements/dev-requirements.txt
+          pip install poetry==1.6.1
+          poetry install
       - name: Build RPM
         run: make build-rpm
       - name: Check reproducibility
