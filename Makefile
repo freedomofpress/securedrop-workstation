@@ -78,7 +78,7 @@ sd-app: prep-dev ## Provisions SD APP VM
 
 sd-whonix: prep-dev ## Provisions SD Whonix VM
 	sudo qubesctl --show-output state.sls sd-whonix
-	sudo qubesctl --show-output --skip-dom0 --targets whonix-gw-16,sd-whonix state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets whonix-gateway-17,sd-whonix state.highstate
 
 sd-viewer: prep-dev ## Provisions SD Submission Viewing VM
 	sudo qubesctl --show-output state.sls sd-viewer

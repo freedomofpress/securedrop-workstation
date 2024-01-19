@@ -46,7 +46,7 @@ current_vms = {
     "sd-log": "sd-small-{}-template".format(DEBIAN_VERSION),
     "sd-devices": "sd-large-{}-template".format(DEBIAN_VERSION),
     "sd-proxy": "sd-small-{}-template".format(DEBIAN_VERSION),
-    "sd-whonix": "whonix-gw-16",
+    "sd-whonix": "whonix-gateway-17",
     "sd-gpg": "sd-small-{}-template".format(DEBIAN_VERSION),
 }
 

@@ -94,18 +94,6 @@ dom0-securedrop-icon:
     - require:
       - file: dom0-securedrop-icons-directory
 
-dom0-enabled-apparmor-on-whonix-gw-template:
-  qvm.vm:
-    - name: whonix-gw-16
-    - prefs:
-      - kernelopts: "nopat apparmor=1 security=apparmor"
-
-dom0-enabled-apparmor-on-whonix-ws-template:
-  qvm.vm:
-    - name: whonix-ws-16
-    - prefs:
-      - kernelopts: "nopat apparmor=1 security=apparmor"
-
 dom0-create-opt-securedrop-directory:
   file.directory:
     - name: /opt/securedrop

@@ -9,7 +9,7 @@ from qubesadmin import Qubes
 WANTED_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "sd-devices"]
 CURRENT_FEDORA_VERSION = "38"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION
-CURRENT_WHONIX_VERSION = "16"
+CURRENT_WHONIX_VERSION = "17"
 
 
 # Lifted from launcher/sdw_util/Util.py
