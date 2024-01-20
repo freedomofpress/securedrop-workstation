@@ -6,66 +6,75 @@ import tempfile
 from base import SD_VM_Local_Test
 
 
-def find_fps_from_gpg_output(gpg):
-
-    fingerprints = []
-    lines = gpg.decode("utf-8").split("\n")
-
-    for line in lines:
-        regex = r"\s*(Key fingerprint = )?([A-F0-9\s]{50})$"
-        m = re.match(regex, line)
-        if m:
-            fp = m.groups()[1]
-            fingerprints.append(fp)
-
-    return fingerprints
-
-
-def get_local_fp():
-    with tempfile.TemporaryDirectory() as d:
-        gpg_env = {"GNUPGHOME": d}
-        subprocess.check_call(
-            ["gpg", "--import", "sd-journalist.sec"],
-            env=gpg_env,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        results = subprocess.check_output(["gpg", "-k", "--with-fingerprint"], env=gpg_env)
-        fingerprints = find_fps_from_gpg_output(results)
-
-        # Because we imported this key into a temporary directory,
-        # we should only have one key in the keyring.
-        if len(fingerprints) == 1:
-            return fingerprints[0]
-
-
-def get_remote_fp(expected_fp):
-    cmd = ["qvm-run", "-p", "sd-gpg", "/usr/bin/gpg --list-secret-keys --fingerprint"]
-
-    p = subprocess.check_output(cmd)
-
-    fingerprints = find_fps_from_gpg_output(p)
-
-    # Especially during development, sd-gpg may contain more than one key
-    if expected_fp and expected_fp in fingerprints:
-        return expected_fp
-
-
 class SD_GPG_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-gpg"
         super(SD_GPG_Tests, self).setUp()
 
+    def getLocalFingerprint(self):
+        """
+        Obtain fingerprint for the key configured in dom0
+        """
+        with tempfile.TemporaryDirectory() as d:
+            gpg_env = {"GNUPGHOME": d}
+            subprocess.check_call(
+                ["gpg", "--import", "sd-journalist.sec"],
+                env=gpg_env,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            local_results = subprocess.check_output(
+                ["gpg", "-k", "--with-fingerprint"], env=gpg_env
+            )
+            return self._extract_fingerprints(local_results)
+
+    def getRemoteFingerprints(self):
+        """
+        Obtain fingerprints for all keys configured in GPG VM
+        """
+        cmd = [
+            "qvm-run",
+            "-p",
+            self.vm_name,
+            "/usr/bin/gpg --list-secret-keys --fingerprint",
+        ]
+        remote_results = subprocess.check_output(cmd)
+        return self._extract_fingerprints(remote_results)
+
+    def _extract_fingerprints(self, gpg_output):
+        """Helper method to extract fingerprints from GPG command output"""
+        fingerprints = []
+        lines = gpg_output.decode("utf-8").split("\n")
+
+        for line in lines:
+            regex = r"\s*(Key fingerprint = )?([A-F0-9\s]{50})$"
+            m = re.match(regex, line)
+            if m:
+                fp = m.groups()[1]
+                fingerprints.append(fp)
+
+        return fingerprints
+
     def test_sd_gpg_timeout(self):
         line = "export QUBES_GPG_AUTOACCEPT=28800"
         self.assertFileHasLine("/home/user/.profile", line)
 
-    def test_we_have_the_key(self):
-        local_fp = get_local_fp()
-        remote_fp = get_remote_fp(expected_fp=local_fp)
+    def test_local_key_in_remote_keyring(self):
+        # Get fingerprints from dom0 filesystem (sd-journalist.sec) and GPG VM keyring
+        local_fp = self.getLocalFingerprint()
+        remote_fp = self.getRemoteFingerprints()
 
-        self.assertIsNotNone(local_fp, "Local key not found")
-        self.assertEqual(local_fp, remote_fp)
+        # Exactly one fingerprint extracted from sd-journalist.sec
+        self.assertEqual(len(local_fp), 1)
+
+        # Local fingerprint is not falsy (e.g., "", None)
+        self.assertTrue(local_fp[0])
+
+        # At least one key in GPG VM keyring
+        self.assertGreater(len(remote_fp), 0)
+
+        # Local key in GPG VM keyring
+        self.assertIn(local_fp[0], remote_fp)
 
     def test_logging_disabled(self):
         # Logging to sd-log should be disabled on sd-gpg
