@@ -16,6 +16,7 @@
 
 include:
   - sd-upgrade-templates
+  - sd-sys-whonix-vms
 
 sd-whonix:
   qvm.vm:
@@ -24,7 +25,7 @@ sd-whonix:
       - label: purple
       - mem: 500
     - prefs:
-      - template: whonix-gw-16
+      - template: whonix-gateway-17
       - provides-network: true
       - netvm: "sys-firewall"
       - autostart: true
@@ -35,3 +36,4 @@ sd-whonix:
         - sd-{{ sdvars.distribution }}
     - require:
       - sls: sd-upgrade-templates
+      - sls: sd-sys-whonix-vms

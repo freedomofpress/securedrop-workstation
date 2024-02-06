@@ -495,7 +495,7 @@ def test_shutdown_and_start_vms(
         call("fedora-38"),
         call("sd-large-{}-template".format(DEBIAN_VERSION)),
         call("sd-small-{}-template".format(DEBIAN_VERSION)),
-        call("whonix-gw-16"),
+        call("whonix-gateway-17"),
     ]
     app_vm_calls = [
         call("sd-app"),
@@ -541,7 +541,7 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call("fedora-38"),
         call("sd-large-{}-template".format(DEBIAN_VERSION)),
         call("sd-small-{}-template".format(DEBIAN_VERSION)),
-        call("whonix-gw-16"),
+        call("whonix-gateway-17"),
     ]
     error_calls = [
         call("Error while killing system VM: sys-firewall"),
