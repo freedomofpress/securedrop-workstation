@@ -124,8 +124,8 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 # Force full run of all Salt states - uncomment in release branch
-mkdir -p /tmp/sdw-migrations
-touch /tmp/sdw-migrations/whonix-17-update
+# mkdir -p /tmp/sdw-migrations
+# touch /tmp/sdw-migrations/whonix-17-update
 
 %changelog
 * Thu Nov 23 2023 SecureDrop Team <securedrop@freedom.press> - 0.9.0
