@@ -35,3 +35,12 @@ sd-whonix:
         - sd-{{ sdvars.distribution }}
     - require:
       - sls: sd-upgrade-templates
+
+{% import_json "sd/config.json" as d %}
+
+sd-proxy-config:
+  qvm.features:
+    - set:
+        # TODO: sd-whonix:/var/lib/tor/keys/app_journalist.auth_private
+        vm-config.SD_HIDSERV_HOSTNAME: {{ d.hidserv.hostname }}
+        vm-config.SD_HIDSERV_KEY: {{ d.hidserv.key }}
