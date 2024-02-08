@@ -29,3 +29,12 @@ sd-proxy:
     - require:
       - qvm: sd-whonix
       - qvm: sd-small-{{ sdvars.distribution }}-template
+
+{% import_json "sd/config.json" as d %}
+
+sd-proxy-config:
+  qvm.features:
+    - name: sd-proxy
+    - set:
+        # TODO: sd-proxy: /home/user/.securedrop_proxy/sd-proxy.yaml
+        - vm-config.SD_PROXY_ORIGIN: http://{{ d.hidserv.hostname }}
