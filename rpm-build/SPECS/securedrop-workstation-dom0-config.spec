@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.9.0
+Version:	0.10.0
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -128,6 +128,9 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
 # touch /tmp/sdw-migrations/whonix-17-update
 
 %changelog
+* Wed Feb 7 2024 SecureDrop Team <securedrop@freedom.press> - 0.10.0
+- Use Whonix-17 template for sd-whonix
+
 * Thu Nov 23 2023 SecureDrop Team <securedrop@freedom.press> - 0.9.0
 - Use Fedora 38 base template
 
