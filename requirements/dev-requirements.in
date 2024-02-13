@@ -1,4 +1,4 @@
-bandit
+bandit>=1.7.7  # Safety 64484
 black
 diffoscope
 flake8
