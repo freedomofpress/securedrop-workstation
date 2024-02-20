@@ -23,12 +23,10 @@ class SD_Log_Tests(SD_VM_Local_Test):
         self.assertFalse(self._fileExists("/etc/rsyslog.d/sdlog.conf"))
 
     def test_sd_log_service_running(self):
-        results = self._run("sudo systemctl is-active securedrop-log")
-        assert results == "active"
+        self.assertTrue(self._service_is_running("securedrop-log.service"))
 
     def test_redis_service_running(self):
-        results = self._run("sudo systemctl is-active redis")
-        assert results == "active"
+        self.assertTrue(self._service_is_active("redis"))
 
     def test_logs_are_flowing(self):
         cmd_output = self._run("ls -1 /home/user/QubesIncomingLogs")
