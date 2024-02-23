@@ -1,0 +1,68 @@
+name: Nightlies
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  push:
+    branches:
+      - main
+
+# Only allow one job to run at a time because we're pushing to git repos;
+# the string value doesn't matter, just that it's a fixed string.
+concurrency:
+  group: "just-one-please"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-rpm:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.fedoraproject.org/fedora:37
+    steps:
+      - run: dnf install -y make git
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: make install-deps
+      - name: Build RPM
+        run: |
+          git config --global --add safe.directory '*'
+          # Version format is "${VERSION}-0.YYYYMMDDHHMMSS.fXX", which sorts lower than "${VERSION}-1"
+          rpmdev-bumpspec --new="$(cat VERSION)-0.$(date +%Y%m%d%H%M%S)%{?dist}" rpm-build/SPECS/*.spec
+          make build-rpm
+      - uses: actions/upload-artifact@v4
+        id: upload
+        with:
+          name: rpm-build
+          path: rpm-build/RPMS/noarch/*.rpm
+          if-no-files-found: error
+
+  commit-and-push:
+    runs-on: ubuntu-latest
+    container: debian:bookworm
+    needs:
+      - build-rpm
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install --yes git git-lfs
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "*"
+      - uses: actions/checkout@v4
+        with:
+          repository: "freedomofpress/securedrop-yum-test"
+          path: "securedrop-yum-test"
+          lfs: true
+          token: ${{ secrets.PUSH_TOKEN }}
+      - name: Commit and push
+        run: |
+          git config --global user.email "securedrop@freedom.press"
+          git config --global user.name "sdcibot"
+          cd securedrop-yum-test
+          mkdir -p workstation/dom0/f37-nightlies
+          cp -v ../rpm-build/*.rpm workstation/dom0/f37-nightlies/
+          git add .
+          git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
+          git push origin main
