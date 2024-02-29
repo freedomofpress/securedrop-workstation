@@ -36,4 +36,4 @@ sd-proxy-config:
   qvm.features:
     - set:
         # TODO: sd-proxy: /home/user/.securedrop_proxy/sd-proxy.yaml
-        vm-config.SD_PROXY_ORIGIN: http://{{ d.hidserv.hostname }}
+        - vm-config.SD_PROXY_ORIGIN: http://{{ d.hidserv.hostname }}

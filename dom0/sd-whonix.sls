@@ -42,5 +42,5 @@ sd-proxy-config:
   qvm.features:
     - set:
         # TODO: sd-whonix:/var/lib/tor/keys/app_journalist.auth_private
-        vm-config.SD_HIDSERV_HOSTNAME: {{ d.hidserv.hostname }}
-        vm-config.SD_HIDSERV_KEY: {{ d.hidserv.key }}
+        - vm-config.SD_HIDSERV_HOSTNAME: {{ d.hidserv.hostname }}
+        - vm-config.SD_HIDSERV_KEY: {{ d.hidserv.key }}

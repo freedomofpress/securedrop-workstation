@@ -37,9 +37,9 @@ sd-app-config:
   qvm.features:
     - set:
         # TODO: freedomofpress/securedrop-client:client/files/sd-app-qubes-gpg-domain.sh
-        vm-config.QUBES_GPG_DOMAIN: sd-gpg
+        - vm-config.QUBES_GPG_DOMAIN: sd-gpg
         # TODO: sd-app:/home/user/.securedrop_client/config.json
-        vm-config.SD_SUBMISSION_KEY_FPR: {{ d.submission_key_fpr }}
+        - vm-config.SD_SUBMISSION_KEY_FPR: {{ d.submission_key_fpr }}
 
 # The private volume size should be defined in the config.json
 sd-app-private-volume-size:
