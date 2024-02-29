@@ -38,8 +38,9 @@ sd-whonix:
 
 {% import_json "sd/config.json" as d %}
 
-sd-proxy-config:
+sd-whonix-config:
   qvm.features:
+    - name: sd-whonix
     - set:
         # TODO: sd-whonix:/var/lib/tor/keys/app_journalist.auth_private
         - vm-config.SD_HIDSERV_HOSTNAME: {{ d.hidserv.hostname }}

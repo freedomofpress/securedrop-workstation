@@ -35,6 +35,7 @@ sd-app:
 
 sd-app-config:
   qvm.features:
+    - name: sd-app
     - set:
         # TODO: freedomofpress/securedrop-client:client/files/sd-app-qubes-gpg-domain.sh
         - vm-config.QUBES_GPG_DOMAIN: sd-gpg
