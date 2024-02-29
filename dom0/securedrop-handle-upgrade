@@ -6,6 +6,14 @@ set -o pipefail
 
 TASK=${1:-default}
 
+# Helper function so that we (under "set -e") don't error out when
+# qvm-check returns nonzero for a domain that isn't running.
+function shutdown_if_running () {
+    set +e
+    qvm-check --running "$1" && qvm-shutdown --wait "$1"
+    set -e
+}
+
 # To allow the template of an AppVM to be changed, the following two
 # conditions must be met:
 # 1. The AppVM must be powered off
@@ -16,9 +24,7 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check sd-app --quiet; then
         BASE_TEMPLATE=$(qvm-prefs sd-app template)
         if [[ ! $BASE_TEMPLATE =~ "small-bullseye" ]]; then
-            if qvm-check --running sd-app; then
-                qvm-shutdown --wait sd-app
-            fi
+            shutdown_if_running "sd-app"
         fi
     fi
 
@@ -32,7 +38,7 @@ if [[ $TASK == "prepare" ]]; then
         BASE_TEMPLATE=$(qvm-prefs sd-viewer template)
         if [[ ! $BASE_TEMPLATE =~ "large-bullseye" ]]; then
             qubes-prefs default_dispvm ''
-            qvm-shutdown --wait sd-viewer
+            shutdown_if_running "sd-viewer"
             qvm-remove -f sd-viewer
         fi
     fi
@@ -40,8 +46,8 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-devices; then
         BASE_TEMPLATE=$(qvm-prefs sd-devices-dvm template)
         if [[ ! $BASE_TEMPLATE =~ "large-bullseye" ]]; then
-            qvm-shutdown --wait sd-devices
-            qvm-shutdown --wait sd-devices-dvm
+            shutdown_if_running "sd-devices"
+            shutdown_if_running "sd-devices-dvm"
             qvm-remove -f sd-devices
             qvm-remove -f sd-devices-dvm
         fi
@@ -53,7 +59,7 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-proxy; then
         BASE_TEMPLATE=$(qvm-prefs sd-proxy template)
         if [[ ! $BASE_TEMPLATE =~ "large-bullseye" ]]; then
-            qvm-shutdown --wait sd-proxy
+            shutdown_if_running "sd-proxy"
         fi
     fi
 
@@ -63,8 +69,8 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-whonix; then
         BASE_TEMPLATE=$(qvm-prefs sd-whonix template)
         if [[ ! $BASE_TEMPLATE =~ "17" ]]; then
-            qvm-shutdown --wait sd-proxy
-            qvm-shutdown --wait sd-whonix
+            shutdown_if_running "sd-proxy"
+            shutdown_if_running "sd-whonix"
         fi
     fi
 
@@ -84,7 +90,7 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-gpg; then
         BASE_TEMPLATE=$(qvm-prefs sd-gpg template)
         if [[ ! $BASE_TEMPLATE =~ "small-bullseye" ]]; then
-            qvm-shutdown --wait sd-gpg
+            shutdown_if_running "sd-gpg"
         fi
     fi
 
@@ -92,7 +98,7 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-log; then
         BASE_TEMPLATE=$(qvm-prefs sd-log template)
         if [[ ! $BASE_TEMPLATE =~ "small-bullseye" ]]; then
-            qvm-shutdown --wait sd-log
+            shutdown_if_running "sd-log"
         fi
     fi
 elif [[ $TASK == "remove" ]]; then
@@ -104,9 +110,7 @@ elif [[ $TASK == "remove" ]]; then
         sd-viewer-bullseye-template sd-proxy-bullseye-template sd-devices-bullseye-template sd-log-bullseye-template
     do
         if qvm-check "${template}" --quiet; then
-            if qvm-check --running "${template}"; then
-                qvm-shutdown --wait "${template}"
-            fi
+            shutdown_if_running "${template}"
             qvm-remove -f "${template}"
         fi
     done
