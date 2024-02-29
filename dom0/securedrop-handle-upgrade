@@ -17,7 +17,7 @@ if [[ $TASK == "prepare" ]]; then
         BASE_TEMPLATE=$(qvm-prefs sd-app template)
         if [[ ! $BASE_TEMPLATE =~ "small-bullseye" ]]; then
             if qvm-check --running sd-app; then
-                qvm-shutdown --wait sd-app
+                qvm-shutdown --wait sd-app || true
             fi
         fi
     fi
@@ -32,7 +32,7 @@ if [[ $TASK == "prepare" ]]; then
         BASE_TEMPLATE=$(qvm-prefs sd-viewer template)
         if [[ ! $BASE_TEMPLATE =~ "large-bullseye" ]]; then
             qubes-prefs default_dispvm ''
-            qvm-shutdown --wait sd-viewer
+            qvm-shutdown --wait sd-viewer || true
             qvm-remove -f sd-viewer
         fi
     fi
@@ -40,8 +40,8 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-devices; then
         BASE_TEMPLATE=$(qvm-prefs sd-devices-dvm template)
         if [[ ! $BASE_TEMPLATE =~ "large-bullseye" ]]; then
-            qvm-shutdown --wait sd-devices
-            qvm-shutdown --wait sd-devices-dvm
+            qvm-shutdown --wait sd-devices || true
+            qvm-shutdown --wait sd-devices-dvm || true
             qvm-remove -f sd-devices
             qvm-remove -f sd-devices-dvm
         fi
@@ -53,7 +53,7 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-proxy; then
         BASE_TEMPLATE=$(qvm-prefs sd-proxy template)
         if [[ ! $BASE_TEMPLATE =~ "large-bullseye" ]]; then
-            qvm-shutdown --wait sd-proxy
+            qvm-shutdown --wait sd-proxy || true
         fi
     fi
 
@@ -63,8 +63,8 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-whonix; then
         BASE_TEMPLATE=$(qvm-prefs sd-whonix template)
         if [[ ! $BASE_TEMPLATE =~ "16" ]]; then
-            qvm-shutdown --wait sd-proxy
-            qvm-shutdown --wait sd-whonix
+            qvm-shutdown --wait sd-proxy || true
+            qvm-shutdown --wait sd-whonix || true
         fi
     fi
 
@@ -84,7 +84,7 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-gpg; then
         BASE_TEMPLATE=$(qvm-prefs sd-gpg template)
         if [[ ! $BASE_TEMPLATE =~ "small-bullseye" ]]; then
-            qvm-shutdown --wait sd-gpg
+            qvm-shutdown --wait sd-gpg || true
         fi
     fi
 
@@ -92,7 +92,7 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-log; then
         BASE_TEMPLATE=$(qvm-prefs sd-log template)
         if [[ ! $BASE_TEMPLATE =~ "small-bullseye" ]]; then
-            qvm-shutdown --wait sd-log
+            qvm-shutdown --wait sd-log || true
         fi
     fi
 elif [[ $TASK == "remove" ]]; then
@@ -105,7 +105,7 @@ elif [[ $TASK == "remove" ]]; then
     do
         if qvm-check "${template}" --quiet; then
             if qvm-check --running "${template}"; then
-                qvm-shutdown --wait "${template}"
+                qvm-shutdown --wait "${template}" || true
             fi
             qvm-remove -f "${template}"
         fi
