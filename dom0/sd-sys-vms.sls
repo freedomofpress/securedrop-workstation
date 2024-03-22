@@ -11,7 +11,7 @@ include:
 
 # 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to 
 # follow simple - like sd-fedora-NN-dvm
-{% set sd_supported_fedora_version = 'fedora-38' %}
+{% set sd_supported_fedora_version = 'fedora-39' %}
 {% set sd_fedora_base_template = sd_supported_fedora_version + '-xfce' %}
 
 # Install latest templates required for SDW VMs.
