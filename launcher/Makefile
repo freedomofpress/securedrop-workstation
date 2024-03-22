@@ -21,7 +21,7 @@ bandit:
 
 .PHONY: test
 test:
-	xvfb-run python -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ --cov=sdw_util -v tests/
+	xvfb-run python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ --cov=sdw_util -v tests/
 
 black: ## Runs the black code formatter on the launcher code
 	black --check --exclude .venv --line-length=100 .
