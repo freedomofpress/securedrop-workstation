@@ -22,7 +22,7 @@ relpath_util = "../sdw_util/Util.py"
 path_to_util = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_util)
 util = SourceFileLoader("Util", path_to_util).load_module()
 
-DEBIAN_VERSION = "bullseye"
+DEBIAN_VERSION = "bookworm"
 
 
 @mock.patch("Util.sdlog.error")

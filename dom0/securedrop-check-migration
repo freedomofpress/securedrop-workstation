@@ -22,7 +22,7 @@ function request_migration() {
 
 # Template consolidation. If old template names are found,
 # then we must rerun the full states to re-apply.
-if [[ -n "$(qvm-ls --tags sd-workstation --raw-list | perl -nE '/sd-(?!small|large).*-template/ and print $_')" ]] ; then
+if [[ -n "$(qvm-ls --tags sd-workstation --raw-list | perl -nE '/sd-(?!small|large|base).*-template/ and print $_')" ]] ; then
     reason="template-consolidation"
     echo "Migration required for ${reason}, will re-run Salt states."
     request_migration "$reason"

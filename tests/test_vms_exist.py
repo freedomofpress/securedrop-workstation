@@ -5,7 +5,7 @@ from qubesadmin import Qubes
 from base import WANTED_VMS
 
 
-DEBIAN_VERSION = "bullseye"
+DEBIAN_VERSION = "bookworm"
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -26,9 +26,9 @@ class SD_VM_Tests(unittest.TestCase):
         """
         Confirms expected grsecurity-patched kernel is running.
         """
-        # Running custom kernel requires HVM with empty kernel
-        self.assertTrue(vm.virt_mode == "hvm")
-        self.assertTrue(vm.kernel == "")
+        # Running custom kernel in PVH mode requires pvgrub2-pvh
+        self.assertTrue(vm.virt_mode == "pvh")
+        self.assertTrue(vm.kernel == "pvgrub2-pvh")
 
         # Check kernel flavor in VM
         stdout, stderr = vm.run("uname -r")
@@ -129,16 +129,6 @@ class SD_VM_Tests(unittest.TestCase):
         size = self.config["vmsizes"]["sd_log"]
         vol = vm.volumes["private"]
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
-
-    def test_sd_workstation_template(self):
-        vm = self.app.domains["securedrop-workstation-{}".format(DEBIAN_VERSION)]
-        nvm = vm.netvm
-        self.assertTrue(nvm is None)
-        self.assertTrue(vm.virt_mode == "hvm")
-        self.assertTrue(vm.kernel == "")
-        self.assertTrue("sd-workstation" in vm.tags)
-        self._check_kernel(vm)
-        self._check_service_running(vm, "paxctld")
 
     def test_sd_proxy_template(self):
         vm = self.app.domains["sd-small-{}-template".format(DEBIAN_VERSION)]
