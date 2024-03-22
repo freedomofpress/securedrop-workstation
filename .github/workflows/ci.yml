@@ -7,7 +7,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     container:
-      image: registry.fedoraproject.org/fedora:32
+      image: registry.fedoraproject.org/fedora:37
     steps:
       - run: dnf install -y make
       - uses: actions/checkout@v4
@@ -20,7 +20,7 @@ jobs:
   build-rpm:
     runs-on: ubuntu-latest
     container:
-      image: registry.fedoraproject.org/fedora:32
+      image: registry.fedoraproject.org/fedora:37
     steps:
       - run: dnf install -y make git
       - uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
   launcher-tests:
     runs-on: ubuntu-latest
     container:
-      image: registry.fedoraproject.org/fedora:32
+      image: registry.fedoraproject.org/fedora:37
     steps:
       - run: dnf install -y make
       - uses: actions/checkout@v4
