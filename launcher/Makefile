@@ -13,7 +13,7 @@ venv: ## Provision a Python 3 virtualenv for development (run apt-get install py
 	@echo "Then run: source .venv/bin/activate"
 
 .PHONY: check
-check: test black bandit
+check: test bandit
 
 .PHONY: bandit
 bandit:
@@ -22,9 +22,6 @@ bandit:
 .PHONY: test
 test:
 	xvfb-run python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater_gui/ --cov=sdw_util -v tests/
-
-black: ## Runs the black code formatter on the launcher code
-	black --check --exclude .venv --line-length=100 .
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
