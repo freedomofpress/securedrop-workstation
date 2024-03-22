@@ -20,12 +20,12 @@ base:
     - sd-whonix
     - sd-remove-unused-templates
 
-  sd-small-bullseye-template:
+  sd-small-bookworm-template:
     - sd-logging-setup
     - sd-workstation-template-files
     - sd-app-files
     - sd-proxy-template-files
-  sd-large-bullseye-template:
+  sd-large-bookworm-template:
     - sd-logging-setup
     - sd-workstation-template-files
     - sd-devices-files
@@ -38,9 +38,6 @@ base:
     - sd-mime-handling
   sd-whonix:
     - sd-whonix-hidserv-key
-  securedrop-workstation-bullseye:
-    - sd-workstation-template-files
-    - sd-logging-setup
   'sd-fedora-39-dvm,sys-usb':
     - match: list
     - sd-usb-autoattach-add
