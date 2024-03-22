@@ -5,7 +5,7 @@ from qubesadmin import Qubes
 from base import WANTED_VMS
 
 
-DEBIAN_VERSION = "bullseye"
+DEBIAN_VERSION = "bookworm"
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -26,9 +26,9 @@ class SD_VM_Tests(unittest.TestCase):
         """
         Confirms expected grsecurity-patched kernel is running.
         """
-        # Running custom kernel requires HVM with empty kernel
-        self.assertTrue(vm.virt_mode == "hvm")
-        self.assertTrue(vm.kernel == "")
+        # Running custom kernel in PVH mode requires pvgrub2-pvh
+        self.assertTrue(vm.virt_mode == "pvh")
+        self.assertTrue(vm.kernel == "pvgrub2-pvh")
 
         # Check kernel flavor in VM
         stdout, stderr = vm.run("uname -r")

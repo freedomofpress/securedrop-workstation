@@ -3,6 +3,7 @@ import os
 import unittest
 import yaml
 
+
 # TODO: update for new policy format/layout
 class SD_Qubes_Rpc_Tests(unittest.TestCase):
     def setUp(self):

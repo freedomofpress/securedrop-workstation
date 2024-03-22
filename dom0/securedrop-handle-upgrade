@@ -15,7 +15,7 @@ if [[ $TASK == "prepare" ]]; then
     # sd-app, we simply shutdown the machine as we want to preserve the data
     if qvm-check sd-app --quiet; then
         BASE_TEMPLATE=$(qvm-prefs sd-app template)
-        if [[ ! $BASE_TEMPLATE =~ "small-bullseye" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "small-bookworm" ]]; then
             if qvm-check --running sd-app; then
                 qvm-shutdown --wait sd-app || true
             fi
@@ -30,7 +30,7 @@ if [[ $TASK == "prepare" ]]; then
     # provisioning process runs again and sets that value to sd-viewer
     if qvm-check --quiet sd-viewer; then
         BASE_TEMPLATE=$(qvm-prefs sd-viewer template)
-        if [[ ! $BASE_TEMPLATE =~ "large-bullseye" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "large-bookworm" ]]; then
             qubes-prefs default_dispvm ''
             qvm-shutdown --wait sd-viewer || true
             qvm-remove -f sd-viewer
@@ -39,7 +39,7 @@ if [[ $TASK == "prepare" ]]; then
 
     if qvm-check --quiet sd-devices; then
         BASE_TEMPLATE=$(qvm-prefs sd-devices-dvm template)
-        if [[ ! $BASE_TEMPLATE =~ "large-bullseye" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "large-bookworm" ]]; then
             qvm-shutdown --wait sd-devices || true
             qvm-shutdown --wait sd-devices-dvm || true
             qvm-remove -f sd-devices
@@ -52,7 +52,7 @@ if [[ $TASK == "prepare" ]]; then
     # shutdown if a client is connected.
     if qvm-check --quiet sd-proxy; then
         BASE_TEMPLATE=$(qvm-prefs sd-proxy template)
-        if [[ ! $BASE_TEMPLATE =~ "large-bullseye" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "large-bookworm" ]]; then
             qvm-shutdown --wait sd-proxy || true
         fi
     fi
@@ -83,7 +83,7 @@ if [[ $TASK == "prepare" ]]; then
     # For sd-gpg, we simply shutdown the machine
     if qvm-check --quiet sd-gpg; then
         BASE_TEMPLATE=$(qvm-prefs sd-gpg template)
-        if [[ ! $BASE_TEMPLATE =~ "small-bullseye" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "small-bookworm" ]]; then
             qvm-shutdown --wait sd-gpg || true
         fi
     fi
@@ -91,17 +91,16 @@ if [[ $TASK == "prepare" ]]; then
     # Shut down sd-log last, since other VMs will autostart it by sending logs
     if qvm-check --quiet sd-log; then
         BASE_TEMPLATE=$(qvm-prefs sd-log template)
-        if [[ ! $BASE_TEMPLATE =~ "small-bullseye" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "small-bookworm" ]]; then
             qvm-shutdown --wait sd-log || true
         fi
     fi
 elif [[ $TASK == "remove" ]]; then
     # For each template, ensure the TemplateVM exists, that it is shut down
     # before deleting it.
-    for template in sd-app-template sd-viewer-template sd-devices-template sd-proxy-template \
-        sd-svs-template sd-svs-disp-template sd-export-template sd-proxy-template \
-        sd-svs-bullseye-template sd-export-bullseye-template sd-svs-disp-bullseye-template sd-app-bullseye-template \
-        sd-viewer-bullseye-template sd-proxy-bullseye-template sd-devices-bullseye-template sd-log-bullseye-template
+    # TODO: clean this up, we don't have separate templates anymore and nobody 
+    # will be upgrading from the original setup
+    for template in sd-small-bullseye-template sd-large-bullseye-template
     do
         if qvm-check "${template}" --quiet; then
             if qvm-check --running "${template}"; then

@@ -27,7 +27,7 @@ debian_based_vms = [
     "sd-devices",
 ]
 
-DEBIAN_VERSION = "bullseye"
+DEBIAN_VERSION = "bookworm"
 
 TEST_RESULTS_OK = {
     "dom0": UpdateStatus.UPDATES_OK,

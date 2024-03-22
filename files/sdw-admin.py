@@ -8,14 +8,17 @@ import sys
 import argparse
 import subprocess
 import os
+import qubesadmin
+from typing import List
 
 SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
 SALT_PATH = "/srv/salt/sd/"
+BASE_TEMPLATE = "debian-12-minimal"
 
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator, ValidationError  # noqa: E402
 
-DEBIAN_VERSION = "bullseye"
+DEBIAN_VERSION = "bookworm"
 
 
 def parse_args():
@@ -60,6 +63,17 @@ def parse_args():
     return args
 
 
+def install_pvh_support():
+    """
+    Installs grub2-xen-pvh in dom0 - required for PVH with AppVM local kernels
+    TODO: install this via package requirements instead if possible
+    """
+    try:
+        subprocess.run(["sudo", "qubes-dom0-update", "-y", "-q", "grub2-xen-pvh"])
+    except subprocess.CalledProcessError:
+        raise SDWAdminException("Error installing grub2-xen-pvah: local PVH not available.")
+
+
 def copy_config():
     """
     Copies config.json and sd-journalist.sec to /srv/salt/sd
@@ -93,6 +107,20 @@ def validate_config(path):
         validator = SDWConfigValidator(path)  # noqa: F841
     except ValidationError:
         raise SDWAdminException("Error while validating configuration")
+
+
+def get_appvms_for_template(vm_name: str) -> List[str]:
+    """
+    Return a list of AppVMs that use the specified VM as a template
+    """
+    app = qubesadmin.Qubes()
+    try:
+        template_vm = app.domains[vm_name]
+    except KeyError:
+        # No VM implies no appvms, return an empty list
+        # (The template may just not be installed yet)
+        return []
+    return [x.name for x in list(template_vm.appvms)]
 
 
 def refresh_salt():
@@ -139,11 +167,31 @@ def main():
         sys.exit(0)
     args = parse_args()
     if args.validate:
-        print("Validating...")
+        print("Validating...", end="")
         validate_config(SCRIPTS_PATH)
+        print("OK")
     elif args.apply:
+        print(
+            "SecureDrop Workstation should be installed on a fresh Qubes OS install.\n"
+            "The installation process will overwrite any user modifications to the\n"
+            f"{BASE_TEMPLATE} TemplateVM, and will disable old-format qubes-rpc\n"
+            "policy directives.\n"
+        )
+        affected_appvms = get_appvms_for_template(BASE_TEMPLATE)
+        if len(affected_appvms) > 0:
+            print(
+                f"{BASE_TEMPLATE} is already in use by the following AppVMS:\n"
+                f"{affected_appvms}\n"
+                "Applications and configurations in use by these AppVMs will be\n"
+                f"removed from {BASE_TEMPLATE}."
+            )
+            response = input("Are you sure you want to proceed (y/N)? ")
+            if response.lower() != "y":
+                print("Exiting.")
+                sys.exit(0)
         print("Applying configuration...")
         validate_config(SCRIPTS_PATH)
+        install_pvh_support()
         copy_config()
         refresh_salt()
         provision_all()

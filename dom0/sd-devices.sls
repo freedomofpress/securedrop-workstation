@@ -40,7 +40,7 @@ sd-devices-template-sync-appmenus:
   cmd.run:
     - name: >
         qvm-start --skip-if-running sd-large-{{ sdvars.distribution }}-template &&
-        qvm-sync-appmenus sd-large-{{ sdvars.distribution }}-template
+        qvm-sync-appmenus --force-root sd-large-{{ sdvars.distribution }}-template
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
     - onchanges:
