@@ -12,6 +12,7 @@ This project aims to improve journalists' experience using SecureDrop, by moving
 We are currently piloting this project with a small number of news organizations; see [our blog post](https://securedrop.org/news/piloting-securedrop-workstation-qubes-os/) for additional information.
 
 1. [Detailed Rationale](#detailed-rationale)
+1. [Project Status](#project-status)
 1. [Architecture](#architecture)
 1. [What's In This Repo?](#whats-in-this-repo)
 1. [Installation](#installation)
@@ -33,13 +34,17 @@ The Qubes OS approach addresses this at multiple levels:
 
 - By disabling Internet access and [mitigating against other exfiltration risks](https://en.wikipedia.org/wiki/Air_gap_malware) on a per-VM basis, we can combine multiple functions into a single device. Checking SecureDrop submissions is as simple as booting up your workstation, downloading recent submissions, and inspecting them. This has the potential to greatly reduce time and effort spent by SecureDrop journalists, administators and trainers, and to increase day-to-day SecureDrop use.
 
-- Qubes OS' security model lets us add specific software features (such as redaction of documents) with careful consideration in each case what level of system or network access an application requires. This lets us gradually extend the functionality we can offer to journalists beyond the mere download of submissions.
+- Qubes OS' security model lets us add specific software features (such as document redaction, or sanitization via [Dangerzone](https://dangerzone.rocks)) with careful consideration in each case what level of system or network access an application requires. This lets us gradually extend the functionality we can offer to journalists beyond the mere download of submissions.
 
 - We can potentially add VMs that enable end-to-end encrypted communication with other SecureDrop journalists, intermediated by the SecureDrop server. This enables us to add software features that, for example, let journalists collaborate in categorizing submissions, assigning work, versioning changes to documents, and so on.
 
 However, the Qubes OS approach is not without downsides. It stands and falls with the security of Qubes OS itself, which in turn may be impacted by Spectre/Meltdown type CPU level vulnerabilities, hypervisor vulnerabilities, and so on. These risks must be compared against the operational security risks of the current architecture, including the work that journalists do after downloading a submission. The Qubes OS website provides a useful [comparison of its security model with that of using a separate machine](https://www.qubes-os.org/faq/#how-does-qubes-os-compare-to-using-a-separate-physical-machine).
 
-While we are strongly committed to piloting the use of Qubes OS for SecureDrop, no final decision has been made to move to this new architecture. This decision will require a full audit of this new approach, consideration of alternatives, and extensive validation with SecureDrop's current user community.
+## Project status
+
+We intend to bring the pilot program to a close in 2024, and move forward with general availability of SecureDrop Workstation following final updates based on the pilot participants' feedback and experience. The general availability version will be compatible with Qubes 4.2. Work is ongoing on 4.2 compatibility, and the mainline of this repo will be in flux and not suitable for production deployment until the work is completed and audited. 
+
+For now, if you want to preview SecureDrop Workstation's functionality we recommend following the installation instructions at [https://workstation.securedrop.org](https://workstation.securedrop.org), which will guide you through installing the latest stable version of SecureDrop Workstation on Qubes 4.1.
 
 ## Architecture
 
