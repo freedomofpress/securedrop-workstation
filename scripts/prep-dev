@@ -35,7 +35,7 @@ sudo dnf install -y "$latest_rpm"
 echo "Copying config secrets into place..."
 for f in config.json sd-journalist.sec ; do
     sudo cp -v "$f" /usr/share/securedrop-workstation-dom0-config/
-    chmod ugo+r /usr/share/securedrop-workstation-dom0-config/$f
+    sudo chmod ugo+r /usr/share/securedrop-workstation-dom0-config/$f
     sudo cp -v "$f" /srv/salt/sd/
-    chmod ugo+r /srv/salt/sd/$f
+    sudo chmod ugo+r /srv/salt/sd/$f
 done
