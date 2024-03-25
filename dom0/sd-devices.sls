@@ -28,6 +28,8 @@ sd-devices-dvm:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
     - features:
+      - set:
+        - internal: 1
       - enable:
         - service.paxctld
         - service.cups

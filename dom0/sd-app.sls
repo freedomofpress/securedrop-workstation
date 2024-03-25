@@ -26,6 +26,8 @@ sd-app:
         - sd-client
         - sd-workstation
     - features:
+      - set:
+        - internal: 1
       - enable:
         - service.paxctld
     - require:

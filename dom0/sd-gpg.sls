@@ -32,3 +32,6 @@ sd-gpg:
     - require:
       - sls: sd-workstation-template
       - sls: sd-upgrade-templates
+    - features:
+      - set:
+        - internal: 1
