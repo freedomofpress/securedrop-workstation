@@ -19,10 +19,9 @@ sd-small-{{ sdvars.distribution }}-template:
     - clone:
       - source: debian-12-minimal
       - label: red
-# TODO: add HVM and/or custom kernel support back. Previously added in base template
-#    - prefs:
-#      - virt-mode: hvm
-#      - kernel: ''
+    - prefs:
+      - virt-mode: pvh
+      - kernel: 'pvgrub2-pvh'
     - tags:
       - add:
         - sd-workstation
@@ -39,10 +38,9 @@ sd-large-{{ sdvars.distribution }}-template:
     - clone:
       - source: debian-12-minimal
       - label: red
-# TODO: add HVM and/or custom kernel support back. Previously added in base template
-#    - prefs:
-#      - virt-mode: hvm
-#      - kernel: ''
+    - prefs:
+      - virt-mode: pvh
+      - kernel: 'pvgrub2-pvh'
     - tags:
       - add:
         - sd-workstation
