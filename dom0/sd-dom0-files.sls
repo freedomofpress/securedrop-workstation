@@ -46,11 +46,11 @@ dom0-workstation-rpm-repo:
     - require:
       - file: dom0-rpm-test-key
 
-# TODO: trying out debian-12-minimal - this should be parameterised
+# Ensure debian-12-xfce is present
 dom0-install-debian-base-template:
   cmd.run:
     - name: >
-        qvm-template info --machine-readable debian-12-minimal | grep -q "installed|debian-12-minimal|" || qvm-template install debian-12-minimal
+        qvm-template info --machine-readable debian-12-xfce | grep -q "installed|debian-12-xfce|" || qvm-template install debian-12-xfce
 
 # Create directory for storing SecureDrop-specific icons
 dom0-securedrop-icons-directory:

@@ -36,12 +36,11 @@ sd-devices-dvm:
 
 # Ensure the Qubes menu is populated with relevant app entries,
 # so that Nautilus/Files can be started via GUI interactions.
-# TODO: debian-12-minimal doesn't have passwordless root - do we want to add it?
 sd-devices-template-sync-appmenus:
   cmd.run:
     - name: >
         qvm-start --skip-if-running sd-large-{{ sdvars.distribution }}-template &&
-        qvm-sync-appmenus --force-root sd-large-{{ sdvars.distribution }}-template
+        qvm-sync-appmenus sd-large-{{ sdvars.distribution }}-template
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
     - onchanges:

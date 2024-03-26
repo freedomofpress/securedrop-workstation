@@ -47,7 +47,7 @@ sd-app-template-sync-appmenus:
   cmd.run:
     - name: >
         qvm-start --skip-if-running sd-small-{{ sdvars.distribution }}-template &&
-        qvm-sync-appmenus --force-root sd-small-{{ sdvars.distribution }}-template
+        qvm-sync-appmenus sd-small-{{ sdvars.distribution }}-template
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
     - onchanges:

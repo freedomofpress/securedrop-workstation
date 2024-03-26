@@ -17,7 +17,7 @@ sd-small-{{ sdvars.distribution }}-template:
   qvm.vm:
     - name: sd-small-{{ sdvars.distribution }}-template
     - clone:
-      - source: debian-12-minimal
+      - source: debian-12-xfce
       - label: red
     - prefs:
       - virt-mode: pvh
@@ -36,7 +36,7 @@ sd-large-{{ sdvars.distribution }}-template:
   qvm.vm:
     - name: sd-large-{{ sdvars.distribution }}-template
     - clone:
-      - source: debian-12-minimal
+      - source: debian-12-xfce
       - label: red
     - prefs:
       - virt-mode: pvh
