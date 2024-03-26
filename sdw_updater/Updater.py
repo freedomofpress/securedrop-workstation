@@ -101,31 +101,38 @@ def migration_is_required():
     return result
 
 
-def apply_updates(vms=current_templates, progress_start=15, progress_end=75):
+def apply_updates_dom0():
+    """
+    Apply updates to dom0
+    """
+    sdlog.info("Applying all updates to dom0")
+
+    dom0_status = _check_updates_dom0()
+    if dom0_status == UpdateStatus.UPDATES_REQUIRED:
+        upgrade_results = _apply_updates_dom0()
+    else:
+        upgrade_results = UpdateStatus.UPDATES_OK
+    return upgrade_results
+
+
+def apply_updates_templates(progress_start=15, progress_end=75):
     """
     Apply updates to all TemplateVMs.
 
     Returns a tuple of (vm_name, percentage_progress, upgrade_results),
     for use in updating the GUI progress bar.
     """
-    sdlog.info(f"Applying all updates to VMs: {vms}")
+    sdlog.info(f"Applying all updates to VMs: {current_templates}")
     # Figure out how much each completed VM should bump the progress bar.
     if progress_end <= progress_start:
         raise Exception("Invalid progress range")
-    progress_step = (progress_end - progress_start) // len(vms)
+    progress_step = (progress_end - progress_start) // len(current_templates)
 
     progress_current = progress_start
 
-    for vm in vms:
+    for vm in current_templates:
         upgrade_results = UpdateStatus.UPDATES_FAILED
-        if vm == "dom0":
-            dom0_status = _check_updates_dom0()
-            if dom0_status == UpdateStatus.UPDATES_REQUIRED:
-                upgrade_results = _apply_updates_dom0()
-            else:
-                upgrade_results = UpdateStatus.UPDATES_OK
-        else:
-            upgrade_results = _apply_updates_vm(vm)
+        upgrade_results = _apply_updates_vm(vm)
 
         progress_current += progress_step
 
