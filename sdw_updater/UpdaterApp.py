@@ -235,22 +235,17 @@ class UpgradeThread(QThread):
         results["apply_dom0"] = Updater.apply_dom0_state()
 
         self.progress_signal.emit(15)
-        # rerun full config if dom0 checks determined it's required,
-        # otherwise proceed with per-VM package updates
+        # rerun full config if dom0 checks determined it's required
         if Updater.migration_is_required():
             # Progress bar will freeze for ~15m during full state run
             self.progress_signal.emit(35)
             # add to results dict, if it fails it will show error message
             results["apply_all"] = Updater.run_full_install()
-            self.progress_signal.emit(75)
-        else:
-            upgrade_generator = Updater.apply_updates_templates(progress_start=15, progress_end=75)
-            for vm, progress, result in upgrade_generator:
-                results[vm] = result
-                self.progress_signal.emit(progress)
+            self.progress_signal.emit(60)
 
-        # reboot vms
-        Updater.shutdown_and_start_vms()
+        # Update all VMs regardless of migrations
+        results["templates"] = Updater.apply_updates_templates()
+        self.progress_signal.emit(75)
 
         # write flags to disk
         run_results = Updater.overall_update_status(results)
