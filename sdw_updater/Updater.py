@@ -118,33 +118,37 @@ def apply_updates_dom0():
     return upgrade_results
 
 
-def apply_updates_templates(progress_start=15, progress_end=75):
+def apply_updates_templates(templates=current_templates):
     """
     Apply updates to all TemplateVMs.
-
-    Returns a tuple of (vm_name, percentage_progress, upgrade_results),
-    for use in updating the GUI progress bar.
     """
-    sdlog.info("Applying all updates to VMs: {}".format(current_templates))
-    # Figure out how much each completed VM should bump the progress bar.
-    assert progress_end > progress_start
-    progress_step = (progress_end - progress_start) // len(current_templates)
+    sdlog.info("Applying all updates to VMs: {}".format(templates))
+    try:
+        update_cmd = [
+            "qubes-vm-update",
+            "--restart",  # Enforce app qube restarts
+            "--no-progress",  # Progress does not play nicely with text-logging
+            "--show-output",  # Debug information on updated packages and success status
+            "--targets",
+            ",".join(templates),
+        ]
+        update_cmd_result = subprocess.check_output(update_cmd, stderr=subprocess.STDOUT)
+        update_status = UpdateStatus.UPDATES_OK
+        sdlog.info("Update successful.")
+    except subprocess.CalledProcessError as e:
+        update_cmd_result = e.output
+        sdlog.error(
+            "An error has occurred updating templates. Please contact your administrator."
+            " See {} for details.".format(DETAIL_LOG_FILE)
+        )
+        sdlog.error(str(e))
+        update_status = UpdateStatus.UPDATES_FAILED
 
-    progress_current = progress_start
+    cmd_for_log = " ".join(update_cmd)
+    clean_output = Util.strip_ansi_colors(update_cmd_result.decode("utf-8").strip())
+    detail_log.info("Output from update command: {}\n{}".format(cmd_for_log, clean_output))
 
-    for vm in current_templates:
-        upgrade_results = UpdateStatus.UPDATES_FAILED
-        upgrade_results = _apply_updates_vm(vm)
-
-        progress_current += progress_step
-
-        # constrain progress_current to given progress range
-        def clamp(val, min_val, max_val):
-            return max(min(max_val, val), min_val)
-
-        progress_current = clamp(progress_current, progress_start, progress_end)
-
-        yield vm, progress_current, upgrade_results
+    return update_status
 
 
 def _check_updates_dom0():
