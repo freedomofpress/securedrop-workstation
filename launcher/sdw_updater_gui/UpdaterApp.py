@@ -222,16 +222,12 @@ class UpgradeThread(QThread):
         QThread.__init__(self)
 
     def run(self):
+        results = {}
 
         # Update dom0 first, then apply dom0 state. If full state run
         # is required, the dom0 state will drop a flag.
         self.progress_signal.emit(5)
-        upgrade_generator = Updater.apply_updates(vms=["dom0"], progress_start=5, progress_end=10)
-
-        results = {}
-        for vm, progress, result in upgrade_generator:
-            results[vm] = result
-            self.progress_signal.emit(progress)
+        results["dom0"] = Updater.apply_updates_dom0()
 
         # apply dom0 state
         self.progress_signal.emit(10)
@@ -248,7 +244,7 @@ class UpgradeThread(QThread):
             results["apply_all"] = Updater.run_full_install()
             self.progress_signal.emit(75)
         else:
-            upgrade_generator = Updater.apply_updates(progress_start=15, progress_end=75)
+            upgrade_generator = Updater.apply_updates_templates(progress_start=15, progress_end=75)
             for vm, progress, result in upgrade_generator:
                 results[vm] = result
                 self.progress_signal.emit(progress)
