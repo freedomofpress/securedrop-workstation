@@ -7,24 +7,8 @@
 include:
   - sd-dom0-files
 
-# Sets virt_mode and kernel to use custom hardened kernel.
-sd-workstation-template:
-  qvm.vm:
-    - name: securedrop-workstation-{{ sdvars.distribution }}
-    - prefs:
-      - virt-mode: hvm
-      - kernel: ''
-    - tags:
-      - add:
-        - sd-workstation
-        - sd-{{ sdvars.distribution }}
-    - features:
-      - enable:
-        - service.paxctld
-    - require:
-      - cmd: dom0-install-securedrop-workstation-template
-
 # Installs consolidated templateVMs:
+# Sets virt_mode and kernel to use custom hardened kernel.
 # - sd-small-{{ sdvars.distribution }}-template, to be used for
 #   sd-app, sd-gpg, sd-log, and sd-proxy
 # - sd-large-{{ sdvars.distribution }}-template, to be used for
@@ -33,24 +17,38 @@ sd-small-{{ sdvars.distribution }}-template:
   qvm.vm:
     - name: sd-small-{{ sdvars.distribution }}-template
     - clone:
-      - source: securedrop-workstation-{{ sdvars.distribution }}
+      - source: debian-12-minimal
       - label: red
+# TODO: add HVM and/or custom kernel support back. Previously added in base template
+#    - prefs:
+#      - virt-mode: hvm
+#      - kernel: ''
     - tags:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
+    - features:
+      - enable:
+        - service.paxctld
     - require:
-      - qvm: sd-workstation-template
+      - cmd: dom0-install-debian-base-template
 
 sd-large-{{ sdvars.distribution }}-template:
   qvm.vm:
     - name: sd-large-{{ sdvars.distribution }}-template
     - clone:
-      - source: securedrop-workstation-{{ sdvars.distribution }}
+      - source: debian-12-minimal
       - label: red
+# TODO: add HVM and/or custom kernel support back. Previously added in base template
+#    - prefs:
+#      - virt-mode: hvm
+#      - kernel: ''
     - tags:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
+    - features:
+      - enable:
+        - service.paxctld
     - require:
-      - qvm: sd-workstation-template
+      - cmd: dom0-install-debian-base-template

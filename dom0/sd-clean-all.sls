@@ -5,7 +5,7 @@
 
 set-fedora-as-default-dispvm:
   cmd.run:
-    - name: qvm-check fedora-38-dvm && qubes-prefs default_dispvm fedora-38-dvm || qubes-prefs default_dispvm ''
+    - name: qvm-check default-dvm && qubes-prefs default_dispvm default-dvm || qubes-prefs default_dispvm ''
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
@@ -23,7 +23,7 @@ restore-sys-usb-dispvm-halt-wait:
 restore-sys-usb-dispvm:
   qvm.prefs:
     - name: sys-usb
-    - template: fedora-38-dvm
+    - template: default-dvm
     - require:
       - cmd: restore-sys-usb-dispvm-halt-wait
       - cmd: set-fedora-as-default-dispvm
@@ -34,11 +34,11 @@ restore-sys-usb-dispvm-start:
     - require:
       - qvm: restore-sys-usb-dispvm
 
-# autoattach modifications are only present in sd-fedora-38-dvm
+# autoattach modifications are only present in sd-fedora-39-dvm
 # so no more sd-usb-autoattach-remove necessary
 remove-sd-fedora-dispvm:
   qvm.absent:
-    - name: sd-fedora-38-dvm
+    - name: sd-fedora-39-dvm
     - require:
       - qvm: restore-sys-usb-dispvm
 {% else %}

@@ -31,7 +31,7 @@ DETAIL_LOGGER_PREFIX = "detail"  # For detailed logs such as Salt states
 # logic to leverage the Qubes Python API.
 MIGRATION_DIR = "/tmp/sdw-migrations"  # nosec
 
-DEBIAN_VERSION = "bullseye"
+DEBIAN_VERSION = "bookworm"
 
 sdlog = Util.get_logger(module=__name__)
 detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
@@ -40,7 +40,7 @@ detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 # as well as their associated TemplateVMs.
 # In the future, we could use qvm-prefs to extract this information.
 current_vms = {
-    "fedora": "fedora-38",
+    "fedora": "fedora-39-xfce",
     "sd-viewer": "sd-large-{}-template".format(DEBIAN_VERSION),
     "sd-app": "sd-small-{}-template".format(DEBIAN_VERSION),
     "sd-log": "sd-small-{}-template".format(DEBIAN_VERSION),
@@ -104,40 +104,53 @@ def migration_is_required():
     return result
 
 
-def apply_updates(vms=current_templates, progress_start=15, progress_end=75):
+def apply_updates_dom0():
+    """
+    Apply updates to dom0
+    """
+    sdlog.info("Applying all updates to dom0")
+
+    dom0_status = _check_updates_dom0()
+    if dom0_status == UpdateStatus.UPDATES_REQUIRED:
+        upgrade_results = _apply_updates_dom0()
+    else:
+        upgrade_results = UpdateStatus.UPDATES_OK
+    return upgrade_results
+
+
+def apply_updates_templates():
     """
     Apply updates to all TemplateVMs.
-
-    Returns a tuple of (vm_name, percentage_progress, upgrade_results),
-    for use in updating the GUI progress bar.
     """
-    sdlog.info("Applying all updates to VMs: {}".format(vms))
-    # Figure out how much each completed VM should bump the progress bar.
-    assert progress_end > progress_start
-    progress_step = (progress_end - progress_start) // len(vms)
+    sdlog.info("Applying all updates to VMs: {}".format(current_templates))
+    try:
+        update_cmd = [
+            "qubes-vm-update",
+            "--restart",      # Enforce app qube restarts
+            "--no-progress",  # Progress does not play nicely with text-logging
+            "--show-output",  # Debug information on updated packages and success status
+            "--targets",
+            ",".join(current_templates)
+        ]
+        update_cmd_result = subprocess.check_output(
+            update_cmd, stderr=subprocess.STDOUT
+        )
+        update_status = UpdateStatus.UPDATES_OK
+        sdlog.info("Update successful.")
+    except subprocess.CalledProcessError as e:
+        update_cmd_result = e.output
+        sdlog.error(
+            "An error has occurred updating templates. Please contact your administrator."
+            " See {} for details.".format(DETAIL_LOG_FILE)
+        )
+        sdlog.error(str(e))
+        update_status = UpdateStatus.UPDATES_FAILED
 
-    progress_current = progress_start
+    cmd_for_log = " ".join(update_cmd)
+    clean_output = Util.strip_ansi_colors(update_cmd_result.decode("utf-8").strip())
+    detail_log.info("Output from update command: {}\n{}".format(cmd_for_log, clean_output))
 
-    for vm in vms:
-        upgrade_results = UpdateStatus.UPDATES_FAILED
-        if vm == "dom0":
-            dom0_status = _check_updates_dom0()
-            if dom0_status == UpdateStatus.UPDATES_REQUIRED:
-                upgrade_results = _apply_updates_dom0()
-            else:
-                upgrade_results = UpdateStatus.UPDATES_OK
-        else:
-            upgrade_results = _apply_updates_vm(vm)
-
-        progress_current += progress_step
-
-        # constrain progress_current to given progress range
-        def clamp(val, min_val, max_val):
-            return max(min(max_val, val), min_val)
-
-        progress_current = clamp(progress_current, progress_start, progress_end)
-
-        yield vm, progress_current, upgrade_results
+    return update_status
 
 
 def _check_updates_dom0():
@@ -175,33 +188,6 @@ def _apply_updates_dom0():
 
     sdlog.info("dom0 updates have been applied and a reboot is required.")
     return UpdateStatus.REBOOT_REQUIRED
-
-
-def _apply_updates_vm(vm):
-    """
-    Apply updates to a given TemplateVM. Any update to the base fedora template
-    will require a reboot after the upgrade.
-    """
-    sdlog.info("Updating {}".format(vm))
-
-    # We run custom Salt logic for our own Debian-based TemplateVMs
-    if vm.startswith("fedora") or vm.startswith("whonix"):
-        salt_state = "update.qubes-vm"
-    else:
-        salt_state = "fpf-apt-repo"
-
-    try:
-        subprocess.check_call(
-            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", salt_state]
-        )
-    except subprocess.CalledProcessError as e:
-        sdlog.error(
-            "An error has occurred updating {}. Please contact your administrator.".format(vm)
-        )
-        sdlog.error(str(e))
-        return UpdateStatus.UPDATES_FAILED
-    sdlog.info("{} update successful".format(vm))
-    return UpdateStatus.UPDATES_OK
 
 
 def _write_last_updated_flags_to_disk():
@@ -391,81 +377,6 @@ def apply_dom0_state():
         clean_output = Util.strip_ansi_colors(e.output.decode("utf-8").strip())
         detail_log.error("Output from failed command: {}\n{}".format(cmd_for_log, clean_output))
         return UpdateStatus.UPDATES_FAILED
-
-
-def shutdown_and_start_vms():
-    """
-    Power cycles the vms to ensure. we should do them all in one shot to reduce complexity
-    and likelihood of failure. Rebooting the VMs will ensure the TemplateVM
-    updates are picked up by the AppVM. We must first shut all VMs down to ensure
-    correct order of operations, as sd-whonix cannot shutdown if sd-proxy is powered
-    on, for example.
-
-    All system AppVMs (sys-net, sys-firewall and sys-usb) need to be restarted.
-    We use qvm-kill for sys-firewall and sys-net, because a shutdown may fail
-    if they are currently in use as NetVMs by any of the user's other VMs.
-    """
-
-    sdw_vms_in_order = ["sd-app", "sd-proxy", "sd-whonix", "sd-gpg", "sd-log"]
-
-    sdlog.info("Shutting down SDW TemplateVMs for updates")
-    for vm in sorted(current_templates):
-        _safely_shutdown_vm(vm)
-
-    sdlog.info("Shutting down SDW AppVMs for updates")
-    for vm in sdw_vms_in_order:
-        _safely_shutdown_vm(vm)
-
-    # System VMs that can be safely shut down (order should not matter, but will
-    # be respected).
-    safe_sys_vms_in_order = ["sys-usb", "sys-whonix"]
-    for vm in safe_sys_vms_in_order:
-        sdlog.info("Safely shutting down system VM: {}".format(vm))
-        _safely_shutdown_vm(vm)
-
-    # TODO: Use of qvm-kill should be considered unsafe and may have unexpected
-    # side effects. We should aim for a more graceful shutdown strategy.
-    unsafe_sys_vms_in_order = ["sys-firewall", "sys-net"]
-    for vm in unsafe_sys_vms_in_order:
-        sdlog.info("Killing system VM: {}".format(vm))
-        try:
-            subprocess.check_output(["qvm-kill", vm], stderr=subprocess.PIPE)
-        except subprocess.CalledProcessError as e:
-            sdlog.error("Error while killing system VM: {}".format(vm))
-            sdlog.error(str(e))
-            sdlog.error(str(e.stderr))
-
-    all_sys_vms_in_order = safe_sys_vms_in_order + unsafe_sys_vms_in_order
-    sdlog.info("Starting fedora-based system VMs after updates")
-    for vm in reversed(all_sys_vms_in_order):
-        _safely_start_vm(vm)
-
-    sdlog.info("Starting SDW VMs after updates")
-    for vm in reversed(sdw_vms_in_order):
-        _safely_start_vm(vm)
-
-
-def _safely_shutdown_vm(vm):
-    try:
-        subprocess.check_output(["qvm-shutdown", "--wait", vm], stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError as e:
-        sdlog.error("Failed to shut down {}".format(vm))
-        sdlog.error(str(e))
-        sdlog.error(str(e.stderr))
-        return UpdateStatus.UPDATES_FAILED
-
-
-def _safely_start_vm(vm):
-    try:
-        running_vms = subprocess.check_output(
-            ["qvm-ls", "--running", "--raw-list"], stderr=subprocess.PIPE
-        )
-        sdlog.info("VMs running before start of {}: {}".format(vm, running_vms))
-        subprocess.check_output(["qvm-start", "--skip-if-running", vm], stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError as e:
-        sdlog.error("Error while starting {}".format(vm))
-        sdlog.error(str(e))
-        sdlog.error(str(e.stderr))
 
 
 def should_launch_updater(interval):

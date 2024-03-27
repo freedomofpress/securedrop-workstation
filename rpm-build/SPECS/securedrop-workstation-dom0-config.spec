@@ -15,11 +15,9 @@ Summary:	SecureDrop Workstation
 #     For reproducibility we'll keep everything
 %define _changelog_trimtime 0
 %define _changelog_trimage 0
-#   * _buildhost varies based on environment, we build via Docker but ensure
-#     this is the same regardless
+#   * _buildhost varies based on environment, we build with containers but
+#     ensure this is the same regardless
 %global _buildhost %{name}
-#   * compiling Python bytecode is not reproducible at the time of writing
-%undefine py_auto_byte_compile
 
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
@@ -53,6 +51,9 @@ configuration over time.
 
 %install
 %{python3} -m pip install --no-compile --no-index --no-build-isolation --root %{buildroot} .
+# direct_url.json is is not reproducible and not strictly needed
+rm %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/direct_url.json
+sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/RECORD
 install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_updater_gui
 install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_notify
 install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_util

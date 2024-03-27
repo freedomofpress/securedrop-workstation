@@ -4,8 +4,6 @@ The Updater ensures that the SecureDrop Workstation is up-to-date by checking fo
 
 ## Running the Updater
 
-Qubes 4.1.1 uses an end-of-life Fedora template in dom0 (fedora-32). See rationale here: https://www.qubes-os.org/doc/supported-releases/#note-on-dom0-and-eol.
-
 To run the preflight updater:
 1. Open a `dom0` terminal
 2. Run `/opt/securedrop/launcher/sdw-launcher.py --skip-delta 0`
