@@ -185,28 +185,6 @@ def _apply_updates_dom0():
     return UpdateStatus.REBOOT_REQUIRED
 
 
-def _apply_updates_vm(vm):
-    """
-    Apply updates to a given TemplateVM. Any update to the base fedora template
-    will require a reboot after the upgrade.
-    """
-    sdlog.info(f"Updating {vm}")
-
-    # We run custom Salt logic for our own Debian-based TemplateVMs
-    salt_state = "update.qubes-vm" if vm.startswith(("fedora", "whonix")) else "fpf-apt-repo"
-
-    try:
-        subprocess.check_call(
-            ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", salt_state]
-        )
-    except subprocess.CalledProcessError as e:
-        sdlog.error(f"An error has occurred updating {vm}. Please contact your administrator.")
-        sdlog.error(str(e))
-        return UpdateStatus.UPDATES_FAILED
-    sdlog.info(f"{vm} update successful")
-    return UpdateStatus.UPDATES_OK
-
-
 def _write_last_updated_flags_to_disk():
     """
     Writes the time of last successful upgrade to dom0 and sd-app
@@ -392,81 +370,6 @@ def apply_dom0_state():
         clean_output = Util.strip_ansi_colors(e.output.decode("utf-8").strip())
         detail_log.error(f"Output from failed command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_FAILED
-
-
-def shutdown_and_start_vms():
-    """
-    Power cycles the vms to ensure. we should do them all in one shot to reduce complexity
-    and likelihood of failure. Rebooting the VMs will ensure the TemplateVM
-    updates are picked up by the AppVM. We must first shut all VMs down to ensure
-    correct order of operations, as sd-whonix cannot shutdown if sd-proxy is powered
-    on, for example.
-
-    All system AppVMs (sys-net, sys-firewall and sys-usb) need to be restarted.
-    We use qvm-kill for sys-firewall and sys-net, because a shutdown may fail
-    if they are currently in use as NetVMs by any of the user's other VMs.
-    """
-
-    sdw_vms_in_order = ["sd-app", "sd-proxy", "sd-whonix", "sd-gpg", "sd-log"]
-
-    sdlog.info("Shutting down SDW TemplateVMs for updates")
-    for vm in sorted(current_templates):
-        _safely_shutdown_vm(vm)
-
-    sdlog.info("Shutting down SDW AppVMs for updates")
-    for vm in sdw_vms_in_order:
-        _safely_shutdown_vm(vm)
-
-    # System VMs that can be safely shut down (order should not matter, but will
-    # be respected).
-    safe_sys_vms_in_order = ["sys-usb", "sys-whonix"]
-    for vm in safe_sys_vms_in_order:
-        sdlog.info(f"Safely shutting down system VM: {vm}")
-        _safely_shutdown_vm(vm)
-
-    # TODO: Use of qvm-kill should be considered unsafe and may have unexpected
-    # side effects. We should aim for a more graceful shutdown strategy.
-    unsafe_sys_vms_in_order = ["sys-firewall", "sys-net"]
-    for vm in unsafe_sys_vms_in_order:
-        sdlog.info(f"Killing system VM: {vm}")
-        try:
-            subprocess.check_output(["qvm-kill", vm], stderr=subprocess.PIPE)
-        except subprocess.CalledProcessError as e:
-            sdlog.error(f"Error while killing system VM: {vm}")
-            sdlog.error(str(e))
-            sdlog.error(str(e.stderr))
-
-    all_sys_vms_in_order = safe_sys_vms_in_order + unsafe_sys_vms_in_order
-    sdlog.info("Starting fedora-based system VMs after updates")
-    for vm in reversed(all_sys_vms_in_order):
-        _safely_start_vm(vm)
-
-    sdlog.info("Starting SDW VMs after updates")
-    for vm in reversed(sdw_vms_in_order):
-        _safely_start_vm(vm)
-
-
-def _safely_shutdown_vm(vm):
-    try:
-        subprocess.check_output(["qvm-shutdown", "--wait", vm], stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError as e:
-        sdlog.error(f"Failed to shut down {vm}")
-        sdlog.error(str(e))
-        sdlog.error(str(e.stderr))
-        return UpdateStatus.UPDATES_FAILED
-
-
-def _safely_start_vm(vm):
-    try:
-        running_vms = subprocess.check_output(
-            ["qvm-ls", "--running", "--raw-list"], stderr=subprocess.PIPE
-        )
-        sdlog.info(f"VMs running before start of {vm}: {running_vms}")
-        subprocess.check_output(["qvm-start", "--skip-if-running", vm], stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError as e:
-        sdlog.error(f"Error while starting {vm}")
-        sdlog.error(str(e))
-        sdlog.error(str(e.stderr))
 
 
 def should_launch_updater(interval):
