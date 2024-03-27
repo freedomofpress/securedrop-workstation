@@ -46,7 +46,7 @@ dom0-workstation-rpm-repo:
     - require:
       - file: dom0-rpm-test-key
 
-# Ensure debian-12-xfce is present
+# Ensure debian-12-xfce is present for use as base template
 dom0-install-debian-base-template:
   cmd.run:
     - name: >
