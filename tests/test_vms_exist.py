@@ -5,7 +5,7 @@ from qubesadmin import Qubes
 from base import WANTED_VMS
 
 
-DEBIAN_VERSION = "bullseye"
+DEBIAN_VERSION = "bookworm"
 
 
 class SD_VM_Tests(unittest.TestCase):
