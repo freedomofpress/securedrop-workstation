@@ -7,8 +7,7 @@ sd-workstation-template-install-kernel-config-packages:
   pkg.installed:
     - pkgs:
       - securedrop-workstation-config
-#TODO: flip this back to securedrop-workstation-grsec when packaging changes are complete
-      - securedrop-grsec
+      - securedrop-workstation-grsec
     - require:
       - sls: fpf-apt-repo
 
