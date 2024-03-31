@@ -62,6 +62,17 @@ def parse_args():
     return args
 
 
+def install_pvh_support():
+    """
+    Installs grub2-xen-pvh in dom0 - required for PVH with AppVM local kernels
+    TODO: install this via package requirements instead if possible
+    """
+    try:
+        subprocess.run(["sudo", "qubes-dom0-update", "-y", "-q", "grub2-xen-pvh"])
+    except subprocess.CalledProcessError:
+        raise SDWAdminException("Error installing grub2-xen-pvah: local PVH not available.")
+
+
 def copy_config():
     """
     Copies config.json and sd-journalist.sec to /srv/salt/sd
@@ -153,8 +164,9 @@ def main():
         sys.exit(0)
     args = parse_args()
     if args.validate:
-        print("Validating...")
+        print("Validating...", end='')
         validate_config(SCRIPTS_PATH)
+        print("OK")
     elif args.apply:
         print(
             "SecureDrop Workstation should be installed on a fresh Qubes OS install.\n"
@@ -176,6 +188,7 @@ def main():
                 sys.exit(0)
         print("Applying configuration...")
         validate_config(SCRIPTS_PATH)
+        install_pvh_support()
         copy_config()
         refresh_salt()
         provision_all()
