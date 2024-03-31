@@ -17,7 +17,7 @@
 {% if d.environment == "dev" %}
   # use apt-test and nightlies
   {% set sdvars = sdvars_defaults["test"] %}
-  {% set _ = sdvars.update({"component": "nightlies"}) %}
+  {% set _ = sdvars.update({"component": "main nightlies"}) %}
 {% elif d.environment == "staging" %}
   # use apt-test and main (RC/test builds)
   {% set sdvars = sdvars_defaults["test"] %}
