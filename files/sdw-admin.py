@@ -8,9 +8,11 @@ import sys
 import argparse
 import subprocess
 import os
+import qubesadmin
 
 SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
 SALT_PATH = "/srv/salt/sd/"
+BASE_TEMPLATE = "debian-12-xfce"
 
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator, ValidationError  # noqa: E402
@@ -95,6 +97,18 @@ def validate_config(path):
         raise SDWAdminException("Error while validating configuration")
 
 
+def get_appvms_for_template(vm_name:str) -> list[str]:
+    """
+    Return a list of AppVMs that use the specified VM as a template
+    """
+    app = qubesadmin.Qubes()
+    try:
+       template_vm = app.domains[vm_name]
+    except KeyError:
+       raise SDWAdminException(f"Error: template VM not found")
+    return [x.name for x in list(template_vm.appvms)]
+
+
 def refresh_salt():
     """
     Cleans the Salt cache and synchronizes Salt to ensure we are applying states
@@ -142,6 +156,24 @@ def main():
         print("Validating...")
         validate_config(SCRIPTS_PATH)
     elif args.apply:
+        print(
+            "SecureDrop Workstation should be installed on a fresh Qubes OS install.\n"
+            "The installation process will overwrite any user modifications to the\n"
+            f"{BASE_TEMPLATE} TemplateVM, and will disable old-format qubes-rpc\n"
+            "policy directives.\n"
+        )
+        affected_appvms = get_appvms_for_template(BASE_TEMPLATE)
+        if len(affected_appvms) > 0:
+            print(
+                f"{BASE_TEMPLATE} is already in use by the following AppVMS:\n"
+                f"{affected_appvms}\n"
+                "Applications and configurations in use by these AppVMs will be\n"
+                f"removed from {BASE_TEMPLATE}."
+                )
+            response = input("Are you sure you want to proceed (y/N)? ")
+            if response.lower() != "y":
+                print("Exiting.")
+                sys.exit(0)
         print("Applying configuration...")
         validate_config(SCRIPTS_PATH)
         copy_config()
