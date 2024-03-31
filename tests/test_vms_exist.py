@@ -26,9 +26,9 @@ class SD_VM_Tests(unittest.TestCase):
         """
         Confirms expected grsecurity-patched kernel is running.
         """
-        # Running custom kernel requires HVM with empty kernel
-        self.assertTrue(vm.virt_mode == "hvm")
-        self.assertTrue(vm.kernel == "")
+        # Running custom kernel in PVH mode requires pvgrub2-pvh
+        self.assertTrue(vm.virt_mode == "pvh")
+        self.assertTrue(vm.kernel == "pvgrub2-pvh")
 
         # Check kernel flavor in VM
         stdout, stderr = vm.run("uname -r")
@@ -130,6 +130,7 @@ class SD_VM_Tests(unittest.TestCase):
         vol = vm.volumes["private"]
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
+    # TODO: drop this or replace with debian-12 equivalen
     def test_sd_workstation_template(self):
         vm = self.app.domains["securedrop-workstation-{}".format(DEBIAN_VERSION)]
         nvm = vm.netvm

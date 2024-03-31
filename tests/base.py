@@ -9,6 +9,7 @@ from qubesadmin import Qubes
 WANTED_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "sd-devices"]
 CURRENT_FEDORA_VERSION = "39"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"
+CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
 CURRENT_WHONIX_VERSION = "17"
 
 
