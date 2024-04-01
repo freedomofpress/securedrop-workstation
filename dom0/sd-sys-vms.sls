@@ -119,18 +119,12 @@ sd-{{ sys_vm }}-fedora-version-update:
       - qvm: create-{{ sd_supported_fedora_template }}
 {% endif %}
 
-# We're numbering our VMs now even though its contents wouldn't change, to work
-# around Salt's limitations, so the non-numbered VM should be removed.
-{% if sys_vm == "sys-usb" %}
-remove-sd-fedora-dvm:
-  qvm.absent:
-    - name: sd-fedora-dvm
-    - require:
-      - qvm: sd-sys-usb-fedora-version-update
-
 # Finally, remove the old supported fedora DVM we created. We won't uninstall
 # the template, in case it's being used elsewhere, but the `sd-` VMs we can
 # reasonably manage (remove) ourselves.
+# TODO: does this need to be updated to refer to sd-fedora-<previous>-dvm? or was it
+# a one-time thing?
+{% if sys_vm == "sys-usb" %}
 remove-sd-fedora-37-dvm:
   qvm.absent:
     - name: sd-fedora-37-dvm
