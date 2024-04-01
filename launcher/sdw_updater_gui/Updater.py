@@ -132,13 +132,13 @@ def apply_updates_templates(templates=current_templates):
             "--targets",
             ",".join(templates)
         ]
-        update_cmd_result = subprocess.check_output(
+        update_cmd_output = subprocess.check_output(
             update_cmd, stderr=subprocess.STDOUT
         )
         update_status = UpdateStatus.UPDATES_OK
         sdlog.info("Update successful.")
     except subprocess.CalledProcessError as e:
-        update_cmd_result = e.output
+        update_cmd_output = e.output
         sdlog.error(
             "An error has occurred updating templates. Please contact your administrator."
             " See {} for details.".format(DETAIL_LOG_FILE)
@@ -146,9 +146,10 @@ def apply_updates_templates(templates=current_templates):
         sdlog.error(str(e))
         update_status = UpdateStatus.UPDATES_FAILED
 
-    cmd_for_log = " ".join(update_cmd)
-    clean_output = Util.strip_ansi_colors(update_cmd_result.decode("utf-8").strip())
-    detail_log.info("Output from update command: {}\n{}".format(cmd_for_log, clean_output))
+    if update_cmd_output:
+        cmd_for_log = " ".join(update_cmd)
+        clean_output = Util.strip_ansi_colors(update_cmd_output.decode("utf-8").strip())
+        detail_log.info("Output from update command: {}\n{}".format(cmd_for_log, clean_output))
 
     return update_status
 
