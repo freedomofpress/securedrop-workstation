@@ -123,8 +123,9 @@ clean: assert-dom0 prep-dev ## Destroys all SD VMs
 # if clean has already been run.
 	./scripts/sdw-admin.py --uninstall --keep-template-rpm --force
 
-test: assert-dom0 ## Runs all application tests (no integration tests yet)
-	python3 -m unittest discover -v tests
+.PHONY: test
+test: ## Runs tests
+	$(CONTAINER) python3 -m pytest -v
 
 test-base: assert-dom0 ## Runs tests for VMs layout
 	python3 -m unittest discover -v tests -p test_vms_exist.py
@@ -147,12 +148,20 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 # Not requiring dom0 for linting as that requires extra packages, which we're
 # not installing on dom0, so are only in the developer environment, i.e. Work VM
 
+
+.PHONY: check
+check: lint test ## Runs linters and tests
+
+.PHONY: bandit
+bandit: ## Runs the bandit security linter
+	bandit -ll --exclude ./.venv/ -r .
+
 .PHONY: check-black
 check-black: ## Check Python source code formatting with black
 	black --check --diff .
 
 .PHONY: lint
-lint: flake8 black mypy ## Runs all linters
+lint: check-black check-isort flake8 mypy bandit rpmlint shellcheck ## Runs linters (black, isort, flake8, mypy, bandit rpmlint, and shellcheck)
 
 .PHONY: black
 black: ## Update Python source code formatting with black
@@ -167,15 +176,12 @@ isort: ## Update Python import organization with isort
 	isort --diff .
 
 .PHONY: flake8
-flake8: ## Lints all Python files with flake8
-# Not requiring dom0 since linting requires extra packages,
-# available only in the developer environment, i.e. Work VM.
+flake8: ## Validate PEP8 compliance for Python source files
 	flake8
 
-mypy: ## Type checks Python files
-# Not requiring dom0 since linting requires extra packages,
-# available only in the developer environment, i.e. Work VM.
-	mypy
+.PHONY: mypy
+mypy:  ## Type check Python files
+	mypy .
 
 .PHONY: rpmlint
 rpmlint: ## Runs rpmlint on the spec file
@@ -197,12 +203,17 @@ update-pip-requirements: ## Updates all Python requirements files via pip-compil
 
 .PHONY: venv
 venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt5)
-	$(PYTHON3) -m venv .venv
+	$(PYTHON3) -m venv .venv --system-site-packages
 	.venv/bin/pip install --upgrade pip wheel
 	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
 	@echo "#################"
-	@echo "Virtualenv is complete."
-	@echo "Run: source .venv/bin/activate"
+	@echo "Virtualenv with system-packages is complete."
+	@echo "Make sure to either install the OS package for PyQt5 or install PyQt5==5.14.2 into this virtual environment."
+	@echo "Then run: source .venv/bin/activate"
+
+.PHONY: test-install-rpm
+test-install-rpm: ## Tests installing the RPM in CI/container
+	$(CONTAINER) ./scripts/test-install-rpm.sh
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.

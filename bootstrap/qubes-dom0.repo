@@ -1,0 +1,43 @@
+[qubes-dom0-current]
+name = Qubes Dom0 Repository (updates)
+#baseurl = https://yum.qubes-os.org/r4.1/current/dom0/fc32
+#baseurl = http://yum.qubesosfasa4zl44o4tws22di6kepyzfeqv3tg4e3ztknltfxqrymdad.onion/r4.1/current/dom0/fc32
+metalink = https://yum.qubes-os.org/r4.1/current/dom0/fc32/repodata/repomd.xml.metalink
+skip_if_unavailable=False
+enabled = 1
+metadata_expire = 6h
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-4.1-primary
+
+[qubes-dom0-current-testing]
+name = Qubes Dom0 Repository (updates-testing)
+#baseurl = https://yum.qubes-os.org/r4.1/current-testing/dom0/fc32
+#baseurl = http://yum.qubesosfasa4zl44o4tws22di6kepyzfeqv3tg4e3ztknltfxqrymdad.onion/r4.1/current-testing/dom0/fc32
+metalink = https://yum.qubes-os.org/r4.1/current-testing/dom0/fc32/repodata/repomd.xml.metalink
+skip_if_unavailable=False
+enabled = 0
+metadata_expire = 6h
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-4.1-primary
+
+[qubes-dom0-security-testing]
+name = Qubes Dom0 Repository (security-testing)
+#baseurl = https://yum.qubes-os.org/r4.1/security-testing/dom0/fc32
+#baseurl = http://yum.qubesosfasa4zl44o4tws22di6kepyzfeqv3tg4e3ztknltfxqrymdad.onion/r4.1/security-testing/dom0/fc32
+metalink = https://yum.qubes-os.org/r4.1/security-testing/dom0/fc32/repodata/repomd.xml.metalink
+skip_if_unavailable=False
+enabled = 0
+metadata_expire = 6h
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-4.1-primary
+
+[qubes-dom0-unstable]
+name = Qubes Dom0 Repository (unstable)
+#baseurl = https://yum.qubes-os.org/r4.1/unstable/dom0/fc32
+#baseurl = http://yum.qubesosfasa4zl44o4tws22di6kepyzfeqv3tg4e3ztknltfxqrymdad.onion/r4.1/unstable/dom0/fc32
+metalink = https://yum.qubes-os.org/r4.1/unstable/dom0/fc32/repodata/repomd.xml.metalink
+skip_if_unavailable=False
+enabled = 0
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-4.1-unstable
+

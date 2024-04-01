@@ -5,7 +5,9 @@ flake8
 gitpython>=3.1.32 # for bandit, re CVE-2022-24439
 isort
 mypy
+PyQt5-stubs
 pip-tools
 pip
 pytest
 reprotest
+types-setuptools

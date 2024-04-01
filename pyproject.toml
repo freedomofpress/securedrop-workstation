@@ -25,3 +25,6 @@ exclude = [
 [tool.isort]
 line_length = 100
 profile = "black"
+
+[tool.pytest.ini_options]
+addopts = "--cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util --cov=files"

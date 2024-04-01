@@ -1,0 +1,9 @@
+[Unit]
+Description=SecureDrop Updater GUI Notification
+
+[Timer]
+OnStartupSec=2h
+OnUnitActiveSec=2h
+
+[Install]
+WantedBy=default.target
