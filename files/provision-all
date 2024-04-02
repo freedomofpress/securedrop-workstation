@@ -47,3 +47,6 @@ qvm-check --quiet sd-fedora-39-dvm 2> /dev/null && \
   sudo qubesctl --show-output --skip-dom0 --targets sd-fedora-39-dvm state.highstate && \
   qvm-shutdown --wait sys-usb && qvm-start sys-usb || \
   sudo qubesctl --show-output --skip-dom0 --targets sys-usb state.highstate
+
+# Shut down all VMs to ensure new configuration takes place, if the user doesn't reboot.
+qvm-ls --tags sd-workstation --raw-list | xargs qvm-shutdown --wait
