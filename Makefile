@@ -44,9 +44,9 @@ reprotest: ## Check RPM package reproducibility
 .PHONY: install-deps
 install-deps:
 	sudo dnf install -y \
-        git file python3-devel python3-pip python3-qt5 python3-wheel \
+        git file python3-devel python3-pip python3-qt5 python3-systemd python3-wheel \
 		xorg-x11-server-Xvfb rpmdevtools rpmlint which libfaketime ShellCheck \
-		hostname
+		systemd-rpm-macros hostname
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
@@ -187,6 +187,10 @@ rpmlint: ## Runs rpmlint on the spec file
 .PHONY: shellcheck
 shellcheck: ## Runs shellcheck on all shell scripts
 	./scripts/shellcheck.sh
+
+.PHONY: test-install-rpm
+test-install-rpm: ## Tests installing the RPM in CI/container
+	$(CONTAINER) ./scripts/test-install-rpm.sh
 
 prep-dom0: prep-dev # Copies dom0 config files
 	sudo qubesctl --show-output --targets dom0 state.highstate

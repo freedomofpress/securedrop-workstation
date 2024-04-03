@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
 """
 Utility library for checking and applying SecureDrop Workstation VM updates.
 
-This library is meant to be called by the SecureDrop launcher, which
-is opened by the user when clicking on the desktop, opening sdw-laucher.py
-from the parent directory.
+This library is meant to be called by the SecureDrop Updater, which
+is opened by the user when clicking on the desktop, opening
+/usr/bin/sdw-updater.
 """
 
 import json
@@ -12,17 +11,18 @@ import os
 import subprocess
 from datetime import datetime, timedelta
 from enum import Enum
+
 from sdw_util import Util
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-DEFAULT_HOME = ".securedrop_launcher"
+DEFAULT_HOME = ".securedrop_updater"
 FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-status"
 FLAG_FILE_LAST_UPDATED_SD_APP = "/home/user/.securedrop_client/sdw-last-updated"
 FLAG_FILE_STATUS_DOM0 = os.path.join(DEFAULT_HOME, "sdw-update-status")
 FLAG_FILE_LAST_UPDATED_DOM0 = os.path.join(DEFAULT_HOME, "sdw-last-updated")
-LOCK_FILE = "sdw-launcher.lock"
-LOG_FILE = "launcher.log"
-DETAIL_LOG_FILE = "launcher-detail.log"
+LOCK_FILE = "sdw-updater.lock"
+LOG_FILE = "updater.log"
+DETAIL_LOG_FILE = "updater-detail.log"
 DETAIL_LOGGER_PREFIX = "detail"  # For detailed logs such as Salt states
 
 # We use a hardcoded temporary directory path in dom0. As dom0 is not
@@ -31,7 +31,7 @@ DETAIL_LOGGER_PREFIX = "detail"  # For detailed logs such as Salt states
 # logic to leverage the Qubes Python API.
 MIGRATION_DIR = "/tmp/sdw-migrations"  # nosec
 
-DEBIAN_VERSION = "bookworm"
+DEBIAN_VERSION = "bullseye"
 
 sdlog = Util.get_logger(module=__name__)
 detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
@@ -40,13 +40,13 @@ detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 # as well as their associated TemplateVMs.
 # In the future, we could use qvm-prefs to extract this information.
 current_vms = {
-    "fedora": "fedora-39-xfce",
+    "fedora": "fedora-36",
     "sd-viewer": "sd-large-{}-template".format(DEBIAN_VERSION),
     "sd-app": "sd-small-{}-template".format(DEBIAN_VERSION),
     "sd-log": "sd-small-{}-template".format(DEBIAN_VERSION),
     "sd-devices": "sd-large-{}-template".format(DEBIAN_VERSION),
     "sd-proxy": "sd-small-{}-template".format(DEBIAN_VERSION),
-    "sd-whonix": "whonix-gateway-17",
+    "sd-whonix": "whonix-gw-16",
     "sd-gpg": "sd-small-{}-template".format(DEBIAN_VERSION),
 }
 
@@ -287,7 +287,7 @@ def last_required_reboot_performed():
         boot_time = datetime.now() - _get_uptime()
 
         # The session was started *before* the reboot was requested by
-        # the launcher, system was not rebooted after previous run
+        # the updater, system was not rebooted after previous run
         if boot_time < reboot_time:
             return False
         # system was rebooted after flag was written to disk

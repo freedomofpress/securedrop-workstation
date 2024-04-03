@@ -18,8 +18,10 @@ include sd-app/*
 include sd-workstation/*
 include sys-firewall/*
 include launcher/*.py
-include launcher/sdw_updater_gui/*.py
+include setup.py  # TODO
+include launcher/sdw_updater/*.py
 include launcher/sdw_notify/*.py
 include launcher/sdw_util/*.py
+include migrations/*.py
 include usb-autoattach/*
 include files/*

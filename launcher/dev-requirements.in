@@ -1,5 +1,14 @@
-bandit>=1.7.7  # Safety 64484
+bandit
+black
+diffoscope
+flake8
+isort
 pip-tools
 pip
 pytest
 pytest-cov
+reprotest
+
+mypy
+PyQt5-stubs
+types-setuptools
