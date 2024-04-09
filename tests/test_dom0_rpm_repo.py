@@ -2,8 +2,8 @@ import json
 import unittest
 
 
-DEBIAN_VERSION = "bullseye"
-FEDORA_VERSION = "f32"
+DEBIAN_VERSION = "bookworm"
+FEDORA_VERSION = "f37"
 
 
 class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):

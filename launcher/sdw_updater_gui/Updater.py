@@ -31,7 +31,7 @@ DETAIL_LOGGER_PREFIX = "detail"  # For detailed logs such as Salt states
 # logic to leverage the Qubes Python API.
 MIGRATION_DIR = "/tmp/sdw-migrations"  # nosec
 
-DEBIAN_VERSION = "bullseye"
+DEBIAN_VERSION = "bookworm"
 
 sdlog = Util.get_logger(module=__name__)
 detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
@@ -40,7 +40,7 @@ detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 # as well as their associated TemplateVMs.
 # In the future, we could use qvm-prefs to extract this information.
 current_vms = {
-    "fedora": "fedora-38",
+    "fedora": "fedora-39-xfce",
     "sd-viewer": "sd-large-{}-template".format(DEBIAN_VERSION),
     "sd-app": "sd-small-{}-template".format(DEBIAN_VERSION),
     "sd-log": "sd-small-{}-template".format(DEBIAN_VERSION),

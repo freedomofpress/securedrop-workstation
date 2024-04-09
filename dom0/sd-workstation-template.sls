@@ -5,26 +5,10 @@
 {% from 'sd-default-config.sls' import sdvars with context %}
 
 include:
-  - sd-dom0-files
-
-# Sets virt_mode and kernel to use custom hardened kernel.
-sd-workstation-template:
-  qvm.vm:
-    - name: securedrop-workstation-{{ sdvars.distribution }}
-    - prefs:
-      - virt-mode: hvm
-      - kernel: ''
-    - tags:
-      - add:
-        - sd-workstation
-        - sd-{{ sdvars.distribution }}
-    - features:
-      - enable:
-        - service.paxctld
-    - require:
-      - cmd: dom0-install-securedrop-workstation-template
+  - sd-base-template
 
 # Installs consolidated templateVMs:
+# Sets virt_mode and kernel to use custom hardened kernel.
 # - sd-small-{{ sdvars.distribution }}-template, to be used for
 #   sd-app, sd-gpg, sd-log, and sd-proxy
 # - sd-large-{{ sdvars.distribution }}-template, to be used for
@@ -33,24 +17,36 @@ sd-small-{{ sdvars.distribution }}-template:
   qvm.vm:
     - name: sd-small-{{ sdvars.distribution }}-template
     - clone:
-      - source: securedrop-workstation-{{ sdvars.distribution }}
+      - source: sd-base-{{ sdvars.distribution }}-template
       - label: red
+    - prefs:
+      - virt-mode: pvh
+      - kernel: 'pvgrub2-pvh'
     - tags:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
+    - features:
+      - enable:
+        - service.paxctld
     - require:
-      - qvm: sd-workstation-template
+      - sls: sd-base-template
 
 sd-large-{{ sdvars.distribution }}-template:
   qvm.vm:
     - name: sd-large-{{ sdvars.distribution }}-template
     - clone:
-      - source: securedrop-workstation-{{ sdvars.distribution }}
+      - source: sd-base-{{ sdvars.distribution }}-template
       - label: red
+    - prefs:
+      - virt-mode: pvh
+      - kernel: 'pvgrub2-pvh'
     - tags:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
+    - features:
+      - enable:
+        - service.paxctld
     - require:
-      - qvm: sd-workstation-template
+      - qvm: sd-base-template

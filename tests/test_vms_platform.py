@@ -9,7 +9,7 @@ from base import WANTED_VMS, CURRENT_FEDORA_TEMPLATE
 BULLSEYE_STRING = "Debian GNU/Linux 11 (bullseye)"
 BOOKWORM_STRING = "Debian GNU/Linux 12 (bookworm)"
 
-SUPPORTED_SD_DEBIAN_DIST = "bullseye"
+SUPPORTED_SD_DEBIAN_DIST = "bookworm"
 SUPPORTED_WHONIX_PLATFORMS = [BOOKWORM_STRING]
 
 
@@ -80,7 +80,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         stdout, stderr = vm.run(cmd)
         contents = stdout.decode("utf-8").rstrip("\n")
 
-        self.assertTrue(self.apt_url in contents)
+        self.assertIn(self.apt_url, contents, f"{vm.name} missing apt sources list")
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
@@ -101,7 +101,10 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         else:
             cmd = "sudo dnf check-update"
             # Will raise CalledProcessError if updates available
-            stdout, stderr = vm.run(cmd)
+            try:
+                stdout, stderr = vm.run(cmd)
+            except subprocess.CalledProcessError:
+                self.assertTrue(False, fail_msg)
             # 'stdout' will contain timestamped progress info; ignore it
             results = stderr.rstrip().decode("utf-8")
             stdout_lines = results.split("\n")

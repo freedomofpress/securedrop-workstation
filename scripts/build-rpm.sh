@@ -7,12 +7,8 @@ set -o pipefail
 source "$(dirname "$0")/common.sh"
 
 # Prepare tarball, rpmbuild will use it
-mkdir -p dist/
-git clean -fdX rpm-build/ dist/
-/usr/bin/python3 setup.py sdist
-
-# Place tarball where rpmbuild will find it
-cp dist/*.tar.gz rpm-build/SOURCES/
+git clean -fdX rpm-build/
+/usr/bin/python3 setup.py sdist -d rpm-build/SOURCES/
 
 rpmbuild \
     --quiet \

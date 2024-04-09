@@ -27,7 +27,7 @@ debian_based_vms = [
     "sd-devices",
 ]
 
-DEBIAN_VERSION = "bullseye"
+DEBIAN_VERSION = "bookworm"
 
 TEST_RESULTS_OK = {
     "dom0": UpdateStatus.UPDATES_OK,
@@ -492,7 +492,7 @@ def test_shutdown_and_start_vms(
         call("sys-usb"),
     ]
     template_vm_calls = [
-        call("fedora-38"),
+        call("fedora-39-xfce"),
         call("sd-large-{}-template".format(DEBIAN_VERSION)),
         call("sd-small-{}-template".format(DEBIAN_VERSION)),
         call("whonix-gateway-17"),
@@ -538,7 +538,7 @@ def test_shutdown_and_start_vms_sysvm_fail(
         call("sd-log"),
     ]
     template_vm_calls = [
-        call("fedora-38"),
+        call("fedora-39-xfce"),
         call("sd-large-{}-template".format(DEBIAN_VERSION)),
         call("sd-small-{}-template".format(DEBIAN_VERSION)),
         call("whonix-gateway-17"),

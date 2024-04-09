@@ -12,12 +12,21 @@ max_concurrency="2"
 echo "Configure Fedora-based system VMs"
 sudo qubesctl --show-output state.sls sd-sys-vms
 
+echo ".........................................................................."
+echo "Configure base template"
+sudo qubesctl --show-output state.sls sd-base-template
+sudo qubesctl --show-output --skip-dom0 --targets sd-base-bookworm-template state.highstate
+qvm-shutdown --wait sd-base-bookworm-template
+
+
 # Running only against dom0, to ensure the VMs are created (but not yet configured)
+echo ".........................................................................."
 echo "Set up dom0 config files, including RPC policies, and create VMs"
 sudo qubesctl --show-output state.highstate
 
+echo ".........................................................................."
 echo "Set up logging VMs early"
-sudo qubesctl --show-output --skip-dom0 --targets sd-log,sd-small-bullseye-template state.highstate
+sudo qubesctl --show-output --skip-dom0 --targets sd-log,sd-small-bookworm-template state.highstate
 
 # Reboot sd-log so it's ready to receive logs from other VMs about to be configured
 qvm-shutdown --wait sd-log && qvm-start sd-log
@@ -27,12 +36,19 @@ qvm-shutdown --wait sd-log && qvm-start sd-log
 all_sdw_vms_target="$(qvm-ls --tags sd-workstation --raw-list | perl -npE 's/\n/,/g' | perl -npE 's/,$//' )"
 
 # We skip dom0 in the task below, since dom0 highstate was enforced in the previous command.
+echo ".........................................................................."
 echo "Provision all SecureDrop Workstation VMs with service-specific configs"
 sudo qubesctl --show-output --max-concurrency "$max_concurrency" --skip-dom0 --targets "$all_sdw_vms_target" state.highstate
 
+echo ".........................................................................."
 echo "Add SecureDrop export device handling to sys-usb"
-# If sd-fedora-38-dvm exists it's because salt determined that sys-usb was disposable
-qvm-check --quiet sd-fedora-38-dvm 2> /dev/null && \
-  sudo qubesctl --show-output --skip-dom0 --targets sd-fedora-38-dvm state.highstate && \
+# If sd-fedora-39-dvm exists it's because salt determined that sys-usb was disposable
+qvm-check --quiet sd-fedora-39-dvm 2> /dev/null && \
+  sudo qubesctl --show-output --skip-dom0 --targets sd-fedora-39-dvm state.highstate && \
   qvm-shutdown --wait sys-usb && qvm-start sys-usb || \
   sudo qubesctl --show-output --skip-dom0 --targets sys-usb state.highstate
+
+# Shut down all VMs to ensure new configuration takes place, if the user doesn't reboot.
+echo "will shut down the following VMs"
+qvm-ls --tags sd-workstation
+qvm-ls --tags sd-workstation --raw-list | xargs qvm-shutdown --wait

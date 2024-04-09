@@ -46,31 +46,11 @@ dom0-workstation-rpm-repo:
     - require:
       - file: dom0-rpm-test-key
 
-dom0-workstation-templates-repo:
-  # Using file.blockreplace because /etc/qubes/repo-templates/ is not a .d
-  # style directory, and qvm.template_installed:fromrepo seems to only support
-  # using a repo from this file. Installing manually via a cli-command-instead?
-  file.blockreplace:
-    - name: /etc/qubes/repo-templates/qubes-templates.repo
-    - append_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        [securedrop-workstation-templates]
-        gpgcheck=1
-        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
-        enabled=1
-        baseurl={{ sdvars.dom0_yum_repo_url }}
-        name=SecureDrop Workstation Templates repository
-    - require:
-      - file: dom0-rpm-test-key
-
-dom0-install-securedrop-workstation-template:
+# Ensure debian-12-minimal is present for use as base template
+dom0-install-debian-minimal-template:
   cmd.run:
     - name: >
-        qvm-template info --machine-readable securedrop-workstation-{{ sdvars.distribution }} | grep -q "installed|securedrop-workstation-{{ sdvars.distribution }}|" || qvm-template install securedrop-workstation-{{ sdvars.distribution }}
-    - require:
-      - file: dom0-workstation-rpm-repo
+        qvm-template info --machine-readable debian-12-minimal | grep -q "installed|debian-12-minimal|" || qvm-template install debian-12-minimal
 
 # Create directory for storing SecureDrop-specific icons
 dom0-securedrop-icons-directory:

@@ -9,22 +9,23 @@ include:
   # DispVM is created
   - qvm.default-dispvm
 
-{% set sd_supported_fedora_version = 'fedora-38' %}
-
+# 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to 
+# follow simple - like sd-fedora-NN-dvm
+{% set sd_supported_fedora_version = 'fedora-39' %}
+{% set sd_fedora_base_template = sd_supported_fedora_version + '-xfce' %}
 
 # Install latest templates required for SDW VMs.
 dom0-install-fedora-template:
   cmd.run:
     - name: >
-        qvm-template info --machine-readable {{ sd_supported_fedora_version }} | grep -q "installed|{{ sd_supported_fedora_version }}|" || qvm-template install {{ sd_supported_fedora_version }}
+        qvm-template info --machine-readable {{ sd_fedora_base_template }} | grep -q "installed|{{ sd_fedora_base_template }}|" || qvm-template install {{ sd_fedora_base_template }}
 
 # Update the mgmt VM before updating the new Fedora VM. The order is required
-# and listed in the release notes for F32 & F33.
 set-fedora-template-as-default-mgmt-dvm:
   cmd.run:
     - name: >
         qvm-shutdown --wait default-mgmt-dvm &&
-        qvm-prefs default-mgmt-dvm template {{ sd_supported_fedora_version }}
+        qvm-prefs default-mgmt-dvm template {{ sd_fedora_base_template }}
     - require:
       - cmd: dom0-install-fedora-template
 
@@ -44,7 +45,7 @@ update-fedora-template-if-new:
 # is sets the default_dispvm to the DispVM based on the wanted Fedora version.
 set-fedora-default-template-version:
   cmd.run:
-    - name: qubes-prefs default_template {{ sd_supported_fedora_version }}
+    - name: qubes-prefs default_template {{ sd_fedora_base_template }}
     - require:
       - cmd: dom0-install-fedora-template
       - sls: qvm.default-dispvm
@@ -56,6 +57,7 @@ set-fedora-default-template-version:
 # sys-usb is also disposable by default but a special case as we want to
 # customize the underlying DispVM template for usability purposes: we want to
 # consistently auto-attach USB devices to our sd-devices qube
+#
 {% set required_dispvms = [ sd_supported_fedora_version + '-dvm' ] %}
 {% if salt['pillar.get']('qvm:sys-usb:disposable', true) %}
   {% set _ = required_dispvms.append("sd-" + sd_supported_fedora_version + "-dvm") %}
@@ -66,10 +68,10 @@ create-{{ required_dispvm }}:
   qvm.vm:
     - name: {{ required_dispvm }}
     - present:
-      - template: {{ sd_supported_fedora_version }}
+      - template: {{ sd_fedora_base_template }}
       - label: red
     - prefs:
-      - template: {{ sd_supported_fedora_version }}
+      - template: {{ sd_fedora_base_template }}
       - template_for_dispvms: True
 {% if required_dispvm == 'sd-' + sd_supported_fedora_version + '-dvm' %}
       - netvm: ""
@@ -91,7 +93,7 @@ create-{{ required_dispvm }}:
     {% set sd_supported_fedora_template = sd_supported_fedora_version + '-dvm' %}
   {% endif %}
 {% else %}
-  {% set sd_supported_fedora_template = sd_supported_fedora_version %}
+  {% set sd_supported_fedora_template = sd_fedora_base_template %}
 {% endif %}
 {% if salt['cmd.shell']('qvm-prefs ' + sys_vm + ' template') != sd_supported_fedora_template %}
 sd-{{ sys_vm }}-fedora-version-halt:
@@ -117,18 +119,12 @@ sd-{{ sys_vm }}-fedora-version-update:
       - qvm: create-{{ sd_supported_fedora_template }}
 {% endif %}
 
-# We're numbering our VMs now even though its contents wouldn't change, to work
-# around Salt's limitations, so the non-numbered VM should be removed.
-{% if sys_vm == "sys-usb" %}
-remove-sd-fedora-dvm:
-  qvm.absent:
-    - name: sd-fedora-dvm
-    - require:
-      - qvm: sd-sys-usb-fedora-version-update
-
 # Finally, remove the old supported fedora DVM we created. We won't uninstall
 # the template, in case it's being used elsewhere, but the `sd-` VMs we can
 # reasonably manage (remove) ourselves.
+# TODO: does this need to be updated to refer to sd-fedora-<previous>-dvm? or was it
+# a one-time thing?
+{% if sys_vm == "sys-usb" %}
 remove-sd-fedora-37-dvm:
   qvm.absent:
     - name: sd-fedora-37-dvm
