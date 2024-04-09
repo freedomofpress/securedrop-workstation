@@ -125,9 +125,6 @@ clean: assert-dom0 prep-dev ## Destroys all SD VMs
 # if clean has already been run.
 	./scripts/sdw-admin.py --uninstall --keep-template-rpm --force
 
-test: assert-dom0 ## Runs all application tests (no integration tests yet)
-	python3 -m unittest discover -v tests
-
 test-base: assert-dom0 ## Runs tests for VMs layout
 	python3 -m unittest discover -v tests -p test_vms_exist.py
 
@@ -149,12 +146,23 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 # Not requiring dom0 for linting as that requires extra packages, which we're
 # not installing on dom0, so are only in the developer environment, i.e. Work VM
 
+.PHONY: check
+check: lint test ## Runs linters and tests
+
+.PHONY: lint
+lint: check-black check-isort flake8 mypy bandit rpmlint shellcheck ## Runs linters (black, isort, flake8, mypy, bandit rpmlint, and shellcheck)
+
+.PHONY: bandit
+bandit: ## Runs the bandit security linter
+	bandit -ll --exclude ./.venv/ -r .
+
+.PHONY: test
+test: ## Runs tests
+	$(CONTAINER) python3 -m pytest -v
+
 .PHONY: check-black
 check-black: ## Check Python source code formatting with black
 	black --check --diff .
-
-.PHONY: lint
-lint: flake8 black mypy ## Runs all linters
 
 .PHONY: black
 black: ## Update Python source code formatting with black
