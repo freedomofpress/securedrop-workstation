@@ -44,7 +44,7 @@ reprotest: ## Check RPM package reproducibility
 install-deps:
 	sudo dnf install -y \
         git file python3-devel python3-pip python3-qt5 python3-wheel \
-		xorg-x11-server-Xvfb rpmdevtools rpmlint which libfaketime ShellCheck \
+		xorg-x11-server-Xvfb rpmdevtools rpmlint systemd-rpm-macros which libfaketime ShellCheck \
 		hostname
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0

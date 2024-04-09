@@ -52,28 +52,6 @@ dom0-install-debian-minimal-template:
     - name: >
         qvm-template info --machine-readable debian-12-minimal | grep -q "installed|debian-12-minimal|" || qvm-template install debian-12-minimal
 
-# Create directory for storing SecureDrop-specific icons
-dom0-securedrop-icons-directory:
-  file.directory:
-    - name: /usr/share/securedrop/icons
-    - user: root
-    - group: root
-    - mode: 755
-    - makedirs: True
-
-# Copy SecureDrop icon for use in GUI feedback. It's also present in
-# the Salt directory, but the permissions on that dir don't permit
-# normal user reads.
-dom0-securedrop-icon:
-  file.managed:
-    - name: /usr/share/securedrop/icons/sd-logo.png
-    - source: salt://sd/sd-workstation/logo-small.png
-    - user: root
-    - group: root
-    - mode: 644
-    - require:
-      - file: dom0-securedrop-icons-directory
-
 dom0-create-opt-securedrop-directory:
   file.directory:
     - name: /opt/securedrop
@@ -109,32 +87,6 @@ dom0-login-autostart-desktop-file:
     - mode: 664
     - require:
       - file: dom0-login-autostart-directory
-
-dom0-login-autostart-script:
-  file.managed:
-    - name: /usr/bin/securedrop-login
-    - source: "salt://securedrop-login"
-    - user: root
-    - group: root
-    - mode: 755
-
-dom0-securedrop-launcher-executables:
-  file.managed:
-    - names:
-      - /opt/securedrop/launcher/sdw-launcher.py
-      - /opt/securedrop/launcher/sdw-notify.py
-    - user: root
-    - group: root
-    - mode: 755
-    - replace: false
-
-dom0-securedrop-launcher-desktop-shortcut:
-  file.managed:
-    - name: /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
-    - source: "salt://securedrop-launcher.desktop"
-    - user: {{ gui_user }}
-    - group: {{ gui_user }}
-    - mode: 755
 
 {% import_json "sd/config.json" as d %}
 {% if d.environment != "dev" %}

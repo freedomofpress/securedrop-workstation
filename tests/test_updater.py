@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 from unittest import mock
 from unittest.mock import call
 
-relpath_updater_script = "../sdw_updater_gui/Updater.py"
+relpath_updater_script = "../sdw_updater/Updater.py"
 path_to_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updater_script)
 updater = SourceFileLoader("Updater", path_to_script).load_module()
 from Updater import UpdateStatus  # noqa: E402

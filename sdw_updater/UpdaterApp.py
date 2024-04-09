@@ -1,13 +1,13 @@
-from sdw_updater_gui import strings
-from sdw_updater_gui import Updater
-from sdw_updater_gui.Updater import UpdateStatus
+from sdw_updater import strings
+from sdw_updater import Updater
+from sdw_updater.Updater import UpdateStatus
 from sdw_util import Util
 import subprocess
 import sys
 
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
-from sdw_updater_gui.UpdaterAppUiQt5 import Ui_UpdaterDialog
+from sdw_updater.UpdaterAppUiQt5 import Ui_UpdaterDialog
 
 logger = Util.get_logger(module=__name__)
 
