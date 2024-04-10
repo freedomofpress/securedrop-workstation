@@ -7,7 +7,6 @@ include dom0/remove-tags
 include dom0/securedrop-login
 include dom0/securedrop-launcher.desktop
 include dom0/securedrop-handle-upgrade
-include dom0/securedrop-check-migration
 include dom0/update-xfce-settings
 include README.md
 include LICENSE

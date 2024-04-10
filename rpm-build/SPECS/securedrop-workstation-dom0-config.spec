@@ -74,7 +74,6 @@ install -m 644 dom0/*.conf %{buildroot}/srv/salt/
 install -m 755 dom0/remove-tags %{buildroot}/srv/salt/
 install -m 644 dom0/securedrop-login %{buildroot}/srv/salt/
 install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
-install -m 755 dom0/securedrop-check-migration %{buildroot}/srv/salt/
 install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
 install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
