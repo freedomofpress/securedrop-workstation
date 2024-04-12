@@ -11,7 +11,7 @@ relpath_notify = "../sdw_notify/Notify.py"
 path_to_notify = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_notify)
 notify = SourceFileLoader("Notify", path_to_notify).load_module()
 
-relpath_updater = "../sdw_updater_gui/Updater.py"
+relpath_updater = "../sdw_updater/Updater.py"
 path_to_updater = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updater)
 updater = SourceFileLoader("Updater", path_to_updater).load_module()
 

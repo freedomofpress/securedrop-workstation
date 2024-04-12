@@ -1,7 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Type=Application
-Terminal=false
-Icon=/usr/share/securedrop/icons/sd-logo.png
-Name=SecureDrop
-Exec=/opt/securedrop/launcher/sdw-launcher.py

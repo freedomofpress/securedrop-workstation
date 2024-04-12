@@ -1,13 +1,13 @@
-from sdw_updater_gui import strings
-from sdw_updater_gui import Updater
-from sdw_updater_gui.Updater import UpdateStatus
+from sdw_updater import strings
+from sdw_updater import Updater
+from sdw_updater.Updater import UpdateStatus
 from sdw_util import Util
 import subprocess
 import sys
 
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
-from sdw_updater_gui.UpdaterAppUiQt5 import Ui_UpdaterDialog
+from sdw_updater.UpdaterAppUiQt5 import Ui_UpdaterDialog
 
 logger = Util.get_logger(module=__name__)
 
@@ -43,7 +43,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
 
         self.cancelButton.setEnabled(True)
         self.cancelButton.show()
-        self.cancelButton.clicked.connect(self.exit_launcher)
+        self.cancelButton.clicked.connect(self.exit_updater)
 
         self.clientOpenButton.setEnabled(False)
         self.clientOpenButton.hide()
@@ -176,9 +176,9 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
             logger.error("Error while rebooting the workstation")
             logger.error(str(e))
 
-    def exit_launcher(self):
+    def exit_updater(self):
         """
-        Exits the launcher if the user clicks cancel
+        Exits the updater if the user clicks cancel
         """
         sys.exit()
 

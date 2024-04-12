@@ -1,5 +1,5 @@
 """
-Utility functions used by both the launcher and notifier scripts
+Utility functions used by both the updater and notifier scripts
 """
 
 import fcntl
@@ -11,7 +11,7 @@ import subprocess
 from logging.handlers import TimedRotatingFileHandler
 
 # The directory where status files and logs are stored
-BASE_DIRECTORY = os.path.join(os.path.expanduser("~"), ".securedrop_launcher")
+BASE_DIRECTORY = os.path.join(os.path.expanduser("~"), ".securedrop_updater")
 
 # Directory for lock files to avoid contention or multiple instantiation.
 LOCK_DIRECTORY = os.path.join("/run/user", str(os.getuid()))

@@ -3,8 +3,8 @@
 Utility library for checking and applying SecureDrop Workstation VM updates.
 
 This library is meant to be called by the SecureDrop launcher, which
-is opened by the user when clicking on the desktop, opening sdw-laucher.py
-from the parent directory.
+is opened by the user when clicking on the desktop, opening
+/usr/bin/sdw-updater.
 """
 
 import json
@@ -15,14 +15,14 @@ from enum import Enum
 from sdw_util import Util
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-DEFAULT_HOME = ".securedrop_launcher"
+DEFAULT_HOME = ".securedrop_updater"
 FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-status"
 FLAG_FILE_LAST_UPDATED_SD_APP = "/home/user/.securedrop_client/sdw-last-updated"
 FLAG_FILE_STATUS_DOM0 = os.path.join(DEFAULT_HOME, "sdw-update-status")
 FLAG_FILE_LAST_UPDATED_DOM0 = os.path.join(DEFAULT_HOME, "sdw-last-updated")
-LOCK_FILE = "sdw-launcher.lock"
-LOG_FILE = "launcher.log"
-DETAIL_LOG_FILE = "launcher-detail.log"
+LOCK_FILE = "sdw-updater.lock"
+LOG_FILE = "updater.log"
+DETAIL_LOG_FILE = "updater-detail.log"
 DETAIL_LOGGER_PREFIX = "detail"  # For detailed logs such as Salt states
 
 # We use a hardcoded temporary directory path in dom0. As dom0 is not
@@ -287,7 +287,7 @@ def last_required_reboot_performed():
         boot_time = datetime.now() - _get_uptime()
 
         # The session was started *before* the reboot was requested by
-        # the launcher, system was not rebooted after previous run
+        # the updater, system was not rebooted after previous run
         if boot_time < reboot_time:
             return False
         # system was rebooted after flag was written to disk

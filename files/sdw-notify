@@ -6,7 +6,7 @@ not stdout. All settings are in Notify utility module.
 """
 import sys
 from sdw_notify import Notify, NotifyApp
-from sdw_updater_gui import Updater, UpdaterApp
+from sdw_updater import Updater, UpdaterApp
 from sdw_util import Util
 
 from PyQt5.QtWidgets import QApplication

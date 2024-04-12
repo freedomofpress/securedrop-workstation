@@ -18,6 +18,14 @@ Summary:	SecureDrop Workstation
 #   * _buildhost varies based on environment, we build with containers but
 #     ensure this is the same regardless
 %global _buildhost %{name}
+#   * _custom_docdir is a workaround for %docs not supporting SOURCE_DATE_EPOCH
+%global _custom_docdir /usr/share/doc/%{srcname}
+#   * optflags is for multi-arch support: otherwise rpmbuild sets 'OPTFLAGS: -O2 -g -march=i386 -mtune=i686'
+%global optflags -O2 -g
+# To ensure forward-compatibility of RPMs regardless of updates to the system
+# Python, we disable the creation of bytecode at build time via the build
+# root policy.
+%undefine py_auto_byte_compile
 
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
@@ -54,9 +62,6 @@ configuration over time.
 # direct_url.json is is not reproducible and not strictly needed
 rm %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/direct_url.json
 sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/RECORD
-install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_updater_gui
-install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_notify
-install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_util
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-app
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-proxy
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-journalist
@@ -71,7 +76,6 @@ install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
 install -m 644 dom0/*.yml %{buildroot}/srv/salt/
 install -m 644 dom0/*.conf %{buildroot}/srv/salt/
 install -m 755 dom0/remove-tags %{buildroot}/srv/salt/
-install -m 644 dom0/securedrop-login %{buildroot}/srv/salt/
 install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
 install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
@@ -85,17 +89,30 @@ install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/destroy-vm %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/provision-all %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 644 launcher/*.py %{buildroot}/opt/securedrop/launcher/
-install -m 644 launcher/sdw_updater_gui/*.py %{buildroot}/opt/securedrop/launcher/sdw_updater_gui/
-install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw_notify/
-install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
 install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 
+install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_notify/
+install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_updater/
+install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_util/
+install -m 644 launcher/sdw_notify/*py %{buildroot}%{python3_sitelib}/sdw_notify/
+install -m 644 launcher/sdw_updater/*py %{buildroot}%{python3_sitelib}/sdw_updater/
+install -m 644 launcher/sdw_util/*py %{buildroot}%{python3_sitelib}/sdw_util/
+install -m 755 -d %{buildroot}/%{_bindir}
+install -m 755 -d %{buildroot}/usr/share/applications/
+install -m 755 -d %{buildroot}/usr/share/icons/hicolor/128x128/
+# Create doc dir manually, because %doc macro doesn't honor SOURCE_DATE_EPOCH.
+install -m 755 -d %{buildroot}/%{_custom_docdir}
+install -m 644 files/sdw-updater.desktop %{buildroot}/usr/share/applications/
+install -m 644 files/securedrop.png %{buildroot}/usr/share/icons/hicolor/128x128/
+install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
+install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
+install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
+install -m 644 README.md LICENSE %{buildroot}/%{_custom_docdir}/
+find %{buildroot} -type d -iname '*.egg-info' -print0 | xargs -0 -r rm -rf
+
 
 %files
-%attr(755, root, root) /opt/securedrop/launcher/sdw-launcher.py
-%attr(755, root, root) /opt/securedrop/launcher/sdw-notify.py
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
 %attr(755, root, root) %{_datadir}/%{name}/scripts/destroy-vm
 %attr(755, root, root) %{_datadir}/%{name}/scripts/provision-all
@@ -104,15 +121,23 @@ install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 # The name of the dist-info dir uses _ instead of -, so we use wildcards
 %{python3_sitelib}/*%{version}.dist-info/*
 %{_datadir}/%{name}/config.json.example
-/opt/securedrop/launcher/**/*.py
 /srv/salt/sd*
 /srv/salt/dom0-xfce-desktop-file.j2
 /srv/salt/remove-tags
 /srv/salt/securedrop-*
 /srv/salt/update-xfce-settings
 /srv/salt/fpf*
-%doc README.md
-%license LICENSE
+%doc %{_custom_docdir}/README.md
+%license %{_custom_docdir}/LICENSE
+
+%attr(755, root, root) %{_bindir}/sdw-login
+%attr(755, root, root) %{_bindir}/sdw-notify
+%attr(755, root, root) %{_bindir}/sdw-updater
+%attr(644, root, root) /usr/share/applications/sdw-updater.desktop
+%{python3_sitelib}/sdw_notify/*.py
+%{python3_sitelib}/sdw_updater/*.py
+%{python3_sitelib}/sdw_util/*.py
+/usr/share/icons/hicolor/128x128/securedrop.png
 
 
 %post

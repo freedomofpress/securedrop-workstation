@@ -6,11 +6,11 @@ from importlib.machinery import SourceFileLoader
 
 from PyQt5.QtWidgets import QApplication
 
-relpath_updaterapp_script = "../sdw_updater_gui/UpdaterApp.py"
+relpath_updaterapp_script = "../sdw_updater/UpdaterApp.py"
 path_to_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_updaterapp_script)
 updater_app = SourceFileLoader("UpdaterApp", path_to_script).load_module()
 
-relpath_strings_script = "../sdw_updater_gui/strings.py"
+relpath_strings_script = "../sdw_updater/strings.py"
 path_to_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), relpath_strings_script)
 strings = SourceFileLoader("strings", path_to_script).load_module()
 
