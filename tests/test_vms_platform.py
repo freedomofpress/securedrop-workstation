@@ -34,7 +34,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             elif config["environment"] == "staging":
                 self.apt_url = FPF_APT_TEST_SOURCES.format(dist=dist, component="main")
             else:
-                self.apt_url = FPF_APT_TEST_SOURCES.format(dist=dist, component="nightlies")
+                self.apt_url = FPF_APT_TEST_SOURCES.format(dist=dist, component="main nightlies")
 
     def tearDown(self):
         pass
