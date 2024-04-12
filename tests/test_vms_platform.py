@@ -23,18 +23,9 @@ class SD_VM_Platform_Tests(unittest.TestCase):
     def setUp(self):
         self.app = Qubes()
         with open("config.json") as c:
-            config = json.load(c)
-            if "environment" not in config:
-                config["environment"] = "dev"
-
-            dist = SUPPORTED_SD_DEBIAN_DIST
-
-            if config["environment"] == "prod":
-                self.apt_url = FPF_APT_SOURCES.format(dist=dist, component="main")
-            elif config["environment"] == "staging":
-                self.apt_url = FPF_APT_TEST_SOURCES.format(dist=dist, component="main")
-            else:
-                self.apt_url = FPF_APT_TEST_SOURCES.format(dist=dist, component="main nightlies")
+            self.config = json.load(c)
+        if "environment" not in self.config:
+            self.config["environment"] = "dev"
 
     def tearDown(self):
         pass
@@ -76,11 +67,20 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         if vm.name in ["sd-whonix"]:
             return
 
+        if self.config["environment"] == "prod":
+            expected = FPF_APT_SOURCES.format(dist=SUPPORTED_SD_DEBIAN_DIST, component="main")
+        elif self.config["environment"] == "staging":
+            expected = FPF_APT_TEST_SOURCES.format(dist=SUPPORTED_SD_DEBIAN_DIST, component="main")
+        else:
+            expected = FPF_APT_TEST_SOURCES.format(
+                dist=SUPPORTED_SD_DEBIAN_DIST, component="main nightlies"
+            )
+
         cmd = "cat {}".format(APT_SOURCES_FILE)
         stdout, stderr = vm.run(cmd)
         contents = stdout.decode("utf-8").rstrip("\n")
 
-        self.assertIn(self.apt_url, contents, f"{vm.name} missing apt sources list")
+        self.assertEqual(expected, contents, f"{vm.name} missing apt sources list")
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
