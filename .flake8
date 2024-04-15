@@ -4,7 +4,7 @@ max-line-length = 100
 extend-exclude = .venv
 filename =
     *.py
-    dom0/remove-tags
-    dom0/securedrop-login
+    dom0-scripts/remove-tags
+    dom0-scripts/securedrop-login
     scripts/configure-environment
     scripts/destroy-vm

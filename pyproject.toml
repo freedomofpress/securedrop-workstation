@@ -10,12 +10,12 @@ ignore_missing_imports = true
 scripts_are_modules = true
 files = [
     "*.py",
-    "dom0/remove-tags",
-    "dom0/securedrop-login",
+    "dom0-scripts/remove-tags",
+    "dom0-scripts/securedrop-login",
     "scripts/*.py",
-    "files/*.py",
+    "dom0-scripts/*.py",
     "scripts/configure-environment",
-    "files/destroy-vm",
+    "dom0-scripts/destroy-vm",
 ]
 exclude = [
     "launcher/",  # Moving to sd-updater

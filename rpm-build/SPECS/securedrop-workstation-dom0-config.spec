@@ -68,14 +68,14 @@ install -m 755 -d %{buildroot}/%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}/%{_bindir}
 install -m 644 dom0/*.sls %{buildroot}/srv/salt/
 install -m 644 dom0/*.top %{buildroot}/srv/salt/
-install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
-install -m 644 dom0/*.yml %{buildroot}/srv/salt/
-install -m 644 dom0/*.conf %{buildroot}/srv/salt/
-install -m 755 dom0/remove-tags %{buildroot}/srv/salt/
-install -m 644 dom0/securedrop-login %{buildroot}/srv/salt/
-install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
-install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
-install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
+install -m 644 files/*.j2 %{buildroot}/srv/salt/
+install -m 644 files/*.yml %{buildroot}/srv/salt/
+install -m 644 files/*.conf %{buildroot}/srv/salt/
+install -m 755 dom0-scripts/remove-tags %{buildroot}/srv/salt/
+install -m 644 dom0-scripts/securedrop-login %{buildroot}/srv/salt/
+install -m 644 files/securedrop-launcher.desktop %{buildroot}/srv/salt/
+install -m 755 dom0-scripts/securedrop-handle-upgrade %{buildroot}/srv/salt/
+install -m 755 dom0-scripts/update-xfce-settings %{buildroot}/srv/salt/
 install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
 install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
 install -m 644 sd-whonix/* %{buildroot}/srv/salt/sd/sd-whonix/
@@ -83,15 +83,15 @@ install -m 644 sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
 install -m 644 sys-firewall/* %{buildroot}/srv/salt/sd/sys-firewall/
 install -m 755 usb-autoattach/sd-attach-export-device %{buildroot}/srv/salt/sd/usb-autoattach/
 install -m 644 usb-autoattach/99-sd-devices.rules %{buildroot}/srv/salt/sd/usb-autoattach/
-install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 755 files/destroy-vm %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 755 files/provision-all %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
+install -m 755 dom0-scripts/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
+install -m 755 dom0-scripts/destroy-vm %{buildroot}/%{_datadir}/%{name}/scripts/
+install -m 755 dom0-scripts/provision-all %{buildroot}/%{_datadir}/%{name}/scripts/
+install -m 755 dom0-scripts/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 644 launcher/*.py %{buildroot}/opt/securedrop/launcher/
 install -m 644 launcher/sdw_updater_gui/*.py %{buildroot}/opt/securedrop/launcher/sdw_updater_gui/
 install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw_notify/
 install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
-install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
+install -m 755 dom0-scripts/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 
 

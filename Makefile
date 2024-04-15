@@ -96,7 +96,7 @@ sd-log: prep-dev ## Provisions SD logging VM
 
 prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./scripts/prep-dev
-	@./files/validate_config.py
+	@./dom0-scripts/validate_config.py
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
 	@./scripts/destroy-vm sd-whonix
@@ -144,7 +144,7 @@ test-gpg: assert-dom0 ## Runs tests for SD GPG functionality
 	python3 -m unittest discover -v tests -p test_gpg.py
 
 validate: assert-dom0 ## Checks for local requirements in dev env
-	@./files/validate_config.py
+	@./dom0-scripts/validate_config.py
 
 # Not requiring dom0 for linting as that requires extra packages, which we're
 # not installing on dom0, so are only in the developer environment, i.e. Work VM
