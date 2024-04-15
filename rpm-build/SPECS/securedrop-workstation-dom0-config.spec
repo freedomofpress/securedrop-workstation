@@ -33,6 +33,7 @@ BuildRequires:	python3-wheel
 # This package installs all standard VMs in Qubes
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
 Requires:		python3-qt5
+Requires:		grub2-xen-pvh
 
 %description
 This package contains VM configuration files for the Qubes-based

@@ -27,6 +27,9 @@ echo "Deploying Salt config..."
 echo "Uninstalling any previous RPM versions..."
 sudo dnf clean all
 sudo dnf remove -y securedrop-workstation-dom0-config || true
+# First install needed dependencies (ignore virtual rpmlib dependencies)
+sudo qubes-dom0-update -y $(rpm -qpR $latest_rpm | grep -v rpmlib)
+# Then install the RPM itself
 echo "Installing RPM at $latest_rpm ..."
 sudo dnf install -y "$latest_rpm"
 
