@@ -74,15 +74,13 @@ remove-dom0-sdw-config-files:
       - /usr/share/securedrop/icons
       - /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
       - /usr/bin/securedrop-login
-      - /etc/qubes-rpc/policy/securedrop.Log
-      - /etc/qubes-rpc/policy/securedrop.Proxy
       - /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
       - /srv/salt/qa-switch.tar.gz
       - /srv/salt/qa-switch
       - /srv/salt/consolidation-qa-switch.sh
-      - /etc/qubes/policy.d/60-securedrop-workstation.policy
-      - /etc/qubes/policy.d/70-securedrop-workstation.policy
+      - /etc/qubes/policy.d/31-securedrop-workstation.policy
+      - /etc/qubes/policy.d/32-securedrop-workstation.policy
 
 # Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
 remove-rpc-policy-tags:
@@ -115,25 +113,3 @@ sd-cleanup-sys-firewall:
       - qvm-run sys-firewall 'sudo rm -f /rw/config/RPM-GPG-KEY-securedrop-workstation-test'
       - qvm-run sys-firewall 'sudo rm -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation'
       - qvm-run sys-firewall 'sudo rm -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
-
-sd-cleanup-rpc-mgmt-policy:
-  file.replace:
-    - names:
-      - /etc/qubes-rpc/policy/qubes.VMShell
-      - /etc/qubes-rpc/policy/qubes.VMRootShell
-    - repl: ''
-    - ignore_if_missing: True
-    - pattern: '^disp-mgmt-sd-\w+\s+sd-\w+\s+allow,user=root'
-
-{% set sdw_customized_rpc_files = salt['cmd.shell']('grep -rIl "BEGIN securedrop-workstation" /etc/qubes-rpc/ | cat').splitlines() %}
-{% if sdw_customized_rpc_files|length > 0 %}
-sd-cleanup-rpc-policy-grants:
-  file.replace:
-    - names: {{ sdw_customized_rpc_files }}
-    - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
-    - flags:
-      - MULTILINE
-      - DOTALL
-    - repl: ''
-    - backup: no
-{% endif %}
