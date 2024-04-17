@@ -72,9 +72,8 @@ remove-dom0-sdw-config-files:
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
       - /usr/share/securedrop/icons
-      - /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
-      - /usr/bin/securedrop-login
-      - /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
+      - /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
+      - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
       - /srv/salt/qa-switch.tar.gz
       - /srv/salt/qa-switch

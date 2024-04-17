@@ -5,7 +5,6 @@ base:
   dom0:
     - sd-sys-vms
     - sd-dom0-files
-    - sd-dom0-crontab
     - sd-dom0-systemd
     - sd-base-template
     - sd-workstation-template
