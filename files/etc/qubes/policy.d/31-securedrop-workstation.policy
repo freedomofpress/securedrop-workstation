@@ -1,0 +1,24 @@
+# required to suppress unsupported loopback error notifications
+securedrop.Log          *           sd-log sd-log deny notify=no
+securedrop.Log          *           @tag:sd-workstation sd-log allow
+
+securedrop.Proxy        *           sd-app sd-proxy allow
+
+qubes.Gpg               *           @tag:sd-client sd-gpg allow
+
+qubes.USBAttach         *           sys-usb sd-devices allow  user=root
+qubes.USBAttach         *           @anyvm @anyvm ask
+
+qubes.USB               *           sd-devices sys-usb allow
+
+# TODO: should this be handled with the new Global Config UI instead?
+qubes.ClipboardPaste    *           @tag:sd-send-app-clipboard sd-app ask
+qubes.ClipboardPaste    *           sd-app @tag:sd-receive-app-clipboard ask
+
+qubes.Filecopy          *           sd-log @default ask
+qubes.Filecopy          *           sd-log @tag:sd-receive-logs ask
+qubes.Filecopy          *           sd-proxy @tag:sd-client allow
+
+qubes.OpenInVM          *           @tag:sd-client @dispvm:sd-viewer allow
+qubes.OpenInVM          *           @tag:sd-client sd-devices allow
+qubes.OpenInVM          *           sd-devices @dispvm:sd-viewer allow

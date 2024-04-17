@@ -1,0 +1,46 @@
+securedrop.Log          *           @anyvm @anyvm deny
+
+securedrop.Proxy        *           @anyvm @anyvm deny
+
+qubes.GpgImportKey      *           @anyvm @tag:sd-workstation deny
+qubes.GpgImportKey      *           @tag:sd-workstation @anyvm deny
+
+qubes.Gpg               *           @anyvm @tag:sd-workstation deny
+qubes.Gpg               *           @tag:sd-workstation @anyvm deny
+
+qubes.USBAttach         *           @anyvm @tag:sd-workstation deny
+qubes.USBAttach         *           @tag:sd-workstation @anyvm deny
+
+qubes.USB               *           @anyvm @tag:sd-workstation deny
+qubes.USB               *           @tag:sd-workstation @anyvm deny
+
+qubes.PdfConvert        *           @anyvm @tag:sd-workstation deny
+qubes.PdfConvert        *           @tag:sd-workstation @anyvm deny
+
+# TODO: should this be handled with the new Global Config UI instead?
+qubes.ClipboardPaste    *           @anyvm @tag:sd-workstation deny
+qubes.ClipboardPaste    *           @tag:sd-workstation @anyvm deny
+
+qubes.FeaturesRequest   *           @anyvm @tag:sd-workstation deny
+qubes.FeaturesRequest   *           @tag:sd-workstation @anyvm deny
+
+qubes.Filecopy          *           @anyvm @tag:sd-workstation deny
+qubes.Filecopy          *           @tag:sd-workstation @anyvm deny
+
+qubes.GetImageRGBA      *           @anyvm @tag:sd-workstation deny
+qubes.GetImageRGBA      *           @tag:sd-workstation @anyvm deny
+
+qubes.OpenInVM          *           @anyvm @tag:sd-workstation deny
+qubes.OpenInVM          *           @tag:sd-workstation @anyvm deny
+
+qubes.OpenURL           *           @anyvm @tag:sd-workstation deny
+qubes.OpenURL           *           @tag:sd-workstation @anyvm deny
+
+qubes.StartApp          *           @anyvm @tag:sd-workstation deny
+qubes.StartApp          *           @tag:sd-workstation @anyvm deny
+
+qubes.VMRootShell       *           @anyvm @tag:sd-workstation deny
+qubes.VMRootShell       *           @tag:sd-workstation @anyvm deny
+
+qubes.VMShell           *           @anyvm @tag:sd-workstation deny
+qubes.VMShell           *           @tag:sd-workstation @anyvm deny
