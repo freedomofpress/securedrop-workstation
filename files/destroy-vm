@@ -9,7 +9,6 @@ import sys
 
 import qubesadmin
 
-
 SDW_DEFAULT_TAG = "sd-workstation"
 
 

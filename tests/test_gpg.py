@@ -1,7 +1,7 @@
 import re
 import subprocess
-import unittest
 import tempfile
+import unittest
 
 from base import SD_VM_Local_Test
 

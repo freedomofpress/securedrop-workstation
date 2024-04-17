@@ -28,7 +28,8 @@ fi
 
 # This script requires a valid DBUS session to work. When run non-interactively,
 # we assume that a sesssion is running for the current user.
-export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u $USER)/bus"
+DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u "$USER")/bus"
+export DBUS_SESSION_BUS_ADDRESS
 
 if [[ $TASK == "disable-unsafe-power-management" ]]; then
   echo "update-xfce-settings: Disabling unsafe power management options for user $USER"

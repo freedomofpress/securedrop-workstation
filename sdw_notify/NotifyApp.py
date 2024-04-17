@@ -2,6 +2,7 @@
 Notification dialog that appears when user has not applied security updates
 recently. Prompts user to check for updates or defer reminder.
 """
+
 from enum import Enum
 
 from PyQt5.QtWidgets import QMessageBox
