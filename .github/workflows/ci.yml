@@ -9,20 +9,22 @@ jobs:
     container:
       image: registry.fedoraproject.org/fedora:37
     steps:
-      - run: dnf install -y make
+      - run: dnf install -y git make
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           make install-deps
           pip install --require-hashes -r requirements/dev-requirements.txt
       - name: Run linters
-        run: make lint
+        run: |
+          git config --global --add safe.directory '*'
+          make lint
   build-rpm:
     runs-on: ubuntu-latest
     container:
       image: registry.fedoraproject.org/fedora:37
     steps:
-      - run: dnf install -y make git
+      - run: dnf install -y git make
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
