@@ -49,4 +49,4 @@ sd-large-{{ sdvars.distribution }}-template:
       - enable:
         - service.paxctld
     - require:
-      - qvm: sd-base-template
+      - sls: sd-base-template
