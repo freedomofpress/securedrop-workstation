@@ -3,16 +3,21 @@
 include:
   - fpf-apt-repo
 
-# TODO: test if this works, if not it may need to be a qvm-run command
+# install recommended Qubes VM packages for core functionality
+install-qubes-vm-recommended:
+  pkg.installed:
+    - pkgs:
+      - qubes-vm-recommended
+
+# install additional base packages required by SecureDrop
 sd-base-template-install-additional-packages:
   pkg.installed:
     - pkgs:
-      - qubes-core-agent-passwordless-root
       - rsyslog
       - mailcap
       - apparmor
-      - apparmor-utils
 
+# install workstation-config and grsec kernel
 sd-base-template-install-securedrop-packages:
   pkg.installed:
     - pkgs:

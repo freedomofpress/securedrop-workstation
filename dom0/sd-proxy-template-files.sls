@@ -4,8 +4,7 @@ include:
   - fpf-apt-repo
   - sd-logging-setup
 
-# Depends on FPF-controlled apt repo, already present
-# in underlying "securedrop-workstation" base template.
+# Depends on FPF-controlled apt repo
 install-securedrop-proxy-package:
   pkg.installed:
     - pkgs:
