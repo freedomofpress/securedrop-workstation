@@ -68,19 +68,29 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             return
 
         if self.config["environment"] == "prod":
-            expected = FPF_APT_SOURCES.format(dist=SUPPORTED_SD_DEBIAN_DIST, component="main")
+            expected = [FPF_APT_SOURCES.format(dist=SUPPORTED_SD_DEBIAN_DIST, component="main")]
         elif self.config["environment"] == "staging":
-            expected = FPF_APT_TEST_SOURCES.format(dist=SUPPORTED_SD_DEBIAN_DIST, component="main")
+            expected = [
+                FPF_APT_TEST_SOURCES.format(dist=SUPPORTED_SD_DEBIAN_DIST, component="main")
+            ]
         else:
-            expected = FPF_APT_TEST_SOURCES.format(
-                dist=SUPPORTED_SD_DEBIAN_DIST, component="main nightlies"
-            )
+            # TODO: salt randomly changes the order of the component, so we need to
+            # check against both. Once we stop using salt to provision sources.list we
+            # should only check it matches the first case.
+            expected = [
+                FPF_APT_TEST_SOURCES.format(
+                    dist=SUPPORTED_SD_DEBIAN_DIST, component="main nightlies"
+                ),
+                FPF_APT_TEST_SOURCES.format(
+                    dist=SUPPORTED_SD_DEBIAN_DIST, component="nightlies main"
+                ),
+            ]
 
         cmd = "cat {}".format(APT_SOURCES_FILE)
         stdout, stderr = vm.run(cmd)
         contents = stdout.decode("utf-8").rstrip("\n")
 
-        self.assertEqual(expected, contents, f"{vm.name} missing apt sources list")
+        self.assertIn(contents, expected, f"{vm.name} missing apt sources list")
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
