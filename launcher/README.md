@@ -2,6 +2,31 @@
 
 The Updater ensures that the [SecureDrop Workstation](https://github.com/freedomofpress/securedrop-workstation/) is up-to-date by checking for and applying any necessary VM updates, which may prompt a reboot.
 
+## Layout
+
+On the one hand, the launcher uses a different development-time virtual
+environment and requirements than the rest of
+`securedrop-workstation-dom0-config`.  On the other hand, we want the launcher
+to be included in both the intermediate Python package and the final RPM
+package for `securedrop-dom0-config`.
+
+This layout satisfies both conditions:
+
+```
+├── dev-requirements.in            # Launcher-specific requirements...
+├── dev-requirements.txt           # ...
+├── Makefile                       # ...and Makefile for development and testing.
+├── README.md
+├── sdw_notify -> ../sdw_notify    # Symlinks to directories one level up that are what actually
+├── sdw_updater -> ../sdw_updater  # get packaged by Python and RPM.
+├── sdw_util -> ../sdw_util
+└── tests
+```
+
+The caveat is that you may need to prefix commands with
+`PYTHONPATH=..:$PYTHONPATH`  to interact with these packages inside this
+virtual environment.
+
 ## Running the Updater
 
 Qubes 4.1.1 uses an end-of-life Fedora template in dom0 (fedora-32). See rationale here: https://www.qubes-os.org/doc/supported-releases/#note-on-dom0-and-eol.
@@ -34,8 +59,8 @@ Because `securedrop-updater` is used exclusively with Fedora 32 (see above), it 
 
 After installing the development dependencies:
 
-1. You can run the updater: `./files/sdw-updater` (it won't actually update VMs unless you are in `dom0`)
-2. You can also run the notifier: `./files/sdw-notify`
+1. You can run the updater: `PYTHONPATH=..:$PYTHONPATH ../files/sdw-updater` (it won't actually update VMs unless you are in `dom0`)
+2. You can also run the notifier: `PYTHONPATH=..:$PYTHONPATH ../files/sdw-notify`
 3. And, finally, tests and linters by running: `make check`.
 
 For more `make` targets, please refer to `make help`.
