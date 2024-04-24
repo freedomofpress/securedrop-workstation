@@ -20,10 +20,7 @@ class SD_VM_Local_Test(unittest.TestCase):
     def setUp(self):
         self.app = Qubes()
         self.vm = self.app.domains[self.vm_name]
-        # self._reboot()
-        if self.vm.is_running():
-            pass
-        else:
+        if not self.vm.is_running():
             self.vm.start()
 
         # Make the dom0 "config.json" available to tests.
@@ -33,33 +30,6 @@ class SD_VM_Local_Test(unittest.TestCase):
         # A VM shouldn't have any configuration keys it doesn't explicitly
         # expect.
         self.expected_config_keys = set()
-
-    # def tearDown(self):
-    #     self.vm.shutdown()
-
-    def _reboot(self):
-        # The for-loop below should be couched in a try/except block.
-        # Further testing required to determine which specific exceptions
-        # to catch; a few ideas:
-        #
-        #   * CalledProcessorError
-        #   * QubesVMError (from qubesadmin.base)
-        #   * QubesVMNotStartedError (from qubesadmin.base)
-        for v in list(self.vm.connected_vms.values()):
-            if v.is_running():
-                msg = "Need to halt connected VM {}" " before testing".format(v)
-                print(msg)
-                v.shutdown()
-                while v.is_running():
-                    time.sleep(1)
-
-        if self.vm.is_running():
-            self.vm.shutdown()
-
-        while self.vm.is_running():
-            time.sleep(1)
-
-        self.vm.start()
 
     def _run(self, cmd, user=""):
         full_cmd = ["qvm-run", "-p"]
