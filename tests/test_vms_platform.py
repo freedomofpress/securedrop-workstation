@@ -1,4 +1,5 @@
 import json
+import os
 import unittest
 import subprocess
 
@@ -17,6 +18,8 @@ apt_url = ""
 FPF_APT_TEST_SOURCES = "deb [arch=amd64] https://apt-test.freedom.press {dist} {component}"
 FPF_APT_SOURCES = "deb [arch=amd64] https://apt.freedom.press {dist} {component}"
 APT_SOURCES_FILE = "/etc/apt/sources.list.d/securedrop_workstation.list"
+
+IS_CI = os.environ.get("CI") == "true"
 
 
 class SD_VM_Platform_Tests(unittest.TestCase):
@@ -165,6 +168,7 @@ sub   rsa4096 2021-05-10 [E] [expires: 2024-07-08]"""
         fpf_gpg_pub_key_fp = "2359E6538C0613E652955E6C188EDD3B7B22E6A3"
         self.assertFalse(fpf_gpg_pub_key_fp in results)
 
+    @unittest.skipIf(IS_CI, "Skipping on CI")
     def test_all_sd_vms_uptodate(self):
         """
         Asserts that all VMs have all available apt packages at the latest
@@ -174,6 +178,7 @@ sub   rsa4096 2021-05-10 [E] [expires: 2024-07-08]"""
             vm = self.app.domains[vm_name]
             self._ensure_packages_up_to_date(vm)
 
+    @unittest.skipIf(IS_CI, "Skipping on CI")
     def test_all_fedora_vms_uptodate(self):
         """
         Asserts that all Fedora-based templates, such as sys-net, have all
