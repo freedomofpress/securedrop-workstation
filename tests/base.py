@@ -13,31 +13,6 @@ CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
 CURRENT_WHONIX_VERSION = "17"
 
 
-# Lifted from launcher/sdw_util/Util.py
-def get_qubes_version():
-    """
-    Helper function for checking the Qubes version. Returns None if not on Qubes.
-    """
-    is_qubes = False
-    version = None
-    try:
-        with open("/etc/os-release") as f:
-            for line in f:
-                try:
-                    key, value = line.rstrip().split("=")
-                except ValueError:
-                    continue
-                if key == "NAME" and "qubes" in value.lower():
-                    is_qubes = True
-                if key == "VERSION_ID":
-                    version = value
-    except FileNotFoundError:
-        return None
-    if not is_qubes:
-        return None
-    return version
-
-
 # base class for per-VM testing
 
 
