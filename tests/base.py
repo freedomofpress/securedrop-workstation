@@ -1,7 +1,7 @@
 import json
 import subprocess
-import time
 import unittest
+from pathlib import Path
 
 from qubesadmin import Qubes
 
@@ -11,6 +11,8 @@ CURRENT_FEDORA_VERSION = "39"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"
 CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
 CURRENT_WHONIX_VERSION = "17"
+
+CONFIG_JSON = Path(__file__).abspath().parent / "config.json"
 
 
 # base class for per-VM testing
@@ -24,8 +26,7 @@ class SD_VM_Local_Test(unittest.TestCase):
             self.vm.start()
 
         # Make the dom0 "config.json" available to tests.
-        with open("config.json") as config_file:
-            self.dom0_config = json.load(config_file)
+        self.dom0_config = json.loads(CONFIG_JSON.read_text())
 
         # A VM shouldn't have any configuration keys it doesn't explicitly
         # expect.

@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from base import SD_VM_Local_Test
 
@@ -52,7 +51,5 @@ class SD_Viewer_Tests(SD_VM_Local_Test):
         symlink_location = self._get_symlink_location(".local/share/applications/mimeapps.list")
         assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
 
-
-def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Viewer_Tests)
-    return suite
+    def test_gpg_domain_configured(self):
+        self.qubes_gpg_domain_configured(self.vm_name)

@@ -3,8 +3,10 @@ import os
 import subprocess
 import unittest
 
-from base import CURRENT_FEDORA_TEMPLATE, WANTED_VMS
 from qubesadmin import Qubes
+
+from base import CONFIG_JSON, WANTED_VMS, CURRENT_FEDORA_TEMPLATE
+
 
 BULLSEYE_STRING = "Debian GNU/Linux 11 (bullseye)"
 BOOKWORM_STRING = "Debian GNU/Linux 12 (bookworm)"
@@ -24,8 +26,7 @@ IS_CI = os.environ.get("CI") == "true"
 class SD_VM_Platform_Tests(unittest.TestCase):
     def setUp(self):
         self.app = Qubes()
-        with open("config.json") as c:
-            self.config = json.load(c)
+        self.config = json.loads(CONFIG_JSON.read_text())
         if "environment" not in self.config:
             self.config["environment"] = "dev"
 
@@ -246,8 +247,3 @@ sub   rsa4096 2021-05-10 [E] [expires: 2024-07-08]"""
             vm = self.app.domains[vm_name]
             self._ensure_keyring_package_exists_and_has_correct_key(vm)
             self._ensure_trusted_keyring_securedrop_key_removed(vm)
-
-
-def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_VM_Platform_Tests)
-    return suite

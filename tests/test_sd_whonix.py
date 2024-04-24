@@ -13,25 +13,21 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         self.expected_config_keys = {"SD_HIDSERV_HOSTNAME", "SD_HIDSERV_KEY"}
 
     def test_accept_sd_xfer_extracted_file(self):
-        with open("config.json") as c:
-            config = json.load(c)
-            if len(config["hidserv"]["hostname"]) == 22:
-                t = Template("HidServAuth {{ d.hidserv.hostname }}" " {{ d.hidserv.key }}")
-                line = t.render(d=config)
+        if len(self.dom0_config["hidserv"]["hostname"]) == 22:
+            t = Template("HidServAuth {{ d.hidserv.hostname }}" " {{ d.hidserv.key }}")
+            line = t.render(d=self.dom0_config)
 
-            else:
-                line = "ClientOnionAuthDir /var/lib/tor/keys"
+        else:
+            line = "ClientOnionAuthDir /var/lib/tor/keys"
 
-            self.assertFileHasLine("/usr/local/etc/torrc.d/50_user.conf", line)
+        self.assertFileHasLine("/usr/local/etc/torrc.d/50_user.conf", line)
 
     def test_v3_auth_private_file(self):
-        with open("config.json") as c:
-            config = json.load(c)
-            hostname = config["hidserv"]["hostname"].split(".")[0]
-            keyvalue = config["hidserv"]["key"]
-            line = "{0}:descriptor:x25519:{1}".format(hostname, keyvalue)
+        hostname = self.dom0_config["hidserv"]["hostname"].split(".")[0]
+        keyvalue = self.dom0_config["hidserv"]["key"]
+        line = "{0}:descriptor:x25519:{1}".format(hostname, keyvalue)
 
-            self.assertFileHasLine("/var/lib/tor/keys/app-journalist.auth_private", line)
+        self.assertFileHasLine("/var/lib/tor/keys/app-journalist.auth_private", line)
 
     def test_sd_whonix_config(self):
         self.assertEqual(
@@ -64,7 +60,5 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
             "Whonix GW torrc contains duplicate %include lines",
         )
 
-
-def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Whonix_Tests)
-    return suite
+    def test_gpg_domain_configured(self):
+        self.qubes_gpg_domain_configured(self.vm_name)

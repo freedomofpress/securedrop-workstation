@@ -80,7 +80,5 @@ class SD_GPG_Tests(SD_VM_Local_Test):
         # Logging to sd-log should be disabled on sd-gpg
         self.assertFalse(self._fileExists("/etc/rsyslog.d/sdlog.conf"))
 
-
-def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_GPG_Tests)
-    return suite
+    def test_gpg_domain_configured(self):
+        self.qubes_gpg_domain_configured(self.vm_name)

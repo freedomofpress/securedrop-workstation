@@ -1,6 +1,8 @@
 import json
 import unittest
 
+from base import CONFIG_JSON
+
 DEBIAN_VERSION = "bookworm"
 FEDORA_VERSION = "f37"
 
@@ -18,17 +20,13 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
     def setUp(self):
         # Enable full diff output in test report, to aid in debugging
         self.maxDiff = None
-        with open("config.json") as c:
-            config = json.load(c)
-            if "environment" not in config:
-                config["environment"] = "dev"
-
-            if config["environment"] == "prod":
-                self.pubkey_wanted = self.pubkey_wanted_prod
-                self.yum_repo_url = self.yum_repo_url_prod
-            else:
-                self.pubkey_wanted = self.pubkey_wanted_test
-                self.yum_repo_url = self.yum_repo_url_test
+        config = json.loads(CONFIG_JSON.read_text())
+        if config.get("environment") == "prod":
+            self.pubkey_wanted = self.pubkey_wanted_prod
+            self.yum_repo_url = self.yum_repo_url_prod
+        else:
+            self.pubkey_wanted = self.pubkey_wanted_test
+            self.yum_repo_url = self.yum_repo_url_test
 
     def test_rpm_repo_public_key(self):
 
@@ -54,8 +52,3 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
             found_lines = [x.strip() for x in f.readlines()]
 
         self.assertEqual(found_lines, wanted_lines)
-
-
-def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Dom0_Rpm_Repo_Tests)
-    return suite

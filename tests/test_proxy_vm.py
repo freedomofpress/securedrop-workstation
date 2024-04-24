@@ -1,4 +1,3 @@
-import json
 import subprocess
 import unittest
 
@@ -22,9 +21,7 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         self.assertTrue(self._package_is_installed("securedrop-proxy"))
 
     def test_sd_proxy_yaml_config(self):
-        with open("config.json") as c:
-            config = json.load(c)
-            hostname = config["hidserv"]["hostname"]
+        hostname = self.dom0_config["hidserv"]["hostname"]
 
         # Config file moved to private volume during template consolidation
         assert not self._fileExists("/etc/sd-proxy.yaml")
@@ -86,7 +83,5 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
     def test_mailcap_hardened(self):
         self.mailcap_hardened()
 
-
-def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Proxy_Tests)
-    return suite
+    def test_gpg_domain_configured(self):
+        self.qubes_gpg_domain_configured(self.vm_name)

@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from base import SD_VM_Local_Test
 
@@ -49,7 +48,5 @@ class SD_Devices_Tests(SD_VM_Local_Test):
         for line in expected_contents:
             self.assertTrue(line in contents)
 
-
-def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Devices_Tests)
-    return suite
+    def test_gpg_domain_configured(self):
+        self.qubes_gpg_domain_configured(self.vm_name)

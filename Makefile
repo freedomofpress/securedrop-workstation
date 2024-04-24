@@ -5,6 +5,7 @@ PYTHON3 := $(if $(shell bash -c "command -v python3.11"), python3.11, python3)
 # manually prepend ./scripts/container.sh to commands you want to execute
 CONTAINER := $(if $(shell grep "Thirty Seven" /etc/fedora-release),,./scripts/container.sh)
 
+DOM0_PYTEST=/usr/bin/pytest
 HOST=$(shell hostname)
 
 assert-dom0: ## Confirms command is being run under dom0
@@ -131,23 +132,11 @@ clean: assert-dom0 prep-dev ## Destroys all SD VMs
 # if clean has already been run.
 	./scripts/sdw-admin.py --uninstall --keep-template-rpm --force
 
-test: assert-dom0 ## Runs all application tests (no integration tests yet)
-	python3 -m unittest discover -v tests
+$(DOM0_PYTEST): assert-dom0
+	sudo qubes-dom0-update python3-pytest -y
 
-test-base: assert-dom0 ## Runs tests for VMs layout
-	python3 -m unittest discover -v tests -p test_vms_exist.py
-
-test-app: assert-dom0 ## Runs tests for SD APP VM config
-	python3 -m unittest discover -v tests -p test_app.py
-
-test-proxy: assert-dom0 ## Runs tests for SD Proxy VM
-	python3 -m unittest discover -v tests -p test_proxy_vm.py
-
-test-whonix: assert-dom0 ## Runs tests for SD Whonix VM
-	python3 -m unittest discover -v tests -p test_sd_whonix.py
-
-test-gpg: assert-dom0 ## Runs tests for SD GPG functionality
-	python3 -m unittest discover -v tests -p test_gpg.py
+test: assert-dom0 $(DOM0_PYTEST) ## Runs all application tests (no integration tests yet)
+	cd tests && python3 -m pytest -v .
 
 validate: assert-dom0 ## Checks for local requirements in dev env
 	@./files/validate_config.py

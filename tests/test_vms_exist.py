@@ -1,8 +1,10 @@
 import json
 import unittest
 
-from base import WANTED_VMS
 from qubesadmin import Qubes
+
+from base import CONFIG_JSON, WANTED_VMS
+
 
 DEBIAN_VERSION = "bookworm"
 
@@ -10,8 +12,7 @@ DEBIAN_VERSION = "bookworm"
 class SD_VM_Tests(unittest.TestCase):
     def setUp(self):
         self.app = Qubes()
-        with open("config.json") as c:
-            self.config = json.load(c)
+        self.config = json.loads(CONFIG_JSON.read_text())
 
     def tearDown(self):
         pass
@@ -188,8 +189,3 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue("sd-workstation" in vm.tags)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
-
-
-def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_VM_Tests)
-    return suite

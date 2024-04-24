@@ -8,8 +8,3 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
         """verify the policies are installed"""
         assert os.path.exists("/etc/qubes/policy.d/31-securedrop-workstation.policy")
         assert os.path.exists("/etc/qubes/policy.d/32-securedrop-workstation.policy")
-
-
-def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Qubes_Rpc_Tests)
-    return suite
