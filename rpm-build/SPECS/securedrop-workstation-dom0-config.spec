@@ -10,14 +10,20 @@ Summary:	SecureDrop Workstation
 %define source_date_epoch_from_changelog 1
 %define use_source_date_epoch_as_buildtime 1
 %define clamp_mtime_to_source_date_epoch 1
-#   * By default, the changelog for the last two years of the current time
-#     (_not_ SOURCE_DATE_EPOCH) is included, everything else is discarded.
-#     For reproducibility we'll keep everything
+#   * By default, changelog entries for the last two years of the current time
+#     (_not_ SOURCE_DATE_EPOCH) are included, everything else is discarded.
+#     For easy reproducibility we'll keep everything
 %define _changelog_trimtime 0
 %define _changelog_trimage 0
 #   * _buildhost varies based on environment, we build with containers but
 #     ensure this is the same regardless
 %global _buildhost %{name}
+#   * optflags is for multi-arch support: otherwise rpmbuild sets 'OPTFLAGS: -O2 -g -march=i386 -mtune=i686'
+%global optflags -O2 -g
+# To ensure forward-compatibility of RPMs regardless of updates to the system
+# Python, we disable the creation of bytecode at build time via the build
+# root policy.
+%undefine py_auto_byte_compile
 
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
@@ -29,6 +35,7 @@ BuildRequires:	python3-devel
 BuildRequires:	python3-pip
 BuildRequires:	python3-setuptools
 BuildRequires:	python3-wheel
+BuildRequires:	systemd-rpm-macros
 
 # This package installs all standard VMs in Qubes
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
@@ -54,9 +61,6 @@ configuration over time.
 # direct_url.json is is not reproducible and not strictly needed
 rm %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/direct_url.json
 sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/RECORD
-install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_updater_gui
-install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_notify
-install -m 755 -d %{buildroot}/opt/securedrop/launcher/sdw_util
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-app
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-proxy
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-journalist
@@ -71,8 +75,6 @@ install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
 install -m 644 dom0/*.yml %{buildroot}/srv/salt/
 install -m 644 dom0/*.conf %{buildroot}/srv/salt/
 install -m 755 dom0/remove-tags %{buildroot}/srv/salt/
-install -m 644 dom0/securedrop-login %{buildroot}/srv/salt/
-install -m 644 dom0/securedrop-launcher.desktop %{buildroot}/srv/salt/
 install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
 install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
@@ -85,32 +87,55 @@ install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/destroy-vm %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/provision-all %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 644 launcher/*.py %{buildroot}/opt/securedrop/launcher/
-install -m 644 launcher/sdw_updater_gui/*.py %{buildroot}/opt/securedrop/launcher/sdw_updater_gui/
-install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw_notify/
-install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
 install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 
+install -m 755 -d %{buildroot}/%{_bindir}
+install -m 755 -d %{buildroot}/%{_datadir}/applications/
+install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/
+install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/
+install -m 755 -d %{buildroot}/%{_sharedstatedir}/%{name}/
+install -m 755 -d %{buildroot}/%{_userunitdir}/
+install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
+install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/salt/press.freedom.SecureDropUpdater.desktop
+install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
+install -m 644 files/securedrop-128x128.png %{buildroot}/srv/salt/sd/sd-workstation/logo-small.png
+install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
+install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
+install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
+install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
+install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
+install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
+
 
 %files
-%attr(755, root, root) /opt/securedrop/launcher/sdw-launcher.py
-%attr(755, root, root) /opt/securedrop/launcher/sdw-notify.py
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
 %attr(755, root, root) %{_datadir}/%{name}/scripts/destroy-vm
 %attr(755, root, root) %{_datadir}/%{name}/scripts/provision-all
 %attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
 %attr(755, root, root) %{_bindir}/sdw-admin
-# The name of the dist-info dir uses _ instead of -, so we use wildcards
-%{python3_sitelib}/*%{version}.dist-info/*
 %{_datadir}/%{name}/config.json.example
-/opt/securedrop/launcher/**/*.py
 /srv/salt/sd*
 /srv/salt/dom0-xfce-desktop-file.j2
 /srv/salt/remove-tags
 /srv/salt/securedrop-*
 /srv/salt/update-xfce-settings
 /srv/salt/fpf*
+/srv/salt/press.freedom.SecureDropUpdater.desktop
+
+%attr(755, root, root) %{_bindir}/sdw-login
+%attr(755, root, root) %{_bindir}/sdw-notify
+%attr(755, root, root) %{_bindir}/sdw-updater
+%attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
+%{python3_sitelib}/sdw_notify/*.py
+%{python3_sitelib}/sdw_updater/*.py
+%{python3_sitelib}/sdw_util/*.py
+# The name of the dist-info dir uses _ instead of -, so we use wildcards
+%{python3_sitelib}/*%{version}.dist-info/*
+%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
+%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
+%{_userunitdir}/sdw-notify.service
+%{_userunitdir}/sdw-notify.timer
 %doc README.md
 %license LICENSE
 

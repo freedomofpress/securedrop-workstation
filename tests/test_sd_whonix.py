@@ -1,9 +1,8 @@
-import unittest
 import json
-from jinja2 import Template
-
+import unittest
 
 from base import SD_VM_Local_Test
+from jinja2 import Template
 
 
 class SD_Whonix_Tests(SD_VM_Local_Test):

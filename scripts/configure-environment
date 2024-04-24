@@ -3,10 +3,10 @@
 Updates the config.json in-place in dom0 to set the environment to 'dev' or
 'staging'.
 """
-import json
-import sys
 import argparse
+import json
 import os
+import sys
 
 
 def parse_args():

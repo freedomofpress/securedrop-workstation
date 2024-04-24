@@ -1,7 +1,6 @@
 import json
 import unittest
 
-
 DEBIAN_VERSION = "bookworm"
 FEDORA_VERSION = "f37"
 

@@ -1,13 +1,14 @@
-#!/usr/bin/env python3
 """
 Notification dialog that appears when user has not applied security updates
 recently. Prompts user to check for updates or defer reminder.
 """
+
 from enum import Enum
-from sdw_util import Util
-from sdw_notify import Notify, strings
 
 from PyQt5.QtWidgets import QMessageBox
+
+from sdw_notify import Notify, strings
+from sdw_util import Util
 
 sdlog = Util.get_logger(Notify.LOG_FILE)
 

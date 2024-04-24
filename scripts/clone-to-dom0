@@ -38,7 +38,7 @@ function create-tarball() {
 }
 
 function unpack-tarball() {
-    rm -rf "${dom0_dev_dir}/"*
+    rm -rf "${dom0_dev_dir:?}/"*
     tar xf /tmp/sd-proj.tar -C "${dom0_dev_dir}" --strip-components=1
 }
 

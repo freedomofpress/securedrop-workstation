@@ -8,6 +8,7 @@ set-fedora-as-default-dispvm:
     - name: qvm-check default-dvm && qubes-prefs default_dispvm default-dvm || qubes-prefs default_dispvm ''
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
+{% set gui_user_id = salt['cmd.shell']('id -u ' + gui_user) %}
 
 {% if salt['pillar.get']('qvm:sys-usb:disposable', true) %}
 restore-sys-usb-dispvm-halt:
@@ -72,9 +73,8 @@ remove-dom0-sdw-config-files:
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
       - /usr/share/securedrop/icons
-      - /home/{{ gui_user }}/.config/autostart/SDWLogin.desktop
-      - /usr/bin/securedrop-login
-      - /home/{{ gui_user }}/Desktop/securedrop-launcher.desktop
+      - /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
+      - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
       - /srv/salt/qa-switch.tar.gz
       - /srv/salt/qa-switch
@@ -90,7 +90,6 @@ remove-rpc-policy-tags:
 sd-cleanup-etc-changes:
   file.replace:
     - names:
-      - /etc/crontab
       - /etc/systemd/logind.conf
       - /etc/qubes/repo-templates/qubes-templates.repo
     - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
@@ -113,3 +112,12 @@ sd-cleanup-sys-firewall:
       - qvm-run sys-firewall 'sudo rm -f /rw/config/RPM-GPG-KEY-securedrop-workstation-test'
       - qvm-run sys-firewall 'sudo rm -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation'
       - qvm-run sys-firewall 'sudo rm -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
+
+disable-systemd-units:
+  cmd.run:
+    - name: systemctl --user disable sdw-notify.timer
+    - runas: {{ gui_user }}
+    - env:
+      # Even with "runas", "systemctl --user" from root will fail unless we
+      # tell it explicitly how to connect to the user systemd.
+      - XDG_RUNTIME_DIR: /run/user/{{ gui_user_id }}

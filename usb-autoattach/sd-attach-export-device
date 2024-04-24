@@ -2,5 +2,5 @@
 
 # udev action for attaching USB export devices to sd-devices
 
-QDEVNAME="$(basename $DEVPATH)"
+QDEVNAME="$(basename "$DEVPATH")"
 echo sys-usb "$QDEVNAME" | qrexec-client-vm sd-devices qubes.USBAttach
