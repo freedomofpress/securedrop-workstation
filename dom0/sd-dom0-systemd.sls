@@ -28,9 +28,9 @@ apply-systemd-changes:
 
 enable-user-units:
   cmd.run:
-    - names:
-        - systemctl --user daemon-reload
-        - systemctl --user enable sdw-notify.timer
+    - name: |
+        systemctl --user daemon-reload
+        systemctl --user enable sdw-notify.timer
     - runas: {{ gui_user }}
     - env:
       # Even with "runas", "systemctl --user" from root will fail unless we
