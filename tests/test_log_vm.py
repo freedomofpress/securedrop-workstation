@@ -48,9 +48,6 @@ class SD_Log_Tests(SD_VM_Local_Test):
         # Confirm we don't have 'host' entries from Whonix VMs
         self.assertFalse("host" in log_dirs)
 
-    def test_gpg_domain_configured(self):
-        self.qubes_gpg_domain_configured(self.vm_name)
-
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Log_Tests)

@@ -9,6 +9,7 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-proxy"
         super(SD_Proxy_Tests, self).setUp()
+        self.expected_config_keys = {"SD_PROXY_ORIGIN"}
 
     def test_do_not_open_here(self):
         """
@@ -37,6 +38,12 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         ]
         for line in wanted_lines:
             self.assertFileHasLine("/home/user/.securedrop_proxy/sd-proxy.yaml", line)
+
+    def test_sd_proxy_config(self):
+        self.assertEqual(
+            f"http://{self.dom0_config['hidserv']['hostname']}",
+            self._vm_config_read("SD_PROXY_ORIGIN"),
+        )
 
     def test_sd_proxy_writable_config_dir(self):
         # Directory must be writable by normal user. If owned by root,
@@ -78,9 +85,6 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
 
     def test_mailcap_hardened(self):
         self.mailcap_hardened()
-
-    def test_gpg_domain_configured(self):
-        self.qubes_gpg_domain_configured(self.vm_name)
 
 
 def load_tests(loader, tests, pattern):

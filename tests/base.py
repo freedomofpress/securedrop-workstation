@@ -1,3 +1,4 @@
+import json
 import subprocess
 import time
 import unittest
@@ -49,6 +50,14 @@ class SD_VM_Local_Test(unittest.TestCase):
             pass
         else:
             self.vm.start()
+
+        # Make the dom0 "config.json" available to tests.
+        with open("config.json") as config_file:
+            self.dom0_config = json.load(config_file)
+
+        # A VM shouldn't have any configuration keys it doesn't explicitly
+        # expect.
+        self.expected_config_keys = set()
 
     # def tearDown(self):
     #     self.vm.shutdown()
@@ -139,6 +148,23 @@ class SD_VM_Local_Test(unittest.TestCase):
 
         return True
 
+    def _vm_config_read(self, key):
+        """Read `key` from the QubesDB `/vm-config/` hierarchy and return its
+        value if set, otherwise `None`.
+        """
+        try:
+            return self._run(f"qubesdb-read /vm-config/{key}")
+        except subprocess.CalledProcessError:
+            return None
+
+    def _vm_config_check(self, expected):
+        """Check that the set of expected by the VM keys equals the set of keys
+        actually configured.
+        """
+        actual = set(self._run("qubesdb-list /vm-config/").split("\n"))
+        actual.discard("")  # if "qubesdb-list" returned nothing
+        self.assertEqual(actual, set(expected))
+
     def logging_configured(self):
         """
         Make sure rsyslog is configured to send in data to sd-log vm.
@@ -189,19 +215,8 @@ remotevm = sd-log
         # Ensure that the wildcard rule worked as expected.
         self.assertEqual(mailcap_result, 'logger "Mailcap is disabled." <{}'.format(tmpfile_name))
 
-    def qubes_gpg_domain_configured(self, vmname=False):
+    def test_vm_config_keys(self):
+        """Every VM should check that it has only the configuration keys it
+        expects.
         """
-        Ensure the QUBES_GPG_DOMAIN is properly set for a given AppVM. This
-        var is set by a script /etc/profile.d.
-        sd-app should have it set to sd-gpg.
-        All other AppVMs should not have this configured.
-        """
-        env_cmd = 'echo "$QUBES_GPG_DOMAIN"'
-        env_contents = self._run(env_cmd)
-
-        if vmname == "sd-app":
-            expected_env = "sd-gpg"
-        else:
-            expected_env = ""
-
-        self.assertEqual(env_contents, expected_env)
+        self._vm_config_check(self.expected_config_keys)

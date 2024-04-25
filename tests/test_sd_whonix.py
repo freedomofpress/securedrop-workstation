@@ -10,6 +10,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         self.vm_name = "sd-whonix"
         self.whonix_apt_list = "/etc/apt/sources.list.d/derivative.list"
         super(SD_Whonix_Tests, self).setUp()
+        self.expected_config_keys = {"SD_HIDSERV_HOSTNAME", "SD_HIDSERV_KEY"}
 
     def test_accept_sd_xfer_extracted_file(self):
         with open("config.json") as c:
@@ -31,6 +32,12 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
             line = "{0}:descriptor:x25519:{1}".format(hostname, keyvalue)
 
             self.assertFileHasLine("/var/lib/tor/keys/app-journalist.auth_private", line)
+
+    def test_sd_whonix_config(self):
+        self.assertEqual(
+            self.dom0_config["hidserv"]["hostname"], self._vm_config_read("SD_HIDSERV_HOSTNAME")
+        )
+        self.assertEqual(self.dom0_config["hidserv"]["key"], self._vm_config_read("SD_HIDSERV_KEY"))
 
     def test_sd_whonix_repo_enabled(self):
         """
@@ -56,9 +63,6 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
             duplicate_includes in torrc_contents,
             "Whonix GW torrc contains duplicate %include lines",
         )
-
-    def test_gpg_domain_configured(self):
-        self.qubes_gpg_domain_configured(self.vm_name)
 
 
 def load_tests(loader, tests, pattern):

@@ -8,9 +8,7 @@ class SD_App_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-app"
         super(SD_App_Tests, self).setUp()
-
-    def test_gpg_domain_configured(self):
-        self.qubes_gpg_domain_configured(self.vm_name)
+        self.expected_config_keys = {"QUBES_GPG_DOMAIN", "SD_SUBMISSION_KEY_FPR"}
 
     def test_open_in_dvm_desktop(self):
         contents = self._get_file_contents("/usr/share/applications/open-in-dvm.desktop")
@@ -46,12 +44,9 @@ class SD_App_Tests(SD_VM_Local_Test):
         self.assertTrue(self._package_is_installed("python3-pyqt5.qtsvg"))
 
     def test_sd_client_config(self):
-        with open("config.json") as c:
-            config = json.load(c)
-            submission_fpr = config["submission_key_fpr"]
-
-        line = '{{"journalist_key_fingerprint": "{}"}}'.format(submission_fpr)
-        self.assertFileHasLine("/home/user/.securedrop_client/config.json", line)
+        self.assertEqual(
+            self.dom0_config["submission_key_fpr"], self._vm_config_read("SD_SUBMISSION_KEY_FPR")
+        )
 
     def test_sd_client_apparmor(self):
         cmd = "sudo aa-status --json"
