@@ -5,6 +5,7 @@ extend-exclude = .venv
 filename =
     *.py
     dom0/remove-tags
-    dom0/securedrop-login
+    files/sdw-login
+    files/sdw-updater
     scripts/configure-environment
     scripts/destroy-vm
