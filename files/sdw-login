@@ -19,4 +19,4 @@ if __name__ == "__main__":
     # to the user.
     time.sleep(5)
 
-    subprocess.check_call(["sdw-updater"]
+    subprocess.check_call(["sdw-updater"])
