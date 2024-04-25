@@ -6,5 +6,6 @@ filename =
     *.py
     dom0/remove-tags
     files/sdw-login
+    files/sdw-updater
     scripts/configure-environment
     scripts/destroy-vm
