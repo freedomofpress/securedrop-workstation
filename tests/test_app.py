@@ -8,9 +8,7 @@ class SD_App_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-app"
         super(SD_App_Tests, self).setUp()
-
-    def test_gpg_domain_configured(self):
-        self.qubes_gpg_domain_configured(self.vm_name)
+        self.expected_config_keys = {"QUBES_GPG_DOMAIN", "SD_SUBMISSION_KEY_FPR"}
 
     def test_open_in_dvm_desktop(self):
         contents = self._get_file_contents("/usr/share/applications/open-in-dvm.desktop")

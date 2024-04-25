@@ -47,9 +47,6 @@ class SD_Viewer_Tests(SD_VM_Local_Test):
     def test_mailcap_hardened(self):
         self.mailcap_hardened()
 
-    def test_gpg_domain_configured(self):
-        self.qubes_gpg_domain_configured(self.vm_name)
-
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Viewer_Tests)

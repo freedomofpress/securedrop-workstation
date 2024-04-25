@@ -10,6 +10,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         self.vm_name = "sd-whonix"
         self.whonix_apt_list = "/etc/apt/sources.list.d/derivative.list"
         super(SD_Whonix_Tests, self).setUp()
+        self.expected_config_keys = {"SD_HIDSERV_HOSTNAME", "SD_HIDSERV_KEY"}
 
     def test_accept_sd_xfer_extracted_file(self):
         with open("config.json") as c:
@@ -62,9 +63,6 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
             duplicate_includes in torrc_contents,
             "Whonix GW torrc contains duplicate %include lines",
         )
-
-    def test_gpg_domain_configured(self):
-        self.qubes_gpg_domain_configured(self.vm_name)
 
 
 def load_tests(loader, tests, pattern):
