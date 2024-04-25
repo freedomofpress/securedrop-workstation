@@ -32,6 +32,12 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
 
             self.assertFileHasLine("/var/lib/tor/keys/app-journalist.auth_private", line)
 
+    def test_sd_whonix_config(self):
+        self.assertEqual(
+            self.dom0_config["hidserv"]["hostname"], self._vm_config_read("SD_HIDSERV_HOSTNAME")
+        )
+        self.assertEqual(self.dom0_config["hidserv"]["key"], self._vm_config_read("SD_HIDSERV_KEY"))
+
     def test_sd_whonix_repo_enabled(self):
         """
         During Whonix 14 -> 15 migration, we removed the apt list file

@@ -210,12 +210,11 @@ remotevm = sd-log
         sd-app should have it set to sd-gpg.
         All other AppVMs should not have this configured.
         """
-        env_cmd = 'echo "$QUBES_GPG_DOMAIN"'
-        env_contents = self._run(env_cmd)
+        env_contents = self._vm_config_read("QUBES_GPG_DOMAIN")
 
         if vmname == "sd-app":
             expected_env = "sd-gpg"
         else:
-            expected_env = ""
+            expected_env = None
 
         self.assertEqual(env_contents, expected_env)
