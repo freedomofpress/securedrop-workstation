@@ -1,3 +1,4 @@
+import json
 import subprocess
 import time
 import unittest
@@ -49,6 +50,10 @@ class SD_VM_Local_Test(unittest.TestCase):
             pass
         else:
             self.vm.start()
+
+        # Make the dom0 "config.json" available to tests.
+        with open("config.json") as config_file:
+            self.dom0_config = json.load(config_file)
 
     # def tearDown(self):
     #     self.vm.shutdown()
