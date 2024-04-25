@@ -144,6 +144,15 @@ class SD_VM_Local_Test(unittest.TestCase):
 
         return True
 
+    def _vm_config_read(self, key):
+        """Read `key` from the QubesDB `/vm-config/` hierarchy and return its
+        value if set, otherwise `None`.
+        """
+        try:
+            return self._run(f"qubesdb-read /vm-config/{key}")
+        except subprocess.CalledProcessError:
+            return None
+
     def logging_configured(self):
         """
         Make sure rsyslog is configured to send in data to sd-log vm.
