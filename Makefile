@@ -38,14 +38,20 @@ build-rpm: ## Build RPM package
 reprotest: ## Check RPM package reproducibility
 	TERM=xterm-256color $(CONTAINER) bash -c "sudo ln -s $$PWD/scripts/fake-setarch.py /usr/local/bin/setarch && sudo reprotest 'make build-rpm' 'rpm-build/RPMS/noarch/*.rpm' --variations '+all,+kernel,-time,-fileordering,-domain_host'"
 
-# Installs Fedora 37 package dependencies, to build RPMs and run tests,
-# primarily useful in CI/containers
-.PHONY: install-deps
-install-deps:
-	sudo dnf install -y \
-        git file python3-devel python3-pip python3-qt5 python3-wheel \
-		xorg-x11-server-Xvfb rpmdevtools rpmlint systemd-rpm-macros which libfaketime ShellCheck \
+
+.PHONY: build-deps
+build-deps: ## Install package dependencies to build RPMs
+# Note: build dependencies are specified in the spec file, not here
+	dnf install -y \
+		git file rpmdevtools dnf-plugins-core
+	dnf builddep -y rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+
+.PHONY: test-deps
+test-deps: build-deps ## Install package dependencies for running tests
+	dnf install -y \
+		python3-qt5 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
 		hostname
+	dnf --setopt=install_weak_deps=False -y install reprotest
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
@@ -173,40 +179,39 @@ venv: ## Provision a Python 3 virtualenv for development (ensure to also install
 check: lint test ## Runs linters and tests
 
 .PHONY: lint
-lint: check-black check-isort flake8 bandit mypy rpmlint shellcheck ## Runs linters (black, isort, flake8, bandit rpmlint, and shellcheck)
 lint: check-black check-isort flake8 mypy bandit rpmlint shellcheck ## Runs linters (black, isort, flake8, mypy, bandit rpmlint, and shellcheck)
 
 .PHONY: bandit
 bandit: ## Runs the bandit security linter
-	bandit -ll --exclude ./.venv,./launcher/.venv -r .
+	poetry run bandit -ll -r .
 
 .PHONY: test-launcher
-test-launcher: ## Runs tests
-	$(CONTAINER) python3 -m pytest -v
+test-launcher: ## Runs launcher tests
+	xvfb-run poetry run python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater/ --cov=sdw_util -v launcher/tests/
 
 .PHONY: check-black
 check-black: ## Check Python source code formatting with black
-	black --check --diff .
+	poetry run black --check --diff .
 
 .PHONY: black
 black: ## Update Python source code formatting with black
-	black .
+	poetry run black .
 
 .PHONY: check-isort
 check-isort: ## Check Python import organization with isort
-	isort --check-only --diff .
+	poetry run isort --check-only --diff .
 
 .PHONY: isort
 isort: ## Update Python import organization with isort
-	isort .
+	poetry run isort .
 
 .PHONY: flake8
 flake8: ## Validate PEP8 compliance for Python source files
-	flake8
+	poetry run flake8
 
 .PHONY: mypy
 mypy:  ## Type check Python files
-	mypy .
+	poetry run mypy .
 
 .PHONY: rpmlint
 rpmlint: ## Runs rpmlint on the spec file

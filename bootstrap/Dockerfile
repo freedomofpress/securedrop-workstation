@@ -10,10 +10,12 @@ ENV USER_ID ${USER_ID:-0}
 RUN dnf install -y make
 
 COPY Makefile Makefile
+COPY rpm-build/SPECS rpm-build/SPECS
 
-RUN make install-deps
+ARG DEPS=build-deps
+RUN make ${DEPS}
 
-COPY requirements requirements
-RUN pip3 install --no-deps --require-hashes -r requirements/dev-requirements.txt
+# Cleanup
+RUN rm -rf rpm-build
 
 RUN if test $USER_NAME != root ; then useradd --no-create-home --home-dir /tmp --uid $USER_ID $USER_NAME && echo "$USER_NAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers ; fi
