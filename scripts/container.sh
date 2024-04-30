@@ -22,61 +22,36 @@ if test -t 0; then
     OCI_RUN_ARGUMENTS="${OCI_RUN_ARGUMENTS} -it"
 fi
 
-# Whether to use the container intended for RPM builds
-# or the one with development dependencies
-USE_BUILD_CONTAINER="${USE_BUILD_CONTAINER:-}"
+# Use a smaller container with just build dependencies or
+# a larger container with test dependencies too.
+if [[ -z "${USE_BUILD_CONTAINER:-}" ]]; then
+    DEPS="test-deps"
+    SUFFIX="-dev"
+else
+    DEPS="build-deps"
+    SUFFIX=""
+fi
 
 
 function oci_image() {
-    NAME="${1}"
+    NAME="${1}${SUFFIX}"
 
     $OCI_BIN build \
            ${OCI_BUILD_ARGUMENTS:-} \
            --build-arg=USER_ID="$(id -u)" \
            --build-arg=USER_NAME="${USER:-root}" \
+           --build-arg=DEPS="${DEPS}" \
            -t "${NAME}" \
            --file "${TOPLEVEL}/bootstrap/Dockerfile" \
            "${TOPLEVEL}"
-    if [[ -z $USE_BUILD_CONTAINER ]]; then
-        $OCI_BIN build \
-               ${OCI_BUILD_ARGUMENTS:-} \
-               --build-arg=USER_ID="$(id -u)" \
-               --build-arg=USER_NAME="${USER:-root}" \
-               -t "${NAME}-dev" \
-               --file "${TOPLEVEL}/bootstrap/DevDockerfile" \
-               "${TOPLEVEL}"
-    fi
 }
 
 function oci_run() {
     find . \( -name '*.pyc' -o -name __pycache__ \) -delete
 
-    NAME="${1}"
-    if [[ -z $USE_BUILD_CONTAINER ]]; then
-        NAME="${NAME}-dev"
-    fi
+    NAME="${1}${SUFFIX}"
 
-    # If this is a CI run, pass CodeCov's required vars into the container.
-    if [ -n "${CIRCLE_BRANCH:-}" ] ; then
-        : "${CIRCLE_PULL_REQUEST:=}"
-        ci_env="-e CI=true \
-                -e CIRCLECI=true \
-                -e CIRCLE_BRANCH=${CIRCLE_BRANCH:-} \
-                -e CIRCLE_SHA1=${CIRCLE_SHA1:-} \
-                -e CIRCLE_PROJECT_REPONAME=${CIRCLE_PROJECT_REPONAME:-} \
-                -e CIRCLE_PROJECT_USERNAME=${CIRCLE_PROJECT_USERNAME:-} \
-                -e CIRCLE_REPOSITORY_URL=${CIRCLE_REPOSITORY_URL:-} \
-                -e CIRCLE_BUILD_NUM=${CIRCLE_BUILD_NUM:-} \
-                -e CIRCLE_NODE_INDEX=${CIRCLE_NODE_INDEX:-} \
-                -e CIRCLE_PR_NUMBER=${CIRCLE_PULL_REQUEST##*/} \
-                -e CIRCLE_BUILD_URL=${CIRCLE_BUILD_URL:-} \
-               "
-
-    else
-        ci_env=""
-    fi
-
-    $OCI_BIN run $ci_env \
+    $OCI_BIN run \
            --rm \
            -e LC_ALL=C.UTF-8 \
            -e LANG=C.UTF-8 \

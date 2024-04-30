@@ -13,8 +13,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          make install-deps
-          pip install --require-hashes -r requirements/dev-requirements.txt
+          make test-deps
+          pip install poetry==1.8.2
+          poetry install --no-ansi
       - name: Run linters
         run: |
           git config --global --add safe.directory '*'
@@ -28,14 +29,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          make install-deps
-          pip install --require-hashes -r requirements/dev-requirements.txt
+          make build-deps
       - name: Build RPM
         run: |
           git config --global --add safe.directory '*'
           make build-rpm
       - name: Check reproducibility
-        run: make reprotest
+        run: |
+          make test-deps
+          make reprotest
   launcher-tests:
     runs-on: ubuntu-latest
     container:
@@ -45,9 +47,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          make install-deps
-          pip install --require-hashes -r launcher/dev-requirements.txt
+          make test-deps
+          pip install poetry==1.8.2
+          poetry install --no-ansi
       - name: Run launcher tests
         run: |
-          cd launcher/
-          make check
+          make test-launcher

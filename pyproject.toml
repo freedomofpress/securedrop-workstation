@@ -1,3 +1,28 @@
+[tool.poetry]
+name = "securedrop-workstation-dom0-config"
+version = "0.0.0"
+description = ""
+authors = ["SecureDrop Team"]
+license = "AGPLv3+"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+# In production these are installed as a system package so match the
+# versions exactly
+PyQt5 = "=5.15.9"
+PyQt5-sip = "=12.11.0"
+
+bandit = "^1.7.7"
+black = "*"
+flake8 = "^4.0.1"
+isort = "*"
+mypy = "^1.9.0"
+pytest = "^7.2.1"
+pytest-cov = "^5.0.0"
+types-setuptools = "^69.0.0"
+
 [tool.black]
 line-length = 100
 extend-exclude = ".venv"
