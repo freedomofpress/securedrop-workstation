@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 # Create and configure all SecureDrop Workstation VMs.
 set -e
 set -u

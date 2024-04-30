@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 
 # A maintenance script for altering the XFCE config for the currently logged in
 # user to settings more appropriate for SecureDrop Workstation, or resetting

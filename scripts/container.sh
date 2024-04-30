@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 # shellcheck disable=SC2086
 # we ignore SC2086 because ${OCI_BUILD_ARGUMENTS:-} is intended to
 # be evaluated into multiple strings, not a single argument.

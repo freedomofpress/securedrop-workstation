@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 # Developer-oriented utility script for deploying Saltstack config
 # files for the SecureDrop Workstation dev env. Installs the latest
 # locally built RPM in order to deploy the Salt config.

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 # Helper script for fully reproducible RPMs
 set -e
 set -u

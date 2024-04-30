@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """
 Utility to verify that SecureDrop Workstation config is properly structured.
 Checks for

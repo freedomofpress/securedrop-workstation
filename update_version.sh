@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 ## Usage: ./update_version.sh <version>
 
 set -e
