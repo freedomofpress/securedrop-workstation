@@ -7,7 +7,7 @@ from qubesadmin import Qubes
 
 # Reusable constant for DRY import across tests
 WANTED_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "sd-devices"]
-CURRENT_FEDORA_VERSION = "38"
+CURRENT_FEDORA_VERSION = "39"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION
 CURRENT_WHONIX_VERSION = "17"
 

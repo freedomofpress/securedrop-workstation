@@ -9,7 +9,7 @@ include:
   # DispVM is created
   - qvm.default-dispvm
 
-{% set sd_supported_fedora_version = 'fedora-38' %}
+{% set sd_supported_fedora_version = 'fedora-39' %}
 
 
 # Install latest templates required for SDW VMs.
@@ -132,6 +132,13 @@ remove-sd-fedora-dvm:
 remove-sd-fedora-37-dvm:
   qvm.absent:
     - name: sd-fedora-37-dvm
+    - require:
+      - qvm: sd-sys-usb-fedora-version-update
+
+# With bump to fedora-39, remove fedora-38 dvm as well.
+remove-sd-fedora-38-dvm:
+  qvm.absent:
+    - name: sd-fedora-38-dvm
     - require:
       - qvm: sd-sys-usb-fedora-version-update
 {% endif %}
