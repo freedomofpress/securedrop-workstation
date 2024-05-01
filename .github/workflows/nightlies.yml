@@ -24,7 +24,7 @@ jobs:
       - run: dnf install -y make git
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: make install-deps
+        run: make build-deps
       - name: Build RPM
         run: |
           git config --global --add safe.directory '*'
