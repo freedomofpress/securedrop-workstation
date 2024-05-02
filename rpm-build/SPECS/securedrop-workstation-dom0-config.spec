@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.10.0
+Version:	0.11.0
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -124,10 +124,13 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs qubesctl top.enable > /dev/null
 
 # Force full run of all Salt states - uncomment in release branch
-# mkdir -p /tmp/sdw-migrations
-# touch /tmp/sdw-migrations/fedora-39-update
+mkdir -p /tmp/sdw-migrations
+touch /tmp/sdw-migrations/fedora-39-update
 
 %changelog
+* Wed May 1 2024 SecureDrop Team <securedrop@freedom.press> - 0.11.0
+- Use Fedora 39 base template
+
 * Wed Feb 7 2024 SecureDrop Team <securedrop@freedom.press> - 0.10.0
 - Use Whonix-17 template for sd-whonix
 
