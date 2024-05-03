@@ -99,6 +99,11 @@ class SD_VM_Local_Test(unittest.TestCase):
         contents = subprocess.check_output(cmd).decode("utf-8")
         return contents
 
+    def _get_symlink_location(self, path):
+        cmd = ["qvm-run", "-p", self.vm_name, "/usr/bin/readlink -f {}".format(path)]
+        contents = subprocess.check_output(cmd).decode("utf-8").strip()
+        return contents
+
     def _package_is_installed(self, pkg):
         """
         Confirms that a given package is installed inside the VM.
