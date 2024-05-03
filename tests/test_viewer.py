@@ -47,6 +47,11 @@ class SD_Viewer_Tests(SD_VM_Local_Test):
     def test_mailcap_hardened(self):
         self.mailcap_hardened()
 
+    def test_mimetypes_symlink(self):
+        self.assertTrue(self._fileExists(".local/share/applications/mimeapps.list"))
+        symlink_location = self._get_symlink_location(".local/share/applications/mimeapps.list")
+        assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
+
 
 def load_tests(loader, tests, pattern):
     suite = unittest.TestLoader().loadTestsFromTestCase(SD_Viewer_Tests)
