@@ -2,10 +2,3 @@
 ignore = E203,W503
 max-line-length = 100
 extend-exclude = .venv
-filename =
-    *.py
-    dom0/remove-tags
-    files/sdw-login
-    files/sdw-updater
-    scripts/configure-environment
-    scripts/destroy-vm

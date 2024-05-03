@@ -15,10 +15,16 @@ SDW_DEFAULT_TAG = "sd-workstation"
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--all", default=False, required=False, action="store_true", help="Destroys all SDW VMs",
+        "--all",
+        default=False,
+        required=False,
+        action="store_true",
+        help="Destroys all SDW VMs",
     )
     parser.add_argument(
-        "targets", help="List of SDW VMs to destroy", nargs=argparse.REMAINDER,
+        "targets",
+        help="List of SDW VMs to destroy",
+        nargs=argparse.REMAINDER,
     )
     args = parser.parse_args()
     if not args.all and len(args.targets) < 1:

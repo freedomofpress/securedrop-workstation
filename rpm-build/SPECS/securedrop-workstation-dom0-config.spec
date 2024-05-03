@@ -74,7 +74,7 @@ install -m 644 dom0/*.top %{buildroot}/srv/salt/
 install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
 install -m 644 dom0/*.yml %{buildroot}/srv/salt/
 install -m 644 dom0/*.conf %{buildroot}/srv/salt/
-install -m 755 dom0/remove-tags %{buildroot}/srv/salt/
+install -m 755 dom0/remove-tags.py %{buildroot}/srv/salt/remove-tags
 install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
 install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
@@ -84,7 +84,7 @@ install -m 644 sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
 install -m 755 usb-autoattach/sd-attach-export-device %{buildroot}/srv/salt/sd/usb-autoattach/
 install -m 644 usb-autoattach/99-sd-devices.rules %{buildroot}/srv/salt/sd/usb-autoattach/
 install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 755 files/destroy-vm %{buildroot}/%{_datadir}/%{name}/scripts/
+install -m 755 files/destroy-vm.py %{buildroot}/%{_datadir}/%{name}/scripts/destroy-vm
 install -m 755 files/provision-all %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
@@ -101,9 +101,9 @@ install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/sa
 install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 install -m 644 files/securedrop-128x128.png %{buildroot}/srv/salt/sd/sd-workstation/logo-small.png
 install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
-install -m 755 files/sdw-updater %{buildroot}/%{_bindir}/
-install -m 755 files/sdw-notify %{buildroot}/%{_bindir}/
-install -m 755 files/sdw-login %{buildroot}/%{_bindir}/
+install -m 755 files/sdw-updater.py %{buildroot}/%{_bindir}/sdw-updater
+install -m 755 files/sdw-notify.py %{buildroot}/%{_bindir}/sdw-notify
+install -m 755 files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
 install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 

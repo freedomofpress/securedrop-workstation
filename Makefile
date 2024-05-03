@@ -23,7 +23,7 @@ all: assert-dom0
 	@false
 
 dev staging: assert-dom0 ## Configures and builds a dev or staging environment
-	./scripts/configure-environment --env $@
+	./scripts/configure-environment.py --env $@
 	$(MAKE) validate
 	$(MAKE) prep-dev
 	sdw-admin --apply
@@ -105,26 +105,26 @@ prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./files/validate_config.py
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
-	@./scripts/destroy-vm sd-whonix
+	@./scripts/destroy-vm.py sd-whonix
 
 remove-sd-viewer: assert-dom0 ## Destroys SD Submission reading VM
-	@./scripts/destroy-vm sd-viewer
+	@./scripts/destroy-vm.py sd-viewer
 
 remove-sd-proxy: assert-dom0 ## Destroys SD Proxy VM
-	@./scripts/destroy-vm sd-proxy
+	@./scripts/destroy-vm.py sd-proxy
 
 remove-sd-app: assert-dom0 ## Destroys SD APP VM
-	@./scripts/destroy-vm sd-app
+	@./scripts/destroy-vm.py sd-app
 
 remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
-	@./scripts/destroy-vm sd-gpg
+	@./scripts/destroy-vm.py sd-gpg
 
 remove-sd-devices: assert-dom0 ## Destroys SD EXPORT VMs
-	@./scripts/destroy-vm sd-devices
-	@./scripts/destroy-vm sd-devices-dvm
+	@./scripts/destroy-vm.py sd-devices
+	@./scripts/destroy-vm.py sd-devices-dvm
 
 remove-sd-log: assert-dom0 ## Destroys SD logging VM
-	@./scripts/destroy-vm sd-log
+	@./scripts/destroy-vm.py sd-log
 
 clean: assert-dom0 prep-dev ## Destroys all SD VMs
 # Use the local script path, since system PATH location will be absent
@@ -159,7 +159,7 @@ prep-dom0: prep-dev # Copies dom0 config files
 	sudo qubesctl --show-output --targets dom0 state.highstate
 
 destroy-all: ## Destroys all VMs managed by Workstation salt config
-	./scripts/destroy-vm --all
+	./scripts/destroy-vm.py --all
 
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
