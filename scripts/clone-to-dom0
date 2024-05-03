@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 # Utility to copy workstation config files from target AppVM
 # to dom0, for use in testing the salt logic for VM configuration.
 # Should only be run in dom0!

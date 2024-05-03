@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """
 Admin wrapper script for applying salt states for staging and prod scenarios. The rpm
 packages only puts the files in place `/srv/salt` but does not apply the state, nor

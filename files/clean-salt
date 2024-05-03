@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 # Utility script to clean Saltstack config
 # files for the SecureDrop Workstation.
 set -e

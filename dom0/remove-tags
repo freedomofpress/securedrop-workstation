@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """
 Removes tags used for exempting VMs from default SecureDrop Workstation
 RPC policies from all VMs (including non-SecureDrop ones).

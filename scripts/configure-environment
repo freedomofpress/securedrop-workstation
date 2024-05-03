@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """
 Updates the config.json in-place in dom0 to set the environment to 'dev' or
 'staging'.
