@@ -35,16 +35,14 @@ ignore_missing_imports = true
 scripts_are_modules = true
 files = [
     "*.py",
-    "dom0/remove-tags",
+    "dom0/remove-tags.py",
     "dom0/securedrop-login",
     "scripts/*.py",
     "files/*.py",
-    "scripts/configure-environment",
-    "files/destroy-vm",
 ]
 exclude = [
-    "launcher/",  # Moving to sd-updater
-    "tests/"
+    "launcher/", # Moving to sd-updater
+    "tests/",
 ]
 
 [tool.isort]

@@ -82,7 +82,7 @@ Qubes uses SaltStack internally for VM provisionining and configuration manageme
 - Within `sd-app`, the *SecureDrop Client* will open all submissions in the `sd-viewer` disposable VM.
 - `files/config.json.example` is an example config file for the provisioning process. Before use, you should copy it to `config.json` (in the repository's root directory), and adjust to reflect your environment.
 - `sd-journalist.sec.example` is an example GPG private key for use in decrypting submissions. It must match the public key set on a SecureDrop server used for testing. Before use, you should copy it to `sd-journalist.sec`, or store the submission key used with your SecureDrop server as `sd-journalist.sec`.
-- `launcher/` contains the pre-flight updater component (`sdw-launcher`), which updates all TemplateVMs relevant to the SecureDrop Workstation prior to use, as well as the `sdw-notify` script, which reminds the user to update the system if they have not done so recently.
+- `launcher/` contains the pre-flight updater component (`sdw-launcher`), which updates all TemplateVMs relevant to the SecureDrop Workstation prior to use, as well as the `sdw-notify.py` script, which reminds the user to update the system if they have not done so recently.
 
 ## Installation
 

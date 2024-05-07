@@ -59,8 +59,8 @@ Because `securedrop-updater` is used exclusively with Fedora 32 (see above), it 
 
 After installing the development dependencies:
 
-1. You can run the updater: `PYTHONPATH=..:$PYTHONPATH ../files/sdw-updater` (it won't actually update VMs unless you are in `dom0`)
-2. You can also run the notifier: `PYTHONPATH=..:$PYTHONPATH ../files/sdw-notify`
+1. You can run the updater: `PYTHONPATH=..:$PYTHONPATH ../files/sdw-updater.py` (it won't actually update VMs unless you are in `dom0`)
+2. You can also run the notifier: `PYTHONPATH=..:$PYTHONPATH ../files/sdw-notify.py`
 3. And, finally, tests and linters by running: `make check`.
 
 For more `make` targets, please refer to `make help`.
