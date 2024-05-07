@@ -1,6 +1,6 @@
 import os
-import unittest
 import subprocess
+import unittest
 
 RETURNCODE_SUCCESS = 0
 RETURNCODE_DENIED = 126
