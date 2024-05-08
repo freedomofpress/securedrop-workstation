@@ -153,11 +153,11 @@ def test_write_updates_status_flag_to_disk(
         Updater._write_updates_status_flag_to_disk(status)
 
     mocked_call.assert_called_once_with(
-        ["qvm-run", "sd-app", "echo '{}' > {}".format(status.value, flag_file_sd_app)]
+        ["qvm-run", "sd-app", f"echo '{status.value}' > {flag_file_sd_app}"]
     )
 
     assert os.path.exists(flag_file_dom0)
-    with open(flag_file_dom0, "r") as f:
+    with open(flag_file_dom0) as f:
         contents = json.load(f)
         assert contents["status"] == status.value
     assert "tmp" in flag_file_dom0
@@ -207,12 +207,12 @@ def test_write_last_updated_flags_to_disk(mocked_info, mocked_error, mocked_call
     subprocess_command = [
         "qvm-run",
         "sd-app",
-        "echo '{}' > {}".format(current_time, flag_file_sd_app),
+        f"echo '{current_time}' > {flag_file_sd_app}",
     ]
     mocked_call.assert_called_once_with(subprocess_command)
     assert not mocked_error.called
     assert os.path.exists(flag_file_dom0)
-    contents = open(flag_file_dom0, "r").read()
+    contents = open(flag_file_dom0).read()
     assert contents == current_time
 
 
@@ -311,7 +311,7 @@ def test_apply_updates_vms(mocked_info, mocked_error, mocked_call, vm):
 @mock.patch("sdw_updater.Updater.sdlog.info")
 def test_apply_updates_vms_fails(mocked_info, mocked_error, mocked_call, vm):
     error_calls = [
-        call("An error has occurred updating {}. Please contact your administrator.".format(vm)),
+        call(f"An error has occurred updating {vm}. Please contact your administrator."),
         call("Command 'check_call' returned non-zero exit status 1."),
     ]
     result = Updater._apply_updates_vm(vm)
@@ -403,7 +403,7 @@ def test_overall_update_status_reboot_not_done_previously(
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
 def test_safely_shutdown(mocked_info, mocked_error, mocked_output, vm):
-    call_list = [call(["qvm-shutdown", "--wait", "{}".format(vm)], stderr=-1)]
+    call_list = [call(["qvm-shutdown", "--wait", f"{vm}"], stderr=-1)]
 
     Updater._safely_shutdown_vm(vm)
     mocked_output.assert_has_calls(call_list)
@@ -431,7 +431,7 @@ def test_safely_start(mocked_info, mocked_error, mocked_output, vm):
 @mock.patch("sdw_updater.Updater.sdlog.info")
 def test_safely_start_fails(mocked_info, mocked_error, mocked_output, vm):
     call_list = [
-        call("Error while starting {}".format(vm)),
+        call(f"Error while starting {vm}"),
         call("Command 'check_output' returned non-zero exit status 1."),
     ]
 
@@ -445,7 +445,7 @@ def test_safely_start_fails(mocked_info, mocked_error, mocked_output, vm):
 @mock.patch("sdw_updater.Updater.sdlog.info")
 def test_safely_shutdown_fails(mocked_info, mocked_error, mocked_call, vm):
     call_list = [
-        call("Failed to shut down {}".format(vm)),
+        call(f"Failed to shut down {vm}"),
         call("Command 'check_output' returned non-zero exit status 1."),
     ]
 
@@ -474,8 +474,8 @@ def test_shutdown_and_start_vms(
     ]
     template_vm_calls = [
         call("fedora-39-xfce"),
-        call("sd-large-{}-template".format(DEBIAN_VERSION)),
-        call("sd-small-{}-template".format(DEBIAN_VERSION)),
+        call(f"sd-large-{DEBIAN_VERSION}-template"),
+        call(f"sd-small-{DEBIAN_VERSION}-template"),
         call("whonix-gateway-17"),
     ]
     app_vm_calls = [
@@ -520,8 +520,8 @@ def test_shutdown_and_start_vms_sysvm_fail(
     ]
     template_vm_calls = [
         call("fedora-39-xfce"),
-        call("sd-large-{}-template".format(DEBIAN_VERSION)),
-        call("sd-small-{}-template".format(DEBIAN_VERSION)),
+        call(f"sd-large-{DEBIAN_VERSION}-template"),
+        call(f"sd-small-{DEBIAN_VERSION}-template"),
         call("whonix-gateway-17"),
     ]
     error_calls = [
@@ -550,7 +550,7 @@ def test_read_dom0_update_flag_from_disk(mocked_error, mocked_subprocess, status
         flag_file_dom0 = Updater.get_dom0_path(Updater.FLAG_FILE_STATUS_DOM0)
 
         assert os.path.exists(flag_file_dom0)
-        with open(flag_file_dom0, "r") as f:
+        with open(flag_file_dom0) as f:
             contents = json.load(f)
             assert contents["status"] == status.value
         assert "tmp" in flag_file_dom0
@@ -807,7 +807,7 @@ def test_run_full_install(mocked_call, mocked_output, mocked_info):
     """
     # subprocess.check_call is mocked, so this directory should never be accessed
     # by the test.
-    MIGRATION_DIR = "/tmp/potato"  # nosec
+    MIGRATION_DIR = "/tmp/potato"
     with mock.patch("sdw_updater.Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = Updater.run_full_install()
     check_outputs = [call(["sdw-admin", "--apply"])]
@@ -833,7 +833,7 @@ def test_run_full_install_with_error(mocked_call, mocked_output, mocked_error):
       And the error is logged
       And the failure enum is returned
     """
-    MIGRATION_DIR = "/tmp/potato"  # nosec
+    MIGRATION_DIR = "/tmp/potato"
     with mock.patch("sdw_updater.Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = Updater.run_full_install()
     calls = [call(["sdw-admin", "--apply"])]
@@ -857,7 +857,7 @@ def test_run_full_install_with_flag_error(mocked_call, mocked_output, mocked_err
     Then the error is logged
       And the failure enum is returned
     """
-    MIGRATION_DIR = "/tmp/potato"  # nosec
+    MIGRATION_DIR = "/tmp/potato"
     with mock.patch("sdw_updater.Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = Updater.run_full_install()
     check_outputs = [call(["sdw-admin", "--apply"])]

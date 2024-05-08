@@ -35,13 +35,13 @@ class SD_Viewer_Tests(SD_VM_Local_Test):
         filepath = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "vars", "sd-viewer.mimeapps"
         )
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             lines = f.readlines()
             for line in lines:
                 if line != "[Default Applications]\n" and not line.startswith("#"):
                     mime_type = line.split("=")[0]
                     expected_app = line.split("=")[1].rstrip()
-                    actual_app = self._run("xdg-mime query default {}".format(mime_type))
+                    actual_app = self._run(f"xdg-mime query default {mime_type}")
                     self.assertEqual(actual_app, expected_app)
 
     def test_mailcap_hardened(self):

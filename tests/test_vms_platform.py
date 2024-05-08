@@ -92,7 +92,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         # Create custom error message, so failing test cases display
         # which VM caused the looped check to fail.
-        fail_msg = "Unapplied updates for VM '{}'".format(vm)
+        fail_msg = f"Unapplied updates for VM '{vm}'"
         if not fedora:
             cmd = "apt list --upgradable"
             stdout, stderr = vm.run(cmd)

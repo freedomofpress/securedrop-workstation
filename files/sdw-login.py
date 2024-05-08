@@ -3,6 +3,7 @@
 Utility script for SecureDrop Workstation. Launches the SecureDrop Workstation
 updater on boot. It will prompt users to apply template and dom0 updates
 """
+
 import logging
 import os
 import subprocess

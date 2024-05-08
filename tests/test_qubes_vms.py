@@ -36,8 +36,8 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
 
             self.assertTrue(
                 vm.template.name in wanted_templates,
-                "Unexpected template for {}\n".format(sys_vm)
-                + "Current: {}\n".format(vm.template.name)
+                f"Unexpected template for {sys_vm}\n"
+                + f"Current: {vm.template.name}\n"
                 + "Expected: {}".format(", ".join(wanted_templates)),
             )
 

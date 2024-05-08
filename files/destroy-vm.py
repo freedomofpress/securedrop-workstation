@@ -41,7 +41,7 @@ def destroy_vm(vm):
     assert SDW_DEFAULT_TAG in vm.tags
     if vm.is_running():
         vm.kill()
-    print("Destroying VM '{}'... ".format(vm.name), end="")
+    print(f"Destroying VM '{vm.name}'... ", end="")
     subprocess.check_call(["qvm-remove", "-f", vm.name])
     print("OK")
 

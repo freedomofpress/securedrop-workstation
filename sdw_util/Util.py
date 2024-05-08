@@ -45,7 +45,7 @@ def configure_logging(log_file, logger_namespace=SD_LOGGER_PREFIX, backup_count=
     if not os.path.exists(LOG_DIRECTORY):
         os.makedirs(LOG_DIRECTORY)
 
-    formatter = logging.Formatter((LOG_FORMAT))
+    formatter = logging.Formatter(LOG_FORMAT)
 
     handler = TimedRotatingFileHandler(
         os.path.join(LOG_DIRECTORY, log_file), backupCount=backup_count
@@ -65,17 +65,16 @@ def obtain_lock(basename):
     lock_file = os.path.join(LOCK_DIRECTORY, basename)
     try:
         lh = open(lock_file, "w")
-    except PermissionError:  # noqa: F821
+    except PermissionError:
         sdlog.error(
-            "Error writing to lock file '{}'. User may lack the "
-            "required permissions.".format(lock_file)
+            f"Error writing to lock file '{lock_file}'. User may lack the required permissions."
         )
         return None
 
     try:
         # Obtain an exclusive, nonblocking lock
         fcntl.lockf(lh, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except IOError:
+    except OSError:
         sdlog.error(LOCK_ERROR.format(lock_file))
         return None
 
@@ -92,15 +91,15 @@ def can_obtain_lock(basename):
     """
     lock_file = os.path.join(LOCK_DIRECTORY, basename)
     try:
-        lh = open(lock_file, "r")
-    except FileNotFoundError:  # noqa: F821
+        lh = open(lock_file)
+    except FileNotFoundError:
         # Process may not have run during this session, safe to continue
         return True
 
     try:
         # Obtain a nonblocking, shared lock
         fcntl.lockf(lh, fcntl.LOCK_SH | fcntl.LOCK_NB)
-    except IOError:
+    except OSError:
         sdlog.error(LOCK_ERROR.format(lock_file))
         return False
 
@@ -114,10 +113,10 @@ def is_conflicting_process_running(list):
     """
     for name in list:
         result = subprocess.run(
-            args=["pgrep", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            args=["pgrep", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False
         )
         if result.returncode == 0:
-            sdlog.error("Conflicting process '{}' is currently running.".format(name))
+            sdlog.error(f"Conflicting process '{name}' is currently running.")
             return True
     return False
 

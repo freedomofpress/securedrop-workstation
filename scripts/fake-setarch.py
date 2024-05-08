@@ -6,4 +6,4 @@ from subprocess import run
 from sys import argv
 
 if "sh" in argv:
-    run(argv[argv.index("sh") :])
+    run(argv[argv.index("sh") :], check=False)

@@ -33,7 +33,7 @@ def test_obtain_lock(mocked_info, mocked_warning, mocked_error, tmp_path):
 
         basename = "test-obtain-lock.lock"
         pid_str = str(os.getpid())
-        lh = Util.obtain_lock(basename)  # noqa: F841
+        lh = Util.obtain_lock(basename)
         # No handled exception should occur
         assert not mocked_error.called
         # We should be getting a lock handle back
@@ -73,7 +73,7 @@ def test_cannot_obtain_exclusive_lock_when_busy(
 
         # We're running in the same process, so obtaining a lock will succeed.
         # Instead we're mocking the IOError lockf would raise.
-        with mock.patch("fcntl.lockf", side_effect=IOError()) as mocked_lockf:
+        with mock.patch("fcntl.lockf", side_effect=OSError()) as mocked_lockf:
             lh2 = Util.obtain_lock(basename)
             mocked_lockf.assert_called_once()
             assert lh2 is None
@@ -100,7 +100,7 @@ def test_cannot_obtain_shared_lock_when_busy(mocked_info, mocked_warning, mocked
 
         # We're running in the same process, so obtaining a lock will succeed.
         # Instead we're mocking the IOError lockf would raise.
-        with mock.patch("fcntl.lockf", side_effect=IOError()) as mocked_lockf:
+        with mock.patch("fcntl.lockf", side_effect=OSError()) as mocked_lockf:
             can_get_lock = Util.can_obtain_lock(basename)
             mocked_lockf.assert_called_once()
             assert can_get_lock is False
@@ -129,7 +129,7 @@ def test_permission_error_is_handled(mocked_info, mocked_warning, mocked_error):
     """
     Test whether permission errors obtaining a lock are handled correctly
     """
-    with mock.patch("builtins.open", side_effect=PermissionError()) as mocked_open:  # noqa: F821
+    with mock.patch("builtins.open", side_effect=PermissionError()) as mocked_open:
         lock = Util.obtain_lock("test-open-error.lock")
         assert lock is None
         mocked_open.assert_called_once()
@@ -236,7 +236,7 @@ def test_get_logger():
     logger = Util.get_logger(prefix=test_prefix)
     assert logger.name == test_prefix
     logger = Util.get_logger(prefix=test_prefix, module=test_module)
-    assert logger.name == "{}.{}".format(test_prefix, test_module)
+    assert logger.name == f"{test_prefix}.{test_module}"
 
 
 @pytest.mark.parametrize(
@@ -255,7 +255,7 @@ def test_is_sdapp_halted_yes(os_release_fixture, version_contains):
     """
     output = bytes(
         "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
-        "    Halted    AppVM   yellow     sd-small-{}-template\n".format(DEBIAN_VERSION),
+        f"    Halted    AppVM   yellow     sd-small-{DEBIAN_VERSION}-template\n",
         "utf-8",
     )
 
@@ -280,7 +280,7 @@ def test_is_sdapp_halted_no(os_release_fixture, version_contains):
     """
     output = bytes(
         "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
-        "    Paused    AppVM   yellow     sd-small-{}-template\n".format(DEBIAN_VERSION),
+        f"    Paused    AppVM   yellow     sd-small-{DEBIAN_VERSION}-template\n",
         "utf-8",
     )
 

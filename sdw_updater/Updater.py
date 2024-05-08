@@ -29,7 +29,7 @@ DETAIL_LOGGER_PREFIX = "detail"  # For detailed logs such as Salt states
 # a multi-user environment, we can safely assume that only the Updater is
 # managing that filepath. Later on, we should consider porting the check-migration
 # logic to leverage the Qubes Python API.
-MIGRATION_DIR = "/tmp/sdw-migrations"  # nosec
+MIGRATION_DIR = "/tmp/sdw-migrations"
 
 DEBIAN_VERSION = "bookworm"
 
@@ -41,13 +41,13 @@ detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 # In the future, we could use qvm-prefs to extract this information.
 current_vms = {
     "fedora": "fedora-39-xfce",
-    "sd-viewer": "sd-large-{}-template".format(DEBIAN_VERSION),
-    "sd-app": "sd-small-{}-template".format(DEBIAN_VERSION),
-    "sd-log": "sd-small-{}-template".format(DEBIAN_VERSION),
-    "sd-devices": "sd-large-{}-template".format(DEBIAN_VERSION),
-    "sd-proxy": "sd-small-{}-template".format(DEBIAN_VERSION),
+    "sd-viewer": f"sd-large-{DEBIAN_VERSION}-template",
+    "sd-app": f"sd-small-{DEBIAN_VERSION}-template",
+    "sd-log": f"sd-small-{DEBIAN_VERSION}-template",
+    "sd-devices": f"sd-large-{DEBIAN_VERSION}-template",
+    "sd-proxy": f"sd-small-{DEBIAN_VERSION}-template",
     "sd-whonix": "whonix-gateway-17",
-    "sd-gpg": "sd-small-{}-template".format(DEBIAN_VERSION),
+    "sd-gpg": f"sd-small-{DEBIAN_VERSION}-template",
 }
 
 current_templates = set([val for key, val in current_vms.items() if key != "dom0"])
@@ -68,16 +68,16 @@ def run_full_install():
     try:
         output = subprocess.check_output(apply_cmd)
     except subprocess.CalledProcessError as e:
-        sdlog.error("Failed to apply full system state. Please review {}.".format(DETAIL_LOG_FILE))
+        sdlog.error(f"Failed to apply full system state. Please review {DETAIL_LOG_FILE}.")
         sdlog.error(str(e))
         clean_output = Util.strip_ansi_colors(e.output.decode("utf-8").strip())
         detail_log.error(
-            "Output from failed command: {}\n{}".format(apply_cmd_for_log, clean_output)
+            f"Output from failed command: {apply_cmd_for_log}\n{clean_output}"
         )
         return UpdateStatus.UPDATES_FAILED
 
     clean_output = Util.strip_ansi_colors(output.decode("utf-8").strip())
-    detail_log.info("Output from command: {}\n{}".format(apply_cmd_for_log, clean_output))
+    detail_log.info(f"Output from command: {apply_cmd_for_log}\n{clean_output}")
 
     # Clean up flag requesting migration. Shell out since root created it.
     rm_flag_cmd = ["sudo", "rm", "-rf", MIGRATION_DIR]
@@ -111,7 +111,7 @@ def apply_updates(vms=current_templates, progress_start=15, progress_end=75):
     Returns a tuple of (vm_name, percentage_progress, upgrade_results),
     for use in updating the GUI progress bar.
     """
-    sdlog.info("Applying all updates to VMs: {}".format(vms))
+    sdlog.info(f"Applying all updates to VMs: {vms}")
     # Figure out how much each completed VM should bump the progress bar.
     assert progress_end > progress_start
     progress_step = (progress_end - progress_start) // len(vms)
@@ -182,7 +182,7 @@ def _apply_updates_vm(vm):
     Apply updates to a given TemplateVM. Any update to the base fedora template
     will require a reboot after the upgrade.
     """
-    sdlog.info("Updating {}".format(vm))
+    sdlog.info(f"Updating {vm}")
 
     # We run custom Salt logic for our own Debian-based TemplateVMs
     if vm.startswith("fedora") or vm.startswith("whonix"):
@@ -196,11 +196,11 @@ def _apply_updates_vm(vm):
         )
     except subprocess.CalledProcessError as e:
         sdlog.error(
-            "An error has occurred updating {}. Please contact your administrator.".format(vm)
+            f"An error has occurred updating {vm}. Please contact your administrator."
         )
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
-    sdlog.info("{} update successful".format(vm))
+    sdlog.info(f"{vm} update successful")
     return UpdateStatus.UPDATES_OK
 
 
@@ -214,12 +214,12 @@ def _write_last_updated_flags_to_disk():
     flag_file_dom0_last_updated = get_dom0_path(FLAG_FILE_LAST_UPDATED_DOM0)
 
     try:
-        sdlog.info("Setting last updated to {} in sd-app".format(current_date))
+        sdlog.info(f"Setting last updated to {current_date} in sd-app")
         subprocess.check_call(
             [
                 "qvm-run",
                 "sd-app",
-                "echo '{}' > {}".format(current_date, flag_file_sd_app_last_updated),
+                f"echo '{current_date}' > {flag_file_sd_app_last_updated}",
             ]
         )
     except subprocess.CalledProcessError as e:
@@ -227,7 +227,7 @@ def _write_last_updated_flags_to_disk():
         sdlog.error(str(e))
 
     try:
-        sdlog.info("Setting last updated to {} in dom0".format(current_date))
+        sdlog.info(f"Setting last updated to {current_date} in dom0")
         if not os.path.exists(os.path.dirname(flag_file_dom0_last_updated)):
             os.makedirs(os.path.dirname(flag_file_dom0_last_updated))
         with open(flag_file_dom0_last_updated, "w") as f:
@@ -246,16 +246,16 @@ def _write_updates_status_flag_to_disk(status):
     flag_file_path_dom0 = get_dom0_path(FLAG_FILE_STATUS_DOM0)
 
     try:
-        sdlog.info("Setting update flag to {} in sd-app".format(status.value))
+        sdlog.info(f"Setting update flag to {status.value} in sd-app")
         subprocess.check_call(
-            ["qvm-run", "sd-app", "echo '{}' > {}".format(status.value, flag_file_path_sd_app)]
+            ["qvm-run", "sd-app", f"echo '{status.value}' > {flag_file_path_sd_app}"]
         )
     except subprocess.CalledProcessError as e:
         sdlog.error("Error writing update status flag to sd-app")
         sdlog.error(str(e))
 
     try:
-        sdlog.info("Setting update flag to {} in dom0".format(status.value))
+        sdlog.info(f"Setting update flag to {status.value} in dom0")
         if not os.path.exists(os.path.dirname(flag_file_path_dom0)):
             os.makedirs(os.path.dirname(flag_file_path_dom0))
 
@@ -303,7 +303,7 @@ def _get_uptime():
     Returns timedelta containing system (dom0) uptime.
     """
     uptime = None
-    with open("/proc/uptime", "r") as f:
+    with open("/proc/uptime") as f:
         uptime = f.read().split(" ")[0].strip()
     uptime = int(float(uptime))
     uptime_hours = uptime // 3600
@@ -324,7 +324,7 @@ def read_dom0_update_flag_from_disk(with_timestamp=False):
     flag_file_path_dom0 = get_dom0_path(FLAG_FILE_STATUS_DOM0)
 
     try:
-        with open(flag_file_path_dom0, "r") as f:
+        with open(flag_file_path_dom0) as f:
             contents = json.load(f)
             for status in UpdateStatus:
                 if int(contents["status"]) == int(status.value):
@@ -383,13 +383,13 @@ def apply_dom0_state():
         output = subprocess.check_output(cmd)
         sdlog.info("Dom0 state applied")
         clean_output = Util.strip_ansi_colors(output.decode("utf-8").strip())
-        detail_log.info("Output from command: {}\n{}".format(cmd_for_log, clean_output))
+        detail_log.info(f"Output from command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_OK
     except subprocess.CalledProcessError as e:
-        sdlog.error("Failed to apply dom0 state. See {} for details.".format(DETAIL_LOG_FILE))
+        sdlog.error(f"Failed to apply dom0 state. See {DETAIL_LOG_FILE} for details.")
         sdlog.error(str(e))
         clean_output = Util.strip_ansi_colors(e.output.decode("utf-8").strip())
-        detail_log.error("Output from failed command: {}\n{}".format(cmd_for_log, clean_output))
+        detail_log.error(f"Output from failed command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_FAILED
 
 
@@ -420,18 +420,18 @@ def shutdown_and_start_vms():
     # be respected).
     safe_sys_vms_in_order = ["sys-usb", "sys-whonix"]
     for vm in safe_sys_vms_in_order:
-        sdlog.info("Safely shutting down system VM: {}".format(vm))
+        sdlog.info(f"Safely shutting down system VM: {vm}")
         _safely_shutdown_vm(vm)
 
     # TODO: Use of qvm-kill should be considered unsafe and may have unexpected
     # side effects. We should aim for a more graceful shutdown strategy.
     unsafe_sys_vms_in_order = ["sys-firewall", "sys-net"]
     for vm in unsafe_sys_vms_in_order:
-        sdlog.info("Killing system VM: {}".format(vm))
+        sdlog.info(f"Killing system VM: {vm}")
         try:
             subprocess.check_output(["qvm-kill", vm], stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
-            sdlog.error("Error while killing system VM: {}".format(vm))
+            sdlog.error(f"Error while killing system VM: {vm}")
             sdlog.error(str(e))
             sdlog.error(str(e.stderr))
 
@@ -449,7 +449,7 @@ def _safely_shutdown_vm(vm):
     try:
         subprocess.check_output(["qvm-shutdown", "--wait", vm], stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
-        sdlog.error("Failed to shut down {}".format(vm))
+        sdlog.error(f"Failed to shut down {vm}")
         sdlog.error(str(e))
         sdlog.error(str(e.stderr))
         return UpdateStatus.UPDATES_FAILED
@@ -460,10 +460,10 @@ def _safely_start_vm(vm):
         running_vms = subprocess.check_output(
             ["qvm-ls", "--running", "--raw-list"], stderr=subprocess.PIPE
         )
-        sdlog.info("VMs running before start of {}: {}".format(vm, running_vms))
+        sdlog.info(f"VMs running before start of {vm}: {running_vms}")
         subprocess.check_output(["qvm-start", "--skip-if-running", vm], stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
-        sdlog.error("Error while starting {}".format(vm))
+        sdlog.error(f"Error while starting {vm}")
         sdlog.error(str(e))
         sdlog.error(str(e.stderr))
 
@@ -475,27 +475,26 @@ def should_launch_updater(interval):
         if _interval_expired(interval, status):
             sdlog.info("Update interval expired: launching updater.")
             return True
-        else:
-            if status["status"] == UpdateStatus.UPDATES_OK.value:
-                sdlog.info("Updates OK and interval not expired, launching client.")
+        elif status["status"] == UpdateStatus.UPDATES_OK.value:
+            sdlog.info("Updates OK and interval not expired, launching client.")
+            return False
+        elif status["status"] == UpdateStatus.REBOOT_REQUIRED.value:
+            if last_required_reboot_performed():
+                sdlog.info("Required reboot performed, updating status and launching client.")
+                _write_updates_status_flag_to_disk(UpdateStatus.UPDATES_OK)
                 return False
-            elif status["status"] == UpdateStatus.REBOOT_REQUIRED.value:
-                if last_required_reboot_performed():
-                    sdlog.info("Required reboot performed, updating status and launching client.")
-                    _write_updates_status_flag_to_disk(UpdateStatus.UPDATES_OK)
-                    return False
-                else:
-                    sdlog.info("Required reboot pending, launching updater")
-                    return True
-            elif status["status"] == UpdateStatus.UPDATES_REQUIRED.value:
-                sdlog.info("Updates are required, launching updater.")
-                return True
-            elif status["status"] == UpdateStatus.UPDATES_FAILED.value:
-                sdlog.info("Preceding update failed, launching updater.")
-                return True
             else:
-                sdlog.info("Update status is unknown, launching updater.")
+                sdlog.info("Required reboot pending, launching updater")
                 return True
+        elif status["status"] == UpdateStatus.UPDATES_REQUIRED.value:
+            sdlog.info("Updates are required, launching updater.")
+            return True
+        elif status["status"] == UpdateStatus.UPDATES_FAILED.value:
+            sdlog.info("Preceding update failed, launching updater.")
+            return True
+        else:
+            sdlog.info("Update status is unknown, launching updater.")
+            return True
     else:
         sdlog.info("Update status not available, launching updater.")
         return True

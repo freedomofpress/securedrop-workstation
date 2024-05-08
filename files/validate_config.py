@@ -3,6 +3,7 @@
 Utility to verify that SecureDrop Workstation config is properly structured.
 Checks for
 """
+
 import json
 import os
 import re
@@ -24,7 +25,7 @@ class ValidationError(Exception):
     pass
 
 
-class SDWConfigValidator(object):
+class SDWConfigValidator:
     def __init__(self, config_base_dir=None):
         if config_base_dir:
             self.config_filepath = os.path.join(config_base_dir, CONFIG_FILEPATH)
@@ -42,7 +43,7 @@ class SDWConfigValidator(object):
 
     def confirm_config_file_exists(self):
         if not os.path.exists(self.config_filepath):
-            msg = "Config file does not exist: {}".format(self.config_filepath)
+            msg = f"Config file does not exist: {self.config_filepath}"
             msg += "Create from config.json.example"
             raise ValidationError(msg)
 
@@ -107,9 +108,7 @@ class SDWConfigValidator(object):
                 pass
 
         if not result:
-            raise ValidationError(
-                "GPG private key is not valid: {}".format(self.secret_key_filepath)
-            )
+            raise ValidationError(f"GPG private key is not valid: {self.secret_key_filepath}")
 
     def confirm_submission_privkey_fingerprint(self):
         if "submission_key_fpr" not in self.config:
@@ -126,12 +125,10 @@ class SDWConfigValidator(object):
                 raise ValidationError("Configured fingerprint does not match key!")
 
         except subprocess.CalledProcessError as e:
-            raise ValidationError(
-                "Key validation failed: {}".format(e.output.decode(sys.stdout.encoding))
-            )
+            raise ValidationError(f"Key validation failed: {e.output.decode(sys.stdout.encoding)}")
 
     def read_config_file(self):
-        with open(self.config_filepath, "r") as f:
+        with open(self.config_filepath) as f:
             j = json.load(f)
         return j
 

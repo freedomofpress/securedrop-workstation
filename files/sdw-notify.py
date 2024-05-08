@@ -4,6 +4,7 @@ Displays a warning to the user if the workstation has been running continuously
 for too long without checking for security updates. Writes output to a logfile,
 not stdout. All settings are in Notify utility module.
 """
+
 import sys
 
 from PyQt5.QtWidgets import QApplication
@@ -55,7 +56,7 @@ def show_update_warning():
     notify script runs.
     """
 
-    app = QApplication([])  # noqa: F841
+    app = QApplication([])
     dialog = NotifyApp.NotifyDialog(Util.is_sdapp_halted())
     result = dialog.run()
 

@@ -29,7 +29,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
             config = json.load(c)
             hostname = config["hidserv"]["hostname"].split(".")[0]
             keyvalue = config["hidserv"]["key"]
-            line = "{0}:descriptor:x25519:{1}".format(hostname, keyvalue)
+            line = f"{hostname}:descriptor:x25519:{keyvalue}"
 
             self.assertFileHasLine("/var/lib/tor/keys/app-journalist.auth_private", line)
 

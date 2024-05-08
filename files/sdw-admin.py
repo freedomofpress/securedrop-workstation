@@ -70,7 +70,7 @@ def install_pvh_support():
     TODO: install this via package requirements instead if possible
     """
     try:
-        subprocess.run(["sudo", "qubes-dom0-update", "-y", "-q", "grub2-xen-pvh"])
+        subprocess.run(["sudo", "qubes-dom0-update", "-y", "-q", "grub2-xen-pvh"], check=False)
     except subprocess.CalledProcessError:
         raise SDWAdminException("Error installing grub2-xen-pvah: local PVH not available.")
 

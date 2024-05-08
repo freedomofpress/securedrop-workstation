@@ -15,17 +15,17 @@ def main():
     for vm in q.domains:
         for tag in TAGS_TO_REMOVE:
             if tag in q.domains[vm].tags:
-                print("Removing tag '{}' from VM '{}'.".format(tag, vm))
+                print(f"Removing tag '{tag}' from VM '{vm}'.")
                 try:
                     q.domains[vm].tags.remove(tag)
                 except Exception as error:
-                    print("Error removing tag: '{}'".format(error))
+                    print(f"Error removing tag: '{error}'")
                     print("Aborting.")
                     exit(1)
                 tags_removed = True
 
     if tags_removed is False:
-        print("Tags {} not set on any VMs, nothing removed.".format(TAGS_TO_REMOVE))
+        print(f"Tags {TAGS_TO_REMOVE} not set on any VMs, nothing removed.")
 
 
 if __name__ == "__main__":

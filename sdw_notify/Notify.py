@@ -53,15 +53,15 @@ def is_update_check_necessary():
 
     # Get timestamp from last update (if it exists)
     if last_updated_file_exists:
-        with open(LAST_UPDATED_FILE, "r") as f:
+        with open(LAST_UPDATED_FILE) as f:
             last_update_time = f.readline().splitlines()[0]
         try:
             last_update_time = datetime.strptime(last_update_time, LAST_UPDATED_FORMAT)
         except ValueError:
             sdlog.error(
-                "Data in {} not in the expected format. "
-                "Expecting a timestamp in format '{}'. "
-                "Showing security warning.".format(LAST_UPDATED_FILE, LAST_UPDATED_FORMAT)
+                f"Data in {LAST_UPDATED_FILE} not in the expected format. "
+                f"Expecting a timestamp in format '{LAST_UPDATED_FORMAT}'. "
+                "Showing security warning."
             )
             return True
 
@@ -74,43 +74,38 @@ def is_update_check_necessary():
 
     if not last_updated_file_exists:
         sdlog.warning(
-            "Timestamp file '{}' does not exist. "
-            "Updater may never have run. Showing security warning.".format(LAST_UPDATED_FILE)
+            f"Timestamp file '{LAST_UPDATED_FILE}' does not exist. "
+            "Updater may never have run. Showing security warning."
         )
         return True
-    else:
-        if updated_seconds_ago > WARNING_THRESHOLD:
-            if uptime_seconds > UPTIME_GRACE_PERIOD:
-                sdlog.warning(
-                    "Last successful update ({0:.1f} hours ago) is above "
-                    "warning threshold ({1:.1f} hours). Uptime grace period of "
-                    "{2:.1f} hours has elapsed (uptime: {3:.1f} hours). "
-                    "Showing security warning.".format(
-                        updated_hours_ago, warning_threshold_hours, grace_period_hours, uptime_hours
-                    )
-                )
-                return True
-            else:
-                sdlog.info(
-                    "Last successful update ({0:.1f} hours ago) is above "
-                    "warning threshold ({1:.1f} hours). Uptime grace period "
-                    "of {2:.1f} hours has not elapsed yet (uptime: {3:.1f} "
-                    "hours). Exiting without warning.".format(
-                        updated_hours_ago, warning_threshold_hours, grace_period_hours, uptime_hours
-                    )
-                )
-                return False
+    elif updated_seconds_ago > WARNING_THRESHOLD:
+        if uptime_seconds > UPTIME_GRACE_PERIOD:
+            sdlog.warning(
+                f"Last successful update ({updated_hours_ago:.1f} hours ago) is above "
+                f"warning threshold ({warning_threshold_hours:.1f} hours). Uptime grace period of "
+                f"{grace_period_hours:.1f} hours has elapsed (uptime: {uptime_hours:.1f} hours). "
+                "Showing security warning."
+            )
+            return True
         else:
             sdlog.info(
-                "Last successful update ({0:.1f} hours ago) "
-                "is below the warning threshold ({1:.1f} hours). "
-                "Exiting without warning.".format(updated_hours_ago, warning_threshold_hours)
+                f"Last successful update ({updated_hours_ago:.1f} hours ago) is above "
+                f"warning threshold ({warning_threshold_hours:.1f} hours). Uptime grace period "
+                f"of {grace_period_hours:.1f} hours has not elapsed yet (uptime: {uptime_hours:.1f} "
+                "hours). Exiting without warning."
             )
             return False
+    else:
+        sdlog.info(
+            f"Last successful update ({updated_hours_ago:.1f} hours ago) "
+            f"is below the warning threshold ({warning_threshold_hours:.1f} hours). "
+            "Exiting without warning."
+        )
+        return False
 
 
 def get_uptime_seconds():
     # Obtain current uptime
-    with open("/proc/uptime", "r") as f:
+    with open("/proc/uptime") as f:
         uptime_seconds = float(f.readline().split()[0])
     return uptime_seconds

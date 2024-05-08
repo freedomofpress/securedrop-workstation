@@ -3,6 +3,7 @@
 Updates the config.json in-place in dom0 to set the environment to 'dev' or
 'staging'.
 """
+
 import argparse
 import json
 import os
@@ -27,7 +28,7 @@ def parse_args():
     )
     args = parser.parse_args()
     if not os.path.exists(args.config):
-        msg = "Config file not found: {}\n".format(args.config)
+        msg = f"Config file not found: {args.config}\n"
         sys.stderr.write(msg)
         parser.print_help(sys.stderr)
         sys.exit(1)
@@ -39,14 +40,14 @@ def parse_args():
 
 
 def set_env_in_config(args):
-    with open(args.config, "r") as f:
+    with open(args.config) as f:
         old_config = json.load(f)
 
     new_config = dict(old_config)
     new_config["environment"] = args.environment
 
     if new_config != old_config:
-        msg = "Updated config environment to '{}'...\n".format(args.environment)
+        msg = f"Updated config environment to '{args.environment}'...\n"
         sys.stderr.write(msg)
 
         with open(args.config, "w") as f:

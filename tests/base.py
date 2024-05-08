@@ -72,7 +72,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         #   * QubesVMNotStartedError (from qubesadmin.base)
         for v in list(self.vm.connected_vms.values()):
             if v.is_running():
-                msg = "Need to halt connected VM {}" " before testing".format(v)
+                msg = f"Need to halt connected VM {v}" " before testing"
                 print(msg)
                 v.shutdown()
                 while v.is_running():
@@ -95,12 +95,12 @@ class SD_VM_Local_Test(unittest.TestCase):
         return contents
 
     def _get_file_contents(self, path):
-        cmd = ["qvm-run", "-p", self.vm_name, "sudo /bin/cat {}".format(path)]
+        cmd = ["qvm-run", "-p", self.vm_name, f"sudo /bin/cat {path}"]
         contents = subprocess.check_output(cmd).decode("utf-8")
         return contents
 
     def _get_symlink_location(self, path):
-        cmd = ["qvm-run", "-p", self.vm_name, "/usr/bin/readlink -f {}".format(path)]
+        cmd = ["qvm-run", "-p", self.vm_name, f"/usr/bin/readlink -f {path}"]
         contents = subprocess.check_output(cmd).decode("utf-8").strip()
         return contents
 
@@ -112,7 +112,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         # catch that and return False
         try:
             subprocess.check_call(
-                ["qvm-run", "-a", "-q", self.vm_name, "dpkg --verify {}".format(pkg)]
+                ["qvm-run", "-a", "-q", self.vm_name, f"dpkg --verify {pkg}"]
             )
         except subprocess.CalledProcessError:
             return False
@@ -136,7 +136,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         for line in lines:
             if line == wanted_line:
                 return True
-        msg = "File {} does not contain expected line {}".format(remote_path, wanted_line)
+        msg = f"File {remote_path} does not contain expected line {wanted_line}"
         raise AssertionError(msg)
 
     def _fileExists(self, remote_path):
@@ -146,7 +146,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         # does not exist, so we return false in that case.
         try:
             subprocess.check_call(
-                ["qvm-run", "-a", "-q", self.vm_name, "ls {}".format(remote_path)]
+                ["qvm-run", "-a", "-q", self.vm_name, f"ls {remote_path}"]
             )
         except subprocess.CalledProcessError:
             return False
@@ -211,14 +211,14 @@ remotevm = sd-log
 
         # The --norun argument ensures that we do not launch any application,
         # regardless of the result of this invocation.
-        mailcap_result = self._run("run-mailcap --norun {}".format(tmpfile_name))
+        mailcap_result = self._run(f"run-mailcap --norun {tmpfile_name}")
 
         # For simplicity, we remove the tempfile here instead of in a separate
         # teardown method.
-        self._run("rm {}".format(tmpfile_name))
+        self._run(f"rm {tmpfile_name}")
 
         # Ensure that the wildcard rule worked as expected.
-        self.assertEqual(mailcap_result, 'logger "Mailcap is disabled." <{}'.format(tmpfile_name))
+        self.assertEqual(mailcap_result, f'logger "Mailcap is disabled." <{tmpfile_name}')
 
     def test_vm_config_keys(self):
         """Every VM should check that it has only the configuration keys it
