@@ -179,35 +179,21 @@ venv: ## Provision a Python 3 virtualenv for development (ensure to also install
 check: lint test ## Runs linters and tests
 
 .PHONY: lint
-lint: check-black check-isort flake8 mypy bandit rpmlint shellcheck ## Runs linters (black, isort, flake8, mypy, bandit rpmlint, and shellcheck)
-
-.PHONY: bandit
-bandit: ## Runs the bandit security linter
-	poetry run bandit -ll -r .
+lint: check-ruff mypy rpmlint shellcheck ## Runs linters (ruff, mypy, rpmlint, and shellcheck)
 
 .PHONY: test-launcher
 test-launcher: ## Runs launcher tests
 	xvfb-run poetry run python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater/ --cov=sdw_util -v launcher/tests/
 
-.PHONY: check-black
-check-black: ## Check Python source code formatting with black
-	poetry run black --check --diff .
+.PHONY: check-ruff
+check-ruff: ## Check Python source code formatting with ruff
+	poetry run ruff format . --diff
+	poetry run ruff check . --output-format=full
 
-.PHONY: black
-black: ## Update Python source code formatting with black
-	poetry run black .
-
-.PHONY: check-isort
-check-isort: ## Check Python import organization with isort
-	poetry run isort --check-only --diff .
-
-.PHONY: isort
-isort: ## Update Python import organization with isort
-	poetry run isort .
-
-.PHONY: flake8
-flake8: ## Validate PEP8 compliance for Python source files
-	poetry run flake8
+.PHONY: fix
+fix: ## Fix Python source code formatting with ruff
+	poetry run ruff format .
+	poetry run ruff check --fix
 
 .PHONY: mypy
 mypy:  ## Type check Python files
