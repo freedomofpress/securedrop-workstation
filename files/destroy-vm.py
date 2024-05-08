@@ -3,6 +3,7 @@
 Utility to quickly destroy a Qubes VM managed by the Workstation
 salt config, for use in repeated builds during development.
 """
+
 import argparse
 import subprocess
 import sys
@@ -38,7 +39,8 @@ def destroy_vm(vm):
     Destroys a single VM instance. Requires arg to be
     QubesVM object.
     """
-    assert SDW_DEFAULT_TAG in vm.tags
+    if SDW_DEFAULT_TAG not in vm.tags:
+        raise Exception("VM does not have the 'sd-workstation' tag")
     if vm.is_running():
         vm.kill()
     print(f"Destroying VM '{vm.name}'... ", end="")

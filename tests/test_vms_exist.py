@@ -191,5 +191,4 @@ class SD_VM_Tests(unittest.TestCase):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_VM_Tests)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(SD_VM_Tests)

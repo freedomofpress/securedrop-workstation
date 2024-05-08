@@ -212,7 +212,9 @@ def test_write_last_updated_flags_to_disk(mocked_info, mocked_error, mocked_call
     mocked_call.assert_called_once_with(subprocess_command)
     assert not mocked_error.called
     assert os.path.exists(flag_file_dom0)
-    contents = open(flag_file_dom0).read()
+    with open(flag_file_dom0) as f:
+        contents = f.read()
+
     assert contents == current_time
 
 
@@ -294,7 +296,7 @@ def test_apply_updates_vms(mocked_info, mocked_error, mocked_call, vm):
         result = Updater._apply_updates_vm(vm)
         assert result == UpdateStatus.UPDATES_OK
 
-        if vm.startswith("fedora") or vm.startswith("whonix"):
+        if vm.startswith(("fedora", "whonix")):
             expected_salt_state = "update.qubes-vm"
         else:
             expected_salt_state = "fpf-apt-repo"
@@ -638,7 +640,7 @@ def test_last_required_reboot_performed_not_required(mocked_info, mocked_error, 
 
 
 @pytest.mark.parametrize(
-    "status, rebooted, expect_status_change, expect_updater",
+    ("status", "rebooted", "expect_status_change", "expect_updater"),
     [
         (UpdateStatus.UPDATES_OK, True, False, True),
         (UpdateStatus.UPDATES_REQUIRED, True, False, True),
@@ -674,7 +676,7 @@ def test_should_run_updater_status_interval_expired(
 
 
 @pytest.mark.parametrize(
-    "status, rebooted, expect_status_change, expect_updater",
+    ("status", "rebooted", "expect_status_change", "expect_updater"),
     [
         (UpdateStatus.UPDATES_OK, True, False, False),
         (UpdateStatus.UPDATES_REQUIRED, True, False, True),

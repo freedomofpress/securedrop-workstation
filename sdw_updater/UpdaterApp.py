@@ -27,7 +27,7 @@ def launch_securedrop_client():
 
 class UpdaterApp(QDialog, Ui_UpdaterDialog):
     def __init__(self, should_skip_netcheck: bool = False, parent=None):
-        super(UpdaterApp, self).__init__(parent)
+        super().__init__(parent)
 
         self.progress = 0
         self._skip_netcheck = should_skip_netcheck
@@ -222,7 +222,6 @@ class UpgradeThread(QThread):
         QThread.__init__(self)
 
     def run(self):
-
         # Update dom0 first, then apply dom0 state. If full state run
         # is required, the dom0 state will drop a flag.
         self.progress_signal.emit(5)

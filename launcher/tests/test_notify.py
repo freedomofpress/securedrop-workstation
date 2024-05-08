@@ -43,7 +43,6 @@ def test_warning_shown_if_updater_never_ran(mocked_info, mocked_warning, mocked_
     """
     # We're going to look for a nonexistent file in an existing temporary directoryr
     with mock.patch("sdw_notify.Notify.LAST_UPDATED_FILE", tmp_path / "not-a-file"):
-
         warning_should_be_shown = Notify.is_update_check_necessary()
 
         # No handled errors should occur
@@ -61,7 +60,7 @@ def test_warning_shown_if_updater_never_ran(mocked_info, mocked_warning, mocked_
 
 
 @pytest.mark.parametrize(
-    "uptime,warning_expected",
+    ("uptime", "warning_expected"),
     [(Notify.UPTIME_GRACE_PERIOD + 1, True), (Notify.UPTIME_GRACE_PERIOD - 1, False)],
 )
 @mock.patch("sdw_notify.Notify.sdlog.error")

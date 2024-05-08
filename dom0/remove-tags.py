@@ -3,6 +3,9 @@
 Removes tags used for exempting VMs from default SecureDrop Workstation
 RPC policies from all VMs (including non-SecureDrop ones).
 """
+
+import sys
+
 import qubesadmin
 
 q = qubesadmin.Qubes()
@@ -21,7 +24,7 @@ def main():
                 except Exception as error:
                     print(f"Error removing tag: '{error}'")
                     print("Aborting.")
-                    exit(1)
+                    sys.exit(1)
                 tags_removed = True
 
     if tags_removed is False:

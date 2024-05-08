@@ -7,7 +7,7 @@ from base import SD_VM_Local_Test
 class SD_Viewer_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-viewer"
-        super(SD_Viewer_Tests, self).setUp()
+        super().setUp()
 
     def test_sd_viewer_metapackage_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-workstation-viewer"))
@@ -54,5 +54,4 @@ class SD_Viewer_Tests(SD_VM_Local_Test):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Viewer_Tests)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(SD_Viewer_Tests)

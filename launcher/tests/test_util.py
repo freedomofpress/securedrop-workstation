@@ -30,7 +30,6 @@ def test_obtain_lock(mocked_info, mocked_warning, mocked_error, tmp_path):
     Test whether we can successfully obtain an exclusive lock
     """
     with mock.patch("sdw_util.Util.LOCK_DIRECTORY", tmp_path):
-
         basename = "test-obtain-lock.lock"
         pid_str = str(os.getpid())
         lh = Util.obtain_lock(basename)
@@ -67,7 +66,6 @@ def test_cannot_obtain_exclusive_lock_when_busy(
     from being instantiated.
     """
     with mock.patch("sdw_util.Util.LOCK_DIRECTORY", tmp_path):
-
         basename = "test-exclusive-lock.lock"
         Util.obtain_lock(basename)
 
@@ -94,7 +92,6 @@ def test_cannot_obtain_shared_lock_when_busy(mocked_info, mocked_warning, mocked
     from being displayed when the preflight updater is already open.
     """
     with mock.patch("sdw_util.Util.LOCK_DIRECTORY", tmp_path):
-
         basename = "test-conflict.lock"
         Util.obtain_lock(basename)
 
@@ -147,7 +144,6 @@ def test_stale_lockfile_has_no_effect(mocked_info, mocked_warning, mocked_error,
     is accessing it.
     """
     with mock.patch("sdw_util.Util.LOCK_DIRECTORY", tmp_path):
-
         # Because we're not assigning the return value, it will be immediately released
         basename = "test-stale.lock"
         Util.obtain_lock(basename)
@@ -172,7 +168,7 @@ def test_log(tmp_path):
         assert count == 3
 
 
-@pytest.mark.parametrize("return_code,expected_result", [(0, True), (1, False)])
+@pytest.mark.parametrize(("return_code", "expected_result"), [(0, True), (1, False)])
 @mock.patch("sdw_util.Util.sdlog.error")
 @mock.patch("sdw_util.Util.sdlog.warning")
 @mock.patch("sdw_util.Util.sdlog.info")
@@ -199,7 +195,7 @@ def test_for_conflicting_process(
 
 
 @pytest.mark.parametrize(
-    "os_release_fixture,version_contains",
+    ("os_release_fixture", "version_contains"),
     [
         ("os-release-qubes-4.1", "4.1"),
         ("os-release-ubuntu", None),
@@ -240,7 +236,7 @@ def test_get_logger():
 
 
 @pytest.mark.parametrize(
-    "os_release_fixture,version_contains",
+    ("os_release_fixture", "version_contains"),
     [
         ("os-release-qubes-4.1", "4.1"),
         ("os-release-ubuntu", None),
@@ -265,7 +261,7 @@ def test_is_sdapp_halted_yes(os_release_fixture, version_contains):
 
 
 @pytest.mark.parametrize(
-    "os_release_fixture,version_contains",
+    ("os_release_fixture", "version_contains"),
     [
         ("os-release-qubes-4.1", "4.1"),
         ("os-release-ubuntu", None),
@@ -290,7 +286,7 @@ def test_is_sdapp_halted_no(os_release_fixture, version_contains):
 
 
 @pytest.mark.parametrize(
-    "os_release_fixture,version_contains",
+    ("os_release_fixture", "version_contains"),
     [
         ("os-release-qubes-4.1", "4.1"),
         ("os-release-ubuntu", None),

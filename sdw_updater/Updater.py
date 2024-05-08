@@ -71,9 +71,7 @@ def run_full_install():
         sdlog.error(f"Failed to apply full system state. Please review {DETAIL_LOG_FILE}.")
         sdlog.error(str(e))
         clean_output = Util.strip_ansi_colors(e.output.decode("utf-8").strip())
-        detail_log.error(
-            f"Output from failed command: {apply_cmd_for_log}\n{clean_output}"
-        )
+        detail_log.error(f"Output from failed command: {apply_cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_FAILED
 
     clean_output = Util.strip_ansi_colors(output.decode("utf-8").strip())
@@ -97,10 +95,9 @@ def migration_is_required():
     Check whether a full run of the Salt config via sdw-admin is required.
     """
     result = False
-    if os.path.exists(MIGRATION_DIR):
-        if len(os.listdir(MIGRATION_DIR)) > 0:
-            sdlog.info("Migration is required, will enforce full config during update")
-            result = True
+    if os.path.exists(MIGRATION_DIR) and len(os.listdir(MIGRATION_DIR)) > 0:
+        sdlog.info("Migration is required, will enforce full config during update")
+        result = True
     return result
 
 
@@ -113,7 +110,8 @@ def apply_updates(vms=current_templates, progress_start=15, progress_end=75):
     """
     sdlog.info(f"Applying all updates to VMs: {vms}")
     # Figure out how much each completed VM should bump the progress bar.
-    assert progress_end > progress_start
+    if progress_end <= progress_start:
+        raise Exception("Invalid progress range")
     progress_step = (progress_end - progress_start) // len(vms)
 
     progress_current = progress_start
@@ -185,19 +183,14 @@ def _apply_updates_vm(vm):
     sdlog.info(f"Updating {vm}")
 
     # We run custom Salt logic for our own Debian-based TemplateVMs
-    if vm.startswith("fedora") or vm.startswith("whonix"):
-        salt_state = "update.qubes-vm"
-    else:
-        salt_state = "fpf-apt-repo"
+    salt_state = "update.qubes-vm" if vm.startswith(("fedora", "whonix")) else "fpf-apt-repo"
 
     try:
         subprocess.check_call(
             ["sudo", "qubesctl", "--skip-dom0", "--targets", vm, "state.sls", salt_state]
         )
     except subprocess.CalledProcessError as e:
-        sdlog.error(
-            f"An error has occurred updating {vm}. Please contact your administrator."
-        )
+        sdlog.error(f"An error has occurred updating {vm}. Please contact your administrator.")
         sdlog.error(str(e))
         return UpdateStatus.UPDATES_FAILED
     sdlog.info(f"{vm} update successful")
@@ -290,12 +283,12 @@ def last_required_reboot_performed():
         # the updater, system was not rebooted after previous run
         if boot_time < reboot_time:
             return False
+
         # system was rebooted after flag was written to disk
-        else:
-            return True
-    # previous run did not require reboot
-    else:
         return True
+
+    # previous run did not require reboot
+    return True
 
 
 def _get_uptime():
@@ -310,9 +303,7 @@ def _get_uptime():
     uptime_minutes = (uptime % 3600) // 60
     uptime_seconds = uptime % 60
 
-    delta = timedelta(hours=uptime_hours, minutes=uptime_minutes, seconds=uptime_seconds)
-
-    return delta
+    return timedelta(hours=uptime_hours, minutes=uptime_minutes, seconds=uptime_seconds)
 
 
 def read_dom0_update_flag_from_disk(with_timestamp=False):
@@ -330,8 +321,8 @@ def read_dom0_update_flag_from_disk(with_timestamp=False):
                 if int(contents["status"]) == int(status.value):
                     if with_timestamp:
                         return contents
-                    else:
-                        return status
+
+                    return status
     except Exception:
         sdlog.info("Cannot read dom0 status flag, assuming first run")
         return None
@@ -361,12 +352,12 @@ def overall_update_status(results):
 
     if updates_failed:
         return UpdateStatus.UPDATES_FAILED
-    elif reboot_required:
+    if reboot_required:
         return UpdateStatus.REBOOT_REQUIRED
-    elif updates_required:
+    if updates_required:
         return UpdateStatus.UPDATES_REQUIRED
-    else:
-        return UpdateStatus.UPDATES_OK
+
+    return UpdateStatus.UPDATES_OK
 
 
 def apply_dom0_state():
@@ -475,29 +466,29 @@ def should_launch_updater(interval):
         if _interval_expired(interval, status):
             sdlog.info("Update interval expired: launching updater.")
             return True
-        elif status["status"] == UpdateStatus.UPDATES_OK.value:
+        if status["status"] == UpdateStatus.UPDATES_OK.value:
             sdlog.info("Updates OK and interval not expired, launching client.")
             return False
-        elif status["status"] == UpdateStatus.REBOOT_REQUIRED.value:
+        if status["status"] == UpdateStatus.REBOOT_REQUIRED.value:
             if last_required_reboot_performed():
                 sdlog.info("Required reboot performed, updating status and launching client.")
                 _write_updates_status_flag_to_disk(UpdateStatus.UPDATES_OK)
                 return False
-            else:
-                sdlog.info("Required reboot pending, launching updater")
-                return True
-        elif status["status"] == UpdateStatus.UPDATES_REQUIRED.value:
+
+            sdlog.info("Required reboot pending, launching updater")
+            return True
+        if status["status"] == UpdateStatus.UPDATES_REQUIRED.value:
             sdlog.info("Updates are required, launching updater.")
             return True
-        elif status["status"] == UpdateStatus.UPDATES_FAILED.value:
+        if status["status"] == UpdateStatus.UPDATES_FAILED.value:
             sdlog.info("Preceding update failed, launching updater.")
             return True
-        else:
-            sdlog.info("Update status is unknown, launching updater.")
-            return True
-    else:
-        sdlog.info("Update status not available, launching updater.")
+
+        sdlog.info("Update status is unknown, launching updater.")
         return True
+
+    sdlog.info("Update status not available, launching updater.")
+    return True
 
 
 def _valid_status(status):

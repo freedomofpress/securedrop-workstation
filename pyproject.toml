@@ -56,12 +56,15 @@ select = [
 ]
 ignore = [
     # code complexity checks that we fail
+    "PLR0911",
     "PLR0913",
     "PLR0915",
     # magic-value-comparison, too many violations for now
     "PLR2004",
     # hardcoded passwords, false positive
     "S105",
+    # it's fine to use /tmp in dom0, since it's not a multiuser environment
+    "S108",
     # flags every instance of subprocess
     "S603",
     # we trust $PATH isn't hijacked
@@ -77,6 +80,8 @@ ignore = [
 "**/tests/**.py" = [
     # Use of `assert` detected
     "S101",
+    # Tests use /tmp
+    "S108",
     # Use a regular `assert` instead of unittest-style `assertEqual`
     "PT009",
 ]

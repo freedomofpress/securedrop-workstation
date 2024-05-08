@@ -91,18 +91,15 @@ class SD_VM_Local_Test(unittest.TestCase):
         if user:
             full_cmd += ["-u", user]
         full_cmd += [self.vm_name, cmd]
-        contents = subprocess.check_output(full_cmd).decode("utf-8").strip()
-        return contents
+        return subprocess.check_output(full_cmd).decode("utf-8").strip()
 
     def _get_file_contents(self, path):
         cmd = ["qvm-run", "-p", self.vm_name, f"sudo /bin/cat {path}"]
-        contents = subprocess.check_output(cmd).decode("utf-8")
-        return contents
+        return subprocess.check_output(cmd).decode("utf-8")
 
     def _get_symlink_location(self, path):
         cmd = ["qvm-run", "-p", self.vm_name, f"/usr/bin/readlink -f {path}"]
-        contents = subprocess.check_output(cmd).decode("utf-8").strip()
-        return contents
+        return subprocess.check_output(cmd).decode("utf-8").strip()
 
     def _package_is_installed(self, pkg):
         """
@@ -111,9 +108,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         # dpkg --verify will exit non-zero for a non-installed pkg,
         # catch that and return False
         try:
-            subprocess.check_call(
-                ["qvm-run", "-a", "-q", self.vm_name, f"dpkg --verify {pkg}"]
-            )
+            subprocess.check_call(["qvm-run", "-a", "-q", self.vm_name, f"dpkg --verify {pkg}"])
         except subprocess.CalledProcessError:
             return False
 
@@ -145,9 +140,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         # ls will return non-zero and an exception will be thrown if the file
         # does not exist, so we return false in that case.
         try:
-            subprocess.check_call(
-                ["qvm-run", "-a", "-q", self.vm_name, f"ls {remote_path}"]
-            )
+            subprocess.check_call(["qvm-run", "-a", "-q", self.vm_name, f"ls {remote_path}"])
         except subprocess.CalledProcessError:
             return False
 

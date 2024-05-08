@@ -129,8 +129,7 @@ class SDWConfigValidator:
 
     def read_config_file(self):
         with open(self.config_filepath) as f:
-            j = json.load(f)
-        return j
+            return json.load(f)
 
     def validate_existing_size(self):
         """This method checks for existing private volume size and new

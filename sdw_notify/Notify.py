@@ -78,7 +78,7 @@ def is_update_check_necessary():
             "Updater may never have run. Showing security warning."
         )
         return True
-    elif updated_seconds_ago > WARNING_THRESHOLD:
+    if updated_seconds_ago > WARNING_THRESHOLD:
         if uptime_seconds > UPTIME_GRACE_PERIOD:
             sdlog.warning(
                 f"Last successful update ({updated_hours_ago:.1f} hours ago) is above "
@@ -87,25 +87,24 @@ def is_update_check_necessary():
                 "Showing security warning."
             )
             return True
-        else:
-            sdlog.info(
-                f"Last successful update ({updated_hours_ago:.1f} hours ago) is above "
-                f"warning threshold ({warning_threshold_hours:.1f} hours). Uptime grace period "
-                f"of {grace_period_hours:.1f} hours has not elapsed yet (uptime: {uptime_hours:.1f} "
-                "hours). Exiting without warning."
-            )
-            return False
-    else:
+
         sdlog.info(
-            f"Last successful update ({updated_hours_ago:.1f} hours ago) "
-            f"is below the warning threshold ({warning_threshold_hours:.1f} hours). "
-            "Exiting without warning."
+            f"Last successful update ({updated_hours_ago:.1f} hours ago) is above "
+            f"warning threshold ({warning_threshold_hours:.1f} hours). Uptime grace period "
+            f"of {grace_period_hours:.1f} hours has not elapsed yet (uptime: {uptime_hours:.1f} "
+            "hours). Exiting without warning."
         )
         return False
+
+    sdlog.info(
+        f"Last successful update ({updated_hours_ago:.1f} hours ago) "
+        f"is below the warning threshold ({warning_threshold_hours:.1f} hours). "
+        "Exiting without warning."
+    )
+    return False
 
 
 def get_uptime_seconds():
     # Obtain current uptime
     with open("/proc/uptime") as f:
-        uptime_seconds = float(f.readline().split()[0])
-    return uptime_seconds
+        return float(f.readline().split()[0])

@@ -6,7 +6,6 @@ FEDORA_VERSION = "f37"
 
 
 class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
-
     pubkey_wanted = ""
     yum_repo_url = ""
     pubkey_actual = "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation"
@@ -31,7 +30,6 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
                 self.yum_repo_url = self.yum_repo_url_test
 
     def test_rpm_repo_public_key(self):
-
         with open(self.pubkey_actual) as f:
             pubkey_actual_contents = f.readlines()
 
@@ -57,5 +55,4 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Dom0_Rpm_Repo_Tests)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(SD_Dom0_Rpm_Repo_Tests)

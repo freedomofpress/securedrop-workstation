@@ -151,8 +151,8 @@ def get_qubes_version():
 def get_logger(prefix=SD_LOGGER_PREFIX, module=None):
     if module is None:
         return logging.getLogger(prefix)
-    else:
-        return logging.getLogger(prefix + "." + module)
+
+    return logging.getLogger(prefix + "." + module)
 
 
 def strip_ansi_colors(str):
