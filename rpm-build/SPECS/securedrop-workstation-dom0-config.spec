@@ -99,7 +99,6 @@ install -m 755 -d %{buildroot}/%{_userunitdir}/
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/salt/press.freedom.SecureDropUpdater.desktop
 install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
-install -m 644 files/securedrop-128x128.png %{buildroot}/srv/salt/sd/sd-workstation/logo-small.png
 install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 install -m 755 files/sdw-updater.py %{buildroot}/%{_bindir}/sdw-updater
 install -m 755 files/sdw-notify.py %{buildroot}/%{_bindir}/sdw-notify
@@ -110,6 +109,9 @@ install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 install -m 755 -d %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/32-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
+
+install -m 755 -d %{buildroot}/usr/share/securedrop/icons
+install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/icons/sd-logo.png
 
 
 %files
@@ -144,7 +146,8 @@ install -m 644 files/32-securedrop-workstation.policy %{buildroot}/etc/qubes/pol
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-workstation.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-workstation.policy
 
-
+#TODO: this is the same 128x128 icon "securedrop.png" in the datadir
+/usr/share/securedrop/icons/sd-logo.png
 
 %doc README.md
 %license LICENSE
