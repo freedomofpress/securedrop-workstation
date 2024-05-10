@@ -107,6 +107,10 @@ install -m 755 files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
 install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 
+install -m 755 -d %{buildroot}/etc/qubes/policy.d/
+install -m 644 files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
+install -m 644 files/32-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
+
 
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
@@ -136,6 +140,12 @@ install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %{_userunitdir}/sdw-notify.service
 %{_userunitdir}/sdw-notify.timer
+
+%attr(664, root, root) /etc/qubes/policy.d/31-securedrop-workstation.policy
+%attr(664, root, root) /etc/qubes/policy.d/32-securedrop-workstation.policy
+
+
+
 %doc README.md
 %license LICENSE
 
