@@ -52,11 +52,6 @@ dom0-install-debian-minimal-template:
     - name: >
         qvm-template info --machine-readable debian-12-minimal | grep -q "installed|debian-12-minimal|" || qvm-template install debian-12-minimal
 
-dom0-create-opt-securedrop-directory:
-  file.directory:
-    - name: /opt/securedrop
-
-
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
 # Increase the default icon size for the GUI user for usability/accessibility reasons

@@ -113,6 +113,8 @@ install -m 644 files/32-securedrop-workstation.policy %{buildroot}/etc/qubes/pol
 install -m 755 -d %{buildroot}/usr/share/securedrop/icons
 install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/icons/sd-logo.png
 
+install -m 755 -d %{buildroot}/opt/securedrop
+
 
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
@@ -148,6 +150,9 @@ install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/ic
 
 #TODO: this is the same 128x128 icon "securedrop.png" in the datadir
 /usr/share/securedrop/icons/sd-logo.png
+
+#TODO: is this superseded by notifier/updater file locations, above?
+/opt/securedrop
 
 %doc README.md
 %license LICENSE
