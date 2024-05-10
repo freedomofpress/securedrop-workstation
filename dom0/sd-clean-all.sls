@@ -88,7 +88,6 @@ sd-cleanup-etc-changes:
   file.replace:
     - names:
       - /etc/systemd/logind.conf
-      - /etc/qubes/repo-templates/qubes-templates.repo
     - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
     - flags:
       - MULTILINE
