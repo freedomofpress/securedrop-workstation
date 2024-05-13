@@ -30,7 +30,7 @@ jobs:
           git config --global --add safe.directory '*'
           # Version format is "${VERSION}-0.YYYYMMDDHHMMSS.fXX", which sorts lower than "${VERSION}-1"
           rpmdev-bumpspec --new="$(cat VERSION)-0.$(date +%Y%m%d%H%M%S)%{?dist}" rpm-build/SPECS/*.spec
-          make build-rpm
+          make build-dev-rpm
       - uses: actions/upload-artifact@v4
         id: upload
         with:

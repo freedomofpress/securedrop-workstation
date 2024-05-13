@@ -3,6 +3,10 @@ export TOPLEVEL
 PROJECT=$(git remote get-url origin | xargs basename -s .git)-dom0-config
 export PROJECT
 
+# DEV_BUILD_FLAG builds without power setting changes present in prod
+DEV_BUILD_FLAG="${DEV_BUILD_FLAG:-}"
+export DEV_BUILD_FLAG
+
 OCI_RUN_ARGUMENTS="${OCI_RUN_ARGUMENTS:-}"
 export OCI_RUN_ARGUMENTS
 

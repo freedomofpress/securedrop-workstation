@@ -32,6 +32,11 @@ dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 build-rpm: ## Build RPM package
 	USE_BUILD_CONTAINER=true $(CONTAINER) ./scripts/build-rpm.sh
 
+# Dev RPMs don't contain power settings adjustment (lid)
+.PHONY: build-dev-rpm
+build-dev-rpm: ## Build RPM package
+	DEV_BUILD_FLAG=true USE_BUILD_CONTAINER=true $(CONTAINER) ./scripts/build-rpm.sh
+
 # FIXME: the time variations have been temporarily removed from reprotest
 # Suspecting upstream issues in rpm land is causing issues with 1 file\'s modification time not being clamped correctly only in a reprotest environment
 .PHONY: reprotest
