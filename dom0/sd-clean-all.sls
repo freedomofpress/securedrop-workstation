@@ -99,12 +99,6 @@ sd-cleanup-etc-changes:
     - repl: ''
     - backup: no
 
-{% if d.environment == "prod" or d.environment == "staging" %}
-apply-systemd-changes:
-  cmd.run:
-    - name: sudo systemctl restart systemd-logind
-{% endif %}
-
 sd-cleanup-sys-firewall:
   cmd.run:
     - names:

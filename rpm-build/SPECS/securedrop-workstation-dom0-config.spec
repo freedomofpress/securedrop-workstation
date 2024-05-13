@@ -25,6 +25,12 @@ Summary:	SecureDrop Workstation
 # root policy.
 %undefine py_auto_byte_compile
 
+# https://rpm-software-management.github.io/rpm/manual/conditionalbuilds.html
+# Define build conditionals and their defaults.
+# Our default will be to build with production power and login management.
+# By using %bcond_without, by default the power management is included.
+%bcond_without powersettings
+
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
 # See: https://docs.fedoraproject.org/en-US/packaging-guidelines/SourceURL/#_troublesome_urls
@@ -107,6 +113,13 @@ install -m 755 files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
 install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 
+# Power management settings (disabled in dev builds)
+%if %{with powersettings}
+install -m 755 -d %{buildroot}/etc/systemd/login.conf.d/
+install -m 644 %{buildroot}/etc/systemd/login.conf.d/logind_override.conf
+
+%endif
+
 
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
@@ -139,12 +152,21 @@ install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 %doc README.md
 %license LICENSE
 
+# Power management settings (disabled in dev builds)
+%if %{with powersettings}
+/etc/systemd/login.conf.d/logind_override.conf
+%endif
 
 %post
 find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs -n1 basename \
     | sed -e 's/\.top$$//g' \
     | xargs qubesctl top.enable > /dev/null
+
+# Restart systemd to apply power management settings (disabled in dev builds)
+%if %{with powersettings}
+systemctl restart systemd-logind
+%endif
 
 # Force full run of all Salt states - uncomment in release branch
 # mkdir -p /tmp/sdw-migrations
