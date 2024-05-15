@@ -5,7 +5,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QDialog
 
 from sdw_updater import Updater, strings
-from sdw_updater.Updater import UpdateStatus
+from sdw_updater.Updater import UpdateStatus, current_templates
 from sdw_updater.UpdaterAppUiQt5 import Ui_UpdaterDialog
 from sdw_util import Util
 
@@ -108,7 +108,6 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         elif current_progress > 100:
             current_progress = 100
 
-        logger.info(f"Signal: Progress {current_progress}%")
         self.progress = current_progress
         self.progressBar.setProperty("value", self.progress)
 
@@ -241,11 +240,22 @@ class UpgradeThread(QThread):
             self.progress_signal.emit(35)
             # add to results dict, if it fails it will show error message
             results["apply_all"] = Updater.run_full_install()
-            self.progress_signal.emit(60)
+            self.progress_signal.emit(75)
 
-        # Update all VMs regardless of migrations
-        results["templates"] = Updater.apply_updates_templates()
-        self.progress_signal.emit(75)
+            templates_progress_callback = self.templates_progress_callback_factory(
+                progress_start=75,
+                progress_end=90,
+            )
+        else:
+            templates_progress_callback = self.templates_progress_callback_factory(
+                progress_start=15,
+                progress_end=90,
+            )
+
+        results["templates"] = Updater.apply_updates_templates(
+            current_templates,
+            templates_progress_callback,
+        )
 
         # write flags to disk
         run_results = Updater.overall_update_status(results)
@@ -258,3 +268,17 @@ class UpgradeThread(QThread):
         message = results  # copy all information from updater call
         message["recommended_action"] = run_results
         self.upgrade_signal.emit(message)
+
+    def templates_progress_callback_factory(self, progress_start, progress_end):
+        def bump_progress(templates_total_progress):
+            """
+            Figure out how much the progress bar should be bumped
+            """
+            template_prog_percentage = (progress_end - progress_start) / 100
+            total_progress = int(
+                progress_start + template_prog_percentage * templates_total_progress
+            )
+
+            return self.progress_signal.emit(total_progress)
+
+        return bump_progress

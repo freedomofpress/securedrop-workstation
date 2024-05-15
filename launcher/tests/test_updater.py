@@ -93,40 +93,48 @@ def test_apply_updates_dom0_no_updates(
 
 @mock.patch("sdw_updater.Updater._write_updates_status_flag_to_disk")
 @mock.patch("sdw_updater.Updater._write_last_updated_flags_to_disk")
-@mock.patch("subprocess.check_output", return_value=b"")
+@mock.patch("sdw_updater.Updater._start_qubes_updater_proc")
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
-def test_apply_templates_success(
-    mocked_info, mocked_error, mocked_check, write_updated, write_status
-):
-    templates = ["fedora", "debian"]
-    result = Updater.apply_updates_templates(templates=templates)
-
-    mocked_check.assert_called_once_with(
-        [
-            "qubes-vm-update",
-            "--restart",
-            "--no-progress",
-            "--show-output",
-            "--targets",
-            ",".join(templates),
-        ],
-        stderr=subprocess.STDOUT,
-    )
+def test_apply_templates_success(mocked_info, mocked_error, mock_proc, write_updated, write_status):
+    result = Updater.apply_updates_templates(templates=[])
+    mock_proc.assert_called_once()
     assert result == UpdateStatus.UPDATES_OK
     assert not mocked_error.called
 
 
-@mock.patch(
-    "subprocess.check_output", side_effect=subprocess.CalledProcessError(cmd="", returncode=1)
+@pytest.mark.parametrize(
+    ("templates", "stderr", "expected"),
+    [
+        (
+            ["template"],
+            "template updating 0\ntemplate done success",
+            UpdateStatus.UPDATES_OK,
+        ),
+        (
+            ["template"],
+            "template updating 0\nunknown_keyword",
+            UpdateStatus.UPDATES_FAILED,
+        ),
+        (
+            ["tpl1", "tpl2"],
+            "tpl1 updating 0\ntpl2 updating 0\tpl1 done success\ntpl2 done error",
+            UpdateStatus.UPDATES_FAILED,
+        ),
+    ],
 )
-@mock.patch("sdw_updater.Updater.sdlog.error")
-@mock.patch("sdw_updater.Updater.sdlog.info")
-def test_apply_templates_failure(mocked_info, mocked_error, mocked_check):
-    templates = ["fedora", "debian"]
-    result = Updater.apply_updates_templates(templates=templates)
-    assert result == UpdateStatus.UPDATES_FAILED
-    assert mocked_error.called
+def test_apply_templates(templates, stderr, expected):
+    with mock.patch(
+        "sdw_updater.Updater._start_qubes_updater_proc",
+        return_value=subprocess.Popen(
+            f"echo '{stderr}' >> /dev/stderr",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        ),
+    ):
+        result = Updater.apply_updates_templates(templates=templates)
+        assert result == expected
 
 
 @pytest.mark.parametrize("status", UpdateStatus)

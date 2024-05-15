@@ -9,6 +9,8 @@ is opened by the user when clicking on the desktop, opening
 import json
 import os
 import subprocess
+import threading
+import time
 from datetime import datetime, timedelta
 from enum import Enum
 
@@ -115,38 +117,109 @@ def apply_updates_dom0():
     return upgrade_results
 
 
-def apply_updates_templates(templates=current_templates):
+def apply_updates_templates(templates=current_templates, progress_callback=None):
     """
     Apply updates to all TemplateVMs.
     """
-    sdlog.info(f"Applying all updates to VMs: {current_templates}")
+    sdlog.info(f"Applying all updates to VMs: {', '.join(templates)}")
     try:
-        update_cmd = [
-            "qubes-vm-update",
-            "--restart",  # Enforce app qube restarts
-            "--no-progress",  # Progress does not play nicely with text-logging
-            "--show-output",  # Debug information on updated packages and success status
-            "--targets",
-            ",".join(templates),
-        ]
-        update_cmd_output = subprocess.check_output(update_cmd, stderr=subprocess.STDOUT)
-        update_status = UpdateStatus.UPDATES_OK
-        sdlog.info("Update successful.")
+        proc = _start_qubes_updater_proc(templates)
+        result_update_status = {}
+        stderr_thread = threading.Thread(
+            target=_qubes_updater_parse_progress,
+            args=(proc.stderr, result_update_status, templates, progress_callback),
+        )
+        stdout_thread = threading.Thread(target=_qubes_updater_parse_stdout, args=(proc.stdout,))
+        stderr_thread.start()
+        stdout_thread.start()
+
+        while proc.poll() is None or stderr_thread.is_alive() or stdout_thread.is_alive():
+            time.sleep(1)
+
+        stderr_thread.join()
+        stdout_thread.join()
+        proc.stderr.close()
+        proc.stdout.close()
+        update_status = overall_update_status(result_update_status)
+        if update_status == UpdateStatus.UPDATES_OK:
+            sdlog.info("Template updates successful")
+        else:
+            sdlog.info("Template updates failed")
+        return update_status
+
     except subprocess.CalledProcessError as e:
-        update_cmd_output = e.output
         sdlog.error(
             "An error has occurred updating templates. Please contact your administrator."
             f" See {DETAIL_LOG_FILE} for details."
         )
         sdlog.error(str(e))
-        update_status = UpdateStatus.UPDATES_FAILED
+        return UpdateStatus.UPDATES_FAILED
 
-    if update_cmd_output:
-        cmd_for_log = " ".join(update_cmd)
-        clean_output = Util.strip_ansi_colors(update_cmd_output.decode("utf-8").strip())
-        detail_log.info(f"Output from update command: {cmd_for_log}\n{clean_output}")
 
-    return update_status
+def _start_qubes_updater_proc(templates):
+    update_cmd = [
+        "qubes-vm-update",
+        "--restart",  # Enforce app qube restarts
+        "--show-output",  # Update transaction details (goes to stdout)
+        "--just-print-progress",  # Progress reporting (goes to stderr)
+        "--targets",
+        ",".join(templates),
+    ]
+    detail_log.info("Starting Qubes Updater with command: {}".format(" ".join(update_cmd)))
+    return subprocess.Popen(
+        update_cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+
+def _qubes_updater_parse_stdout(stream):
+    while True:
+        untrusted_line = stream.readline()
+        if len(untrusted_line) == 0:
+            break
+
+        line = Util.strip_ansi_colors(untrusted_line.decode("utf-8"))
+        line = line.rstrip()
+        detail_log.info(f"[Qubes updater] {line}")
+
+
+def _qubes_updater_parse_progress(stream, result, templates, progress_callback=None):
+    update_progress = {}
+
+    for template in templates:
+        result[template] = UpdateStatus.UPDATES_IN_PROGRESS
+
+    while True:
+        untrusted_line = stream.readline()
+        if len(untrusted_line) == 0:
+            break
+
+        line = Util.strip_ansi_colors(untrusted_line.decode("utf-8").rstrip())
+        try:
+            vm, status, info = line.split()
+        except ValueError:
+            sdlog.warn("Line in Qubes updater's output could not be parsed")
+            continue
+
+        if status == "updating":
+            if update_progress.get(vm) is None:
+                sdlog.info(f"Starting update on template: '{vm}'")
+                update_progress[vm] = 0
+            else:
+                vm_progress = int(float(info))
+                update_progress[vm] = vm_progress
+                if progress_callback:
+                    progress_callback(sum(update_progress.values()) // len(templates))
+
+        # First time complete (status "done") may be repeated various times
+        if status == "done" and result[vm] == UpdateStatus.UPDATES_IN_PROGRESS:
+            result[vm] = UpdateStatus.from_qubes_updater_name(info)
+            if result[vm] == UpdateStatus.UPDATES_OK:
+                sdlog.info(f"Update successful for template: '{vm}'")
+                update_progress[vm] = 100
+            else:
+                sdlog.error(f"Update failed for template: '{vm}'")
 
 
 def _check_updates_dom0():
@@ -334,6 +407,8 @@ def overall_update_status(results):
     for result in results.values():
         if result == UpdateStatus.UPDATES_FAILED:
             updates_failed = True
+        if result == UpdateStatus.UPDATES_IN_PROGRESS:
+            updates_failed = True
         elif result == UpdateStatus.REBOOT_REQUIRED:
             reboot_required = True
         elif result == UpdateStatus.UPDATES_REQUIRED:
@@ -438,3 +513,22 @@ class UpdateStatus(Enum):
     UPDATES_REQUIRED = "1"
     REBOOT_REQUIRED = "2"
     UPDATES_FAILED = "3"
+    UPDATES_IN_PROGRESS = "4"
+
+    @classmethod
+    def from_qubes_updater_name(cls, name):
+        """
+        Maps qubes updater's terminology to SDW Updater one. Upstream code found in:
+        https://github.com/QubesOS/qubes-desktop-linux-manager/blob/4afc35/qui/updater/utils.py#L199C25-L204C27
+        """
+        names = {
+            "success": cls.UPDATES_OK,
+            "error": cls.UPDATES_FAILED,
+            "no_updates": cls.UPDATES_OK,
+            "cancelled": cls.UPDATES_FAILED,
+        }
+        try:
+            return names[name]
+        except KeyError:
+            sdlog.error("Qubes updater provided an invalid update status.")
+            return cls.UPDATES_FAILED
