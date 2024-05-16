@@ -72,15 +72,12 @@ remove-dom0-sdw-config-files:
       - /etc/yum.repos.d/securedrop-workstation-dom0.repo
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
-      - /usr/share/securedrop/icons
       - /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
       - /srv/salt/qa-switch.tar.gz
       - /srv/salt/qa-switch
       - /srv/salt/consolidation-qa-switch.sh
-      - /etc/qubes/policy.d/31-securedrop-workstation.policy
-      - /etc/qubes/policy.d/32-securedrop-workstation.policy
 
 # Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
 remove-rpc-policy-tags:
@@ -91,7 +88,6 @@ sd-cleanup-etc-changes:
   file.replace:
     - names:
       - /etc/systemd/logind.conf
-      - /etc/qubes/repo-templates/qubes-templates.repo
     - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
     - flags:
       - MULTILINE

@@ -52,32 +52,6 @@ dom0-install-debian-minimal-template:
     - name: >
         qvm-template info --machine-readable debian-12-minimal | grep -q "installed|debian-12-minimal|" || qvm-template install debian-12-minimal
 
-# Create directory for storing SecureDrop-specific icons
-dom0-securedrop-icons-directory:
-  file.directory:
-    - name: /usr/share/securedrop/icons
-    - user: root
-    - group: root
-    - mode: 755
-    - makedirs: True
-
-# Copy SecureDrop icon for use in GUI feedback. It's also present in
-# the Salt directory, but the permissions on that dir don't permit
-# normal user reads.
-dom0-securedrop-icon:
-  file.managed:
-    - name: /usr/share/securedrop/icons/sd-logo.png
-    - source: salt://sd/sd-workstation/logo-small.png
-    - user: root
-    - group: root
-    - mode: 644
-    - require:
-      - file: dom0-securedrop-icons-directory
-
-dom0-create-opt-securedrop-directory:
-  file.directory:
-    - name: /opt/securedrop
-
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
 # Increase the default icon size for the GUI user for usability/accessibility reasons
