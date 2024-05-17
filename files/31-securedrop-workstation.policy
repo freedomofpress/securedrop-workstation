@@ -39,7 +39,6 @@ qubes.ClipboardPaste    *           sd-app @tag:sd-receive-app-clipboard ask
 
 qubes.Filecopy          *           sd-log @default ask
 qubes.Filecopy          *           sd-log @tag:sd-receive-logs ask
-qubes.Filecopy          *           sd-proxy @tag:sd-client allow
 
 qubes.OpenInVM          *           @tag:sd-client @dispvm:sd-viewer allow
 qubes.OpenInVM          *           @tag:sd-client sd-devices allow
