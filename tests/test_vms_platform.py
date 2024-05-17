@@ -12,12 +12,6 @@ BOOKWORM_STRING = "Debian GNU/Linux 12 (bookworm)"
 SUPPORTED_SD_DEBIAN_DIST = "bookworm"
 SUPPORTED_WHONIX_PLATFORMS = [BOOKWORM_STRING]
 
-
-apt_url = ""
-FPF_APT_TEST_SOURCES = "deb [arch=amd64] https://apt-test.freedom.press {dist} {component}"
-FPF_APT_SOURCES = "deb [arch=amd64] https://apt.freedom.press {dist} {component}"
-APT_SOURCES_FILE = "/etc/apt/sources.list.d/securedrop_workstation.list"
-
 IS_CI = os.environ.get("CI") == "true"
 
 
@@ -61,8 +55,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
 
     def _validate_apt_sources(self, vm):
         """
-        Asserts that the given AppVM has the proper apt sources list in
-        /etc/apt/sources.list.d/securedrop_workstation.list
+        Check that the given AppVM has the proper apt .sources file
         """
 
         # sd-whonix does not use the fpf-apt-test-repo
@@ -70,29 +63,26 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             return
 
         if self.config["environment"] == "prod":
-            expected = [FPF_APT_SOURCES.format(dist=SUPPORTED_SD_DEBIAN_DIST, component="main")]
+            component = "main"
+            url = "https://apt.freedom.press"
+            filename = "/etc/apt/sources.list.d/apt_freedom_press.sources"
         elif self.config["environment"] == "staging":
-            expected = [
-                FPF_APT_TEST_SOURCES.format(dist=SUPPORTED_SD_DEBIAN_DIST, component="main")
-            ]
+            component = "main"
+            url = "https://apt-test.freedom.press"
+            filename = "/etc/apt/sources.list.d/apt-test_freedom_press.sources"
         else:
-            # TODO: salt randomly changes the order of the component, so we need to
-            # check against both. Once we stop using salt to provision sources.list we
-            # should only check it matches the first case.
-            expected = [
-                FPF_APT_TEST_SOURCES.format(
-                    dist=SUPPORTED_SD_DEBIAN_DIST, component="main nightlies"
-                ),
-                FPF_APT_TEST_SOURCES.format(
-                    dist=SUPPORTED_SD_DEBIAN_DIST, component="nightlies main"
-                ),
-            ]
+            component = "main nightlies"
+            url = "https://apt-test.freedom.press"
+            filename = "/etc/apt/sources.list.d/apt-test_freedom_press.sources"
 
-        cmd = "cat {}".format(APT_SOURCES_FILE)
-        stdout, stderr = vm.run(cmd)
+        stdout, stderr = vm.run(f"cat {filename}")
         contents = stdout.decode("utf-8").rstrip("\n")
 
-        self.assertIn(contents, expected, f"{vm.name} missing apt sources list")
+        self.assertIn(f"Components: {component}\n", contents, f"{vm.name} wrong component")
+        self.assertIn(f"URIs: {url}\n", contents, f"{vm.name} wrong URL")
+        self.assertIn(
+            f"Suites: {SUPPORTED_SD_DEBIAN_DIST}\n", contents, f"{vm.name} wrong suite/codename"
+        )
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
@@ -128,44 +118,6 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             ]
             results = "".join(stdout_lines)
             self.assertEqual(results, "", fail_msg)
-
-    def _ensure_keyring_package_exists_and_has_correct_key(self, vm):
-        """
-        Inspect the securedrop-keyring used by apt to ensure the correct key
-        and only the correct key is installed in that location.
-        """
-        # sd-whonix does not require the keyring package
-        if vm.name in ["sd-whonix"]:
-            return
-
-        keyring_path = "/etc/apt/trusted.gpg.d/securedrop-keyring.gpg"
-        cmd = "gpg --homedir /tmp --no-default-keyring --keyring {} -k".format(keyring_path)
-        cmd = "apt-key --keyring {} finger".format(keyring_path)
-        stdout, stderr = vm.run(cmd)
-        results = stdout.rstrip().decode("utf-8")
-        fpf_gpg_pub_key_info = """/etc/apt/trusted.gpg.d/securedrop-keyring.gpg
----------------------------------------------
-pub   rsa4096 2021-05-10 [SC] [expires: 2024-07-08]
-      2359 E653 8C06 13E6 5295  5E6C 188E DD3B 7B22 E6A3
-uid           [ unknown] SecureDrop Release Signing Key <securedrop-release-key-2021@freedom.press>
-sub   rsa4096 2021-05-10 [E] [expires: 2024-07-08]"""
-        # display any differences
-        self.maxDiff = None
-        self.assertEqual(results, fpf_gpg_pub_key_info), "Keyring incorrect in " + vm.name
-
-    def _ensure_trusted_keyring_securedrop_key_removed(self, vm):
-        """
-        Ensures the production key is no longer found in the default apt keyring.
-        In dev/staging environments, that keyring will be used for the test apt key,
-        so we only check against the production fingerprint. The goal is to ensure
-        the production key is kept separate from other keys.
-        """
-        # apt-key finger doesnt work here due to stdout/terminal
-        cmd = "gpg --no-default-keyring --keyring /etc/apt/trusted.gpg -k"
-        stdout, stderr = vm.run(cmd)
-        results = stdout.rstrip().decode("utf-8")
-        fpf_gpg_pub_key_fp = "2359E6538C0613E652955E6C188EDD3B7B22E6A3"
-        self.assertFalse(fpf_gpg_pub_key_fp in results)
 
     @unittest.skipIf(IS_CI, "Skipping on CI")
     def test_all_sd_vms_uptodate(self):
@@ -236,16 +188,6 @@ sub   rsa4096 2021-05-10 [E] [expires: 2024-07-08]"""
         for vm_name in WANTED_VMS:
             vm = self.app.domains[vm_name]
             self._validate_apt_sources(vm)
-
-    def test_debian_keyring_config(self):
-        """
-        Ensure the securedrop keyring package is properly installed and the
-        key it contains is up-to-date.
-        """
-        for vm_name in WANTED_VMS:
-            vm = self.app.domains[vm_name]
-            self._ensure_keyring_package_exists_and_has_correct_key(vm)
-            self._ensure_trusted_keyring_securedrop_key_removed(vm)
 
 
 def load_tests(loader, tests, pattern):

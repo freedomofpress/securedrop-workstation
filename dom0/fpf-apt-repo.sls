@@ -16,8 +16,8 @@
 # Imports "sdvars" for environment config
 {% from 'sd-default-config.sls' import sdvars with context %}
 
-# Debian Buster was changed from 'stable' to 'oldstable' on 2021-08,
-# so honor that change in the apt sources.
+# Using apt-get requires manual approval when releaseinfo changes,
+# just get it over with in the beginning
 update-apt-cache-with-stable-change:
   cmd.run:
     - name: apt-get update --allow-releaseinfo-change
@@ -28,26 +28,29 @@ autoremove-old-packages:
     - require:
       - cmd: update-apt-cache-with-stable-change
 
-# That's right, we need to install a package in order to
-# configure a repo to install another package
-install-python-apt-for-repo-config:
-  pkg.installed:
-    - pkgs:
-      - python3-apt
-    - require:
-      - cmd: update-apt-cache-with-stable-change
-      - cmd: autoremove-old-packages
+# If we're on a prod environment, ensure there isn't a test .sources
+# file. (Should never happen in real usage, but may in testing)
+{% import_json "sd/config.json" as d %}
+{% if d.environment == "prod" %}
+clean-old-test-sources:
+  file.absent:
+    - name: "/etc/apt/sources.list.d/apt-test_freedom_press.sources"
+{% endif %}
 
+# Install the relevant .sources file based on our environment.
 configure-fpf-apt-repo:
-  pkgrepo.managed:
-    # Can't reuse sdvars.distribution here because this queries grains from VMs
-    # rather than dom0
-    - name: "deb [arch=amd64] {{ sdvars.apt_repo_url }} {{ grains['oscodename'] }} {{ sdvars.component }}"
-    - file: /etc/apt/sources.list.d/securedrop_workstation.list
-    - key_url: "salt://sd/sd-workstation/{{ sdvars.signing_key_filename }}"
-    - clean_file: True # squash file to ensure there are no duplicates
+  file.managed:
+    - name: "/etc/apt/sources.list.d/{{ sdvars.apt_sources_filename }}"
+    - source: "salt://sd/sd-workstation/{{ sdvars.apt_sources_filename }}.j2"
+    - template: jinja
+    - context:
+        codename: {{ grains['oscodename'] }}
+        component: {{ sdvars.component }}
     - require:
-      - pkg: install-python-apt-for-repo-config
+      - cmd: autoremove-old-packages
+      {% if d.environment == "prod" %}
+      - file: clean-old-test-sources
+      {% endif %}
 
 upgrade-all-packages:
   pkg.uptodate:
@@ -55,15 +58,13 @@ upgrade-all-packages:
     - refresh: True
     - dist_upgrade: True
     - require:
-      - pkgrepo: configure-fpf-apt-repo
+      - file: configure-fpf-apt-repo
       - cmd: update-apt-cache-with-stable-change
 
-# This will install the production keyring package. This package will delete
-# the prod key from the default keyring in /etc/apt/trusted.gpg but will
-# preserve the apt-test key in this default keyring.
+# Install production keyring package, which will overwrite prod .sources file
 install-securedrop-keyring-package:
   pkg.installed:
     - pkgs:
       - securedrop-keyring
     - require:
-      - pkgrepo: configure-fpf-apt-repo
+      - file: configure-fpf-apt-repo

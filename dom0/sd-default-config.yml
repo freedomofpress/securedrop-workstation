@@ -5,10 +5,10 @@
 # Production variables, for use with real-world installs
 prod:
   dom0_yum_repo_url: "https://yum.securedrop.org/workstation/dom0/"
-  apt_repo_url: "https://apt.freedom.press"
+  apt_sources_filename: "apt_freedom_press.sources"
   signing_key_filename: "securedrop-release-signing-pubkey-2021.asc"
 # Staging and Dev variables, for QAing and local development
 test:
   dom0_yum_repo_url: "https://yum-test.securedrop.org/workstation/dom0/"
-  apt_repo_url: "https://apt-test.freedom.press"
+  apt_sources_filename: "apt-test_freedom_press.sources"
   signing_key_filename: "apt-test-pubkey.asc"
