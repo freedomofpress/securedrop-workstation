@@ -19,7 +19,7 @@ black = "*"
 flake8 = "^7.0.0"
 isort = "*"
 mypy = "^1.9.0"
-pytest = "^8.2.0"
+pytest = "^8.2.1"
 pytest-cov = "^5.0.0"
 types-setuptools = "^69.5.0"
 
