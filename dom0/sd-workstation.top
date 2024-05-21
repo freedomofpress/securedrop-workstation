@@ -34,7 +34,6 @@ base:
     - sd-viewer-files
   sd-gpg:
     - sd-gpg-files
-    - sd-logging-setup
   sd-app:
     - sd-mime-handling
   sd-whonix:
