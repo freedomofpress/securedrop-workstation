@@ -11,7 +11,6 @@ include LICENSE
 include VERSION
 include sd-proxy/*
 include sd-whonix/*
-include sd-app/*
 include sd-workstation/*
 include sdw_updater/*.py
 include sdw_notify/*.py

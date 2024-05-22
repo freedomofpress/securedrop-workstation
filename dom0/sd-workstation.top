@@ -36,7 +36,6 @@ base:
     - sd-gpg-files
     - sd-logging-setup
   sd-app:
-    - sd-app-config
     - sd-mime-handling
   sd-whonix:
     - sd-whonix-hidserv-key
