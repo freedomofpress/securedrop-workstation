@@ -104,6 +104,26 @@ dom0-install-securedrop-workstation-dom0-config:
       - file: dom0-workstation-rpm-repo
 {% endif %}
 
+dom0-environment-directory:
+  file.directory:
+    - name: /var/lib/securedrop-workstation/
+    - mode: 755
+    - makedirs: true
+
+dom0-remove-old-environment-flag:
+  file.tidied:
+    - name: /var/lib/securedrop-workstation/
+    - require:
+      - file: dom0-environment-directory
+
+dom0-write-environment-flag:
+  file.managed:
+    - name: /var/lib/securedrop-workstation/{{ d.environment }}
+    - mode: 644
+    - replace: False
+    - require:
+      - file: dom0-remove-old-environment-flag
+
 # Hide suspend/hibernate options in menus in prod systems
 {% if d.environment == "prod" or d.environment == "staging" %}
 dom0-disable-unsafe-power-management-xfce:

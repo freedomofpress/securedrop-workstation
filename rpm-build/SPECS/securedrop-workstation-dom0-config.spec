@@ -113,6 +113,9 @@ install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/ic
 
 install -m 755 -d %{buildroot}/opt/securedrop
 
+install -m 755 -d %{buildroot}/etc/systemd/logind.conf.d/
+install -m 644 files/10-logind_override.conf %{buildroot}/etc/systemd/logind.conf.d/
+install -m 644 files/logind-override-disable.service %{buildroot}/%{_unitdir}/
 
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
@@ -142,9 +145,11 @@ install -m 755 -d %{buildroot}/opt/securedrop
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %{_userunitdir}/sdw-notify.service
 %{_userunitdir}/sdw-notify.timer
+%{_unitdir}/logind-override-disable.service
 
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-workstation.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-workstation.policy
+/etc/systemd/logind.conf.d/10-logind_override.conf
 
 #TODO: this is the same 128x128 icon "securedrop.png" in the datadir
 /usr/share/securedrop/icons/sd-logo.png
@@ -155,12 +160,12 @@ install -m 755 -d %{buildroot}/opt/securedrop
 %doc README.md
 %license LICENSE
 
-
 %post
 find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs -n1 basename \
     | sed -e 's/\.top$$//g' \
     | xargs qubesctl top.enable > /dev/null
+
 
 # Force full run of all Salt states - uncomment in release branch
 # mkdir -p /tmp/sdw-migrations
