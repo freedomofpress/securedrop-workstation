@@ -1,5 +1,3 @@
-import json
-import subprocess
 import unittest
 
 from base import SD_VM_Local_Test
@@ -21,45 +19,11 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
     def test_sd_proxy_package_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-proxy"))
 
-    def test_sd_proxy_yaml_config(self):
-        with open("config.json") as c:
-            config = json.load(c)
-            hostname = config["hidserv"]["hostname"]
-
-        # Config file moved to private volume during template consolidation
-        assert not self._fileExists("/etc/sd-proxy.yaml")
-
-        wanted_lines = [
-            "host: {}".format(hostname),
-            "scheme: http",
-            "port: 80",
-            "target_vm: sd-app",
-            "dev: False",
-        ]
-        for line in wanted_lines:
-            self.assertFileHasLine("/home/user/.securedrop_proxy/sd-proxy.yaml", line)
-
     def test_sd_proxy_config(self):
         self.assertEqual(
             f"http://{self.dom0_config['hidserv']['hostname']}",
             self._vm_config_read("SD_PROXY_ORIGIN"),
         )
-
-    def test_sd_proxy_writable_config_dir(self):
-        # Directory must be writable by normal user. If owned by root,
-        # sd-proxy can't write logs, and will fail, blocking client logins.
-        result = False
-        try:
-            self._run("test -w /home/user/.securedrop_proxy")
-            result = True
-        except subprocess.CalledProcessError:
-            pass
-        self.assertTrue(result)
-
-    def test_sd_proxy_rpc_spec(self):
-        wanted_lines = ["/usr/bin/sd-proxy /home/user/.securedrop_proxy/sd-proxy.yaml"]
-        for line in wanted_lines:
-            self.assertFileHasLine("/etc/qubes-rpc/securedrop.Proxy", line)
 
     def test_whonix_ws_repo_absent(self):
         """

@@ -5,6 +5,7 @@ import unittest
 from qubesadmin import Qubes
 
 RETURNCODE_SUCCESS = 0
+RETURNCODE_ERROR = 1
 RETURNCODE_DENIED = 126
 
 
@@ -52,7 +53,9 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
 
     # securedrop.Proxy from sd-app to sd-proxy should be allowed
     def test_sdproxy_from_sdapp_to_sdproxy_allowed(self):
-        self.assertEqual(self._qrexec("sd-app", "sd-proxy", "securedrop.Proxy"), RETURNCODE_SUCCESS)
+        # proxy RPC returns an error due to malformed input, but it still goes through
+        # (i.e. not DENIED)
+        self.assertEqual(self._qrexec("sd-app", "sd-proxy", "securedrop.Proxy"), RETURNCODE_ERROR)
 
     # securedrop.Proxy from anything else to sd-proxy should be denied
     def test_sdproxy_from_other_to_sdproxy_denied(self):
