@@ -61,7 +61,6 @@ configuration over time.
 # direct_url.json is is not reproducible and not strictly needed
 rm %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/direct_url.json
 sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/RECORD
-install -m 755 -d %{buildroot}/srv/salt/sd/sd-app
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-proxy
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-journalist
 install -m 755 -d %{buildroot}/srv/salt/sd/sd-whonix
@@ -77,7 +76,6 @@ install -m 644 dom0/*.conf %{buildroot}/srv/salt/
 install -m 755 dom0/remove-tags.py %{buildroot}/srv/salt/remove-tags
 install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
 install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
-install -m 644 sd-app/* %{buildroot}/srv/salt/sd/sd-app/
 install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
 install -m 644 sd-whonix/* %{buildroot}/srv/salt/sd/sd-whonix/
 install -m 644 sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
