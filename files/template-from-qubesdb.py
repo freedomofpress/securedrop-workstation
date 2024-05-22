@@ -12,7 +12,8 @@ def get_env(args):
         db = QubesDB()
         for key in args or []:
             value = db.read(f"/vm-config/{key}")
-            env[key] = (value or "").decode()
+            if not value or len(value) == 0:
+                raise KeyError(f"Could not read from QubesDB: {key}")
 
     finally:
         db.close()
