@@ -27,7 +27,7 @@ def launch_securedrop_client():
 
 class UpdaterApp(QDialog, Ui_UpdaterDialog):
     def __init__(self, should_skip_netcheck: bool = False, parent=None):
-        super(UpdaterApp, self).__init__(parent)
+        super().__init__(parent)
 
         self.progress = 0
         self._skip_netcheck = should_skip_netcheck
@@ -68,7 +68,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         This slot will receive update signals from UpgradeThread, thread which
         is used to check for TemplateVM upgrades
         """
-        logger.info("Signal: upgrade_status {}".format(str(result)))
+        logger.info(f"Signal: upgrade_status {str(result)}")
         self.progress = 100
         self.progressBar.setProperty("value", self.progress)
 
@@ -108,7 +108,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         elif current_progress > 100:
             current_progress = 100
 
-        logger.info("Signal: Progress {}%".format(current_progress))
+        logger.info(f"Signal: Progress {current_progress}%")
         self.progress = current_progress
         self.progressBar.setProperty("value", self.progress)
 
@@ -222,7 +222,6 @@ class UpgradeThread(QThread):
         QThread.__init__(self)
 
     def run(self):
-
         # Update dom0 first, then apply dom0 state. If full state run
         # is required, the dom0 state will drop a flag.
         self.progress_signal.emit(5)

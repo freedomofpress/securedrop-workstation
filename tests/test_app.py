@@ -7,7 +7,7 @@ from base import SD_VM_Local_Test
 class SD_App_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-app"
-        super(SD_App_Tests, self).setUp()
+        super().setUp()
         self.expected_config_keys = {"QUBES_GPG_DOMAIN", "SD_SUBMISSION_KEY_FPR"}
 
     def test_open_in_dvm_desktop(self):
@@ -30,7 +30,7 @@ class SD_App_Tests(SD_VM_Local_Test):
         results = self._run(cmd)
         for line in results.split("\n"):
             if line != "[Default Applications]" and not line.startswith("#"):
-                actual_app = self._run("xdg-mime query default {}".format(line))
+                actual_app = self._run(f"xdg-mime query default {line}")
                 self.assertEqual(actual_app, "open-in-dvm.desktop")
 
     def test_mailcap_hardened(self):
@@ -58,5 +58,4 @@ class SD_App_Tests(SD_VM_Local_Test):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_App_Tests)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(SD_App_Tests)

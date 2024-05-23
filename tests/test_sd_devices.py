@@ -7,7 +7,7 @@ from base import SD_VM_Local_Test
 class SD_Devices_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-devices-dvm"
-        super(SD_Devices_Tests, self).setUp()
+        super().setUp()
 
     def test_files_are_properly_copied(self):
         self.assertTrue(self._fileExists("/usr/bin/send-to-usb"))
@@ -28,13 +28,13 @@ class SD_Devices_Tests(SD_VM_Local_Test):
         filepath = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "vars", "sd-devices.mimeapps"
         )
-        with open(filepath, "r") as f:
+        with open(filepath) as f:
             lines = f.readlines()
             for line in lines:
                 if line != "[Default Applications]\n" and not line.startswith("#"):
                     mime_type = line.split("=")[0]
                     expected_app = line.split("=")[1].split(";")[0]
-                    actual_app = self._run("xdg-mime query default {}".format(mime_type))
+                    actual_app = self._run(f"xdg-mime query default {mime_type}")
                     self.assertEqual(actual_app, expected_app)
 
     def test_mailcap_hardened(self):
@@ -51,5 +51,4 @@ class SD_Devices_Tests(SD_VM_Local_Test):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Devices_Tests)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(SD_Devices_Tests)

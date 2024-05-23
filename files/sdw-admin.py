@@ -4,6 +4,7 @@ Admin wrapper script for applying salt states for staging and prod scenarios. Th
 packages only puts the files in place `/srv/salt` but does not apply the state, nor
 does it handle the config.
 """
+
 import argparse
 import os
 import subprocess
@@ -59,9 +60,7 @@ def parse_args():
         action="store_true",
         help="During uninstall action, don't prompt for confirmation, proceed immediately",
     )
-    args = parser.parse_args()
-
-    return args
+    return parser.parse_args()
 
 
 def install_pvh_support():
@@ -70,9 +69,9 @@ def install_pvh_support():
     TODO: install this via package requirements instead if possible
     """
     try:
-        subprocess.run(["sudo", "qubes-dom0-update", "-y", "-q", "grub2-xen-pvh"])
+        subprocess.check_call(["sudo", "qubes-dom0-update", "-y", "-q", "grub2-xen-pvh"])
     except subprocess.CalledProcessError:
-        raise SDWAdminException("Error installing grub2-xen-pvah: local PVH not available.")
+        raise SDWAdminException("Error installing grub2-xen-pvh: local PVH not available.")
 
 
 def copy_config():
@@ -141,7 +140,6 @@ def refresh_salt():
 
 
 def perform_uninstall(keep_template_rpm=False):
-
     try:
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-default-dispvm"])
         print("Destroying all VMs")

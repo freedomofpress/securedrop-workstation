@@ -4,7 +4,7 @@ import tempfile
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture()
 def tmpdir():
     """Run the test in a temporary directory"""
     cwd = os.getcwd()

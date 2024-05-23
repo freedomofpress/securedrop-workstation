@@ -36,8 +36,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         # let's maintain the default config and retrieve the value elsewise.
         cmd = "perl -nE '/^PRETTY_NAME=\"(.*)\"$/ and say $1' /etc/os-release"
         stdout, stderr = vm.run(cmd)
-        platform = stdout.decode("utf-8").rstrip("\n")
-        return platform
+        return stdout.decode("utf-8").rstrip("\n")
 
     def _validate_vm_platform(self, vm):
         """
@@ -92,7 +91,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         # Create custom error message, so failing test cases display
         # which VM caused the looped check to fail.
-        fail_msg = "Unapplied updates for VM '{}'".format(vm)
+        fail_msg = f"Unapplied updates for VM '{vm}'"
         if not fedora:
             cmd = "apt list --upgradable"
             stdout, stderr = vm.run(cmd)
@@ -191,5 +190,4 @@ class SD_VM_Platform_Tests(unittest.TestCase):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_VM_Platform_Tests)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(SD_VM_Platform_Tests)

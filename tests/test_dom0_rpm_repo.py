@@ -6,10 +6,9 @@ FEDORA_VERSION = "f37"
 
 
 class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
-
     pubkey_wanted = ""
     yum_repo_url = ""
-    pubkey_actual = "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation"  # noqa
+    pubkey_actual = "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation"
     pubkey_wanted_prod = "sd-workstation/securedrop-release-signing-pubkey-2021.asc"
     pubkey_wanted_test = "sd-workstation/apt-test-pubkey.asc"
     yum_repo_url_prod = f"https://yum.securedrop.org/workstation/dom0/{FEDORA_VERSION}"
@@ -31,11 +30,10 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
                 self.yum_repo_url = self.yum_repo_url_test
 
     def test_rpm_repo_public_key(self):
-
-        with open(self.pubkey_actual, "r") as f:
+        with open(self.pubkey_actual) as f:
             pubkey_actual_contents = f.readlines()
 
-        with open(self.pubkey_wanted, "r") as f:
+        with open(self.pubkey_wanted) as f:
             pubkey_wanted_contents = f.readlines()
 
         self.assertEqual(pubkey_actual_contents, pubkey_wanted_contents)
@@ -47,15 +45,14 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
             "gpgcheck=1",
             "gpgkey=file://{}".format(self.pubkey_actual),  # noqa
             "enabled=1",
-            "baseurl={}".format(self.yum_repo_url),
+            f"baseurl={self.yum_repo_url}",
             "name=SecureDrop Workstation Qubes dom0 repo",
         ]
-        with open(repo_file, "r") as f:
+        with open(repo_file) as f:
             found_lines = [x.strip() for x in f.readlines()]
 
         self.assertEqual(found_lines, wanted_lines)
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Dom0_Rpm_Repo_Tests)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(SD_Dom0_Rpm_Repo_Tests)

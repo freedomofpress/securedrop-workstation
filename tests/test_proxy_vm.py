@@ -6,7 +6,7 @@ from base import SD_VM_Local_Test
 class SD_Proxy_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-proxy"
-        super(SD_Proxy_Tests, self).setUp()
+        super().setUp()
         self.expected_config_keys = {"SD_PROXY_ORIGIN"}
 
     def test_do_not_open_here(self):
@@ -44,7 +44,7 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         results = self._run(cmd)
         for line in results.split("\n"):
             if line != "[Default Applications]" and not line.startswith("#"):
-                actual_app = self._run("xdg-mime query default {}".format(line))
+                actual_app = self._run(f"xdg-mime query default {line}")
                 self.assertEqual(actual_app, "open-in-dvm.desktop")
 
     def test_mailcap_hardened(self):
@@ -52,5 +52,4 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Proxy_Tests)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(SD_Proxy_Tests)

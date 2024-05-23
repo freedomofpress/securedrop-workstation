@@ -9,7 +9,7 @@ from base import SD_VM_Local_Test
 class SD_GPG_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-gpg"
-        super(SD_GPG_Tests, self).setUp()
+        super().setUp()
 
     def getLocalFingerprint(self):
         """
@@ -82,5 +82,4 @@ class SD_GPG_Tests(SD_VM_Local_Test):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_GPG_Tests)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(SD_GPG_Tests)

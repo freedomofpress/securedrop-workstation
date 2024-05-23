@@ -1,9 +1,9 @@
 import setuptools
 
-with open("README.md", "r", encoding="utf-8") as fh:
+with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
-with open("VERSION", "r", encoding="utf-8") as f:
+with open("VERSION", encoding="utf-8") as f:
     version = f.read().strip()
 
 setuptools.setup(

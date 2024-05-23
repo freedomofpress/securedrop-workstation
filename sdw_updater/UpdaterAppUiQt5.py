@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Form implementation generated from reading ui file 'sdw_updater.ui'
 #
 # Created by: PyQt5 UI code generator 5.10.1
@@ -9,7 +7,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_UpdaterDialog(object):
+class Ui_UpdaterDialog:
     def setupUi(self, UpdaterDialog):
         UpdaterDialog.setObjectName("UpdaterDialog")
         UpdaterDialog.resize(520, 300)

@@ -9,7 +9,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-whonix"
         self.whonix_apt_list = "/etc/apt/sources.list.d/derivative.list"
-        super(SD_Whonix_Tests, self).setUp()
+        super().setUp()
         self.expected_config_keys = {"SD_HIDSERV_HOSTNAME", "SD_HIDSERV_KEY"}
 
     def test_accept_sd_xfer_extracted_file(self):
@@ -29,7 +29,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
             config = json.load(c)
             hostname = config["hidserv"]["hostname"].split(".")[0]
             keyvalue = config["hidserv"]["key"]
-            line = "{0}:descriptor:x25519:{1}".format(hostname, keyvalue)
+            line = f"{hostname}:descriptor:x25519:{keyvalue}"
 
             self.assertFileHasLine("/var/lib/tor/keys/app-journalist.auth_private", line)
 
@@ -66,5 +66,4 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
 
 
 def load_tests(loader, tests, pattern):
-    suite = unittest.TestLoader().loadTestsFromTestCase(SD_Whonix_Tests)
-    return suite
+    return unittest.TestLoader().loadTestsFromTestCase(SD_Whonix_Tests)

@@ -61,18 +61,16 @@ class NotifyDialog(QMessageBox):
         result = self.exec_()
 
         if result == QMessageBox.Ok:
-            sdlog.info(
-                "NotfyDialog returned {}, user has opted to check for updates".format(result)
-            )
+            sdlog.info(f"NotfyDialog returned {result}, user has opted to check for updates")
             return NotifyStatus.CHECK_UPDATES
-        elif result == QMessageBox.No:
-            sdlog.info("NotfyDialog returned {}, user has opted to defer updates".format(result))
+        if result == QMessageBox.No:
+            sdlog.info(f"NotfyDialog returned {result}, user has opted to defer updates")
             return NotifyStatus.DEFER_UPDATES
-        else:
-            # Should not occur, as this dialog which can only return
-            # one of two states.
-            sdlog.error(
-                "NotfyDialog returned unexpected value {}; consult "
-                "QMessageBox API for more information".format(result)
-            )
-            return NotifyStatus.ERROR_UNKNOWN
+
+        # Should not occur, as this dialog which can only return
+        # one of two states.
+        sdlog.error(
+            f"NotfyDialog returned unexpected value {result}; consult "
+            "QMessageBox API for more information"
+        )
+        return NotifyStatus.ERROR_UNKNOWN
