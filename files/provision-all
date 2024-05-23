@@ -26,7 +26,7 @@ sudo qubesctl --show-output state.highstate
 
 echo ".........................................................................."
 echo "Set up logging VMs early"
-sudo qubesctl --show-output --skip-dom0 --targets sd-log,sd-small-bookworm-template state.highstate
+sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template state.highstate
 
 # Reboot sd-log so it's ready to receive logs from other VMs about to be configured
 qvm-shutdown --wait sd-log && qvm-start sd-log

@@ -1,4 +1,5 @@
 import json
+import subprocess
 import unittest
 
 from base import WANTED_VMS
@@ -34,15 +35,21 @@ class SD_VM_Tests(unittest.TestCase):
         kernel_version = stdout.decode("utf-8").rstrip()
         assert kernel_version.endswith("-grsec-workstation")
 
-    def _check_service_running(self, vm, service):
+    def _check_service_running(self, vm, service, running=True):
         """
         Ensures a given service is running inside a given VM.
         Uses systemctl is-active to query the service state.
         """
-        cmd = f"systemctl is-active {service}"
-        stdout, stderr = vm.run(cmd)
-        service_status = stdout.decode("utf-8").rstrip()
-        assert service_status == "active"
+        try:
+            cmd = f"systemctl is-active {service}"
+            stdout, stderr = vm.run(cmd)
+            service_status = stdout.decode("utf-8").rstrip()
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 3:
+                service_status = "inactive"
+            else:
+                raise e
+        self.assertTrue(service_status == "active" if running else "inactive")
 
     def test_sd_whonix_config(self):
         vm = self.app.domains["sd-whonix"]
@@ -75,6 +82,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
+        self.assertNotIn("service.securedrop-log-server", vm.features)
         self.assertTrue("sd-workstation" in vm.tags)
         self.assertTrue("sd-client" in vm.tags)
         # Check the size of the private volume
@@ -107,6 +115,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
+        self.assertEqual(vm.features["service.securedrop-logging-disabled"], "1")
         self.assertTrue("sd-workstation" in vm.tags)
 
     def test_sd_log_config(self):
@@ -119,7 +128,10 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertFalse(vm.template_for_dispvms)
         self._check_kernel(vm)
         self._check_service_running(vm, "paxctld")
-        self._check_service_running(vm, "securedrop-log")
+        self._check_service_running(vm, "securedrop-log-server")
+        self.assertEqual(vm.features["service.securedrop-log-server"], "1")
+        self.assertEqual(vm.features["service.securedrop-logging-disabled"], "1")
+
         self.assertFalse(vm.template_for_dispvms)
         self.assertTrue("sd-workstation" in vm.tags)
         # Check the size of the private volume
