@@ -20,6 +20,7 @@ base:
     - sd-remove-unused-templates
 
   sd-base-bookworm-template:
+    - qubesdb-config
     - sd-base-template-files
     - sd-workstation-template-files
   sd-small-bookworm-template:
@@ -39,6 +40,7 @@ base:
     - sd-app-config
     - sd-mime-handling
   sd-whonix:
+    - qubesdb-config
     - sd-whonix-hidserv-key
   'sd-fedora-39-dvm,sys-usb':
     - match: list

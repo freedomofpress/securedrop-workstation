@@ -105,6 +105,7 @@ install -m 755 files/sdw-notify.py %{buildroot}/%{_bindir}/sdw-notify
 install -m 755 files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
 install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
+install -m 755 files/template-from-qubesdb.py %{buildroot}/srv/salt/template-from-qubesdb.py
 
 install -m 755 -d %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
@@ -129,7 +130,9 @@ install -m 755 -d %{buildroot}/opt/securedrop
 /srv/salt/securedrop-*
 /srv/salt/update-xfce-settings
 /srv/salt/fpf*
+/srv/salt/qubesdb-config.sls
 /srv/salt/press.freedom.SecureDropUpdater.desktop
+/srv/salt/template-from-qubesdb.py
 
 %attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-notify
