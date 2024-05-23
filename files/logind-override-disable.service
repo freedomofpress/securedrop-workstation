@@ -1,11 +1,11 @@
 [Unit]
-Description=Disable power management settings
+Description=Disable logind power management customization (dev systems only)
+ConditionPathExists=/var/lib/securedrop-workstation/dev
+Before=systemd-logind.service
 
 [Service]
 Type=oneshot
-Before=systemd-logind.service
 ExecStart=rm -f /etc/systemd/logind.conf.d/10-logind_override.conf
-ConditionPathExists=/var/lib/securedrop-workstation/dev
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target

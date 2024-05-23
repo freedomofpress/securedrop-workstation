@@ -54,13 +54,6 @@ dom0-install-debian-minimal-template:
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
-# Increase the default icon size for the GUI user for usability/accessibility reasons
-dom0-adjust-desktop-icon-size-xfce:
-  cmd.script:
-    - name: salt://update-xfce-settings
-    - args: adjust-icon-size
-    - runas: {{ gui_user }}
-
 dom0-login-autostart-directory:
   file.directory:
     - name: /home/{{ gui_user }}/.config/autostart
@@ -123,12 +116,3 @@ dom0-write-environment-flag:
     - replace: False
     - require:
       - file: dom0-remove-old-environment-flag
-
-# Hide suspend/hibernate options in menus in prod systems
-{% if d.environment == "prod" or d.environment == "staging" %}
-dom0-disable-unsafe-power-management-xfce:
-  cmd.script:
-    - name: salt://update-xfce-settings
-    - args: disable-unsafe-power-management
-    - runas: {{ gui_user }}
-{% endif %}

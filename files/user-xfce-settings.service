@@ -1,0 +1,12 @@
+[Unit]
+Description=Enable XFCE customizations for SDW
+ConditionPathExists=|!/var/lib/securedrop-workstation/dev
+ConditionPathExists=|/var/lib/securedrop-workstation/prod
+ConditionPathExists=|/var/lib/securedrop-workstation/staging
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/securedrop/update-xfce-settings disable-unsafe-power-management
+
+[Install]
+WantedBy=default.target
