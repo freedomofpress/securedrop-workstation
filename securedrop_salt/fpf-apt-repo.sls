@@ -41,7 +41,7 @@ clean-old-test-sources:
 configure-fpf-apt-repo:
   file.managed:
     - name: "/etc/apt/sources.list.d/{{ sdvars.apt_sources_filename }}"
-    - source: "salt://sd/sd-workstation/{{ sdvars.apt_sources_filename }}.j2"
+    - source: "salt://securedrop_salt/{{ sdvars.apt_sources_filename }}.j2"
     - template: jinja
     - context:
         codename: {{ grains['oscodename'] }}

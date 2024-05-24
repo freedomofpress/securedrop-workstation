@@ -16,7 +16,7 @@ dom0-rpm-test-key:
     # we must place the GPG key inside the fedora TemplateVM, then
     # restart sys-firewall.
     - name: /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
-    - source: "salt://sd/sd-workstation/{{ sdvars.signing_key_filename }}"
+    - source: "salt://securedrop_salt/{{ sdvars.signing_key_filename }}"
     - user: root
     - group: root
     - mode: 644
@@ -55,6 +55,16 @@ dom0-install-debian-minimal-template:
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
+<<<<<<< HEAD
+=======
+# Increase the default icon size for the GUI user for usability/accessibility reasons
+dom0-adjust-desktop-icon-size-xfce:
+  cmd.script:
+    - name: salt://securedrop_salt/update-xfce-settings
+    - args: adjust-icon-size
+    - runas: {{ gui_user }}
+
+>>>>>>> df4a406 (Move all provisioning-related files salt files into securedrop_salt directory.)
 dom0-login-autostart-directory:
   file.directory:
     - name: /home/{{ gui_user }}/.config/autostart
@@ -66,7 +76,7 @@ dom0-login-autostart-directory:
 dom0-login-autostart-desktop-file:
   file.managed:
     - name: /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
-    - source: "salt://dom0-xfce-desktop-file.j2"
+    - source: "salt://securedrop_salt/dom0-xfce-desktop-file.j2"
     - template: jinja
     - context:
         desktop_name: SDWLogin
@@ -81,7 +91,7 @@ dom0-login-autostart-desktop-file:
 dom0-securedrop-launcher-desktop-shortcut:
   file.managed:
     - name: /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
-    - source: "salt://press.freedom.SecureDropUpdater.desktop"
+    - source: "salt://securedrop_salt/press.freedom.SecureDropUpdater.desktop"
     - user: {{ gui_user }}
     - group: {{ gui_user }}
     - mode: 755
@@ -98,6 +108,7 @@ dom0-install-securedrop-workstation-dom0-config:
       - file: dom0-workstation-rpm-repo
 {% endif %}
 
+<<<<<<< HEAD
 dom0-environment-directory:
   file.directory:
     - name: /var/lib/securedrop-workstation/
@@ -117,3 +128,13 @@ dom0-write-environment-flag:
     - replace: False
     - require:
       - file: dom0-remove-old-environment-flag
+=======
+# Hide suspend/hibernate options in menus in prod systems
+{% if d.environment == "prod" or d.environment == "staging" %}
+dom0-disable-unsafe-power-management-xfce:
+  cmd.script:
+    - name: salt://securedrop_salt/update-xfce-settings
+    - args: disable-unsafe-power-management
+    - runas: {{ gui_user }}
+{% endif %}
+>>>>>>> df4a406 (Move all provisioning-related files salt files into securedrop_salt directory.)

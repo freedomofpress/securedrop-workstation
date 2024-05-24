@@ -15,7 +15,7 @@ sd-whonix-hidservv3-directory-path:
 install-sd-whonix-tor-private-key:
   file.managed:
     - name: /var/lib/tor/keys/app-journalist.auth_private
-    - source: salt://sd/sd-whonix/app-journalist.yaml
+    - source: salt://securedrop_salt/app-journalist.yaml
     - template: jinja
     - context:
         hostname: {{ hostname_without_onion }}
