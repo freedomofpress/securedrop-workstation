@@ -19,4 +19,4 @@ install-securedrop-client-package:
     - pkgs:
       - securedrop-client
     - require:
-      - sls: fpf-apt-repo
+      - sls: securedrop_salt.fpf-apt-repo

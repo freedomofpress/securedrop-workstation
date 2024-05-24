@@ -10,4 +10,4 @@ install-securedrop-proxy-package:
     - pkgs:
       - securedrop-proxy
     - require:
-      - sls: fpf-apt-repo
+      - sls: securedrop_salt.fpf-apt-repo

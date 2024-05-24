@@ -10,7 +10,7 @@
 ##
 
 # Imports "sdvars" for environment config
-{% from 'sd-default-config.sls' import sdvars with context %}
+{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
 include:
   - securedrop_salt.sd-workstation-template
@@ -33,5 +33,5 @@ sd-gpg:
       - add:
         - sd-workstation
     - require:
-      - sls: sd-workstation-template
-      - sls: sd-upgrade-templates
+      - sls: securedrop_salt.sd-workstation-template
+      - sls: securedrop_salt.sd-upgrade-templates

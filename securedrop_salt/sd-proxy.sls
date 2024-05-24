@@ -7,7 +7,7 @@
 ##
 
 # Imports "sdvars" for environment config
-{% from 'sd-default-config.sls' import sdvars with context %}
+{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
 include:
   - securedrop_salt.sd-whonix
@@ -30,7 +30,7 @@ sd-proxy:
       - qvm: sd-whonix
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
-{% import_json "sd/config.json" as d %}
+{% import_json "securedrop_salt/config.json" as d %}
 
 sd-proxy-config:
   qvm.features:

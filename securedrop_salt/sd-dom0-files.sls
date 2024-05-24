@@ -7,7 +7,7 @@
 ##
 
 # Imports "sdvars" for environment config
-{% from 'sd-default-config.sls' import sdvars with context %}
+{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
 dom0-rpm-test-key:
   file.managed:
@@ -55,16 +55,6 @@ dom0-install-debian-minimal-template:
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
-<<<<<<< HEAD
-=======
-# Increase the default icon size for the GUI user for usability/accessibility reasons
-dom0-adjust-desktop-icon-size-xfce:
-  cmd.script:
-    - name: salt://securedrop_salt/update-xfce-settings
-    - args: adjust-icon-size
-    - runas: {{ gui_user }}
-
->>>>>>> df4a406 (Move all provisioning-related files salt files into securedrop_salt directory.)
 dom0-login-autostart-directory:
   file.directory:
     - name: /home/{{ gui_user }}/.config/autostart
@@ -96,7 +86,7 @@ dom0-securedrop-launcher-desktop-shortcut:
     - group: {{ gui_user }}
     - mode: 755
 
-{% import_json "sd/config.json" as d %}
+{% import_json "securedrop_salt/config.json" as d %}
 {% if d.environment != "dev" %}
 # In the dev environment, we've already installed the rpm from
 # local sources, so don't also pull in from the yum-test repo.
@@ -108,7 +98,6 @@ dom0-install-securedrop-workstation-dom0-config:
       - file: dom0-workstation-rpm-repo
 {% endif %}
 
-<<<<<<< HEAD
 dom0-environment-directory:
   file.directory:
     - name: /var/lib/securedrop-workstation/
@@ -128,13 +117,3 @@ dom0-write-environment-flag:
     - replace: False
     - require:
       - file: dom0-remove-old-environment-flag
-=======
-# Hide suspend/hibernate options in menus in prod systems
-{% if d.environment == "prod" or d.environment == "staging" %}
-dom0-disable-unsafe-power-management-xfce:
-  cmd.script:
-    - name: salt://securedrop_salt/update-xfce-settings
-    - args: disable-unsafe-power-management
-    - runas: {{ gui_user }}
-{% endif %}
->>>>>>> df4a406 (Move all provisioning-related files salt files into securedrop_salt directory.)

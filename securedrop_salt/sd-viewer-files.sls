@@ -19,7 +19,7 @@ sd-viewer-install-metapackage:
     - pkgs:
       - securedrop-workstation-viewer
     - require:
-      - sls: fpf-apt-repo
+      - sls: securedrop_salt.fpf-apt-repo
 
 sd-viewer-install-libreoffice:
   pkg.installed:

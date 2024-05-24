@@ -14,7 +14,7 @@
 #  - securedrop_salt.sd-default-config
 
 # Imports "sdvars" for environment config
-{% from 'sd-default-config.sls' import sdvars with context %}
+{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
 # Using apt-get requires manual approval when releaseinfo changes,
 # just get it over with in the beginning
@@ -30,7 +30,7 @@ autoremove-old-packages:
 
 # If we're on a prod environment, ensure there isn't a test .sources
 # file. (Should never happen in real usage, but may in testing)
-{% import_json "sd/config.json" as d %}
+{% import_json "securedrop_salt/config.json" as d %}
 {% if d.environment == "prod" %}
 clean-old-test-sources:
   file.absent:

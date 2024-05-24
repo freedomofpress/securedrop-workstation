@@ -5,23 +5,23 @@
 # Make sure the "prepare" step has run first, otherwise there's
 # a race between migration and removal.
 include:
-  - sd-upgrade-templates
-  - sd-log
-  - sd-devices
-  - sd-gpg
-  - sd-proxy
-  - sd-viewer
-  - sd-app
+  - securedrop_salt.sd-upgrade-templates
+  - securedrop_salt.sd-log
+  - securedrop_salt.sd-devices
+  - securedrop_salt.sd-gpg
+  - securedrop_salt.sd-proxy
+  - securedrop_salt.sd-viewer
+  - securedrop_salt.sd-app
 
 run-remove-upgrade-scripts:
   cmd.script:
-    - name: salt://securedrop-handle-upgrade
+    - name: salt://securedrop_salt/securedrop-handle-upgrade
     - args: remove
     - require:
-      - sls: sd-upgrade-templates
-      - sls: sd-log
-      - sls: sd-devices
-      - sls: sd-gpg
-      - sls: sd-proxy
-      - sls: sd-viewer
-      - sls: sd-app
+      - sls: securedrop_salt.sd-upgrade-templates
+      - sls: securedrop_salt.sd-log
+      - sls: securedrop_salt.sd-devices
+      - sls: securedrop_salt.sd-gpg
+      - sls: securedrop_salt.sd-proxy
+      - sls: securedrop_salt.sd-viewer
+      - sls: securedrop_salt.sd-app

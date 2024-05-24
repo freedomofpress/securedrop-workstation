@@ -2,7 +2,7 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 # Imports "sdvars" for environment config
-{% from 'sd-default-config.sls' import sdvars with context %}
+{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
 include:
   - securedrop_salt.sd-base-template
@@ -30,7 +30,7 @@ sd-small-{{ sdvars.distribution }}-template:
       - enable:
         - service.paxctld
     - require:
-      - sls: sd-base-template
+      - sls: securedrop_salt.sd-base-template
 
 sd-large-{{ sdvars.distribution }}-template:
   qvm.vm:
@@ -49,4 +49,4 @@ sd-large-{{ sdvars.distribution }}-template:
       - enable:
         - service.paxctld
     - require:
-      - sls: sd-base-template
+      - sls: securedrop_salt.sd-base-template

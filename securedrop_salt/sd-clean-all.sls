@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
-{% import_json "sd/config.json" as d %}
+{% import_json "securedrop_salt/config.json" as d %}
 
 set-fedora-as-default-dispvm:
   cmd.run:
@@ -48,25 +48,6 @@ include:
   - securedrop_salt.sd-usb-autoattach-remove
 {% endif %}
 
-<<<<<<< HEAD
-=======
-# Reset desktop icon size to its original value
-dom0-reset-icon-size-xfce:
-  cmd.script:
-    - name: salt://securedrop_salt/update-xfce-settings
-    - args: reset-icon-size
-    - runas: {{ gui_user }}
-
-# Reset power management options to their original values
-{% if d.environment == "prod" or d.environment == "staging" %}
-dom0-reset-power-management-xfce:
-  cmd.script:
-    - name: salt://securedrop_salt/update-xfce-settings
-    - args: reset-power-management
-    - runas: {{ gui_user }}
-{% endif %}
-
->>>>>>> df4a406 (Move all provisioning-related files salt files into securedrop_salt directory.)
 # Removes all salt-provisioned files (if these files are also provisioned via
 # RPM, they should be removed as part of remove-dom0-sdw-config-files-dev)
 remove-dom0-sdw-config-files:

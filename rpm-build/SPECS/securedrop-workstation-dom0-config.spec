@@ -61,28 +61,15 @@ configuration over time.
 # direct_url.json is is not reproducible and not strictly needed
 rm %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/direct_url.json
 sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/RECORD
-install -m 755 -d %{buildroot}/srv/salt/sd/sd-proxy
-install -m 755 -d %{buildroot}/srv/salt/sd/sd-journalist
-install -m 755 -d %{buildroot}/srv/salt/sd/sd-whonix
-install -m 755 -d %{buildroot}/srv/salt/sd/sd-workstation
-install -m 755 -d %{buildroot}/srv/salt/sd/usb-autoattach
+
+install -m 755 -d %{buildroot}/srv/salt/
+cp -a securedrop_salt %{buildroot}/srv/salt/
+
 install -m 755 -d %{buildroot}/%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}/%{_bindir}
 install -m 755 -d %{buildroot}/opt/securedrop
 install -m 755 -d %{buildroot}/usr/bin/securedrop
-install -m 644 securedrop_salt/*.sls %{buildroot}/srv/salt/
-install -m 644 securedrop_salt/*.top %{buildroot}/srv/salt/
-install -m 644 securedrop_salt/*.j2 %{buildroot}/srv/salt/
-install -m 644 securedrop_salt/*.yml %{buildroot}/srv/salt/
-install -m 644 securedrop_salt/*.conf %{buildroot}/srv/salt/
-install -m 755 securedrop_salt/remove-tags.py %{buildroot}/srv/salt/remove-tags
-install -m 755 securedrop_salt/securedrop-handle-upgrade %{buildroot}/srv/salt/
-install -m 755 securedrop_salt/update-xfce-settings %{buildroot}/srv/salt/
-install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
-install -m 644 sd-whonix/* %{buildroot}/srv/salt/sd/sd-whonix/
-install -m 644 sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
-install -m 755 usb-autoattach/sd-attach-export-device %{buildroot}/srv/salt/sd/usb-autoattach/
-install -m 644 usb-autoattach/99-sd-devices.rules %{buildroot}/srv/salt/sd/usb-autoattach/
+install -m 755 files/update-xfce-settings %{buildroot}/usr/bin/securedrop/
 install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/destroy-vm.py %{buildroot}/%{_datadir}/%{name}/scripts/destroy-vm
 install -m 755 files/provision-all %{buildroot}/%{_datadir}/%{name}/scripts/
@@ -98,7 +85,7 @@ install -m 755 -d %{buildroot}/%{_sharedstatedir}/%{name}/
 install -m 755 -d %{buildroot}/%{_userunitdir}/
 install -m 755 -d %{buildroot}/%{_unitdir}
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
-install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/salt/press.freedom.SecureDropUpdater.desktop
+install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/salt/securedrop_salt/press.freedom.SecureDropUpdater.desktop
 install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 install -m 755 files/sdw-updater.py %{buildroot}/%{_bindir}/sdw-updater
@@ -127,13 +114,7 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
 %attr(755, root, root) %{_bindir}/sdw-admin
 %{_datadir}/%{name}/config.json.example
-/srv/salt/sd*
-/srv/salt/dom0-xfce-desktop-file.j2
-/srv/salt/remove-tags
-/srv/salt/securedrop-*
-/srv/salt/fpf*
-/srv/salt/press.freedom.SecureDropUpdater.desktop
-
+/srv/salt/securedrop_salt/*
 %attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/sdw-updater
@@ -166,7 +147,7 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %license LICENSE
 
 %post
-find /srv/salt -maxdepth 1 -type f -iname '*.top' \
+find /srv/salt/securedrop_salt -maxdepth 1 -type f -iname '*.top' \
     | xargs -n1 basename \
     | sed -e 's/\.top$$//g' \
     | xargs qubesctl top.enable > /dev/null

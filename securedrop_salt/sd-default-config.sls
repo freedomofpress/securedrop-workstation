@@ -7,11 +7,11 @@
 
 # Load YAML vars file
 {% load_yaml as sdvars_defaults %}
-{% include "sd-default-config.yml" %}
+{% include "securedrop_salt/sd-default-config.yml" %}
 {% endload %}
 
 # Load JSON config file
-{% import_json "sd/config.json" as d %}
+{% import_json "securedrop_salt/config.json" as d %}
 
 # Respect "dev" env if provided, default to "prod"
 {% if d.environment == "dev" %}

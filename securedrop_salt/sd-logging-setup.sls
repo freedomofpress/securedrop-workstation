@@ -4,7 +4,7 @@
 # TODO: parametrise this
 {% if grains['id'] in ["sd-small-bookworm-template", "sd-large-bookworm-template"] %}
 include:
-  - fpf-apt-repo
+  - securedrop_salt.fpf-apt-repo
 
 # Install securedrop-log package in TemplateVMs only
 install-securedrop-log-package:
@@ -12,7 +12,7 @@ install-securedrop-log-package:
     - pkgs:
       - securedrop-log
     - require:
-      - sls: fpf-apt-repo
+      - sls: securedrop_salt.fpf-apt-repo
 
 {% endif %}
 

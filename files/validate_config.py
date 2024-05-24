@@ -16,7 +16,7 @@ from qubesadmin import Qubes
 TOR_V3_HOSTNAME_REGEX = r"^[a-z2-7]{56}\.onion$"
 TOR_V3_AUTH_REGEX = r"^[A-Z2-7]{52}$"
 
-# CONFIG_FILEPATH = "/srv/salt/sd/config.json"
+# CONFIG_FILEPATH = "/srv/salt/securedrop_salt/config.json"
 CONFIG_FILEPATH = "config.json"
 SECRET_KEY_FILEPATH = "sd-journalist.sec"
 

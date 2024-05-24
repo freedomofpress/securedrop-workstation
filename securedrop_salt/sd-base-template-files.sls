@@ -24,4 +24,4 @@ sd-base-template-install-securedrop-packages:
       - securedrop-workstation-config
       - securedrop-workstation-grsec
     - require:
-      - sls: fpf-apt-repo
+      - sls: securedrop_salt.fpf-apt-repo

@@ -9,7 +9,7 @@ sd-workstation-template-install-kernel-config-packages:
       - securedrop-workstation-config
       - securedrop-workstation-grsec
     - require:
-      - sls: fpf-apt-repo
+      - sls: securedrop_salt.fpf-apt-repo
 
 # Ensure that paxctld starts immediately. For AppVMs,
 # use qvm.features.enabled = ["paxctld"] to ensure service start.

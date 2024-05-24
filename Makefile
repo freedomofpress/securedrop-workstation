@@ -60,16 +60,16 @@ clone-norpm: assert-dom0 ## As above, but skip creating RPM
 	@BUILD_RPM=false ./scripts/clone-to-dom0
 
 qubes-rpc: prep-dev ## Places default deny qubes-rpc policies for sd-app and sd-gpg
-	sudo qubesctl --show-output --targets sd-dom0-qvm-rpc state.highstate
+	sudo qubesctl --show-output --targets securedrop_salt.sd-dom0-qvm-rpc state.highstate
 
 add-usb-autoattach: prep-dom0 ## Adds udev rules and scripts to sys-usb
 	sudo qubesctl --show-output --skip-dom0 --targets sys-usb state.highstate
 
 remove-usb-autoattach: prep-dev ## Removes udev rules and scripts from sys-usb
-	sudo qubesctl --show-output state.sls sd-usb-autoattach-remove
+	sudo qubesctl --show-output state.sls securedrop_salt.sd-usb-autoattach-remove
 
 sd-workstation-template: prep-dev ## Provisions base template for SDW AppVMs
-	sudo qubesctl --show-output state.sls sd-base-template
+	sudo qubesctl --show-output state.sls securedrop_salt.sd-base-template
 	sudo qubesctl --show-output --skip-dom0 --targets sd-base-bookworm-template state.highstate
 
 sd-proxy: prep-dev ## Provisions SD Proxy VM

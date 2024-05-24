@@ -14,7 +14,7 @@ from typing import List
 import qubesadmin
 
 SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
-SALT_PATH = "/srv/salt/sd/"
+SALT_PATH = "/srv/salt/securedrop_salt/"
 BASE_TEMPLATE = "debian-12-minimal"
 
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
@@ -76,7 +76,7 @@ def install_pvh_support():
 
 def copy_config():
     """
-    Copies config.json and sd-journalist.sec to /srv/salt/sd
+    Copies config.json and sd-journalist.sec to /srv/salt/securedrop_salt
     """
     try:
         subprocess.check_call(["sudo", "cp", os.path.join(SCRIPTS_PATH, "config.json"), SALT_PATH])
@@ -141,11 +141,13 @@ def refresh_salt():
 
 def perform_uninstall(keep_template_rpm=False):
     try:
-        subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-default-dispvm"])
+        subprocess.check_call(
+            ["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-default-dispvm"]
+        )
         print("Destroying all VMs")
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all"])
         print("Reverting dom0 configuration")
-        subprocess.check_call(["sudo", "qubesctl", "state.sls", "sd-clean-all"])
+        subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/clean-salt")])
         print("Uninstalling dom0 config package")
         subprocess.check_call(

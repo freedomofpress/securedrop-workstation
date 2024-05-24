@@ -26,4 +26,4 @@ sd-devices-install-package:
   pkg.installed:
     - name: securedrop-export
     - require:
-      - sls: fpf-apt-repo
+      - sls: securedrop_salt.fpf-apt-repo
