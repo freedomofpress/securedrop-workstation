@@ -74,7 +74,7 @@ sd-workstation-template: prep-dev ## Provisions base template for SDW AppVMs
 
 sd-proxy: prep-dev ## Provisions SD Proxy VM
 	sudo qubesctl --show-output state.sls sd-proxy
-	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-proxy state.highstate
+	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-proxy-dvm,sd-proxy state.highstate
 
 sd-gpg: prep-dev ## Provisions SD GPG keystore VM
 	sudo qubesctl --show-output state.sls sd-gpg

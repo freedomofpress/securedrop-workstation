@@ -28,6 +28,7 @@ sd-app:
     - features:
       - enable:
         - service.paxctld
+        - service.securedrop-mime-handling-sd-app
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
