@@ -5,7 +5,7 @@
 {% from 'sd-default-config.sls' import sdvars with context %}
 
 include:
-  - sd-base-template
+  - securedrop_salt.sd-base-template
 
 # Installs consolidated templateVMs:
 # Sets virt_mode and kernel to use custom hardened kernel.

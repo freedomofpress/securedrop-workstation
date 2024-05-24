@@ -99,8 +99,8 @@ ignore_missing_imports = true
 scripts_are_modules = true
 files = [
     "*.py",
-    "dom0/remove-tags.py",
-    "dom0/securedrop-login",
+    "securedrop_salt/remove-tags.py",
+    "securedrop_salt/securedrop-login",
     "scripts/*.py",
     "files/*.py",
 ]

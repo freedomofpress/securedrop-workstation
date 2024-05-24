@@ -7,7 +7,7 @@
 ##
 
 include:
-  - sd-upgrade-templates
+  - securedrop_salt.sd-upgrade-templates
 
 {% set sd_supported_whonix_version = '17' %}
 

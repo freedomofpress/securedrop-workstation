@@ -15,8 +15,8 @@
 {% from 'sd-default-config.sls' import sdvars with context %}
 
 include:
-  - sd-upgrade-templates
-  - sd-sys-whonix-vms
+  - securedrop_salt.sd-upgrade-templates
+  - securedrop_salt.sd-sys-whonix-vms
 
 sd-whonix:
   qvm.vm:

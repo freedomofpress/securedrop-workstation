@@ -9,8 +9,8 @@
 #
 ##
 include:
-  - fpf-apt-repo
-  - sd-logging-setup
+  - securedrop_salt.fpf-apt-repo
+  - securedrop_salt.sd-logging-setup
 
 # FPF repo is setup in "securedrop-workstation-$sdvars.distribution" template,
 # and then cloned as "sd-small-$sdvars.distribution-template"

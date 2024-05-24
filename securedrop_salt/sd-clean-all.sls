@@ -45,7 +45,7 @@ remove-sd-fedora-dispvm:
 {% else %}
 # If sys-usb is not disposable, clean up after ourselves
 include:
-  - sd-usb-autoattach-remove
+  - securedrop_salt.sd-usb-autoattach-remove
 {% endif %}
 
 # Removes all salt-provisioned files (if these files are also provisioned via

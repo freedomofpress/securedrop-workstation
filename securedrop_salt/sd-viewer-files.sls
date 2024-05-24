@@ -11,8 +11,8 @@
 ##
 
 include:
-  - fpf-apt-repo
-  - sd-logging-setup
+  - securedrop_salt.fpf-apt-repo
+  - securedrop_salt.sd-logging-setup
 
 sd-viewer-install-metapackage:
   pkg.installed:

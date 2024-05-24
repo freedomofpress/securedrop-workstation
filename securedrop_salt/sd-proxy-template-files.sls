@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 include:
-  - fpf-apt-repo
-  - sd-logging-setup
+  - securedrop_salt.fpf-apt-repo
+  - securedrop_salt.sd-logging-setup
 
 # Depends on FPF-controlled apt repo
 install-securedrop-proxy-package:

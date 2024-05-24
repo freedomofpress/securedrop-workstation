@@ -9,8 +9,8 @@
 #
 ##
 include:
-  - fpf-apt-repo
-  - sd-logging-setup
+  - securedrop_salt.fpf-apt-repo
+  - securedrop_salt.sd-logging-setup
 
 # Libreoffice needs to be installed here to convert to pdf to allow printing
 sd-devices-install-libreoffice:

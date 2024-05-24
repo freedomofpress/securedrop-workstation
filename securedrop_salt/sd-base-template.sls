@@ -5,7 +5,7 @@
 {% from 'sd-default-config.sls' import sdvars with context %}
 
 include:
-  - sd-dom0-files
+  - securedrop_salt.sd-dom0-files
 
 # Clones a base templateVM from debian-12-minimal
 sd-base-template:

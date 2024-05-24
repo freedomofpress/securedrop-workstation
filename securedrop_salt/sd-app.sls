@@ -10,8 +10,8 @@
 {% from 'sd-default-config.sls' import sdvars with context %}
 
 include:
-  - sd-workstation-template
-  - sd-upgrade-templates
+  - securedrop_salt.sd-workstation-template
+  - securedrop_salt.sd-upgrade-templates
 
 sd-app:
   qvm.vm:

@@ -11,7 +11,7 @@
 # the subsequent tasks will fail. For reference
 # include:
 #  - update.qubes-vm
-#  - sd-default-config
+#  - securedrop_salt.sd-default-config
 
 # Imports "sdvars" for environment config
 {% from 'sd-default-config.sls' import sdvars with context %}
