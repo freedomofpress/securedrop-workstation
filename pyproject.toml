@@ -16,10 +16,10 @@ PyQt5-Qt5 = "=5.15.2"
 PyQt5-sip = "=12.11.0"
 
 mypy = "^1.9.0"
-pytest = "^8.2.0"
+pytest = "^8.2.1"
 pytest-cov = "^5.0.0"
-types-setuptools = "^69.5.0"
-ruff = "^0.4.3"
+types-setuptools = "^70.0.0"
+ruff = "^0.4.5"
 
 [tool.ruff]
 line-length = 100
