@@ -25,13 +25,11 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
             self.assertFileHasLine("/usr/local/etc/torrc.d/50_user.conf", line)
 
     def test_v3_auth_private_file(self):
-        with open("config.json") as c:
-            config = json.load(c)
-            hostname = config["hidserv"]["hostname"].split(".")[0]
-            keyvalue = config["hidserv"]["key"]
-            line = f"{hostname}:descriptor:x25519:{keyvalue}"
+        hidserv_hostname = self._vm_config_read("SD_HIDSERV_HOSTNAME").split(".")[0]
+        hidserv_key = self._vm_config_read("SD_HIDSERV_KEY")
+        line = f"{hidserv_hostname}:descriptor:x25519:{hidserv_key}"
 
-            self.assertFileHasLine("/var/lib/tor/keys/app-journalist.auth_private", line)
+        self.assertFileHasLine("/var/lib/tor/authdir/app-journalist.auth_private", line)
 
     def test_sd_whonix_config(self):
         self.assertEqual(

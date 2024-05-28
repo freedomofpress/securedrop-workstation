@@ -35,7 +35,7 @@ base:
   sd-gpg:
     - securedrop_salt.sd-gpg-files
   sd-whonix:
-    - securedrop_salt.sd-whonix-hidserv-key
+    - securedrop_salt.sd-whonix-config
   'sd-fedora-39-dvm,sys-usb':
     - match: list
     - securedrop_salt.sd-usb-autoattach-add
