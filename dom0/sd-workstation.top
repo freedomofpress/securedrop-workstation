@@ -37,7 +37,7 @@ base:
   sd-app:
     - sd-mime-handling
   sd-whonix:
-    - sd-whonix-hidserv-key
+    - sd-whonix-config
   'sd-fedora-39-dvm,sys-usb':
     - match: list
     - sd-usb-autoattach-add

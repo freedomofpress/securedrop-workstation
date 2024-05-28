@@ -9,7 +9,6 @@ include README.md
 include LICENSE
 include VERSION
 include sd-proxy/*
-include sd-whonix/*
 include sd-workstation/*
 include sdw_updater/*.py
 include sdw_notify/*.py
