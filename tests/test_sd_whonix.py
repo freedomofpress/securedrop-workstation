@@ -12,17 +12,11 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         super().setUp()
         self.expected_config_keys = {"SD_HIDSERV_HOSTNAME", "SD_HIDSERV_KEY"}
 
-    def test_accept_sd_xfer_extracted_file(self):
-        with open("config.json") as c:
-            config = json.load(c)
-            if len(config["hidserv"]["hostname"]) == 22:
-                t = Template("HidServAuth {{ d.hidserv.hostname }}" " {{ d.hidserv.key }}")
-                line = t.render(d=config)
-
-            else:
-                line = "ClientOnionAuthDir /var/lib/tor/keys"
-
-            self.assertFileHasLine("/usr/local/etc/torrc.d/50_user.conf", line)
+    def test_sd_whonix_config(self):
+        self.assertEqual(
+            self.dom0_config["hidserv"]["hostname"], self._vm_config_read("SD_HIDSERV_HOSTNAME")
+        )
+        self.assertEqual(self.dom0_config["hidserv"]["key"], self._vm_config_read("SD_HIDSERV_KEY"))
 
     def test_v3_auth_private_file(self):
         hidserv_hostname = self._vm_config_read("SD_HIDSERV_HOSTNAME").split(".")[0]
@@ -30,12 +24,6 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         line = f"{hidserv_hostname}:descriptor:x25519:{hidserv_key}"
 
         self.assertFileHasLine("/var/lib/tor/authdir/app-journalist.auth_private", line)
-
-    def test_sd_whonix_config(self):
-        self.assertEqual(
-            self.dom0_config["hidserv"]["hostname"], self._vm_config_read("SD_HIDSERV_HOSTNAME")
-        )
-        self.assertEqual(self.dom0_config["hidserv"]["key"], self._vm_config_read("SD_HIDSERV_KEY"))
 
     def test_sd_whonix_repo_enabled(self):
         """

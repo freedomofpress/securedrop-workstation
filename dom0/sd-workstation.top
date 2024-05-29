@@ -36,8 +36,6 @@ base:
     - sd-gpg-files
   sd-app:
     - sd-mime-handling
-  sd-whonix:
-    - sd-whonix-config
   'sd-fedora-39-dvm,sys-usb':
     - match: list
     - sd-usb-autoattach-add
@@ -47,6 +45,8 @@ base:
     - sd-mime-handling
   sd-proxy:
     - sd-mime-handling
+  whonix-gateway-17:
+    - sd-whonix-config
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.
