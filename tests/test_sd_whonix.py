@@ -1,8 +1,6 @@
-import json
 import unittest
 
 from base import SD_VM_Local_Test
-from jinja2 import Template
 
 
 class SD_Whonix_Tests(SD_VM_Local_Test):
@@ -19,7 +17,7 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         self.assertEqual(self.dom0_config["hidserv"]["key"], self._vm_config_read("SD_HIDSERV_KEY"))
 
     def test_v3_auth_private_file(self):
-        hidserv_hostname = self._vm_config_read("SD_HIDSERV_HOSTNAME").split(".")[0]
+        hidserv_hostname = self._vm_config_read("SD_HIDSERV_HOSTNAME")
         hidserv_key = self._vm_config_read("SD_HIDSERV_KEY")
         line = f"{hidserv_hostname}:descriptor:x25519:{hidserv_key}"
 
