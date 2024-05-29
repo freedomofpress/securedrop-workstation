@@ -34,6 +34,9 @@ sd-whonix:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
+    - features:
+      - enable:
+        - service.securedrop-whonix-config
     - require:
       - sls: securedrop_salt.sd-upgrade-templates
       - sls: securedrop_salt.sd-sys-whonix-vms
