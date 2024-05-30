@@ -75,9 +75,7 @@ remove-dom0-sdw-config-files:
       - /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
-      - /srv/salt/qa-switch.tar.gz
-      - /srv/salt/qa-switch
-      - /srv/salt/consolidation-qa-switch.sh
+      - /var/lib/securedrop-workstation
 
 # Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
 remove-rpc-policy-tags:
