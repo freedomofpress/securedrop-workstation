@@ -71,8 +71,9 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.autostart)
         self.assertFalse(vm.provides_network)
         self.assertTrue("sd-workstation" in vm.tags)
-        self.assertEqual(vm.features["service.securedrop-mime-handling-default"], "1")
-        self._check_service_running(vm, "mime-handling-default")
+        self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
+        self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "default")
+        self._check_service_running(vm, "securedrop-mime-handling")
 
     def test_sd_proxy_dvm(self):
         vm = self.app.domains["sd-proxy-dvm"]
@@ -81,8 +82,8 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template == f"sd-small-{DEBIAN_VERSION}-template")
         self.assertTrue("sd-workstation" in vm.tags)
         self.assertFalse(vm.autostart)
-        self.assertFalse(vm.features.get("service.securedrop-mime-handling-default", False))
-        self._check_service_running(vm, "mime-handling-default", running=False)
+        self.assertFalse(vm.features.get("service.securedrop-mime-handling", False))
+        self._check_service_running(vm, "securedrop-mime-handling", running=False)
         self._check_kernel(vm)
 
     def test_sd_app_config(self):
@@ -105,8 +106,9 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
         # MIME handling
-        self.assertEqual(vm.features["service.securedrop-mime-handling-sd-app"], "1")
-        self._check_service_running(vm, "mime-handling-sd-app")
+        self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
+        self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "sd-app")
+        self._check_service_running(vm, "securedrop-mime-handling")
 
     def test_sd_viewer_config(self):
         vm = self.app.domains["sd-viewer"]
@@ -122,8 +124,9 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue("sd-workstation" in vm.tags)
 
         # MIME handling
-        self.assertEqual(vm.features["service.securedrop-mime-handling-sd-viewer"], "1")
-        self._check_service_running(vm, "mime-handling-sd-viewer")
+        self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
+        self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "sd-viewer")
+        self._check_service_running(vm, "securedrop-mime-handling")
 
     def test_sd_gpg_config(self):
         vm = self.app.domains["sd-gpg"]
@@ -190,9 +193,9 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template_for_dispvms)
         self._check_kernel(vm)
 
-        # MIME handling (dvm does NOT setup mime, only its disposables)
-        self.assertFalse(vm.features.get("service.securedrop-mime-handling-sd-devices", False))
-        self._check_service_running(vm, "mime-handling-sd-devices")
+        # MIME handling (dvm does NOT setup mime, only its disposables do)
+        self.assertFalse(vm.features.get("service.securedrop-mime-handling", False))
+        self._check_service_running(vm, "securedrop-mime-handling")
 
     def sd_export(self):
         vm = self.app.domains["sd-devices"]
@@ -204,8 +207,9 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_kernel(vm)
 
         # MIME handling
-        self.assertEqual(vm.features["service.securedrop-mime-handling-sd-devices"], "1")
-        self._check_service_running(vm, "mime-handling-sd-devices")
+        self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
+        self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "sd-devices")
+        self._check_service_running(vm, "securedrop-mime-handling")
 
     def sd_small_template(self):
         vm = self.app.domains[f"sd-small-{DEBIAN_VERSION}-template"]

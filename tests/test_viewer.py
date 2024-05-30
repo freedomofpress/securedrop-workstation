@@ -5,9 +5,13 @@ from base import SD_VM_Local_Test
 
 
 class SD_Viewer_Tests(SD_VM_Local_Test):
+    test_disposable_instead=True
+    vm_name = "sd-viewer"
+
     def setUp(self):
         self.vm_name = "sd-viewer"
         super().setUp()
+        self.expected_config_keys = {"SD_MIME_HANDLING"}
 
     def test_sd_viewer_metapackage_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-workstation-viewer"))

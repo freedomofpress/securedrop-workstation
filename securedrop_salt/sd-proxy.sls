@@ -44,7 +44,9 @@ sd-proxy-create-named-dispvm:
       - default_dispvm: ""
     - features:
       - enable:
-        - service.securedrop-mime-handling-default
+        - service.securedrop-mime-handling
+      - set:
+          - vm-config.SD_MIME_HANDLING: default
     - tags:
       - add:
         - sd-workstation

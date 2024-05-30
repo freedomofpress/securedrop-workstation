@@ -37,7 +37,9 @@ sd-viewer:
     - features:
       - enable:
         - service.paxctld
-        - service.securedrop-mime-handling-sd-viewer
+        - service.securedrop-mime-handling
+      - set:
+        - vm-config.SD_MIME_HANDLING: sd-viewer
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
 
