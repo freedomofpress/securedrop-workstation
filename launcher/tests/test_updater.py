@@ -128,7 +128,7 @@ def test_apply_templates(templates, stderr, expected):
         "sdw_updater.Updater._start_qubes_updater_proc",
         return_value=subprocess.Popen(
             f"echo '{stderr}' >> /dev/stderr",
-            shell=True,
+            shell=True,  # noqa: S602
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         ),
