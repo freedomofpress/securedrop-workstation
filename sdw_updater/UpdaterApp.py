@@ -5,7 +5,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QDialog
 
 from sdw_updater import Updater, strings
-from sdw_updater.Updater import UpdateStatus
+from sdw_updater.Updater import UpdateStatus, current_templates
 from sdw_updater.UpdaterAppUiQt5 import Ui_UpdaterDialog
 from sdw_util import Util
 
@@ -108,7 +108,6 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         elif current_progress > 100:
             current_progress = 100
 
-        logger.info(f"Signal: Progress {current_progress}%")
         self.progress = current_progress
         self.progressBar.setProperty("value", self.progress)
 
@@ -222,38 +221,7 @@ class UpgradeThread(QThread):
         QThread.__init__(self)
 
     def run(self):
-        # Update dom0 first, then apply dom0 state. If full state run
-        # is required, the dom0 state will drop a flag.
-        self.progress_signal.emit(5)
-        upgrade_generator = Updater.apply_updates(vms=["dom0"], progress_start=5, progress_end=10)
-
-        results = {}
-        for vm, progress, result in upgrade_generator:
-            results[vm] = result
-            self.progress_signal.emit(progress)
-
-        # apply dom0 state
-        self.progress_signal.emit(10)
-        # add to results dict, if it fails it will show error message
-        results["apply_dom0"] = Updater.apply_dom0_state()
-
-        self.progress_signal.emit(15)
-        # rerun full config if dom0 checks determined it's required,
-        # otherwise proceed with per-VM package updates
-        if Updater.migration_is_required():
-            # Progress bar will freeze for ~15m during full state run
-            self.progress_signal.emit(35)
-            # add to results dict, if it fails it will show error message
-            results["apply_all"] = Updater.run_full_install()
-            self.progress_signal.emit(75)
-        else:
-            upgrade_generator = Updater.apply_updates(progress_start=15, progress_end=75)
-            for vm, progress, result in upgrade_generator:
-                results[vm] = result
-                self.progress_signal.emit(progress)
-
-        # reboot vms
-        Updater.shutdown_and_start_vms()
+        results = self.run_full_update()
 
         # write flags to disk
         run_results = Updater.overall_update_status(results)
@@ -266,3 +234,70 @@ class UpgradeThread(QThread):
         message = results  # copy all information from updater call
         message["recommended_action"] = run_results
         self.upgrade_signal.emit(message)
+
+    def run_full_update(self):
+        # Pre-populate results with all available steps for early exits
+        results = {
+            "dom0": UpdateStatus.UPDATES_REQUIRED,
+            "apply_dom0": UpdateStatus.UPDATES_REQUIRED,
+            "apply_all": UpdateStatus.UPDATES_REQUIRED,
+            "templates": UpdateStatus.UPDATES_REQUIRED,
+        }
+
+        # Update dom0 first, then apply dom0 state. If full state run
+        # is required, the dom0 state will drop a flag.
+        self.progress_signal.emit(5)
+        results["dom0"] = Updater.apply_updates_dom0()
+        if results["dom0"] == UpdateStatus.UPDATES_FAILED:
+            return results  # Fail early
+
+        # apply dom0 state
+        self.progress_signal.emit(10)
+        # add to results dict, if it fails it will show error message
+        results["apply_dom0"] = Updater.apply_dom0_state()
+        if results["apply_dom0"] == UpdateStatus.UPDATES_FAILED:
+            return results  # Fail early
+
+        self.progress_signal.emit(15)
+        # rerun full config if dom0 checks determined it's required
+        if Updater.migration_is_required():
+            # Progress bar will freeze for ~15m during full state run
+            self.progress_signal.emit(35)
+            # add to results dict, if it fails it will show error message
+            results["apply_all"] = Updater.run_full_install()
+            if results["apply_all"] == UpdateStatus.UPDATES_FAILED:
+                return results  # Fail early
+
+            self.progress_signal.emit(75)
+
+            templates_progress_callback = self.templates_progress_callback_factory(
+                progress_start=75,
+                progress_end=90,
+            )
+        else:
+            results["apply_all"] = UpdateStatus.UPDATES_OK  # No updates
+            templates_progress_callback = self.templates_progress_callback_factory(
+                progress_start=15,
+                progress_end=90,
+            )
+
+        results["templates"] = Updater.apply_updates_templates(
+            current_templates,
+            templates_progress_callback,
+        )
+
+        return results
+
+    def templates_progress_callback_factory(self, progress_start, progress_end):
+        def bump_progress(templates_total_progress):
+            """
+            Figure out how much the progress bar should be bumped
+            """
+            template_prog_percentage = (progress_end - progress_start) / 100
+            total_progress = int(
+                progress_start + template_prog_percentage * templates_total_progress
+            )
+
+            return self.progress_signal.emit(total_progress)
+
+        return bump_progress
