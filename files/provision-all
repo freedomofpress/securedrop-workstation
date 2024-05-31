@@ -31,6 +31,10 @@ sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template sta
 # Reboot sd-log so it's ready to receive logs from other VMs about to be configured
 qvm-shutdown --wait sd-log && qvm-start sd-log
 
+echo ".........................................................................."
+echo "Enabling Whonix customizations"
+sudo qubesctl --show-output --skip-dom0 --targets whonix-gateway-17 state.highstate
+
 # Format list of all VMs comma-separated, for use as qubesctl target
 # We run this after dom0's highstate, so that the VMs are available for listing by tag.
 all_sdw_vms_target="$(qvm-ls --tags sd-workstation --raw-list | perl -npE 's/\n/,/g' | perl -npE 's/,$//' )"
@@ -53,3 +57,4 @@ qvm-check --quiet sd-fedora-39-dvm 2> /dev/null && \
 echo "will shut down the following VMs"
 qvm-ls --tags sd-workstation
 qvm-ls --tags sd-workstation --raw-list | xargs qvm-shutdown --wait
+qvm-shutdown --wait whonix-gateway-17

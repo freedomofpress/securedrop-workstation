@@ -74,6 +74,12 @@ sd-cleanup-sys-firewall:
       - qvm-run sys-firewall 'sudo rm -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation'
       - qvm-run sys-firewall 'sudo rm -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
 
+sd-cleanup-whonix-gateway:
+  cmd.run:
+    - names:
+      - qvm-run whonix-gateway-17 'sudo apt purge --yes securedrop-keyring securedrop-qubesdb securedrop-whonix-config'
+      - qvm-run whonix-gateway-17 'sudo rm -f /etc/apt/sources.list.d/apt-test_freedom_press.sources'
+
 disable-systemd-units:
   cmd.run:
     - name: systemctl --user disable sdw-notify.timer
