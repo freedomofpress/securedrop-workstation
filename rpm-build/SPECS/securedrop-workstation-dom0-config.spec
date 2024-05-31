@@ -147,10 +147,7 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %license LICENSE
 
 %post
-find /srv/salt/securedrop_salt -maxdepth 1 -type f -iname '*.top' \
-    | xargs -n1 basename \
-    | sed -e 's/\.top$$//g' \
-    | xargs qubesctl top.enable > /dev/null
+qubesctl top.enable securedrop_salt.sd-workstation > /dev/null ||:
 
 # Force full run of all Salt states - uncomment in release branch
 # mkdir -p /tmp/sdw-migrations
