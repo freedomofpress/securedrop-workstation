@@ -39,6 +39,7 @@ dom0-workstation-rpm-repo:
     - contents: |
         [securedrop-workstation-dom0]
         gpgcheck=1
+        skip_if_unavailable=False
         gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
         enabled=1
         baseurl={{ sdvars.dom0_yum_repo_url }}

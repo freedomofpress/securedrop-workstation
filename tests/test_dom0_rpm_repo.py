@@ -43,6 +43,7 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
         wanted_lines = [
             "[securedrop-workstation-dom0]",
             "gpgcheck=1",
+            "skip_if_unavailable=False",
             "gpgkey=file://{}".format(self.pubkey_actual),  # noqa
             "enabled=1",
             f"baseurl={self.yum_repo_url}",
