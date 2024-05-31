@@ -1,0 +1,9 @@
+[Unit]
+Description=Enlarge XFCE icon size for SDW
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/securedrop/update-xfce-settings adjust-icon-size
+
+[Install]
+WantedBy=default.target

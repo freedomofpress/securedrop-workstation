@@ -54,13 +54,6 @@ dom0-install-debian-minimal-template:
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
-# Increase the default icon size for the GUI user for usability/accessibility reasons
-dom0-adjust-desktop-icon-size-xfce:
-  cmd.script:
-    - name: salt://update-xfce-settings
-    - args: adjust-icon-size
-    - runas: {{ gui_user }}
-
 dom0-login-autostart-directory:
   file.directory:
     - name: /home/{{ gui_user }}/.config/autostart
@@ -104,11 +97,22 @@ dom0-install-securedrop-workstation-dom0-config:
       - file: dom0-workstation-rpm-repo
 {% endif %}
 
-# Hide suspend/hibernate options in menus in prod systems
-{% if d.environment == "prod" or d.environment == "staging" %}
-dom0-disable-unsafe-power-management-xfce:
-  cmd.script:
-    - name: salt://update-xfce-settings
-    - args: disable-unsafe-power-management
-    - runas: {{ gui_user }}
-{% endif %}
+dom0-environment-directory:
+  file.directory:
+    - name: /var/lib/securedrop-workstation/
+    - mode: 755
+    - makedirs: true
+
+dom0-remove-old-environment-flag:
+  file.tidied:
+    - name: /var/lib/securedrop-workstation/
+    - require:
+      - file: dom0-environment-directory
+
+dom0-write-environment-flag:
+  file.managed:
+    - name: /var/lib/securedrop-workstation/{{ d.environment }}
+    - mode: 644
+    - replace: False
+    - require:
+      - file: dom0-remove-old-environment-flag

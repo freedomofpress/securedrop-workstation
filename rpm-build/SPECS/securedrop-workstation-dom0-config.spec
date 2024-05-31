@@ -68,6 +68,8 @@ install -m 755 -d %{buildroot}/srv/salt/sd/sd-workstation
 install -m 755 -d %{buildroot}/srv/salt/sd/usb-autoattach
 install -m 755 -d %{buildroot}/%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}/%{_bindir}
+install -m 755 -d %{buildroot}/opt/securedrop
+install -m 755 -d %{buildroot}/usr/bin/securedrop
 install -m 644 dom0/*.sls %{buildroot}/srv/salt/
 install -m 644 dom0/*.top %{buildroot}/srv/salt/
 install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
@@ -75,7 +77,7 @@ install -m 644 dom0/*.yml %{buildroot}/srv/salt/
 install -m 644 dom0/*.conf %{buildroot}/srv/salt/
 install -m 755 dom0/remove-tags.py %{buildroot}/srv/salt/remove-tags
 install -m 755 dom0/securedrop-handle-upgrade %{buildroot}/srv/salt/
-install -m 755 dom0/update-xfce-settings %{buildroot}/srv/salt/
+install -m 755 files/update-xfce-settings %{buildroot}/usr/bin/securedrop/
 install -m 644 sd-proxy/* %{buildroot}/srv/salt/sd/sd-proxy/
 install -m 644 sd-whonix/* %{buildroot}/srv/salt/sd/sd-whonix/
 install -m 644 sd-workstation/* %{buildroot}/srv/salt/sd/sd-workstation/
@@ -94,6 +96,7 @@ install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/
 install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/
 install -m 755 -d %{buildroot}/%{_sharedstatedir}/%{name}/
 install -m 755 -d %{buildroot}/%{_userunitdir}/
+install -m 755 -d %{buildroot}/%{_unitdir}
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/salt/press.freedom.SecureDropUpdater.desktop
 install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
@@ -103,6 +106,7 @@ install -m 755 files/sdw-notify.py %{buildroot}/%{_bindir}/sdw-notify
 install -m 755 files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
 install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
+install -m 644 files/securedrop-logind-override-disable.service %{buildroot}/%{_unitdir}/
 
 install -m 755 -d %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
@@ -111,8 +115,10 @@ install -m 644 files/32-securedrop-workstation.policy %{buildroot}/etc/qubes/pol
 install -m 755 -d %{buildroot}/usr/share/securedrop/icons
 install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/icons/sd-logo.png
 
-install -m 755 -d %{buildroot}/opt/securedrop
-
+install -m 755 -d %{buildroot}/etc/systemd/logind.conf.d/
+install -m 644 files/10-securedrop-logind_override.conf %{buildroot}/etc/systemd/logind.conf.d/
+install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}/%{_userunitdir}/
+install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_userunitdir}/
 
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
@@ -125,7 +131,6 @@ install -m 755 -d %{buildroot}/opt/securedrop
 /srv/salt/dom0-xfce-desktop-file.j2
 /srv/salt/remove-tags
 /srv/salt/securedrop-*
-/srv/salt/update-xfce-settings
 /srv/salt/fpf*
 /srv/salt/press.freedom.SecureDropUpdater.desktop
 
@@ -142,19 +147,23 @@ install -m 755 -d %{buildroot}/opt/securedrop
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %{_userunitdir}/sdw-notify.service
 %{_userunitdir}/sdw-notify.timer
+%{_userunitdir}/securedrop-user-xfce-settings.service
+%{_userunitdir}/securedrop-user-xfce-icon-size.service
+%{_unitdir}/securedrop-logind-override-disable.service
 
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-workstation.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-workstation.policy
 
+# Override systemd-logind settings on staging and prod systems
+/etc/systemd/logind.conf.d/10-securedrop-logind_override.conf
+
 #TODO: this is the same 128x128 icon "securedrop.png" in the datadir
 /usr/share/securedrop/icons/sd-logo.png
 
-#TODO: is this superseded by notifier/updater file locations, above?
-/opt/securedrop
+%attr(755, root, root) /usr/bin/securedrop/update-xfce-settings
 
 %doc README.md
 %license LICENSE
-
 
 %post
 find /srv/salt -maxdepth 1 -type f -iname '*.top' \
@@ -165,6 +174,25 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
 # Force full run of all Salt states - uncomment in release branch
 # mkdir -p /tmp/sdw-migrations
 # touch /tmp/sdw-migrations/whonix-17-update
+
+# Enables service that conditionally removes our systemd-logind customizations
+# on dev machines only.
+# It's clumsy, but overrides to systemd services can't be conditionally applied.
+# Changes take place after systemd restart.
+systemctl enable securedrop-logind-override-disable.service
+
+# Customize xfce power settings and icon size. Enabled for all users.
+# Power settings changes conditionally disabled in dev environments.
+systemctl --global enable securedrop-user-xfce-icon-size.service ||:
+systemctl --global enable securedrop-user-xfce-settings.service ||:
+
+% preun
+# If we're uninstalling (vs upgrading)
+if [ $1 -eq 0 ]; then
+    systemctl disable --now securedrop-logind-override-disable.service
+    systemctl --global disable securedrop-user-xfce-icon-size.service ||:
+    systemctl --global disable securedrop-user-xfce-settings.service ||:
+fi
 
 %changelog
 * Wed Feb 7 2024 SecureDrop Team <securedrop@freedom.press> - 0.10.0

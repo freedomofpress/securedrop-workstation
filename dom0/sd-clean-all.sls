@@ -48,22 +48,6 @@ include:
   - sd-usb-autoattach-remove
 {% endif %}
 
-# Reset desktop icon size to its original value
-dom0-reset-icon-size-xfce:
-  cmd.script:
-    - name: salt://update-xfce-settings
-    - args: reset-icon-size
-    - runas: {{ gui_user }}
-
-# Reset power management options to their original values
-{% if d.environment == "prod" or d.environment == "staging" %}
-dom0-reset-power-management-xfce:
-  cmd.script:
-    - name: salt://update-xfce-settings
-    - args: reset-power-management
-    - runas: {{ gui_user }}
-{% endif %}
-
 # Removes all salt-provisioned files (if these files are also provisioned via
 # RPM, they should be removed as part of remove-dom0-sdw-config-files-dev)
 remove-dom0-sdw-config-files:
@@ -75,31 +59,12 @@ remove-dom0-sdw-config-files:
       - /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/.securedrop_launcher
-      - /srv/salt/qa-switch.tar.gz
-      - /srv/salt/qa-switch
-      - /srv/salt/consolidation-qa-switch.sh
+      - /var/lib/securedrop-workstation
 
 # Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
 remove-rpc-policy-tags:
   cmd.script:
     - name: salt://remove-tags
-
-sd-cleanup-etc-changes:
-  file.replace:
-    - names:
-      - /etc/systemd/logind.conf
-    - pattern: '### BEGIN securedrop-workstation ###.*### END securedrop-workstation ###\s*'
-    - flags:
-      - MULTILINE
-      - DOTALL
-    - repl: ''
-    - backup: no
-
-{% if d.environment == "prod" or d.environment == "staging" %}
-apply-systemd-changes:
-  cmd.run:
-    - name: sudo systemctl restart systemd-logind
-{% endif %}
 
 sd-cleanup-sys-firewall:
   cmd.run:
@@ -117,3 +82,19 @@ disable-systemd-units:
       # Even with "runas", "systemctl --user" from root will fail unless we
       # tell it explicitly how to connect to the user systemd.
       - XDG_RUNTIME_DIR: /run/user/{{ gui_user_id }}
+
+# Reset desktop icon size to its original value
+dom0-reset-icon-size-xfce:
+  cmd.script:
+    - name: /usr/bin/securedrop/update-xfce-settings
+    - args: reset-icon-size
+    - runas: {{ gui_user }}
+
+# Reset power management options to their original values
+{% if d.environment == "prod" or d.environment == "staging" %}
+dom0-reset-power-management-xfce:
+  cmd.script:
+    - name: /usr/bin/securedrop/update-xfce-settings
+    - args: reset-power-management
+    - runas: {{ gui_user }}
+{% endif %}

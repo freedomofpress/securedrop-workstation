@@ -8,24 +8,6 @@
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 {% set gui_user_id = salt['cmd.shell']('id -u ' + gui_user) %}
 
-{% import_json "sd/config.json" as d %}
-{% if d.environment == "prod" or d.environment == "staging" %}
-# Power off instead of suspend on lid close, for security reasons, but only in
-# prod and staging, to avoid interfering with developer workflows
-dom0-poweroff:
-  file.blockreplace:
-    - name: /etc/systemd/logind.conf
-    - append_if_not_found: True
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: |
-        HandleLidSwitch=poweroff
-
-apply-systemd-changes:
-  cmd.run:
-    - name: sudo systemctl restart systemd-logind
-{% endif %}
-
 enable-user-units:
   cmd.run:
     - name: |
