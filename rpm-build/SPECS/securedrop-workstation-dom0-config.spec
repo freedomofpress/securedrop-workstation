@@ -106,7 +106,7 @@ install -m 755 files/sdw-notify.py %{buildroot}/%{_bindir}/sdw-notify
 install -m 755 files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
 install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
-install -m 644 files/logind-override-disable.service %{buildroot}/%{_unitdir}/
+install -m 644 files/securedrop-logind-override-disable.service %{buildroot}/%{_unitdir}/
 
 install -m 755 -d %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
@@ -116,9 +116,9 @@ install -m 755 -d %{buildroot}/usr/share/securedrop/icons
 install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/icons/sd-logo.png
 
 install -m 755 -d %{buildroot}/etc/systemd/logind.conf.d/
-install -m 644 files/10-logind_override.conf %{buildroot}/etc/systemd/logind.conf.d/
-install -m 644 files/user-xfce-settings.service %{buildroot}/%{_userunitdir}/
-install -m 644 files/user-xfce-icon-size.service %{buildroot}/%{_userunitdir}/
+install -m 644 files/10-securedrop-logind_override.conf %{buildroot}/etc/systemd/logind.conf.d/
+install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}/%{_userunitdir}/
+install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_userunitdir}/
 
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
@@ -147,15 +147,15 @@ install -m 644 files/user-xfce-icon-size.service %{buildroot}/%{_userunitdir}/
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %{_userunitdir}/sdw-notify.service
 %{_userunitdir}/sdw-notify.timer
-%{_userunitdir}/user-xfce-settings.service
-%{_userunitdir}/user-xfce-icon-size.service
-%{_unitdir}/logind-override-disable.service
+%{_userunitdir}/securedrop-user-xfce-settings.service
+%{_userunitdir}/securedrop-user-xfce-icon-size.service
+%{_unitdir}/securedrop-logind-override-disable.service
 
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-workstation.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-workstation.policy
 
 # Override systemd-logind settings on staging and prod systems
-/etc/systemd/logind.conf.d/10-logind_override.conf
+/etc/systemd/logind.conf.d/10-securedrop-logind_override.conf
 
 #TODO: this is the same 128x128 icon "securedrop.png" in the datadir
 /usr/share/securedrop/icons/sd-logo.png
@@ -179,19 +179,19 @@ find /srv/salt -maxdepth 1 -type f -iname '*.top' \
 # on dev machines only.
 # It's clumsy, but overrides to systemd services can't be conditionally applied.
 # Changes take place after systemd restart.
-systemctl enable logind-override-disable.service
+systemctl enable securedrop-logind-override-disable.service
 
 # Customize xfce power settings and icon size. Enabled for all users.
 # Power settings changes conditionally disabled in dev environments.
-systemctl --global enable user-xfce-icon-size.service ||:
-systemctl --global enable user-xfce-settings.service ||:
+systemctl --global enable securedrop-user-xfce-icon-size.service ||:
+systemctl --global enable securedrop-user-xfce-settings.service ||:
 
 % preun
 # If we're uninstalling (vs upgrading)
 if [ $1 -eq 0 ]; then
-    systemctl disable --now logind-override-disable.service
-    systemctl --global disable user-xfce-icon-size.service ||:
-    systemctl --global disable user-xfce-settings.service ||:
+    systemctl disable --now securedrop-logind-override-disable.service
+    systemctl --global disable securedrop-user-xfce-icon-size.service ||:
+    systemctl --global disable securedrop-user-xfce-settings.service ||:
 fi
 
 %changelog
