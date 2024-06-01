@@ -186,7 +186,7 @@ systemctl enable securedrop-logind-override-disable.service
 systemctl --global enable securedrop-user-xfce-icon-size.service ||:
 systemctl --global enable securedrop-user-xfce-settings.service ||:
 
-% preun
+%preun
 # If we're uninstalling (vs upgrading)
 if [ $1 -eq 0 ]; then
     systemctl disable --now securedrop-logind-override-disable.service
