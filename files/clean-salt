@@ -23,11 +23,6 @@ if [[ ! -d "$SDW_SALT_DIR" ]]; then
     # Can be removed in future
     sudo rm -rf ${SALT_DIR}/launcher
 
-    # We no longer store salt files directly in /srv/salt, so these next
-    # 3 checks can be removed at 4.2 cutover
-    sudo find ${SALT_DIR} -maxdepth 1 -type f -iname 'fpf*' -delete
-    sudo find ${SALT_DIR} -maxdepth 1 -type f -iname 'sd*' -delete
-    sudo find ${SALT_DIR} -maxdepth 1 -type f -iname 'securedrop*' -delete
-    sudo find ${SALT_DIR}/_tops -lname '/srv/salt/sd-*' -delete
+    sudo find ${SALT_DIR}/_tops -lname '/srv/salt/securedrop_salt*' -delete
 
 fi
