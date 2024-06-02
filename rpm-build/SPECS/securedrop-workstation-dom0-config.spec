@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.11.0
+Version:	0.11.1rc1
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -128,6 +128,9 @@ mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/fedora-39-update
 
 %changelog
+* Sun Jun 2 2024 SecureDrop Team <securedrop@freedom.press> - 0.11.1
+- Update the SecureDrop release signing key
+
 * Wed May 1 2024 SecureDrop Team <securedrop@freedom.press> - 0.11.0
 - Use Fedora 39 base template
 
