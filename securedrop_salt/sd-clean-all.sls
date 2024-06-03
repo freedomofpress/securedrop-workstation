@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
-{% import_json "sd/config.json" as d %}
+{% import_json "securedrop_salt/config.json" as d %}
 
 set-fedora-as-default-dispvm:
   cmd.run:
@@ -45,7 +45,7 @@ remove-sd-fedora-dispvm:
 {% else %}
 # If sys-usb is not disposable, clean up after ourselves
 include:
-  - sd-usb-autoattach-remove
+  - securedrop_salt.sd-usb-autoattach-remove
 {% endif %}
 
 # Removes all salt-provisioned files (if these files are also provisioned via
@@ -64,7 +64,7 @@ remove-dom0-sdw-config-files:
 # Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
 remove-rpc-policy-tags:
   cmd.script:
-    - name: salt://remove-tags
+    - name: salt://securedrop_salt/remove-tags.py
 
 sd-cleanup-sys-firewall:
   cmd.run:

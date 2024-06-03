@@ -12,11 +12,11 @@
 ##
 
 # Imports "sdvars" for environment config
-{% from 'sd-default-config.sls' import sdvars with context %}
+{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
 include:
-  - sd-workstation-template
-  - sd-upgrade-templates
+  - securedrop_salt.sd-workstation-template
+  - securedrop_salt.sd-upgrade-templates
 
 sd-viewer:
   qvm.vm:

@@ -7,7 +7,7 @@ set -o pipefail
 
 
 # Hardcoded location of SecureDrop Workstation salt config files
-SDW_SALT_DIR="/srv/salt/sd"
+SDW_SALT_DIR="/srv/salt/securedrop_salt"
 SALT_DIR="/srv/salt"
 
 echo "Purging Salt config..."
@@ -19,9 +19,10 @@ echo "Purging Salt config..."
 
 if [[ ! -d "$SDW_SALT_DIR" ]]; then
     sudo rm -rf ${SDW_SALT_DIR}
+
+    # Can be removed in future
     sudo rm -rf ${SALT_DIR}/launcher
-    sudo find ${SALT_DIR} -maxdepth 1 -type f -iname 'fpf*' -delete
-    sudo find ${SALT_DIR} -maxdepth 1 -type f -iname 'sd*' -delete
-    sudo find ${SALT_DIR} -maxdepth 1 -type f -iname 'securedrop*' -delete
-    sudo find ${SALT_DIR}/_tops -lname '/srv/salt/sd-*' -delete
+
+    sudo find ${SALT_DIR}/_tops -lname '/srv/salt/securedrop_salt*' -delete
+
 fi

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 include:
-  - fpf-apt-repo
+  - securedrop_salt.fpf-apt-repo
 
 sd-workstation-template-install-kernel-config-packages:
   pkg.installed:
@@ -9,7 +9,7 @@ sd-workstation-template-install-kernel-config-packages:
       - securedrop-workstation-config
       - securedrop-workstation-grsec
     - require:
-      - sls: fpf-apt-repo
+      - sls: securedrop_salt.fpf-apt-repo
 
 # Ensure that paxctld starts immediately. For AppVMs,
 # use qvm.features.enabled = ["paxctld"] to ensure service start.

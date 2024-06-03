@@ -28,7 +28,7 @@ sd-gpg-create-keyring-directory:
 sd-gpg-import-submission-key:
   file.managed:
     - name: /home/user/.gnupg/sd-journalist.sec
-    - source: salt://sd/sd-journalist.sec
+    - source: salt://securedrop_salt/sd-journalist.sec
     - user: user
     - group: user
     - mode: 600

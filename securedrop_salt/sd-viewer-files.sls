@@ -11,15 +11,15 @@
 ##
 
 include:
-  - fpf-apt-repo
-  - sd-logging-setup
+  - securedrop_salt.fpf-apt-repo
+  - securedrop_salt.sd-logging-setup
 
 sd-viewer-install-metapackage:
   pkg.installed:
     - pkgs:
       - securedrop-workstation-viewer
     - require:
-      - sls: fpf-apt-repo
+      - sls: securedrop_salt.fpf-apt-repo
 
 sd-viewer-install-libreoffice:
   pkg.installed:

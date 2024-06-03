@@ -10,11 +10,11 @@ set -o pipefail
 max_concurrency="2"
 
 echo "Configure Fedora-based system VMs"
-sudo qubesctl --show-output state.sls sd-sys-vms
+sudo qubesctl --show-output state.sls securedrop_salt.sd-sys-vms
 
 echo ".........................................................................."
 echo "Configure base template"
-sudo qubesctl --show-output state.sls sd-base-template
+sudo qubesctl --show-output state.sls securedrop_salt.sd-base-template
 sudo qubesctl --show-output --skip-dom0 --targets sd-base-bookworm-template state.highstate
 qvm-shutdown --wait sd-base-bookworm-template
 

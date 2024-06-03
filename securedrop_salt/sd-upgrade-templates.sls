@@ -13,5 +13,5 @@
 
 run-prep-upgrade-scripts:
   cmd.script:
-    - name: salt://securedrop-handle-upgrade
+    - name: salt://securedrop_salt/securedrop-handle-upgrade
     - args: prepare

@@ -70,7 +70,7 @@ def show_update_warning():
     elif result == NotifyApp.NotifyStatus.DEFER_UPDATES:
         # Currently, `DEFER_UPDATES` is a no-op, because the deferral period is
         # simply the period before the next run of the notify script (defined in
-        # `securedrop-workstation/dom0/sd-dom0-crontab.sls`).
+        # `securedrop-workstation/securedrop_salt/sd-dom0-crontab.sls`).
         log.info(
             "User has deferred update check. sdw-notify will run "
             "again at the next scheduled interval."

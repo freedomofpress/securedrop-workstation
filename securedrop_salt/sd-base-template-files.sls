@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 include:
-  - fpf-apt-repo
+  - securedrop_salt.fpf-apt-repo
 
 # install recommended Qubes VM packages for core functionality
 install-qubes-vm-recommended:
@@ -24,4 +24,4 @@ sd-base-template-install-securedrop-packages:
       - securedrop-workstation-config
       - securedrop-workstation-grsec
     - require:
-      - sls: fpf-apt-repo
+      - sls: securedrop_salt.fpf-apt-repo

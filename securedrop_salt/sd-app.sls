@@ -7,11 +7,11 @@
 ##
 
 # Imports "sdvars" for environment config
-{% from 'sd-default-config.sls' import sdvars with context %}
+{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
 include:
-  - sd-workstation-template
-  - sd-upgrade-templates
+  - securedrop_salt.sd-workstation-template
+  - securedrop_salt.sd-upgrade-templates
 
 sd-app:
   qvm.vm:
@@ -31,7 +31,7 @@ sd-app:
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
-{% import_json "sd/config.json" as d %}
+{% import_json "securedrop_salt/config.json" as d %}
 
 sd-app-config:
   qvm.features:
