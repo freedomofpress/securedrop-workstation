@@ -65,13 +65,26 @@ class SD_VM_Tests(unittest.TestCase):
 
     def test_sd_proxy_config(self):
         vm = self.app.domains["sd-proxy"]
-        nvm = vm.netvm
-        self.assertTrue(nvm.name == "sd-whonix")
-        self.assertTrue(vm.template == f"sd-small-{DEBIAN_VERSION}-template")
-        self.assertTrue(vm.autostart is True)
+        self.assertTrue(vm.template == "sd-proxy-dvm")
+        self.assertTrue(vm.klass == "DispVM")
+        self.assertTrue(vm.netvm.name == "sd-whonix")
+        self.assertTrue(vm.autostart)
         self.assertFalse(vm.provides_network)
-        self.assertFalse(vm.template_for_dispvms)
         self.assertTrue("sd-workstation" in vm.tags)
+        self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
+        self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "default")
+        self._check_service_running(vm, "securedrop-mime-handling")
+
+    def test_sd_proxy_dvm(self):
+        vm = self.app.domains["sd-proxy-dvm"]
+        self.assertTrue(vm.template_for_dispvms)
+        self.assertTrue(vm.netvm.name == "sd-whonix")
+        self.assertTrue(vm.template == f"sd-small-{DEBIAN_VERSION}-template")
+        self.assertTrue("sd-workstation" in vm.tags)
+        self.assertFalse(vm.autostart)
+        self.assertFalse(vm.features.get("service.securedrop-mime-handling", False))
+        self._check_service_running(vm, "securedrop-mime-handling", running=False)
+        self._check_kernel(vm)
 
     def test_sd_app_config(self):
         vm = self.app.domains["sd-app"]
@@ -92,6 +105,11 @@ class SD_VM_Tests(unittest.TestCase):
         vol = vm.volumes["private"]
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
+        # MIME handling
+        self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
+        self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "sd-app")
+        self._check_service_running(vm, "securedrop-mime-handling")
+
     def test_sd_viewer_config(self):
         vm = self.app.domains["sd-viewer"]
         nvm = vm.netvm
@@ -102,8 +120,11 @@ class SD_VM_Tests(unittest.TestCase):
         # sd-viewer should not be able to create other disposable VMs
         self.assertIsNone(vm.default_dispvm)
         self._check_kernel(vm)
-        self._check_service_running(vm, "paxctld")
         self.assertTrue("sd-workstation" in vm.tags)
+
+        # MIME handling
+        self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
+        self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "sd-viewer")
 
     def test_sd_gpg_config(self):
         vm = self.app.domains["sd-gpg"]
@@ -141,12 +162,6 @@ class SD_VM_Tests(unittest.TestCase):
         vol = vm.volumes["private"]
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
-    def test_sd_proxy_template(self):
-        vm = self.app.domains[f"sd-small-{DEBIAN_VERSION}-template"]
-        nvm = vm.netvm
-        self.assertTrue(nvm is None)
-        self.assertTrue("sd-workstation" in vm.tags)
-
     def sd_app_template(self):
         vm = self.app.domains[f"sd-small-{DEBIAN_VERSION}-template"]
         nvm = vm.netvm
@@ -176,6 +191,10 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template_for_dispvms)
         self._check_kernel(vm)
 
+        # MIME handling (dvm does NOT setup mime, only its disposables do)
+        self.assertFalse(vm.features.get("service.securedrop-mime-handling", False))
+        self._check_service_running(vm, "securedrop-mime-handling")
+
     def sd_export(self):
         vm = self.app.domains["sd-devices"]
         nvm = vm.netvm
@@ -184,6 +203,11 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm_type == "DispVM")
         self.assertTrue("sd-workstation" in vm.tags)
         self._check_kernel(vm)
+
+        # MIME handling
+        self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
+        self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "sd-devices")
+        self._check_service_running(vm, "securedrop-mime-handling")
 
     def sd_small_template(self):
         vm = self.app.domains[f"sd-small-{DEBIAN_VERSION}-template"]

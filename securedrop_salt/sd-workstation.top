@@ -34,19 +34,11 @@ base:
     - securedrop_salt.sd-viewer-files
   sd-gpg:
     - securedrop_salt.sd-gpg-files
-  sd-app:
-    - securedrop_salt.sd-mime-handling
   sd-whonix:
     - securedrop_salt.sd-whonix-hidserv-key
   'sd-fedora-39-dvm,sys-usb':
     - match: list
     - securedrop_salt.sd-usb-autoattach-add
-  sd-viewer:
-    - securedrop_salt.sd-mime-handling
-  sd-devices-dvm:
-    - securedrop_salt.sd-mime-handling
-  sd-proxy:
-    - securedrop_salt.sd-mime-handling
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.

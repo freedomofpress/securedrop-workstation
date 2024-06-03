@@ -6,8 +6,9 @@ from base import SD_VM_Local_Test
 
 class SD_Devices_Tests(SD_VM_Local_Test):
     def setUp(self):
-        self.vm_name = "sd-devices-dvm"
+        self.vm_name = "sd-devices"
         super().setUp()
+        self.expected_config_keys = {"SD_MIME_HANDLING"}
 
     def test_files_are_properly_copied(self):
         self.assertTrue(self._fileExists("/usr/bin/send-to-usb"))

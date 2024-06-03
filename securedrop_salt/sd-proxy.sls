@@ -13,15 +13,16 @@ include:
   - securedrop_salt.sd-whonix
   - securedrop_salt.sd-upgrade-templates
 
-sd-proxy:
+sd-proxy-dvm:
   qvm.vm:
-    - name: sd-proxy
+    - name: sd-proxy-dvm
     - present:
       - label: blue
     - prefs:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: sd-whonix
-      - autostart: true
+      - template_for_dispvms: True
+      - default_dispvm: ""
     - tags:
       - add:
         - sd-workstation
@@ -29,6 +30,29 @@ sd-proxy:
     - require:
       - qvm: sd-whonix
       - qvm: sd-small-{{ sdvars.distribution }}-template
+
+sd-proxy-create-named-dispvm:
+  qvm.vm:
+    - name: sd-proxy
+    - present:
+      - label: blue
+      - class: DispVM
+      - template: sd-proxy-dvm
+    - prefs:
+      - netvm: sd-whonix
+      - autostart: true
+      - default_dispvm: ""
+    - features:
+      - enable:
+        - service.securedrop-mime-handling
+      - set:
+          - vm-config.SD_MIME_HANDLING: default
+    - tags:
+      - add:
+        - sd-workstation
+        - sd-{{ sdvars.distribution }}
+    - require:
+      - qvm: sd-proxy-dvm
 
 {% import_json "securedrop_salt/config.json" as d %}
 

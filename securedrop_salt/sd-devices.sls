@@ -56,5 +56,10 @@ sd-devices-create-named-dispvm:
     - tags:
       - add:
         - sd-workstation
+    - features:
+      - enable:
+        - service.securedrop-mime-handling
+      - set:
+        - vm-config.SD_MIME_HANDLING: sd-devices
     - require:
       - qvm: sd-devices-dvm

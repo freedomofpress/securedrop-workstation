@@ -1,13 +1,13 @@
 import os
 import unittest
 
-from base import SD_VM_Local_Test
+from base import SD_Unnamed_DVM_Local_Test
 
 
-class SD_Viewer_Tests(SD_VM_Local_Test):
+class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
     def setUp(self):
-        self.vm_name = "sd-viewer"
-        super().setUp()
+        super().setUp("sd-viewer")
+        self.expected_config_keys = {"SD_MIME_HANDLING"}
 
     def test_sd_viewer_metapackage_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-workstation-viewer"))
@@ -43,6 +43,10 @@ class SD_Viewer_Tests(SD_VM_Local_Test):
                     expected_app = line.split("=")[1].rstrip()
                     actual_app = self._run(f"xdg-mime query default {mime_type}")
                     self.assertEqual(actual_app, expected_app)
+
+    def test_mimetypes_service(self):
+        self._service_is_active("securedrop-mime-handling")
+        self._service_is_active("paxctld")
 
     def test_mailcap_hardened(self):
         self.mailcap_hardened()
