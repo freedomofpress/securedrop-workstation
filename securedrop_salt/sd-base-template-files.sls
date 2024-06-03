@@ -21,7 +21,7 @@ sd-base-template-install-additional-packages:
 sd-base-template-install-securedrop-packages:
   pkg.installed:
     - pkgs:
-      - securedrop-qubesdb
+      - securedrop-qubesdb-tools
       - securedrop-workstation-config
       - securedrop-workstation-grsec
     - require:
