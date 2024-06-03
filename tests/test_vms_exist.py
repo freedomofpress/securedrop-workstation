@@ -120,13 +120,11 @@ class SD_VM_Tests(unittest.TestCase):
         # sd-viewer should not be able to create other disposable VMs
         self.assertIsNone(vm.default_dispvm)
         self._check_kernel(vm)
-        self._check_service_running(vm, "paxctld")
         self.assertTrue("sd-workstation" in vm.tags)
 
         # MIME handling
         self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
         self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "sd-viewer")
-        self._check_service_running(vm, "securedrop-mime-handling")
 
     def test_sd_gpg_config(self):
         vm = self.app.domains["sd-gpg"]

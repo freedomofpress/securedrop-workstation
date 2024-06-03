@@ -44,6 +44,10 @@ class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
                     actual_app = self._run(f"xdg-mime query default {mime_type}")
                     self.assertEqual(actual_app, expected_app)
 
+    def test_mimetypes_service(self):
+        self._service_is_active("securedrop-mime-handling")
+        self._service_is_active("paxctld")
+
     def test_mailcap_hardened(self):
         self.mailcap_hardened()
 
