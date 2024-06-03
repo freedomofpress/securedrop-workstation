@@ -231,3 +231,19 @@ remotevm = sd-log
         expects.
         """
         self._vm_config_check(self.expected_config_keys)
+
+
+class SD_Unnamed_DVM_Local_Test(SD_VM_Local_Test):
+    """Tests disposables based on the provided DVM template"""
+
+    def setUp(self, dispvm_template_name):
+        self.app = Qubes()
+        self.vm_name = f"{dispvm_template_name}-disposable"
+
+        if self.vm_name not in self.app.domains:
+            cmd_create_disp = (
+                f"qvm-create --disp --property auto_cleanup=True "
+                f"--template {dispvm_template_name} {self.vm_name}"
+            )
+            subprocess.run(cmd_create_disp.split(), check=True)
+        super().setUp()

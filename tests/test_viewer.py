@@ -1,16 +1,12 @@
 import os
 import unittest
 
-from base import SD_VM_Local_Test
+from base import SD_Unnamed_DVM_Local_Test
 
 
-class SD_Viewer_Tests(SD_VM_Local_Test):
-    test_disposable_instead=True
-    vm_name = "sd-viewer"
-
+class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
     def setUp(self):
-        self.vm_name = "sd-viewer"
-        super().setUp()
+        super().setUp("sd-viewer")
         self.expected_config_keys = {"SD_MIME_HANDLING"}
 
     def test_sd_viewer_metapackage_installed(self):
