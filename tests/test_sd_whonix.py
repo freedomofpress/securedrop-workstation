@@ -10,6 +10,9 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         super().setUp()
         self.expected_config_keys = {"SD_HIDSERV_HOSTNAME", "SD_HIDSERV_KEY"}
 
+    def test_sd_whonix_config_enabled(self):
+        assert self._qubes_service_enabled("securedrop-whonix-config")
+
     def test_sd_whonix_config(self):
         self.assertEqual(
             self.dom0_config["hidserv"]["hostname"], self._vm_config_read("SD_HIDSERV_HOSTNAME")

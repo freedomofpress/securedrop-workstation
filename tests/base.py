@@ -156,6 +156,11 @@ class SD_VM_Local_Test(unittest.TestCase):
 
         return True
 
+    def _qubes_service_enabled(self, service):
+        """Check whether the named Qubes service is enabled on this
+        VM."""
+        return self._fileExists(f"/var/run/qubes-service/{service}")
+
     def _vm_config_read(self, key):
         """Read `key` from the QubesDB `/vm-config/` hierarchy and return its
         value if set, otherwise `None`.
