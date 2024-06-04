@@ -13,6 +13,7 @@
 include:
   - securedrop_salt.sd-whonix
   - securedrop_salt.sd-upgrade-templates
+  - securedrop_salt.sd-workstation-template
 
 sd-proxy-dvm:
   qvm.vm:
@@ -68,3 +69,5 @@ sd-proxy-config:
     - name: sd-proxy
     - set:
         - vm-config.SD_PROXY_ORIGIN: http://{{ d.hidserv.hostname }}
+    - require:
+      - qvm: sd-proxy-create-named-dispvm
