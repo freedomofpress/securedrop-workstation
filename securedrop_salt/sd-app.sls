@@ -9,6 +9,9 @@
 # Imports "sdvars" for environment config
 {% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
+# Check environment
+{% import_json "securedrop_salt/config.json" as d %}
+
 include:
   - securedrop_salt.sd-workstation-template
   - securedrop_salt.sd-upgrade-templates
@@ -26,6 +29,10 @@ sd-app:
         - sd-client
         - sd-workstation
     - features:
+    {% if d.environment == "prod" %}
+      - set:
+        - internal: 1
+    {% endif %}
       - enable:
         - service.paxctld
         - service.securedrop-mime-handling
@@ -33,8 +40,6 @@ sd-app:
         - vm-config.SD_MIME_HANDLING: sd-app
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
-
-{% import_json "securedrop_salt/config.json" as d %}
 
 sd-app-config:
   qvm.features:

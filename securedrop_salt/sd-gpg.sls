@@ -12,6 +12,9 @@
 # Imports "sdvars" for environment config
 {% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
+# Check environment
+{% import_json "securedrop_salt/config.json" as d %}
+
 include:
   - securedrop_salt.sd-workstation-template
   - securedrop_salt.sd-upgrade-templates
@@ -29,6 +32,10 @@ sd-gpg:
     - features:
       - enable:
         - service.securedrop-logging-disabled
+    {% if d.environment == "prod" %}
+      - set:
+        - internal: 1
+    {% endif %}
     - tags:
       - add:
         - sd-workstation
