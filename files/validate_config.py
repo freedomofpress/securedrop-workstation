@@ -43,9 +43,10 @@ class SDWConfigValidator:
 
     def confirm_config_file_exists(self):
         if not os.path.exists(self.config_filepath):
-            msg = f"Config file does not exist: {self.config_filepath}"
-            msg += "Create from config.json.example"
-            raise ValidationError(msg)
+            raise ValidationError(
+                f"Config file does not exist: {self.config_filepath}. "
+                "Create from config.json.example"
+            )
 
     def confirm_environment_valid(self):
         """
@@ -55,44 +56,33 @@ class SDWConfigValidator:
         if "environment" not in self.config:
             raise ValidationError
         if self.config["environment"] not in ("prod", "dev", "staging"):
-            raise ValidationError
+            raise ValidationError(f"Invalid environment: {self.config['environment']}")
 
     def confirm_onion_config_valid(self):
         """
         Only v3 onion services are supported.
         """
-        try:
-            self.confirm_onion_v3_url()
-            self.confirm_onion_v3_auth()
-        except AssertionError:
-            print(
-                "ERROR: Onion service configuration missing or does not match expected format.\n"
-                "Please note that only v3 onion services are supported.\n"
-            )
-            raise
-
-    def confirm_onion_v3_url(self):
         if "hidserv" not in self.config:
-            raise ValidationError
+            raise ValidationError('"hidserv" is not defined in config.json')
+
+        # Verify the hostname
         if "hostname" not in self.config["hidserv"]:
-            raise ValidationError
+            raise ValidationError("hidden service hostname is not defined in config.json")
         if not re.match(TOR_V3_HOSTNAME_REGEX, self.config["hidserv"]["hostname"]):
-            raise ValidationError
+            raise ValidationError("Invalid hidden service hostname specified")
 
-    def confirm_onion_v3_auth(self):
-        if "hidserv" not in self.config:
-            raise ValidationError
+        # Verify the key
         if "key" not in self.config["hidserv"]:
-            raise ValidationError
+            raise ValidationError("hidden service key is not defined in config.json")
         if not re.match(TOR_V3_AUTH_REGEX, self.config["hidserv"]["key"]):
-            raise ValidationError
+            raise ValidationError("Invalid hidden service key specified")
 
     def confirm_submission_privkey_file(self):
         """
         Import privkey into temporary keyring, to validate.
         """
         if not os.path.exists(self.secret_key_filepath):
-            raise ValidationError
+            raise ValidationError(f"PGP secret key file not found: {self.secret_key_filepath}")
         gpg_cmd = ["gpg", "--import", self.secret_key_filepath]
         result = False
         with tempfile.TemporaryDirectory() as d:
@@ -108,13 +98,13 @@ class SDWConfigValidator:
                 pass
 
         if not result:
-            raise ValidationError(f"GPG private key is not valid: {self.secret_key_filepath}")
+            raise ValidationError(f"PGP secret key is not valid: {self.secret_key_filepath}")
 
     def confirm_submission_privkey_fingerprint(self):
         if "submission_key_fpr" not in self.config:
-            raise ValidationError
+            raise ValidationError('"submission_key_fpr" is not defined in config.json')
         if not re.match("^[a-fA-F0-9]{40}$", self.config["submission_key_fpr"]):
-            raise ValidationError
+            raise ValidationError("Invalid PGP key fingerprint specified")
         gpg_cmd = ["gpg2", "--show-keys", self.secret_key_filepath]
         try:
             out = subprocess.check_output(gpg_cmd, stderr=subprocess.STDOUT).decode(
@@ -135,11 +125,11 @@ class SDWConfigValidator:
         """This method checks for existing private volume size and new
         values in the config.json"""
         if "vmsizes" not in self.config:
-            raise ValidationError
+            raise ValidationError('Private volume sizes ("vmsizes") are not defined in config.json')
         if "sd_app" not in self.config["vmsizes"]:
-            raise ValidationError
+            raise ValidationError("Private volume size of sd-app must be defined in config.json")
         if "sd_log" not in self.config["vmsizes"]:
-            raise ValidationError
+            raise ValidationError("Private volume size of sd-log must be defined in config.json")
 
         if not isinstance(self.config["vmsizes"]["sd_app"], int):
             raise ValidationError("Private volume size of sd-app must be an integer value.")
