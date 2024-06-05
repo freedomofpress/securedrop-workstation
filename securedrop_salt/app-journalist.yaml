@@ -1,1 +1,0 @@
-{{ hostname }}:descriptor:x25519:{{ key }}

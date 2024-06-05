@@ -34,6 +34,9 @@ sd-whonix:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
+    - features:
+      - enable:
+        - service.securedrop-whonix-config
     - require:
       - sls: securedrop_salt.sd-upgrade-templates
       - sls: securedrop_salt.sd-sys-whonix-vms
@@ -44,6 +47,5 @@ sd-whonix-config:
   qvm.features:
     - name: sd-whonix
     - set:
-        # TODO: sd-whonix:/var/lib/tor/keys/app_journalist.auth_private
         - vm-config.SD_HIDSERV_HOSTNAME: {{ d.hidserv.hostname }}
         - vm-config.SD_HIDSERV_KEY: {{ d.hidserv.key }}
