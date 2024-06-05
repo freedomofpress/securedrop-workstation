@@ -47,13 +47,6 @@ def parse_args():
         help="Completely Uninstalls the SecureDrop Workstation",
     )
     parser.add_argument(
-        "--keep-template-rpm",
-        default=False,
-        required=False,
-        action="store_true",
-        help="During uninstall action, leave TemplateVM RPM package installed in dom0",
-    )
-    parser.add_argument(
         "--force",
         default=False,
         required=False,
@@ -139,7 +132,7 @@ def refresh_salt():
         raise SDWAdminException("Error while synchronizing Salt")
 
 
-def perform_uninstall(keep_template_rpm=False):
+def perform_uninstall():
     try:
         subprocess.check_call(
             ["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-default-dispvm"]
@@ -208,7 +201,7 @@ def main():
                 print("Exiting.")
                 sys.exit(0)
         refresh_salt()
-        perform_uninstall(keep_template_rpm=args.keep_template_rpm)
+        perform_uninstall()
     else:
         sys.exit(0)
 
