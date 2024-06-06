@@ -73,16 +73,37 @@ See below for a closer examination of this process, and see `docs/images` for sc
 
 ## What's In This Repo?
 
-This repository can be broken into three parts: 1) a set of salt states and `top` files which configure the various VMs, 2) scripts and system configuration files which set up the document handling process, and 3) the pre-flight updater used to update all VMs relevant to the SecureDrop Workstation.
+This repository contains the material needed to provision the base Qubes system with the VMs and files required to support
+SecureDrop Workstation.
 
-Qubes uses SaltStack internally for VM provisionining and configuration management (see https://www.qubes-os.org/doc/salt/), so it's natural for us to use it as well. The `dom0` directory contains salt `.top` and `.sls` files used to provision the VMs noted above.
+Provisioning is accomplished by installing an .rpm in dom0 on a fresh installation of QubesOS, configuring instance-specific
+secrets and credentials, then running an orchestration command (`sdw-admin --apply`) which configures the machine
+in the desired state.
+
+This repository contains the following core components:
+
+- `securedrop_salt`, which contains all files required during the provisioning (orchestration) stage. Qubes uses SaltStack internally for VM provisionining and configuration management (see https://www.qubes-os.org/doc/salt/). The contents of `securedrop_salt` are provisioned to end users via the securedrop-workstatoin-dom0-config RPM.
+- `files`, which contain scripts and configuration files placed in dom0 before provisioning, such as systemd units, [RPC policy files](https://www.qubes-os.org/news/2020/06/22/new-qrexec-policy-system/#policy-files), and Python scripts. The contents of `files` are provisioned to end users via the securedrop-workstatoin-dom0-config RPM.
+- the "pre-flight updater" components (`launcher`, `sdw_updater`, `sdw_notify`, `sdw_util`), which comprise a wrapper around the Qubes Updater, and which serve to enforce a fully-patched system. The contents of these directories are provisioned to end users via the securedrop-workstation-dom0-config RPM. The updater updates all TemplateVMs relevant to the SecureDrop Workstation prior to use, and the the `sdw-notify.py` script reminds the user to update the system if they have not done so recently.
+
+This repo also contains the following developer-facing components:
+- `rpm-build`, containing the components required for building the `securedrop-workstation-dom0-config` RPM that is ultimately published to our [yum repository](https://yum.securedrop.org).
+- `scripts`, which are developer-facing linting and build-related scripts.
 - `Makefile` is used with the `make` command on `dom0` to build the Qubes/SecureDrop installation, and also contains some development and testing features.
-- The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client) is installed in `sd-app` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
+
+SecureDrop Workstation has a companion repository, [SecureDrop Client](https://github.com/freedomofpress/securedrop-client/),
+that contains component code for all of the packages we ship in individual VMs once they have been provisioned:
+- The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client/tree/main/client#readme) is installed in `sd-app` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
 - The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-client/tree/main/proxy#readme) is installed in `sd-proxy` to communicate to the SecureDrop server *Journalist Interface* via `sd-whonix`.
-- Within `sd-app`, the *SecureDrop Client* will open all submissions in the `sd-viewer` disposable VM.
-- `files/config.json.example` is an example config file for the provisioning process. Before use, you should copy it to `config.json` (in the repository's root directory), and adjust to reflect your environment.
-- `sd-journalist.sec.example` is an example GPG private key for use in decrypting submissions. It must match the public key set on a SecureDrop server used for testing. Before use, you should copy it to `sd-journalist.sec`, or store the submission key used with your SecureDrop server as `sd-journalist.sec`.
-- `launcher/` contains the pre-flight updater component (`sdw-launcher`), which updates all TemplateVMs relevant to the SecureDrop Workstation prior to use, as well as the `sdw-notify.py` script, which reminds the user to update the system if they have not done so recently.
+- [SecureDrop Export](https://github.com/freedomofpress/securedrop-client/tree/main/export#readme) is installed in `sd-devices` and is used to manage printing and exporting files.
+- The *SecureDrop Client* opens all submissions in the networkless, disposable `sd-viewer` VM
+- A logging VM, `sd-log`, is provisioned to capture logs locally from various parts of the system
+- A [Whonix](https://www.whonix.org/wiki/Homepage) VM, `sd-whonix`, is provisioned with instance-specific information required to access the authenticated onion service used by journalists.
+
+### Additional Notes:
+
+- `files/config.json.example` is an example config file for the provisioning process. Before use, you should rename a copy `config.json` (in the repository's root directory), then edit `config.json` to reflect your environment.
+- `sd-journalist.sec.example` is an example private key for use in decrypting submissions in test/development environments. **This keypair must not be used in a production environment.** Use your own armored [Submission Private Key](https://workstation.securedrop.org/en/stable/admin/install.html#copy-the-submission-key) file, named as `sd-journalist.sec`, to provision SecureDrop Workstation.
 
 ## Installation
 
