@@ -3,19 +3,14 @@
 include:
   - securedrop_salt.fpf-apt-repo
 
-# install recommended Qubes VM packages for core functionality
+# install recommended Qubes VM packages for core functionality.
+# Note: additional system packages are installed as dependencies
+# of securedrop-workstation-config.
+# See https://github.com/freedomofpress/securedrop-client/blob/main/debian/control
 install-qubes-vm-recommended:
   pkg.installed:
     - pkgs:
       - qubes-vm-recommended
-
-# install additional base packages required by SecureDrop
-sd-base-template-install-additional-packages:
-  pkg.installed:
-    - pkgs:
-      - rsyslog
-      - mailcap
-      - apparmor
 
 # install workstation-config and grsec kernel
 sd-base-template-install-securedrop-packages:
