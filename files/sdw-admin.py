@@ -86,8 +86,12 @@ def provision_all():
     """
     try:
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/provision-all")])
-    except subprocess.CalledProcessError:
-        raise SDWAdminException("Error during provision-all")
+    except subprocess.CalledProcessError as e:
+        # Collect journalctl output for debugging
+        print("--------- JOURNALCTL OUTPUT ---------")
+        print(subprocess.check_output(["sudo", "journalctl", "-b"]).decode())
+        print("--------- END JOURNALCTL OUTPUT ---------")
+        raise SDWAdminException("Error during provision-all") from e
 
     print("Provisioning complete. Please reboot to complete the installation.")
 
