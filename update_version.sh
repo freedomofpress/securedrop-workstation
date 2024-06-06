@@ -3,8 +3,6 @@
 
 set -e
 
-source "$(dirname "$0")/common.sh"
-
 if [ -z "$1" ]; then
   echo "You must specify the new version!"
   exit 1
