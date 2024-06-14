@@ -1,4 +1,3 @@
-import json
 import unittest
 
 from base import SD_VM_Local_Test
@@ -13,6 +12,7 @@ class SD_App_Tests(SD_VM_Local_Test):
             "SD_SUBMISSION_KEY_FPR",
             "SD_MIME_HANDLING",
         }
+        self.enforced_apparmor_profiles = {"/usr/bin/securedrop-client"}
 
     def test_open_in_dvm_desktop(self):
         contents = self._get_file_contents("/usr/share/applications/open-in-dvm.desktop")
@@ -51,11 +51,6 @@ class SD_App_Tests(SD_VM_Local_Test):
         self.assertEqual(
             self.dom0_config["submission_key_fpr"], self._vm_config_read("SD_SUBMISSION_KEY_FPR")
         )
-
-    def test_sd_client_apparmor(self):
-        cmd = "sudo aa-status --json"
-        results = json.loads(self._run(cmd))
-        self.assertTrue(results["profiles"]["/usr/bin/securedrop-client"] == "enforce")
 
     def test_logging_configured(self):
         self.logging_configured()

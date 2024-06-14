@@ -8,6 +8,17 @@ class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
     def setUp(self):
         super().setUp("sd-viewer")
         self.expected_config_keys = {"SD_MIME_HANDLING"}
+        # this is not a comprehensive list, just a few that users are likely to use
+        self.enforced_apparmor_profiles = {
+            "/usr/bin/evince",
+            "/usr/bin/evince-previewer",
+            "/usr/bin/evince-previewer//sanitized_helper",
+            "/usr/bin/evince-thumbnailer",
+            "/usr/bin/totem",
+            "/usr/bin/totem-audio-preview",
+            "/usr/bin/totem-video-thumbnailer",
+            "/usr/bin/totem//sanitized_helper",
+        }
 
     def test_sd_viewer_metapackage_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-workstation-viewer"))
