@@ -46,10 +46,10 @@ sudo qubesctl --show-output --max-concurrency "$max_concurrency" --skip-dom0 --t
 
 echo ".........................................................................."
 echo "Add SecureDrop export device handling to sys-usb"
-# If sd-fedora-39-dvm exists it's because salt determined that sys-usb was disposable
+# If sd-fedora-40-dvm exists it's because salt determined that sys-usb was disposable
 # shellcheck disable=SC2015
-qvm-check --quiet sd-fedora-39-dvm 2> /dev/null && \
-  sudo qubesctl --show-output --skip-dom0 --targets sd-fedora-39-dvm state.highstate && \
+qvm-check --quiet sd-fedora-40-dvm 2> /dev/null && \
+  sudo qubesctl --show-output --skip-dom0 --targets sd-fedora-40-dvm state.highstate && \
   qvm-shutdown --wait sys-usb && qvm-start sys-usb || \
   sudo qubesctl --show-output --skip-dom0 --targets sys-usb state.highstate
 
