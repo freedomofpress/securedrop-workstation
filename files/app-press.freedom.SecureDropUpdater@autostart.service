@@ -1,0 +1,24 @@
+# SDW Updater systemd autostart unit: run sdw-updater (updater or login)
+# For more information about the graphical-session.target, see
+# https://manpages.debian.org/testing/systemd/systemd.special.7.en.html#Special_Passive_User_Units
+# and https://github.com/systemd/systemd/commit/c92fcc4f4375b0.
+# Additional troubleshooting may be required in some advanced cases (eg for i3 users,
+# see see https://github.com/i3/i3/issues/5186).
+# Note that the name of this unit follows a specific format, allowing for
+# compatibility with systemd's `xdg-desktop-autostart.target`.
+
+[Unit]
+Description=Start SecureDrop Workstation Login/Updater (sdw-updater)
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=exec
+ExitType=cgroup
+ExecStart=:/usr/bin/sdw-updater
+Restart=no
+# https://www.freedesktop.org/software/systemd/man/latest/systemd.slice.html
+Slice=app.slice
+# xdg-autostart-condition OnlyShowIn="XFCE" NotShowIn=""
+# https://www.freedesktop.org/software/systemd/man/latest/systemd-xdg-autostart-generator.html
+ExecCondition=/usr/lib/systemd/systemd-xdg-autostart-condition "XFCE" ""

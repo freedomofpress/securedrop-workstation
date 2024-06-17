@@ -4,3 +4,4 @@
 enable securedrop-user-xfce-icon-size.service
 enable securedrop-user-xfce-settings.service
 enable sdw-notify.timer
+enable app-press.freedom.SecureDropUpdater@autostart.service

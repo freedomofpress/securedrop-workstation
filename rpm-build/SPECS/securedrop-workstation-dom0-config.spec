@@ -90,7 +90,6 @@ install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicol
 install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 install -m 755 files/sdw-updater.py %{buildroot}/%{_bindir}/sdw-updater
 install -m 755 files/sdw-notify.py %{buildroot}/%{_bindir}/sdw-notify
-install -m 755 files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
 install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 install -m 644 files/securedrop-logind-override-disable.service %{buildroot}/%{_unitdir}/
@@ -107,6 +106,8 @@ install -m 755 -d %{buildroot}/etc/systemd/logind.conf.d/
 install -m 644 files/10-securedrop-logind_override.conf %{buildroot}/etc/systemd/logind.conf.d/
 install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}/%{_userunitdir}/
 install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_userunitdir}/
+install -m 644 files/app-press.freedom.SecureDropUpdater@autostart.service %{buildroot}/%{_userunitdir}/
+
 
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
@@ -115,7 +116,6 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %attr(755, root, root) %{_bindir}/sdw-admin
 %{_datadir}/%{name}/config.json.example
 /srv/salt/securedrop_salt/*
-%attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/sdw-updater
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
@@ -130,6 +130,7 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %{_userunitdir}/sdw-notify.timer
 %{_userunitdir}/securedrop-user-xfce-settings.service
 %{_userunitdir}/securedrop-user-xfce-icon-size.service
+%{_userunitdir}/app-press.freedom.SecureDropUpdater@autostart.service
 %{_unitdir}/securedrop-logind-override-disable.service
 %{_userpresetdir}/95-securedrop-systemd-user.preset
 
@@ -171,6 +172,8 @@ systemctl enable securedrop-logind-override-disable.service ||:
 # Enable notification timer
 %systemd_user_post sdw-notify.timer
 
+# Invoke login/updater on boot
+%systemd_user_post app-press.freedom.SecureDropUpdater@autostart.service
 %preun
 # If we're uninstalling (vs upgrading)
 if [ $1 -eq 0 ]; then
