@@ -27,6 +27,7 @@ sd-log:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""
       - autostart: true
+      - default_dispvm: ""
     - tags:
       - add:
         - sd-workstation

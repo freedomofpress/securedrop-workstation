@@ -23,6 +23,7 @@ sd-devices-dvm:
       - template: sd-large-{{ sdvars.distribution }}-template
       - netvm: ""
       - template_for_dispvms: True
+      - default_dispvm: ""
     - tags:
       - add:
         - sd-workstation
@@ -53,6 +54,8 @@ sd-devices-create-named-dispvm:
       - template: sd-devices-dvm
       - class: DispVM
       - label: red
+    - prefs:
+      - default_dispvm: ""
     - tags:
       - add:
         - sd-workstation
