@@ -34,7 +34,7 @@ base:
     - securedrop_salt.sd-viewer-files
   sd-gpg:
     - securedrop_salt.sd-gpg-files
-  'sd-fedora-39-dvm,sys-usb':
+  'sd-fedora-40-dvm,sys-usb':
     - match: list
     - securedrop_salt.sd-usb-autoattach-add
   whonix-gateway-17:
