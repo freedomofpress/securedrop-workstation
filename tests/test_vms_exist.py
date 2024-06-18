@@ -177,26 +177,28 @@ class SD_VM_Tests(unittest.TestCase):
         vol = vm.volumes["private"]
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
-    def sd_app_template(self):
+    def test_sd_app_template(self):
         vm = self.app.domains[SD_TEMPLATE_SMALL]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
+        self._check_kernel(vm)
 
-    def sd_viewer_template(self):
+    def test_sd_viewer_template(self):
         vm = self.app.domains[SD_TEMPLATE_LARGE]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
         self.assertTrue(vm.template_for_dispvms)
 
-    def sd_export_template(self):
+    def test_sd_export_template(self):
         vm = self.app.domains[SD_TEMPLATE_LARGE]
         nvm = vm.netvm
-        self.assertIsNone(nvm)
+        self.assertNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
+        self._check_kernel(vm)
 
-    def sd_export_dvm(self):
+    def test_sd_export_dvm(self):
         vm = self.app.domains["sd-devices-dvm"]
         nvm = vm.netvm
         self.assertIsNone(nvm)
@@ -204,10 +206,10 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template_for_dispvms)
 
         # MIME handling (dvm does NOT setup mime, only its disposables do)
-        self.assertNotIn("service.securedrop-mime-handling", vm.features)
-        self._check_service_running(vm, "securedrop-mime-handling")
+        self.assertFalse(vm.features.get("service.securedrop-mime-handling", False))
+        self._check_service_running(vm, "securedrop-mime-handling", running=False)
 
-    def sd_export(self):
+    def test_sd_export(self):
         vm = self.app.domains["sd-devices"]
         nvm = vm.netvm
         self.assertIsNone(nvm)
@@ -220,19 +222,19 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "sd-devices")
         self._check_service_running(vm, "securedrop-mime-handling")
 
-    def sd_small_template(self):
-        vm = self.app.domains[SD_TEMPLATE_SMALL]
+    def test_sd_small_template(self):
+        vm = self.app.domains[f"sd-small-{DEBIAN_VERSION}-template"]
         nvm = vm.netvm
-        self.assertIsNone(nvm)
-        self.assertIn("sd-workstation", vm.tags)
-        self.assertFalse(vm.template_for_dispvms)
+        self.assertTrue(nvm is None)
+        self.assertTrue("sd-workstation" in vm.tags)
+        self._check_kernel(vm)
 
-    def sd_large_template(self):
-        vm = self.app.domains[SD_TEMPLATE_LARGE]
+    def test_sd_large_template(self):
+        vm = self.app.domains[f"sd-large-{DEBIAN_VERSION}-template"]
         nvm = vm.netvm
-        self.assertIsNone(nvm)
-        self.assertIn("sd-workstation", vm.tags)
-        self.assertFalse(vm.template_for_dispvms)
+        self.assertTrue(nvm is None)
+        self.assertTrue("sd-workstation" in vm.tags)
+        self._check_kernel(vm)
 
 
 def load_tests(loader, tests, pattern):
