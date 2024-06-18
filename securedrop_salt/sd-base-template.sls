@@ -14,6 +14,8 @@ sd-base-template:
     - clone:
       - source: debian-12-minimal
       - label: red
+    - prefs:
+      - default_dispvm: ""
     - tags:
       - add:
         - sd-workstation

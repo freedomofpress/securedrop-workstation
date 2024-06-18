@@ -13,6 +13,8 @@ class SD_VM_Tests(unittest.TestCase):
         self.app = Qubes()
         with open("config.json") as c:
             self.config = json.load(c)
+        # @tag:sd-workstation
+        self.sdw_tagged_vms = [vm for vm in self.app.domains if "sd-workstation" in vm.tags]
 
     def tearDown(self):
         pass
@@ -51,6 +53,14 @@ class SD_VM_Tests(unittest.TestCase):
                 raise e
         self.assertTrue(service_status == "active" if running else "inactive")
 
+    def test_default_dispvm(self):
+        """Verify the default DispVM is none for all except sd-app and sd-devices"""
+        for vm in self.sdw_tagged_vms:
+            if vm.name == "sd-app":
+                self.assertEqual(vm.default_dispvm.name, "sd-viewer")
+            else:
+                self.assertIsNone(vm.default_dispvm, f"{vm.name} has dispVM set")
+
     def test_sd_whonix_config(self):
         vm = self.app.domains["sd-whonix"]
         nvm = vm.netvm
@@ -70,7 +80,6 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.netvm.name == "sd-whonix")
         self.assertTrue(vm.autostart)
         self.assertFalse(vm.provides_network)
-        self.assertIsNone(vm.default_dispvm)
         self.assertTrue("sd-workstation" in vm.tags)
         self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
         self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "default")
@@ -81,7 +90,6 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template_for_dispvms)
         self.assertTrue(vm.netvm.name == "sd-whonix")
         self.assertTrue(vm.template == f"sd-small-{DEBIAN_VERSION}-template")
-        self.assertIsNone(vm.default_dispvm)
         self.assertTrue("sd-workstation" in vm.tags)
         self.assertFalse(vm.autostart)
         self.assertFalse(vm.features.get("service.securedrop-mime-handling", False))
@@ -119,8 +127,6 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template == f"sd-large-{DEBIAN_VERSION}-template")
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
-        # sd-viewer should not be able to create other disposable VMs
-        self.assertIsNone(vm.default_dispvm)
         self._check_kernel(vm)
         self.assertTrue("sd-workstation" in vm.tags)
 

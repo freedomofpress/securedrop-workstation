@@ -24,6 +24,7 @@ sd-app:
     - prefs:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""
+      - default_dispvm: "sd-viewer"
     - tags:
       - add:
         - sd-client

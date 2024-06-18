@@ -22,6 +22,7 @@ sd-small-{{ sdvars.distribution }}-template:
     - prefs:
       - virt-mode: pvh
       - kernel: 'pvgrub2-pvh'
+      - default_dispvm: ""
     - tags:
       - add:
         - sd-workstation
@@ -41,6 +42,7 @@ sd-large-{{ sdvars.distribution }}-template:
     - prefs:
       - virt-mode: pvh
       - kernel: 'pvgrub2-pvh'
+      - default_dispvm: ""
     - tags:
       - add:
         - sd-workstation

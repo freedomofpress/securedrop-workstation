@@ -50,6 +50,9 @@ sd-viewer:
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
 
+# Set sd-viewer as the global default_dispvm
+# While all of our VMs have explit default_dispvm set, this is a better default
+# than the stock fedora-XX-dvm in case someone creates their own VMs.
 sd-viewer-default-dispvm:
   cmd.run:
     - name: qubes-prefs default_dispvm sd-viewer

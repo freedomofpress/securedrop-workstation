@@ -29,6 +29,7 @@ sd-gpg:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""
       - autostart: true
+      - default_dispvm: ""
     - features:
       - enable:
         - service.securedrop-logging-disabled
