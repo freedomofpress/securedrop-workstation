@@ -3,7 +3,13 @@ import os
 import subprocess
 import unittest
 
-from base import CURRENT_FEDORA_TEMPLATE, SD_VMS
+from base import (
+    CURRENT_FEDORA_TEMPLATE,
+    CURRENT_WHONIX_VERSION,
+    SD_TEMPLATE_LARGE,
+    SD_TEMPLATE_SMALL,
+    SD_VMS,
+)
 from qubesadmin import Qubes
 
 BULLSEYE_STRING = "Debian GNU/Linux 11 (bullseye)"
@@ -180,21 +186,37 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         result = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
         self.assertEqual(result, "sd-viewer")
 
-    def test_all_sd_vm_apt_sources(self):
+    def test_sd_vm_apt_sources(self):
         """
-        Test all VMs fpf apt source list iteratively.
-
-        Due to for-loop implementation, the first failure will stop the test.
-        Therefore, even if multiple VMs are NOT running a supported platform,
-        only a single failure will be reported.
+        Test that the three templates we install our apt sources into are correct
         """
-        for vm_name in SD_VMS:
-            if vm_name == "sd-viewer":
-                # sd-viewer is unable to start because of the securedrop-mime-handling
-                # systemd service failing, so skip it here.
-                continue
+        for vm_name in [
+            SD_TEMPLATE_SMALL,
+            SD_TEMPLATE_LARGE,
+            f"whonix-gateway-{CURRENT_WHONIX_VERSION}",
+        ]:
             vm = self.app.domains[vm_name]
+            # First verify it looks like what we provisioned
             self._validate_apt_sources(vm)
+            stdout, stderr = vm.run("apt-get indextargets")
+            contents = stdout.decode().strip()
+            self.assertIn(
+                "Description: https://apt.freedom.press bookworm/main amd64 Packages\n", contents
+            )
+            if self.config["environment"] == "prod":
+                # prod setups shouldn't have any apt-test sources
+                self.assertNotIn("apt-test.freedom.press", contents)
+            else:
+                # staging/dev
+                test_components = ["main"]
+                if self.config["environment"] == "dev":
+                    test_components.append("nightlies")
+                for component in test_components:
+                    self.assertIn(
+                        f"Description: https://apt-test.freedom.press bookworm/{component} "
+                        "amd64 Packages\n",
+                        contents,
+                    )
 
 
 def load_tests(loader, tests, pattern):
