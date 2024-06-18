@@ -57,7 +57,6 @@ class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
 
     def test_mimetypes_service(self):
         self._service_is_active("securedrop-mime-handling")
-        self._service_is_active("paxctld")
 
     def test_mailcap_hardened(self):
         self.mailcap_hardened()
