@@ -83,6 +83,7 @@ install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/
 install -m 755 -d %{buildroot}/%{_sharedstatedir}/%{name}/
 install -m 755 -d %{buildroot}/%{_userunitdir}/
 install -m 755 -d %{buildroot}/%{_unitdir}
+install -m 755 -d %{buildroot}/%{_userpresetdir}/
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/salt/securedrop_salt/press.freedom.SecureDropUpdater.desktop
 install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
@@ -93,6 +94,7 @@ install -m 755 files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
 install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
 install -m 644 files/securedrop-logind-override-disable.service %{buildroot}/%{_unitdir}/
+install -m 644 files/95-securedrop-systemd-user.preset %{buildroot}/%{_userpresetdir}/
 
 install -m 755 -d %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
@@ -129,6 +131,7 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %{_userunitdir}/securedrop-user-xfce-settings.service
 %{_userunitdir}/securedrop-user-xfce-icon-size.service
 %{_unitdir}/securedrop-logind-override-disable.service
+%{_userpresetdir}/95-securedrop-systemd-user.preset
 
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-workstation.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-workstation.policy
@@ -151,23 +154,27 @@ qubesctl top.enable securedrop_salt.sd-workstation > /dev/null ||:
 # mkdir -p /tmp/sdw-migrations
 # touch /tmp/sdw-migrations/whonix-17-update
 
-# Enables service that conditionally removes our systemd-logind customizations
+# Enable service that conditionally removes our systemd-logind customizations
 # on dev machines only.
 # It's clumsy, but overrides to systemd services can't be conditionally applied.
 # Changes take place after systemd restart.
-systemctl enable securedrop-logind-override-disable.service
+systemctl enable securedrop-logind-override-disable.service ||:
 
-# Customize xfce power settings and icon size. Enabled for all users.
+# Customize xfce power settings and icon size.
 # Power settings changes conditionally disabled in dev environments.
-systemctl --global enable securedrop-user-xfce-icon-size.service ||:
-systemctl --global enable securedrop-user-xfce-settings.service ||:
+%systemd_user_post securedrop-user-xfce-icon-size.service
+%systemd_user_post securedrop-user-xfce-settings.service
+
+# Enable notification timer
+%systemd_user_post sdw-notify.timer
 
 %preun
 # If we're uninstalling (vs upgrading)
 if [ $1 -eq 0 ]; then
-    systemctl disable --now securedrop-logind-override-disable.service
-    systemctl --global disable securedrop-user-xfce-icon-size.service ||:
-    systemctl --global disable securedrop-user-xfce-settings.service ||:
+    %systemd_preun securedrop-logind-override-disable.service
+    %systemd_user_preun securedrop-user-xfce-icon-size.service
+    %systemd_user_preun securedrop-user-xfce-settings.service
+    %systemd_user_preun sdw-notify.timer
 fi
 
 %changelog

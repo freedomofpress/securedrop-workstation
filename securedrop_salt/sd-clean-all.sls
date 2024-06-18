@@ -80,15 +80,6 @@ sd-cleanup-whonix-gateway:
       - qvm-run whonix-gateway-17 'sudo apt purge --yes securedrop-keyring securedrop-qubesdb-tools securedrop-whonix-config'
       - qvm-run whonix-gateway-17 'sudo rm -f /etc/apt/sources.list.d/apt-test_freedom_press.sources'
 
-disable-systemd-units:
-  cmd.run:
-    - name: systemctl --user disable sdw-notify.timer
-    - runas: {{ gui_user }}
-    - env:
-      # Even with "runas", "systemctl --user" from root will fail unless we
-      # tell it explicitly how to connect to the user systemd.
-      - XDG_RUNTIME_DIR: /run/user/{{ gui_user_id }}
-
 # Reset desktop icon size to its original value
 dom0-reset-icon-size-xfce:
   cmd.script:
