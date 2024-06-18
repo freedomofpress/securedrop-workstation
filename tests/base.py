@@ -59,6 +59,11 @@ class SD_VM_Local_Test(unittest.TestCase):
         # expect.
         self.expected_config_keys = set()
 
+        # Which Linux Security Module (LSM) should be enabled
+        self.lsm = "apparmor"
+        # AppArmor profiles that should be enforced.
+        self.enforced_apparmor_profiles = set()
+
     # def tearDown(self):
     #     self.vm.shutdown()
 
@@ -236,6 +241,27 @@ remotevm = sd-log
         expects.
         """
         self._vm_config_check(self.expected_config_keys)
+
+    def test_lsm_enabled(self):
+        """Check that the expected LSM is enabled"""
+        if self.lsm == "apparmor":
+            self.assertTrue(self._package_is_installed("apparmor"))
+            # returns error code if AppArmor not enabled
+            self._run("sudo aa-status --enabled")
+        elif self.lsm == "selinux":
+            sestatus = self._run("sudo sestatus")
+            self.assertIn("SELinux status:                 enabled\n", sestatus)
+            self.assertIn("Current mode:                   enforcing\n", sestatus)
+        else:
+            raise ValueError(f"Unsupported LSM: {self.lsm}")
+
+    def test_enforced_apparmor_profiles(self):
+        """Check the expected AppArmor profiles are enforced"""
+        if not self.enforced_apparmor_profiles:
+            raise unittest.SkipTest(f"No enforced AppArmor profiles in {self.vm_name}")
+        results = json.loads(self._run("sudo aa-status --json"))
+        for profile in self.enforced_apparmor_profiles:
+            self.assertEqual(results["profiles"][profile], "enforce")
 
 
 class SD_Unnamed_DVM_Local_Test(SD_VM_Local_Test):
