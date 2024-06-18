@@ -21,7 +21,7 @@ class SD_App_Tests(SD_VM_Local_Test):
             "Exec=/usr/bin/qvm-open-in-vm --view-only @dispvm:sd-viewer %f",
         ]
         for line in expected_contents:
-            self.assertTrue(line in contents)
+            self.assertIn(line, contents)
 
     def test_mimeapps(self):
         cmd = "perl -F= -lane 'print $F[1]' /usr/share/applications/mimeapps.list | sort | uniq -c"

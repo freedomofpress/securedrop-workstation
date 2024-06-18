@@ -46,8 +46,9 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         torrc_contents = self._get_file_contents("/etc/tor/torrc")
         duplicate_includes = """%include /etc/torrc.d/
 %include /etc/torrc.d/95_whonix.conf"""
-        self.assertFalse(
-            duplicate_includes in torrc_contents,
+        self.assertNotIn(
+            duplicate_includes,
+            torrc_contents,
             "Whonix GW torrc contains duplicate %include lines",
         )
 

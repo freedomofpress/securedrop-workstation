@@ -138,7 +138,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         import difflib
 
         print("".join(difflib.unified_diff(remote_content, content)), end="")
-        self.assertTrue(remote_content == content)
+        self.assertEqual(remote_content, content)
 
     def assertFileHasLine(self, remote_path, wanted_line):
         remote_content = self._get_file_contents(remote_path)
@@ -205,7 +205,7 @@ remotevm = sd-log
         # Several VMs show this error message even though they're shipping logs,
         # so let's investigate further.
         # cmd_output = self._run("sudo grep -F \"action 'action-0-omprog' suspended (module 'omprog')\" /var/log/syslog | wc -l").strip()  # noqa
-        # self.assertTrue(cmd_output == "0")
+        # self.assertEqual(cmd_output, "0")
 
     def mailcap_hardened(self):
         """
