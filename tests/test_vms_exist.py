@@ -6,6 +6,8 @@ from base import WANTED_VMS
 from qubesadmin import Qubes
 
 DEBIAN_VERSION = "bookworm"
+SD_TEMPLATE_LARGE = f"sd-large-{DEBIAN_VERSION}-template"
+SD_TEMPLATE_SMALL = f"sd-small-{DEBIAN_VERSION}-template"
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -97,7 +99,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-proxy-dvm"]
         self.assertTrue(vm.template_for_dispvms)
         self.assertEqual(vm.netvm.name, "sd-whonix")
-        self.assertEqual(vm.template, f"sd-small-{DEBIAN_VERSION}-template")
+        self.assertEqual(vm.template, SD_TEMPLATE_SMALL)
         self.assertIsNone(vm.default_dispvm)
         self.assertIn("sd-workstation", vm.tags)
         self.assertFalse(vm.autostart)
@@ -108,7 +110,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-app"]
         nvm = vm.netvm
         self.assertIsNone(nvm)
-        self.assertEqual(vm.template, f"sd-small-{DEBIAN_VERSION}-template")
+        self.assertEqual(vm.template, SD_TEMPLATE_SMALL)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self.assertNotIn("service.securedrop-log-server", vm.features)
@@ -130,7 +132,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-viewer"]
         nvm = vm.netvm
         self.assertIsNone(nvm)
-        self.assertEqual(vm.template, f"sd-large-{DEBIAN_VERSION}-template")
+        self.assertEqual(vm.template, SD_TEMPLATE_LARGE)
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
         self.assertIn("sd-workstation", vm.tags)
@@ -144,7 +146,7 @@ class SD_VM_Tests(unittest.TestCase):
         nvm = vm.netvm
         self.assertIsNone(nvm)
         # No sd-gpg-template, since keyring is managed in $HOME
-        self.assertEqual(vm.template, f"sd-small-{DEBIAN_VERSION}-template")
+        self.assertEqual(vm.template, SD_TEMPLATE_SMALL)
         self.assertTrue(vm.autostart)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -155,7 +157,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-log"]
         nvm = vm.netvm
         self.assertIsNone(nvm)
-        self.assertEqual(vm.template, f"sd-small-{DEBIAN_VERSION}-template")
+        self.assertEqual(vm.template, SD_TEMPLATE_SMALL)
         self.assertTrue(vm.autostart)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -173,20 +175,20 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
     def sd_app_template(self):
-        vm = self.app.domains[f"sd-small-{DEBIAN_VERSION}-template"]
+        vm = self.app.domains[SD_TEMPLATE_SMALL]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
 
     def sd_viewer_template(self):
-        vm = self.app.domains[f"sd-large-{DEBIAN_VERSION}-template"]
+        vm = self.app.domains[SD_TEMPLATE_LARGE]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
         self.assertTrue(vm.template_for_dispvms)
 
     def sd_export_template(self):
-        vm = self.app.domains[f"sd-large-{DEBIAN_VERSION}-template"]
+        vm = self.app.domains[SD_TEMPLATE_LARGE]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
@@ -216,14 +218,14 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_service_running(vm, "securedrop-mime-handling")
 
     def sd_small_template(self):
-        vm = self.app.domains[f"sd-small-{DEBIAN_VERSION}-template"]
+        vm = self.app.domains[SD_TEMPLATE_SMALL]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
         self.assertFalse(vm.template_for_dispvms)
 
     def sd_large_template(self):
-        vm = self.app.domains[f"sd-large-{DEBIAN_VERSION}-template"]
+        vm = self.app.domains[SD_TEMPLATE_LARGE]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
