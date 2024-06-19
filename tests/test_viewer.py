@@ -5,8 +5,12 @@ from base import SD_Unnamed_DVM_Local_Test
 
 
 class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass("sd-viewer")
+
     def setUp(self):
-        super().setUp("sd-viewer")
+        super().setUp()
         self.expected_config_keys = {"SD_MIME_HANDLING"}
         # this is not a comprehensive list, just a few that users are likely to use
         self.enforced_apparmor_profiles = {

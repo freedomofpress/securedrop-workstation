@@ -275,14 +275,25 @@ remotevm = sd-log
 class SD_Unnamed_DVM_Local_Test(SD_VM_Local_Test):
     """Tests disposables based on the provided DVM template"""
 
-    def setUp(self, dispvm_template_name):
-        self.app = Qubes()
-        self.vm_name = f"{dispvm_template_name}-disposable"
+    @classmethod
+    def _kill_test_vm(cls):
+        subprocess.run(["qvm-kill", cls.vm_name], check=True)
 
-        if self.vm_name not in self.app.domains:
-            cmd_create_disp = (
-                f"qvm-create --disp --property auto_cleanup=True "
-                f"--template {dispvm_template_name} {self.vm_name}"
-            )
-            subprocess.run(cmd_create_disp.split(), check=True)
-        super().setUp()
+    @classmethod
+    def setUpClass(cls, dispvm_template_name):
+        cls.app = Qubes()
+        cls.vm_name = f"{dispvm_template_name}-disposable"
+
+        # VM was running and needs a restart to test on the latest version
+        if cls.vm_name in cls.app.domains:
+            cls._kill_test_vm()
+        # Create disposable based on specified template
+        cmd_create_disp = (
+            f"qvm-create --disp --property auto_cleanup=True "
+            f"--template {dispvm_template_name} {cls.vm_name}"
+        )
+        subprocess.run(cmd_create_disp.split(), check=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._kill_test_vm()
