@@ -2,12 +2,15 @@ import json
 import subprocess
 import unittest
 
-from base import WANTED_VMS
+from base import (
+    SD_DVM_TEMPLATES,
+    SD_TEMPLATE_BASE,
+    SD_TEMPLATE_LARGE,
+    SD_TEMPLATE_SMALL,
+    SD_TEMPLATES,
+    SD_VMS,
+)
 from qubesadmin import Qubes
-
-DEBIAN_VERSION = "bookworm"
-SD_TEMPLATE_LARGE = f"sd-large-{DEBIAN_VERSION}-template"
-SD_TEMPLATE_SMALL = f"sd-small-{DEBIAN_VERSION}-template"
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -22,9 +25,9 @@ class SD_VM_Tests(unittest.TestCase):
         pass
 
     def test_expected(self):
-        vm_set = set(self.app.domains)
-        for test_vm in WANTED_VMS:
-            self.assertIn(test_vm, vm_set)
+        sdw_tagged_vm_names = [vm.name for vm in self.sdw_tagged_vms]
+        expected_vms = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
+        self.assertEqual(set(sdw_tagged_vm_names), set(expected_vms))
 
     def test_grsec_kernel(self):
         """
@@ -32,7 +35,7 @@ class SD_VM_Tests(unittest.TestCase):
         """
         # base doesn't have kernel configured and whonix uses dom0 kernel
         # TODO: test in sd-viewer based dispVM
-        exceptions = [f"sd-base-{DEBIAN_VERSION}-template", "sd-whonix", "sd-viewer"]
+        exceptions = [SD_TEMPLATE_BASE, "sd-whonix", "sd-viewer"]
 
         for vm in self.sdw_tagged_vms:
             if vm.name in exceptions:

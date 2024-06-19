@@ -6,7 +6,15 @@ import unittest
 from qubesadmin import Qubes
 
 # Reusable constant for DRY import across tests
-WANTED_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "sd-devices"]
+DEBIAN_VERSION = "bookworm"
+SD_TEMPLATE_BASE = f"sd-base-{DEBIAN_VERSION}-template"
+SD_TEMPLATE_LARGE = f"sd-large-{DEBIAN_VERSION}-template"
+SD_TEMPLATE_SMALL = f"sd-small-{DEBIAN_VERSION}-template"
+
+SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "sd-devices"]
+SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
+SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_TEMPLATE_LARGE, SD_TEMPLATE_SMALL]
+
 CURRENT_FEDORA_VERSION = "40"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"
 CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
