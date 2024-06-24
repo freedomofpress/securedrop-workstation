@@ -32,19 +32,19 @@ class SD_Log_Tests(SD_VM_Local_Test):
         cmd_output = self._run("ls -1 /home/user/QubesIncomingLogs")
         log_dirs = cmd_output.split("\n")
         # Confirm AppVMs are sending logs
-        self.assertTrue("sd-app" in log_dirs)
+        self.assertIn("sd-app", log_dirs)
         # The following will only have logs if the machine has booted,
         # which is not guaranteed given that we randomize test order.
-        # self.assertTrue("sd-devices" in log_dirs)
-        # self.assertTrue("sd-proxy" in log_dirs)
-        # self.assertTrue("sd-viewer" in log_dirs)
+        # self.assertIn("sd-devices", log_dirs)
+        # self.assertIn("sd-proxy", log_dirs)
+        # self.assertIn("sd-viewer", log_dirs)
 
     def test_log_dirs_properly_named(self):
         # Rerunning this command to keep test output readable
         cmd_output = self._run("ls -1 /home/user/QubesIncomingLogs")
         log_dirs = cmd_output.split("\n")
         # Confirm we don't have 'host' entries from Whonix VMs
-        self.assertFalse("host" in log_dirs)
+        self.assertNotIn("host", log_dirs)
 
 
 def load_tests(loader, tests, pattern):
