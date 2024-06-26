@@ -38,15 +38,14 @@ sd-viewer:
         - sd-viewer-vm
         - sd-{{ sdvars.distribution }}
     - features:
-    {% if d.environment == "prod" %}
       - set:
+        - vm-config.SD_MIME_HANDLING: sd-viewer
+{% if d.environment == "prod" %}
         - internal: 1
-    {% endif %}
+{% endif %}
       - enable:
         - service.paxctld
         - service.securedrop-mime-handling
-      - set:
-        - vm-config.SD_MIME_HANDLING: sd-viewer
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
 

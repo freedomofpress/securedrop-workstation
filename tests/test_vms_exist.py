@@ -12,6 +12,9 @@ from base import (
 )
 from qubesadmin import Qubes
 
+with open("config.json") as f:
+    CONFIG = json.load(f)
+
 
 class SD_VM_Tests(unittest.TestCase):
     def setUp(self):
@@ -28,6 +31,16 @@ class SD_VM_Tests(unittest.TestCase):
         sdw_tagged_vm_names = [vm.name for vm in self.sdw_tagged_vms]
         expected_vms = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
         self.assertEqual(set(sdw_tagged_vm_names), set(expected_vms))
+
+    @unittest.skipIf(CONFIG["environment"] != "prod", "Skipping on non-prod system")
+    def test_internal(self):
+        not_internal = ["sd-proxy", "sd-whonix", "sd-devices"]
+
+        for vm_name in SD_VMS:
+            if vm_name in not_internal:
+                continue
+            vm = self.app.domains[vm_name]
+            self.assertEqual(vm.features.get("internal"), "1")
 
     def test_grsec_kernel(self):
         """
