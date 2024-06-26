@@ -2,10 +2,15 @@ import json
 import subprocess
 import unittest
 
-from base import WANTED_VMS
+from base import (
+    SD_DVM_TEMPLATES,
+    SD_TEMPLATE_BASE,
+    SD_TEMPLATE_LARGE,
+    SD_TEMPLATE_SMALL,
+    SD_TEMPLATES,
+    SD_VMS,
+)
 from qubesadmin import Qubes
-
-DEBIAN_VERSION = "bookworm"
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -20,9 +25,9 @@ class SD_VM_Tests(unittest.TestCase):
         pass
 
     def test_expected(self):
-        vm_set = set(self.app.domains)
-        for test_vm in WANTED_VMS:
-            self.assertIn(test_vm, vm_set)
+        sdw_tagged_vm_names = [vm.name for vm in self.sdw_tagged_vms]
+        expected_vms = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
+        self.assertEqual(set(sdw_tagged_vm_names), set(expected_vms))
 
     def test_grsec_kernel(self):
         """
@@ -30,7 +35,7 @@ class SD_VM_Tests(unittest.TestCase):
         """
         # base doesn't have kernel configured and whonix uses dom0 kernel
         # TODO: test in sd-viewer based dispVM
-        exceptions = [f"sd-base-{DEBIAN_VERSION}-template", "sd-whonix", "sd-viewer"]
+        exceptions = [SD_TEMPLATE_BASE, "sd-whonix", "sd-viewer"]
 
         for vm in self.sdw_tagged_vms:
             if vm.name in exceptions:
@@ -97,7 +102,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-proxy-dvm"]
         self.assertTrue(vm.template_for_dispvms)
         self.assertEqual(vm.netvm.name, "sd-whonix")
-        self.assertEqual(vm.template, f"sd-small-{DEBIAN_VERSION}-template")
+        self.assertEqual(vm.template, SD_TEMPLATE_SMALL)
         self.assertIsNone(vm.default_dispvm)
         self.assertIn("sd-workstation", vm.tags)
         self.assertFalse(vm.autostart)
@@ -108,7 +113,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-app"]
         nvm = vm.netvm
         self.assertIsNone(nvm)
-        self.assertEqual(vm.template, f"sd-small-{DEBIAN_VERSION}-template")
+        self.assertEqual(vm.template, SD_TEMPLATE_SMALL)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
         self.assertNotIn("service.securedrop-log-server", vm.features)
@@ -130,7 +135,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-viewer"]
         nvm = vm.netvm
         self.assertIsNone(nvm)
-        self.assertEqual(vm.template, f"sd-large-{DEBIAN_VERSION}-template")
+        self.assertEqual(vm.template, SD_TEMPLATE_LARGE)
         self.assertFalse(vm.provides_network)
         self.assertTrue(vm.template_for_dispvms)
         self.assertIn("sd-workstation", vm.tags)
@@ -144,7 +149,7 @@ class SD_VM_Tests(unittest.TestCase):
         nvm = vm.netvm
         self.assertIsNone(nvm)
         # No sd-gpg-template, since keyring is managed in $HOME
-        self.assertEqual(vm.template, f"sd-small-{DEBIAN_VERSION}-template")
+        self.assertEqual(vm.template, SD_TEMPLATE_SMALL)
         self.assertTrue(vm.autostart)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -155,7 +160,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-log"]
         nvm = vm.netvm
         self.assertIsNone(nvm)
-        self.assertEqual(vm.template, f"sd-small-{DEBIAN_VERSION}-template")
+        self.assertEqual(vm.template, SD_TEMPLATE_SMALL)
         self.assertTrue(vm.autostart)
         self.assertFalse(vm.provides_network)
         self.assertFalse(vm.template_for_dispvms)
@@ -173,20 +178,20 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
     def sd_app_template(self):
-        vm = self.app.domains[f"sd-small-{DEBIAN_VERSION}-template"]
+        vm = self.app.domains[SD_TEMPLATE_SMALL]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
 
     def sd_viewer_template(self):
-        vm = self.app.domains[f"sd-large-{DEBIAN_VERSION}-template"]
+        vm = self.app.domains[SD_TEMPLATE_LARGE]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
         self.assertTrue(vm.template_for_dispvms)
 
     def sd_export_template(self):
-        vm = self.app.domains[f"sd-large-{DEBIAN_VERSION}-template"]
+        vm = self.app.domains[SD_TEMPLATE_LARGE]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
@@ -216,14 +221,14 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_service_running(vm, "securedrop-mime-handling")
 
     def sd_small_template(self):
-        vm = self.app.domains[f"sd-small-{DEBIAN_VERSION}-template"]
+        vm = self.app.domains[SD_TEMPLATE_SMALL]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
         self.assertFalse(vm.template_for_dispvms)
 
     def sd_large_template(self):
-        vm = self.app.domains[f"sd-large-{DEBIAN_VERSION}-template"]
+        vm = self.app.domains[SD_TEMPLATE_LARGE]
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)

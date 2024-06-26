@@ -3,7 +3,7 @@ import os
 import subprocess
 import unittest
 
-from base import CURRENT_FEDORA_TEMPLATE, WANTED_VMS
+from base import CURRENT_FEDORA_TEMPLATE, SD_VMS
 from qubesadmin import Qubes
 
 BULLSEYE_STRING = "Debian GNU/Linux 11 (bullseye)"
@@ -124,7 +124,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         Asserts that all VMs have all available apt packages at the latest
         versions, with no updates pending.
         """
-        for vm_name in WANTED_VMS:
+        for vm_name in SD_VMS:
             vm = self.app.domains[vm_name]
             self._ensure_packages_up_to_date(vm)
 
@@ -162,7 +162,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         # Would prefer to use a feature like pytest.mark.parametrize
         # for better error output here, but not available in dom0.
-        for vm_name in WANTED_VMS:
+        for vm_name in SD_VMS:
             if vm_name == "sd-viewer":
                 # sd-viewer is unable to start because of the securedrop-mime-handling
                 # systemd service failing, so skip it here.
@@ -188,7 +188,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         Therefore, even if multiple VMs are NOT running a supported platform,
         only a single failure will be reported.
         """
-        for vm_name in WANTED_VMS:
+        for vm_name in SD_VMS:
             if vm_name == "sd-viewer":
                 # sd-viewer is unable to start because of the securedrop-mime-handling
                 # systemd service failing, so skip it here.

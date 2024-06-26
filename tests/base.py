@@ -6,7 +6,15 @@ import unittest
 from qubesadmin import Qubes
 
 # Reusable constant for DRY import across tests
-WANTED_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "sd-devices"]
+DEBIAN_VERSION = "bookworm"
+SD_TEMPLATE_BASE = f"sd-base-{DEBIAN_VERSION}-template"
+SD_TEMPLATE_LARGE = f"sd-large-{DEBIAN_VERSION}-template"
+SD_TEMPLATE_SMALL = f"sd-small-{DEBIAN_VERSION}-template"
+
+SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "sd-devices"]
+SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
+SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_TEMPLATE_LARGE, SD_TEMPLATE_SMALL]
+
 CURRENT_FEDORA_VERSION = "40"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"
 CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
@@ -267,14 +275,25 @@ remotevm = sd-log
 class SD_Unnamed_DVM_Local_Test(SD_VM_Local_Test):
     """Tests disposables based on the provided DVM template"""
 
-    def setUp(self, dispvm_template_name):
-        self.app = Qubes()
-        self.vm_name = f"{dispvm_template_name}-disposable"
+    @classmethod
+    def _kill_test_vm(cls):
+        subprocess.run(["qvm-kill", cls.vm_name], check=True)
 
-        if self.vm_name not in self.app.domains:
-            cmd_create_disp = (
-                f"qvm-create --disp --property auto_cleanup=True "
-                f"--template {dispvm_template_name} {self.vm_name}"
-            )
-            subprocess.run(cmd_create_disp.split(), check=True)
-        super().setUp()
+    @classmethod
+    def setUpClass(cls, dispvm_template_name):
+        cls.app = Qubes()
+        cls.vm_name = f"{dispvm_template_name}-disposable"
+
+        # VM was running and needs a restart to test on the latest version
+        if cls.vm_name in cls.app.domains:
+            cls._kill_test_vm()
+        # Create disposable based on specified template
+        cmd_create_disp = (
+            f"qvm-create --disp --property auto_cleanup=True "
+            f"--template {dispvm_template_name} {cls.vm_name}"
+        )
+        subprocess.run(cmd_create_disp.split(), check=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._kill_test_vm()
