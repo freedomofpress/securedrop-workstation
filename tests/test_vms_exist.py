@@ -177,27 +177,6 @@ class SD_VM_Tests(unittest.TestCase):
         vol = vm.volumes["private"]
         self.assertEqual(vol.size, size * 1024 * 1024 * 1024)
 
-    def test_sd_app_template(self):
-        vm = self.app.domains[SD_TEMPLATE_SMALL]
-        nvm = vm.netvm
-        self.assertIsNone(nvm)
-        self.assertIn("sd-workstation", vm.tags)
-        self._check_kernel(vm)
-
-    def test_sd_viewer_template(self):
-        vm = self.app.domains[SD_TEMPLATE_LARGE]
-        nvm = vm.netvm
-        self.assertIsNone(nvm)
-        self.assertIn("sd-workstation", vm.tags)
-        self.assertTrue(vm.template_for_dispvms)
-
-    def test_sd_export_template(self):
-        vm = self.app.domains[SD_TEMPLATE_LARGE]
-        nvm = vm.netvm
-        self.assertNone(nvm)
-        self.assertIn("sd-workstation", vm.tags)
-        self._check_kernel(vm)
-
     def test_sd_export_dvm(self):
         vm = self.app.domains["sd-devices-dvm"]
         nvm = vm.netvm
@@ -206,7 +185,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertTrue(vm.template_for_dispvms)
 
         # MIME handling (dvm does NOT setup mime, only its disposables do)
-        self.assertFalse(vm.features.get("service.securedrop-mime-handling", False))
+        self.assertNotIn("service.securedrop-mime-handling", vm.features)
         self._check_service_running(vm, "securedrop-mime-handling", running=False)
 
     def test_sd_export(self):
@@ -223,18 +202,18 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_service_running(vm, "securedrop-mime-handling")
 
     def test_sd_small_template(self):
-        vm = self.app.domains[f"sd-small-{DEBIAN_VERSION}-template"]
+        # Kernel check is handled in test_grsec_kernel
+        vm = self.app.domains[SD_TEMPLATE_SMALL]
         nvm = vm.netvm
-        self.assertTrue(nvm is None)
-        self.assertTrue("sd-workstation" in vm.tags)
-        self._check_kernel(vm)
+        self.assertIsNone(nvm)
+        self.assertIn("sd-workstation", vm.tags)
 
     def test_sd_large_template(self):
-        vm = self.app.domains[f"sd-large-{DEBIAN_VERSION}-template"]
+        # Kernel check is handled in test_grsec_kernel
+        vm = self.app.domains[SD_TEMPLATE_LARGE]
         nvm = vm.netvm
-        self.assertTrue(nvm is None)
-        self.assertTrue("sd-workstation" in vm.tags)
-        self._check_kernel(vm)
+        self.assertIsNone(nvm)
+        self.assertIn("sd-workstation", vm.tags)
 
 
 def load_tests(loader, tests, pattern):
