@@ -65,6 +65,7 @@ install -m 755 -d %{buildroot}/srv/salt/sd/sys-firewall
 install -m 755 -d %{buildroot}/srv/salt/sd/usb-autoattach
 install -m 755 -d %{buildroot}/%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}/%{_bindir}
+install -m 755 -d %{buildroot}/%{_userunitdir}
 install -m 644 dom0/*.sls %{buildroot}/srv/salt/
 install -m 644 dom0/*.top %{buildroot}/srv/salt/
 install -m 644 dom0/*.j2 %{buildroot}/srv/salt/
@@ -93,7 +94,7 @@ install -m 644 launcher/sdw_notify/*.py %{buildroot}/opt/securedrop/launcher/sdw
 install -m 644 launcher/sdw_util/*.py %{buildroot}/opt/securedrop/launcher/sdw_util/
 install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
-
+install -m 644 files/securedrop-user-dom0-rpm-key-reimport.service %{buildroot}/%{_userunitdir}/
 
 %files
 %attr(755, root, root) /opt/securedrop/launcher/sdw-launcher.py
@@ -115,13 +116,16 @@ install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 /srv/salt/fpf*
 %doc README.md
 %license LICENSE
-
+%{_userunitdir}/securedrop-user-dom0-rpm-key-reimport.service
 
 %post
 find /srv/salt -maxdepth 1 -type f -iname '*.top' \
     | xargs -n1 basename \
     | sed -e 's/\.top$$//g' \
     | xargs qubesctl top.enable > /dev/null
+
+# rpm key reimport
+systemctl --global enable securedrop-user-dom0-rpm-key-reimport.service ||:
 
 # Force full run of all Salt states - uncomment in release branch
 mkdir -p /tmp/sdw-migrations

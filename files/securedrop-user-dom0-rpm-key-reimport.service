@@ -1,0 +1,23 @@
+[Unit]
+Description=Reimport SecureDrop Release Signing Key into rpm database
+After=grub-boot-success.service
+
+[Service]
+Type=oneshot
+
+# The pubkey name format is `gpg-pubkey-$VERSION-$CREATION_SEC_SINCE_UNIX_EPOCH`,
+# where $VERSION is the last 8 characters of the GPG key's fingerprint, and
+# $CREATIONDATE is the key creation date, expressed as
+# `date -d "1970-1-1 + $((0x$CREATION_UNIX_EPOCH)) sec"`
+ExecCondition=sh -c 'test $$(id -un) != lightdm'
+ExecCondition=sh -c 'rpm -q gpg-pubkey-7b22e6a3-646b9337'
+ExecCondition=sh -c 'test -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation'
+
+# From systemd documentation:
+# when an ExecCondition= command exits with exit code 1 through 254 (inclusive),
+# the remaining commands are skipped and the unit is not marked as failed.
+ExecStart=sh -c "rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE}\t%{SUMMARY}\n' | grep 'SecureDrop Release Signing Key' | cut -f1 | xargs sudo rpm -e"
+ExecStart=sh -c "sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation"
+
+[Install]
+WantedBy=default.target
