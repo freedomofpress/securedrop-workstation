@@ -58,7 +58,7 @@ remove-dom0-sdw-config-files:
       - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
       - /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
-      - /home/{{ gui_user }}/.securedrop_launcher
+      - /home/{{ gui_user }}/.securedrop_updater
       - /var/lib/securedrop-workstation
 
 # Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
