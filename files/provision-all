@@ -67,8 +67,7 @@ qvm-check --quiet sd-fedora-40-dvm 2> /dev/null && \
   qvm-shutdown --wait sys-usb && qvm-start sys-usb || \
   sudo qubesctl --show-output --skip-dom0 --targets sys-usb state.highstate
 
-# Shut down all VMs to ensure new configuration takes place, if the user doesn't reboot.
-echo "will shut down the following VMs"
-qvm-ls --tags sd-workstation
+# Shut down all VMs to ensure new configuration takes place, if the user doesn't reboot
+# (primarily CI/dev setups).
 qvm-ls --tags sd-workstation --raw-list | xargs qvm-shutdown --wait
 qvm-shutdown --wait whonix-gateway-17
