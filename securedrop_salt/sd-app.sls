@@ -55,15 +55,3 @@ sd-app-private-volume-size:
         qvm-volume resize sd-app:private {{ d.vmsizes.sd_app }}GiB
     - require:
       - qvm: sd-app
-
-# Ensure the Qubes menu is populated with relevant app entries,
-# so that Nautilus/Files can be started via GUI interactions.
-sd-app-template-sync-appmenus:
-  cmd.run:
-    - name: >
-        qvm-start --skip-if-running sd-small-{{ sdvars.distribution }}-template &&
-        qvm-sync-appmenus --force-root sd-small-{{ sdvars.distribution }}-template
-    - require:
-      - qvm: sd-small-{{ sdvars.distribution }}-template
-    - onchanges:
-      - qvm: sd-small-{{ sdvars.distribution }}-template
