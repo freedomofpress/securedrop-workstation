@@ -134,6 +134,7 @@ touch /tmp/sdw-migrations/fedora-39-update
 %changelog
 * Sun Jun 2 2024 SecureDrop Team <securedrop@freedom.press> - 0.11.1
 - Update the SecureDrop release signing key
+- Automate signing key update in RPM database via systemd unit
 
 * Wed May 1 2024 SecureDrop Team <securedrop@freedom.press> - 0.11.0
 - Use Fedora 39 base template
