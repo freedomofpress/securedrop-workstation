@@ -92,7 +92,7 @@ ignore = [
 ]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.11"
 # No stubs for qubesadmin
 ignore_missing_imports = true
 # These are individual scripts, not a package/modules
