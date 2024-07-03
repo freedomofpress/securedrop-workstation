@@ -1,5 +1,11 @@
 # changelog
 
+## 1.0.0-rc2
+
+* Update lookup path for Notify.py update script (#1108)
+* Ensure and verify files in built RPM have their mtime clamped (#1114)
+* Set menu items for sd-devices and sd-whonix (#1112)
+
 ## 1.0.0-rc1
 
 This is the first release targeting Qubes 4.2 and will require
