@@ -50,3 +50,4 @@ sd-whonix-config:
     - set:
         - vm-config.SD_HIDSERV_HOSTNAME: {{ d.hidserv.hostname }}
         - vm-config.SD_HIDSERV_KEY: {{ d.hidserv.key }}
+        - menu-items: "anon_connection_wizard.desktop tor-control-panel.desktop"

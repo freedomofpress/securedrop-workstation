@@ -35,18 +35,6 @@ sd-devices-dvm:
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
 
-# Ensure the Qubes menu is populated with relevant app entries,
-# so that Nautilus/Files can be started via GUI interactions.
-sd-devices-template-sync-appmenus:
-  cmd.run:
-    - name: >
-        qvm-start --skip-if-running sd-large-{{ sdvars.distribution }}-template &&
-        qvm-sync-appmenus --force-root sd-large-{{ sdvars.distribution }}-template
-    - require:
-      - qvm: sd-large-{{ sdvars.distribution }}-template
-    - onchanges:
-      - qvm: sd-large-{{ sdvars.distribution }}-template
-
 sd-devices-create-named-dispvm:
   qvm.vm:
     - name: sd-devices
@@ -64,5 +52,6 @@ sd-devices-create-named-dispvm:
         - service.securedrop-mime-handling
       - set:
         - vm-config.SD_MIME_HANDLING: sd-devices
+        - menu-items: "org.gnome.Nautilus.desktop org.gnome.DiskUtility.desktop"
     - require:
       - qvm: sd-devices-dvm
