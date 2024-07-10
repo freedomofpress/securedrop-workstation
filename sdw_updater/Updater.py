@@ -160,6 +160,7 @@ def _start_qubes_updater_proc(templates):
     update_cmd = [
         "qubes-vm-update",
         "--apply-to-all",  # Enforce app qube restarts
+        "--force-update",  # Bypass Qubes' staleness-dection and update all
         "--show-output",  # Update transaction details (goes to stdout)
         "--just-print-progress",  # Progress reporting (goes to stderr)
         "--targets",
