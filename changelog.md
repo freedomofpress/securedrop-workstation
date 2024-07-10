@@ -1,5 +1,11 @@
 # changelog
 
+## 1.0.0-rc3
+
+* Fix updater only restarting `sys-*` qubes (#1128)
+* Remove some debug output at the end of provisioning (#1126)
+* In the updater, always force template updates (#1142)
+
 ## 1.0.0-rc2
 
 * Update lookup path for Notify.py update script (#1108)
