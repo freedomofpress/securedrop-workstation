@@ -31,6 +31,7 @@ in using SecureDrop Workstation, please reach out to us via the
 * Make our VMs internal, hiding their applications from the menu (#857, #1098)
 * Set all VMs `default_dispvm` to None except sd-app and verify that (#1068, #1084)
 * Move to Fedora 40 base system template (#1078)
+* Support viewing `*.webp` images (#614)
 
 * Provisioning:
   * Set vm-config features for sd-app, sd-proxy, sd-whonix (#1001)
