@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	1.0.0rc3
+Version:	1.0.0
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -173,7 +173,7 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
-* Wed Jul 10 2024 SecureDrop Team <securedrop@freedom.press> - 1.0.0
+* Thu Jul 11 2024 SecureDrop Team <securedrop@freedom.press> - 1.0.0
 - See changelog.md
 
 * Wed Feb 7 2024 SecureDrop Team <securedrop@freedom.press> - 0.10.0
