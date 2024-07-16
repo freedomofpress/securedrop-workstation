@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	0.10.0
+Version:	1.0.0
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -173,6 +173,9 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
+* Thu Jul 11 2024 SecureDrop Team <securedrop@freedom.press> - 1.0.0
+- See changelog.md
+
 * Wed Feb 7 2024 SecureDrop Team <securedrop@freedom.press> - 0.10.0
 - Use Whonix-17 template for sd-whonix
 
