@@ -11,7 +11,11 @@ import subprocess
 import sys
 from typing import List
 
-import qubesadmin
+from qubesadmin import Qubes
+
+# The max concurrency reduction (4->2) was required to avoid "did not return clean data"
+# errors from qubesctl. It may be possible to raise this again.
+MAX_CONCURRENCY = 2
 
 SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
 SALT_PATH = "/srv/salt/securedrop_salt/"
@@ -82,14 +86,167 @@ def copy_config():
 
 def provision_all():
     """
-    Runs provision-all to apply the salt state.highstate on dom0 and all VMs
+    Applies the salt state.highstate on dom0 and all VMs
+    """
+    provision_fedora()
+    provision_base_template()
+    provision_vms()
+    configure_logging_vms_early()
+    configure_whonix_customization()
+    configure_vms()
+    sync_appmenus()
+    configure_sys_usb_device_handling()
+    shutdown_to_apply_configurations()
+    print("Provisioning complete. Please reboot to complete the installation.")
+
+
+def run_cmd(args):
+    print(f"Running \"{' '.join(args)}\"")
+    try:
+        subprocess.check_call(args)
+    except subprocess.CalledProcessError:
+        raise SDWAdminException(f"Error while running {' '.join(args)}")
+
+
+def qubesctl_call(step_description: str, args: List[str]):
+    qubesctl_cmd = ["sudo", "qubesctl", "--show-output"] + args
+    print("\n..........................................................................")
+    print(step_description)
+    print(f"Running \"{' '.join(qubesctl_cmd)}\"")
+
+    try:
+        subprocess.check_call(qubesctl_cmd)
+    except subprocess.CalledProcessError:
+        raise SDWAdminException(f"Error in step {step_description}")
+
+
+def provision_fedora():
+    """
+    Configure Fedora-based system VMs
+    """
+    qubesctl_call(
+        "provisioning Fedora-based system VMs", ["state.sls", "securedrop_salt.sd-sys-vms"]
+    )
+
+
+def provision_base_template():
+    """
+    Configure base template
+    """
+    qubesctl_call("provisioning base template", ["state.sls", "securedrop_salt.sd-base-template"])
+    qubesctl_call(
+        "configuring base template",
+        ["--skip-dom0", "--targets", "sd-base-bookworm-template", "state.highstate"],
+    )
+
+    run_cmd(["qvm-shutdown", "--wait", "sd-base-bookworm-template"])
+
+
+def provision_vms():
+    """
+    Running only against dom0, to ensure the VMs are created (but not yet configured)
+    """
+
+    qubesctl_call(
+        "Set up dom0 config files, including RPC policies, and create VMs",
+        ["state.highstate"],
+    )
+
+
+def configure_logging_vms_early():
+    qubesctl_call(
+        "configure logging VMs early",
+        ["--skip-dom0", "--targets", "sd-small-bookworm-template", "state.highstate"],
+    )
+
+    # Reboot sd-log so it's ready to receive logs from other VMs about to be configured
+    run_cmd(["qvm-shutdown", "--wait", "sd-log"])
+    run_cmd(["qvm-start", "sd-log"])
+
+
+def configure_whonix_customization():
+    qubesctl_call(
+        "Enabling Whonix customizations",
+        ["--skip-dom0", "--targets", "whonix-gateway-17", "state.highstate"],
+    )
+
+
+def configure_vms():
+    """
+    Format list of all VMs comma-separated, for use as qubesctl target
+    We run this after dom0's highstate, so that the VMs are available for listing by tag.
+    """
+    all_sdw_vms_target = ",".join([q.name for q in Qubes().domains if "sd-workstation" in q.tags])
+
+    # We skip dom0 in the task below, since dom0 highstate was enforced in the previous command.
+    qubesctl_call(
+        "Provision all SecureDrop Workstation VMs with service-specific configs",
+        [
+            "--max-concurrency",
+            str(MAX_CONCURRENCY),
+            "--skip-dom0",
+            "--targets",
+            all_sdw_vms_target,
+            "state.highstate",
+        ],
+    )
+
+
+def sync_appmenus():
+    """
+    Sync appmenus now that all packages are installed
+    TODO: this should be done by salt or debs, but we do it manually here because it's
+    not straightforward to run a dom0 salt state after VMs run.
+    n.b. none of the small VMs are shown in the menu on prod, but nice to have it synced
+    """
+
+    run_cmd(["qvm-start", "--skip-if-running", "sd-small-bookworm-template"])
+    run_cmd(["qvm-sync-appmenus", "sd-small-bookworm-template"])
+    run_cmd(["qvm-shutdown", "sd-small-bookworm-template"])
+
+    run_cmd(["qvm-start", "--skip-if-running", "sd-large-bookworm-template"])
+    run_cmd(["qvm-sync-appmenus", "sd-large-bookworm-template"])
+    run_cmd(["qvm-shutdown", "sd-large-bookworm-template"])
+
+    run_cmd(["qvm-start", "--skip-if-running", "whonix-gateway-17"])
+    run_cmd(["qvm-sync-appmenus", "whonix-gateway-17"])
+    run_cmd(["qvm-shutdown", "whonix-gateway-17"])
+
+    # These are the two ones we show in prod VMs, so sync explicitly
+    run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-devices"])
+    run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-whonix"])
+
+
+def configure_sys_usb_device_handling():
+    """
+    Add SecureDrop export device handling to sys-usb
     """
     try:
-        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/provision-all")])
-    except subprocess.CalledProcessError:
-        raise SDWAdminException("Error during provision-all")
+        # If sd-fedora-40-dvm exists it's because salt determined that sys-usb was disposable
+        # FIXME shellcheck disable=SC2015
+        run_cmd(["qvm-check", "--quiet", "sd-fedora-40-dvm"])  # TODO 2> /dev/null
+        qubesctl_call(
+            "Add SecureDrop export device handling to sys-usb (disposable)",
+            ["--skip-dom0", "--targets", "sd-fedora-40-dvm", "state.highstate"],
+        )
+        run_cmd(["qvm-shutdown", "--wait", "sys-usb"])
+        run_cmd(["qvm-start", "sys-usb"])
+    except SDWAdminException:
+        qubesctl_call(
+            "Add SecureDrop export device handling to sys-usb (non-disposable)",
+            ["--skip-dom0", "--targets", "sys-usb", "state.highstate"],
+        )
 
-    print("Provisioning complete. Please reboot to complete the installation.")
+
+def shutdown_to_apply_configurations():
+    """
+    Shut down all VMs to ensure new configuration takes place, if the user doesn't reboot
+    (primarily CI/dev setups).
+    """
+    sd_workstation_qubes = filter(lambda q: "sd-workstation" in q.tags, Qubes().domains)
+    for qube in sd_workstation_qubes:
+        run_cmd(["qvm-shutdown", "--wait", qube.name])
+    run_cmd(["qvm-shutdown", "--wait", "whonix-gateway-17"])
 
 
 def validate_config(path):
@@ -106,7 +263,7 @@ def get_appvms_for_template(vm_name: str) -> List[str]:
     """
     Return a list of AppVMs that use the specified VM as a template
     """
-    app = qubesadmin.Qubes()
+    app = Qubes()
     try:
         template_vm = app.domains[vm_name]
     except KeyError:
