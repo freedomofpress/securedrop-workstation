@@ -20,16 +20,13 @@ base:
     - securedrop_salt.sd-remove-unused-templates
 
   sd-base-bookworm-template:
-    - securedrop_salt.sd-base-template-files
-    - securedrop_salt.sd-workstation-template-files
+    - securedrop_salt.sd-base-template-packages
   sd-small-bookworm-template:
     - securedrop_salt.sd-logging-setup
-    - securedrop_salt.sd-workstation-template-files
     - securedrop_salt.sd-app-files
     - securedrop_salt.sd-proxy-template-files
   sd-large-bookworm-template:
     - securedrop_salt.sd-logging-setup
-    - securedrop_salt.sd-workstation-template-files
     - securedrop_salt.sd-devices-files
     - securedrop_salt.sd-viewer-files
   sd-gpg:
