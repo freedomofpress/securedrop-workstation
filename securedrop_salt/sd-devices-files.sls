@@ -12,15 +12,6 @@ include:
   - securedrop_salt.fpf-apt-repo
   - securedrop_salt.sd-logging-setup
 
-# Libreoffice needs to be installed here to convert to pdf to allow printing
-sd-devices-install-libreoffice:
-  pkg.installed:
-    - name: libreoffice
-    - retry:
-        attempts: 3
-        interval: 60
-    - install_recommends: False
-
 # Install securedrop-export package https://github.com/freedomofpress/securedrop-export
 sd-devices-install-package:
   pkg.installed:
