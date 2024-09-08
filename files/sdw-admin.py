@@ -88,14 +88,14 @@ def provision_and_configure():
     """
     Applies the salt state.highstate on dom0 and all VMs
     """
-    provision("Configuring Fedora-based system VMs", "securedrop_salt.sd-sys-vms")
+    provision("Provisioning Fedora-based system VMs", "securedrop_salt.sd-sys-vms")
     provision("Provisioning base template", "securedrop_salt.sd-base-template")
     configure("Configuring base template", ["sd-base-bookworm-template"])
     provision_all()
-    configure("configure logging VMs early", ["sd-small-bookworm-template"], restart=["sd-log"])
+    configure("Configuring logging VMs early", ["sd-small-bookworm-template"], restart=["sd-log"])
     configure("Enabling Whonix customizations", ["whonix-gateway-17"])
     configure(
-        "Provision all SecureDrop Workstation VMs with service-specific configs",
+        "Configure all SecureDrop Workstation VMs with service-specific configs",
         [q.name for q in Qubes().domains if "sd-workstation" in q.tags],
     )
 
