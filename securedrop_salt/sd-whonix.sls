@@ -29,7 +29,7 @@ sd-whonix:
       - provides-network: true
       - netvm: "sys-firewall"
       - autostart: true
-      - kernelopts: "nopat apparmor=1 security=apparmor"
+      - kernelopts: "apparmor=1 security=apparmor"
       - default_dispvm: ""
     - tags:
       - add:

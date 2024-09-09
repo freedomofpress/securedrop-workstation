@@ -25,7 +25,7 @@ dom0-enabled-apparmor-on-whonix-gw-template:
   qvm.vm:
     - name: whonix-gateway-{{ sd_supported_whonix_version }}
     - prefs:
-      - kernelopts: "nopat apparmor=1 security=apparmor"
+      - kernelopts: "apparmor=1 security=apparmor"
     - require:
       - sls: securedrop_salt.sd-upgrade-templates
       - qvm: whonix-gateway-installed
@@ -35,7 +35,7 @@ dom0-enabled-apparmor-on-whonix-ws-template:
   qvm.vm:
     - name: whonix-workstation-{{ sd_supported_whonix_version }}
     - prefs:
-      - kernelopts: "nopat apparmor=1 security=apparmor"
+      - kernelopts: "apparmor=1 security=apparmor"
     - require:
       - sls: securedrop_salt.sd-upgrade-templates
       - qvm: whonix-gateway-installed

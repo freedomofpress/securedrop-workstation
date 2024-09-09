@@ -90,7 +90,7 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-whonix"]
         nvm = vm.netvm
         self.assertEqual(nvm.name, "sys-firewall")
-        wanted_kernelopts = "nopat apparmor=1 security=apparmor"
+        wanted_kernelopts = "apparmor=1 security=apparmor"
         self.assertEqual(vm.kernelopts, wanted_kernelopts)
         self.assertEqual(vm.template, "whonix-gateway-17")
         self.assertTrue(vm.provides_network)
