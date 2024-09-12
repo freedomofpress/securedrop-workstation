@@ -92,7 +92,11 @@ def provision_and_configure():
     provision("Provisioning base template", "securedrop_salt.sd-base-template")
     configure("Configuring base template", ["sd-base-bookworm-template"])
     provision_all()
-    configure("Configuring logging VMs early", ["sd-small-bookworm-template"], restart=["sd-log"])
+    configure(
+        "Configuring template for log sink before anything else",
+        ["sd-small-bookworm-template"],
+        restart=["sd-log"],
+    )
     configure("Enabling Whonix customizations", ["whonix-gateway-17"])
     configure(
         "Configure all SecureDrop Workstation VMs with service-specific configs",
