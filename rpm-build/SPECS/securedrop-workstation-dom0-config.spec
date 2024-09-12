@@ -72,7 +72,6 @@ install -m 755 -d %{buildroot}/usr/bin/securedrop
 install -m 755 files/update-xfce-settings %{buildroot}/usr/bin/securedrop/
 install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/destroy-vm.py %{buildroot}/%{_datadir}/%{name}/scripts/destroy-vm
-install -m 755 files/provision-all %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
 install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
@@ -110,7 +109,6 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
 %attr(755, root, root) %{_datadir}/%{name}/scripts/destroy-vm
-%attr(755, root, root) %{_datadir}/%{name}/scripts/provision-all
 %attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
 %attr(755, root, root) %{_bindir}/sdw-admin
 %{_datadir}/%{name}/config.json.example

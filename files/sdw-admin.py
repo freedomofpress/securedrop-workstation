@@ -9,9 +9,13 @@ import argparse
 import os
 import subprocess
 import sys
-from typing import List
+from typing import List, Optional
 
-import qubesadmin
+from qubesadmin import Qubes
+
+# The max concurrency reduction (4->2) was required to avoid "did not return clean data"
+# errors from qubesctl. It may be possible to raise this again.
+MAX_CONCURRENCY = 2
 
 SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
 SALT_PATH = "/srv/salt/securedrop_salt/"
@@ -80,16 +84,128 @@ def copy_config():
         raise SDWAdminException("Error copying configuration")
 
 
-def provision_all():
+def provision_and_configure():
     """
-    Runs provision-all to apply the salt state.highstate on dom0 and all VMs
+    Applies the salt state.highstate on dom0 and all VMs
     """
-    try:
-        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/provision-all")])
-    except subprocess.CalledProcessError:
-        raise SDWAdminException("Error during provision-all")
+    provision("Provisioning Fedora-based system VMs", "securedrop_salt.sd-sys-vms")
+    provision("Provisioning base template", "securedrop_salt.sd-base-template")
+    configure("Configuring base template", ["sd-base-bookworm-template"])
+    provision_all()
+    configure(
+        "Configuring template for log sink before anything else",
+        ["sd-small-bookworm-template"],
+        restart=["sd-log"],
+    )
+    configure("Enabling Whonix customizations", ["whonix-gateway-17"])
+    configure(
+        "Configure all SecureDrop Workstation VMs with service-specific configs",
+        [q.name for q in Qubes().domains if "sd-workstation" in q.tags],
+    )
+
+    sync_appmenus()
+
+    if "sd-fedora-40-dvm" in Qubes().domains:
+        # If sd-fedora-40-dvm exists it's because salt determined that sys-usb was disposable
+        configure(
+            "Add SecureDrop export device handling to sys-usb (disposable)",
+            ["sd-fedora-40-dvm"],
+            restart=["sys-usb"],
+        )
+    else:
+        configure(
+            "Add SecureDrop export device handling to sys-usb (non-disposable)",
+            ["sys-usb"],
+        )
 
     print("Provisioning complete. Please reboot to complete the installation.")
+
+
+def run_cmd(args):
+    print(f"Running \"{' '.join(args)}\"")
+    try:
+        subprocess.check_call(args)
+    except subprocess.CalledProcessError:
+        raise SDWAdminException(f"Error while running {' '.join(args)}")
+
+
+def provision(step_description: str, salt_state: str):
+    """
+    Create, change or delete qubes
+    """
+
+    qubesctl_call(step_description, ["--", "state.sls", salt_state])
+
+
+def provision_all():
+    """
+    Provision all enabled salt states
+    """
+    qubesctl_call(
+        "Set up dom0 config files, including RPC policies, and create VMs", ["state.highstate"]
+    )
+
+
+def configure(step_description: str, targets: List[str], restart: Optional[List[str]] = None):
+    """
+    Apply configuration to a list of qubes
+    """
+
+    qubesctl_call(
+        step_description,
+        [
+            "--skip-dom0",
+            "--max-concurrency",
+            str(MAX_CONCURRENCY),
+            "--targets",
+            ",".join(targets),
+            "state.highstate",
+        ],
+    )
+
+    # Save new configuration to disk by shutting down
+    run_cmd(["qvm-shutdown", "--wait", "--"] + targets)
+
+    if restart:
+        run_cmd(["qvm-shutdown", "--wait", "--"] + restart)
+        run_cmd(["qvm-start", "--"] + restart)
+
+
+def qubesctl_call(step_description: str, args: List[str]):
+    qubesctl_cmd = ["sudo", "qubesctl", "--show-output"] + args
+    print("\n..........................................................................")
+    print(step_description)
+    print(f"Running \"{' '.join(qubesctl_cmd)}\"")
+
+    try:
+        subprocess.check_call(qubesctl_cmd)
+    except subprocess.CalledProcessError:
+        raise SDWAdminException(f"Error in step {step_description}")
+
+
+def sync_appmenus():
+    """
+    Sync appmenus now that all packages are installed
+    TODO: this should be done by salt or debs, but we do it manually here because it's
+    not straightforward to run a dom0 salt state after VMs run.
+    n.b. none of the small VMs are shown in the menu on prod, but nice to have it synced
+    """
+
+    run_cmd(["qvm-start", "--skip-if-running", "sd-small-bookworm-template"])
+    run_cmd(["qvm-sync-appmenus", "sd-small-bookworm-template"])
+    run_cmd(["qvm-shutdown", "sd-small-bookworm-template"])
+
+    run_cmd(["qvm-start", "--skip-if-running", "sd-large-bookworm-template"])
+    run_cmd(["qvm-sync-appmenus", "sd-large-bookworm-template"])
+    run_cmd(["qvm-shutdown", "sd-large-bookworm-template"])
+
+    run_cmd(["qvm-start", "--skip-if-running", "whonix-gateway-17"])
+    run_cmd(["qvm-sync-appmenus", "whonix-gateway-17"])
+    run_cmd(["qvm-shutdown", "whonix-gateway-17"])
+
+    # These are the two ones we show in prod VMs, so sync explicitly
+    run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-devices"])
+    run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-whonix"])
 
 
 def validate_config(path):
@@ -106,7 +222,7 @@ def get_appvms_for_template(vm_name: str) -> List[str]:
     """
     Return a list of AppVMs that use the specified VM as a template
     """
-    app = qubesadmin.Qubes()
+    app = Qubes()
     try:
         template_vm = app.domains[vm_name]
     except KeyError:
@@ -188,7 +304,7 @@ def main():
         install_pvh_support()
         copy_config()
         refresh_salt()
-        provision_all()
+        provision_and_configure()
     elif args.uninstall:
         print(
             "Uninstalling will remove all packages and destroy all VMs associated\n"
