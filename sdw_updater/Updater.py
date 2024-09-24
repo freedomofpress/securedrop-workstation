@@ -342,13 +342,8 @@ def last_required_reboot_performed():
         reboot_time = datetime.strptime(flag_contents["last_status_update"], DATE_FORMAT)
         boot_time = datetime.now() - _get_uptime()
 
-        # The session was started *before* the reboot was requested by
-        # the updater, system was not rebooted after previous run
-        if boot_time < reboot_time:
-            return False
-
-        # system was rebooted after flag was written to disk
-        return True
+        # If we booted after the reboot time, the restart happened
+        return boot_time >= reboot_time
 
     # previous run did not require reboot
     return True
@@ -485,9 +480,7 @@ def _valid_status(status):
     """
     status should contain 2 items, the update flag and a timestamp.
     """
-    if isinstance(status, dict) and len(status) == 2:
-        return True
-    return False
+    return isinstance(status, dict) and len(status) == 2
 
 
 def _interval_expired(interval, status):
@@ -500,9 +493,7 @@ def _interval_expired(interval, status):
     except ValueError:
         # Broken timestamp? run the updater.
         return True
-    if (datetime.now() - update_time) < timedelta(seconds=interval):
-        return False
-    return True
+    return (datetime.now() - update_time) >= timedelta(seconds=interval)
 
 
 class UpdateStatus(Enum):
