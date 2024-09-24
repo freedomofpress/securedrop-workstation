@@ -126,9 +126,9 @@ def test_apply_templates_success(mocked_info, mocked_error, mock_proc, write_upd
 def test_apply_templates(templates, stderr, expected):
     with mock.patch(
         "sdw_updater.Updater._start_qubes_updater_proc",
-        return_value=subprocess.Popen(
+        return_value=subprocess.Popen(  # noqa: S602
             f"echo '{stderr}' >> /dev/stderr",
-            shell=True,  # noqa: S602
+            shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         ),
