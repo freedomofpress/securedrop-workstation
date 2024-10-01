@@ -32,7 +32,7 @@ set-fedora-template-as-default-mgmt-dvm:
 # If the VM has just been installed via package manager, update it immediately
 update-fedora-template-if-new:
   cmd.wait:
-    - name: sudo qubesctl --skip-dom0 --targets {{ sd_supported_fedora_version }} state.sls update.qubes-vm
+    - name: qubes-vm-update --quiet --force-update --targets {{ sd_fedora_base_template }}
     - require:
       - cmd: dom0-install-fedora-template
       # Update the mgmt-dvm setting first, to avoid problems during first update
