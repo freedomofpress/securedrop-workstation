@@ -19,6 +19,7 @@ CURRENT_FEDORA_VERSION = "40"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"
 CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
 CURRENT_WHONIX_VERSION = "17"
+CURRENT_DEBIAN_VERSION = "bookworm"
 
 
 # Lifted from launcher/sdw_util/Util.py
