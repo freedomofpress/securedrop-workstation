@@ -7,6 +7,11 @@ CONTAINER := $(if $(shell grep "Thirty Seven" /etc/fedora-release),,./scripts/co
 
 HOST=$(shell hostname)
 
+# Client autologin variables
+CLIENT_TOTP=$(shell oathtool --totp --base32 JHCOGO7VCER3EJ4L --start-time "$(shell date -d "+5 seconds" +"%Y-%m-%d %H:%M:%S")")
+XDOTOOL_PATH=$(shell command -v xdotool)
+OATHTOOL_PATH=$(shell command -v oathtool)
+
 assert-dom0: ## Confirms command is being run under dom0
 ifneq ($(HOST),dom0)
 	@echo "     ------ Some targets of securedrop-workstation's makefile must be used only on dom0! ------"
@@ -154,6 +159,27 @@ test-whonix: test-prereqs ## Runs tests for SD Whonix VM
 
 test-gpg: test-prereqs ## Runs tests for SD GPG functionality
 	python3 -m unittest discover -v tests -p test_gpg.py
+
+PHONY: run-client
+run-client: assert-dom0 ## Run client application (automatic login)
+ifeq ($(XDOTOOL_PATH),)
+	@echo $(XDOTOOL_PATH)
+	@echo 'please install xdotool with "sudo qubes-dom0-update xdotool"'
+	@false
+endif
+ifeq ($(OATHTOOL_PATH),)
+	@echo 'please install oathtool with "sudo qubes-dom0-update oathtool"'
+	@false
+endif
+	sdw-updater
+	@sleep 3
+	@xdotool type "journalist"
+	@xdotool key Tab
+	@xdotool type "correct horse battery staple profanity oil chewy"
+	@xdotool key Tab
+	@xdotool key Tab
+	@xdotool type "$(CLIENT_TOTP)"
+	@xdotool key Return
 
 validate: assert-dom0 ## Checks for local requirements in dev env
 	@./files/validate_config.py
