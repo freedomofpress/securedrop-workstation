@@ -170,7 +170,7 @@ ifeq ($(OATHTOOL_PATH),)
 	@echo 'please install oathtool with "sudo qubes-dom0-update oathtool"'
 	@false
 endif
-	sdw-updater
+	qvm-run --service sd-app qubes.StartApp+press.freedom.SecureDropClient
 	@sleep 3
 	@xdotool type "journalist"
 	@xdotool key Tab
