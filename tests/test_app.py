@@ -24,18 +24,16 @@ class SD_App_Tests(SD_VM_Local_Test):
             self.assertIn(line, contents)
 
     def test_mimeapps(self):
-        cmd = "perl -F= -lane 'print $F[1]' /usr/share/applications/mimeapps.list | sort | uniq -c"
-        results = self._run(cmd)
-        expected_results = "2 \n    295 open-in-dvm.desktop;"
-        self.assertEqual(results, expected_results)
-
-    def test_mimeapps_functional(self):
-        cmd = "perl -F= -lane 'print $F[0]' /usr/share/applications/mimeapps.list"
-        results = self._run(cmd)
-        for line in results.split("\n"):
-            if line != "[Default Applications]" and not line.startswith("#"):
-                actual_app = self._run(f"xdg-mime query default {line}")
-                self.assertEqual(actual_app, "open-in-dvm.desktop")
+        results = self._run("cat /usr/share/applications/mimeapps.list")
+        for line in results.splitlines():
+            if line.startswith(("#", "[Default")):
+                # Skip comments and the leading [Default Applications]
+                continue
+            mime, target = line.split("=", 1)
+            self.assertEqual(target, "open-in-dvm.desktop;")
+            # Now functionally test it
+            actual_app = self._run(f"xdg-mime query default {mime}")
+            self.assertEqual(actual_app, "open-in-dvm.desktop")
 
     def test_mailcap_hardened(self):
         self.mailcap_hardened()

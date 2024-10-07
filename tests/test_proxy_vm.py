@@ -40,13 +40,17 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
     def test_logging_configured(self):
         self.logging_configured()
 
-    def test_mime_types(self):
-        cmd = "perl -F= -lane 'print $F[0]' /usr/share/applications/mimeapps.list"
-        results = self._run(cmd)
-        for line in results.split("\n"):
-            if line != "[Default Applications]" and not line.startswith("#"):
-                actual_app = self._run(f"xdg-mime query default {line}")
-                self.assertEqual(actual_app, "open-in-dvm.desktop")
+    def test_mimeapps(self):
+        results = self._run("cat /usr/share/applications/mimeapps.list")
+        for line in results.splitlines():
+            if line.startswith(("#", "[Default")):
+                # Skip comments and the leading [Default Applications]
+                continue
+            mime, target = line.split("=", 1)
+            self.assertEqual(target, "open-in-dvm.desktop;")
+            # Now functionally test it
+            actual_app = self._run(f"xdg-mime query default {mime}")
+            self.assertEqual(actual_app, "open-in-dvm.desktop")
 
     def test_mailcap_hardened(self):
         self.mailcap_hardened()

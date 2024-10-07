@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import subprocess
 import unittest
 
@@ -12,7 +13,6 @@ from base import (
 )
 from qubesadmin import Qubes
 
-BULLSEYE_STRING = "Debian GNU/Linux 11 (bullseye)"
 BOOKWORM_STRING = "Debian GNU/Linux 12 (bookworm)"
 
 SUPPORTED_SD_DEBIAN_DIST = "bookworm"
@@ -34,15 +34,13 @@ class SD_VM_Platform_Tests(unittest.TestCase):
 
     def _get_platform_info(self, vm):
         """
-        Retrieve base OS for running AppVM. Executes command on AppVM
-        and returns the PRETTY_NAME field from /etc/os-release.
+        Retrieve PRETTY_NAME for an AppVM.
         """
-        # Not using `lsb_release` for platform info, because it is not present
-        # on Qubes AppVMs. Rather than install it simply for testing purposes,
-        # let's maintain the default config and retrieve the value elsewise.
-        cmd = "perl -nE '/^PRETTY_NAME=\"(.*)\"$/ and say $1' /etc/os-release"
-        stdout, stderr = vm.run(cmd)
-        return stdout.decode("utf-8").rstrip("\n")
+        stdout, stderr = vm.run("cat /etc/os-release")
+        search = re.search(r'^PRETTY_NAME="(.*)"', stdout.decode())
+        if not search:
+            raise RuntimeError(f"Unable to determine platform for {vm.name}")
+        return search.group(1)
 
     def _validate_vm_platform(self, vm):
         """
