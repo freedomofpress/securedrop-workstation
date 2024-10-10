@@ -203,9 +203,10 @@ def sync_appmenus():
     run_cmd(["qvm-sync-appmenus", "whonix-gateway-17"])
     run_cmd(["qvm-shutdown", "whonix-gateway-17"])
 
-    # These are the two ones we show in prod VMs, so sync explicitly
+    # These are the ones we show in prod VMs, so sync explicitly
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-devices"])
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-whonix"])
+    run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-log"])
 
 
 def validate_config(path):

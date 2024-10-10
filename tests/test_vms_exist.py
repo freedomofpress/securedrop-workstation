@@ -34,7 +34,7 @@ class SD_VM_Tests(unittest.TestCase):
 
     @unittest.skipIf(CONFIG["environment"] != "prod", "Skipping on non-prod system")
     def test_internal(self):
-        not_internal = ["sd-proxy", "sd-whonix", "sd-devices"]
+        not_internal = ["sd-proxy", "sd-whonix", "sd-devices", "sd-log"]
 
         for vm_name in SD_VMS:
             if vm_name in not_internal:

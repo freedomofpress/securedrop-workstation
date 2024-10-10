@@ -32,15 +32,13 @@ sd-log:
       - add:
         - sd-workstation
     - features:
-    {% if d.environment == "prod" %}
-      - set:
-        - internal: 1
-    {% endif %}
       - enable:
         - service.paxctld
         - service.redis
         - service.securedrop-logging-disabled
         - service.securedrop-log-server
+      - set:
+        - menu-items: "org.gnome.Nautilus.desktop"
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
