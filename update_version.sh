@@ -13,6 +13,7 @@ fi
 NEW_VERSION=$(echo "$1" | sed 's/-//g' | sed 's/~//g' )
 
 # Update the version in the spec file and VERSION.
-# TODO: Use rpmdev-bumpspec
 echo "${NEW_VERSION}" > VERSION
-sed -i'' -r -e "s/^(Version:\\t).*/\\1${NEW_VERSION}/" "rpm-build/SPECS/securedrop-workstation-dom0-config.spec"
+rpmdev-bumpspec -c "See changelog.md" -n "${NEW_VERSION}" \
+  -u "SecureDrop Team <securedrop@freedom.press>" \
+  rpm-build/SPECS/securedrop-workstation-dom0-config.spec
