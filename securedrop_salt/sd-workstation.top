@@ -5,7 +5,6 @@ base:
   dom0:
     - securedrop_salt.sd-sys-vms
     - securedrop_salt.sd-dom0-files
-    - securedrop_salt.sd-dom0-systemd
     - securedrop_salt.sd-base-template
     - securedrop_salt.sd-workstation-template
     - securedrop_salt.sd-upgrade-templates

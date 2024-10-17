@@ -162,6 +162,9 @@ systemctl enable securedrop-logind-override-disable.service
 systemctl --global enable securedrop-user-xfce-icon-size.service ||:
 systemctl --global enable securedrop-user-xfce-settings.service ||:
 
+# Enable notification timer
+systemctl --global enable sdw-notify.timer ||:
+
 %preun
 # If we're uninstalling (vs upgrading)
 if [ $1 -eq 0 ]; then
