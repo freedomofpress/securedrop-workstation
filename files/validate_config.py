@@ -83,6 +83,20 @@ class SDWConfigValidator:
         """
         if not os.path.exists(self.secret_key_filepath):
             raise ValidationError(f"PGP secret key file not found: {self.secret_key_filepath}")
+        with open(self.secret_key_filepath) as f:
+            for line in f:
+                sline = line.strip()
+                if not sline:
+                    # Whitespace at top of file
+                    continue
+                if sline.startswith("-----BEGIN PGP PRIVATE KEY BLOCK-----"):
+                    # Good enough; it is imported later to check it's well-formed
+                    break
+                else:
+                    # Expecting a file with an armored secret key only
+                    raise ValidationError(
+                        "PGP secret key file provided is not an armored private key"
+                    )
         gpg_cmd = ["gpg", "--import", self.secret_key_filepath]
         result = False
         with tempfile.TemporaryDirectory() as d:
