@@ -41,6 +41,7 @@ BuildRequires:	systemd-rpm-macros
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
 Requires:		python3-qt5
 Requires:       securedrop-workstation-keyring
+Requires:       grub2-xen-pvh
 
 %description
 This package contains VM configuration files for the Qubes-based
