@@ -79,17 +79,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def install_pvh_support():
-    """
-    Installs grub2-xen-pvh in dom0 - required for PVH with AppVM local kernels
-    TODO: install this via package requirements instead if possible
-    """
-    try:
-        subprocess.check_call(["sudo", "qubes-dom0-update", "-y", "-q", "grub2-xen-pvh"])
-    except subprocess.CalledProcessError:
-        raise SDWAdminException("Error installing grub2-xen-pvh: local PVH not available.")
-
-
 def copy_config():
     """
     Copies config.json and sd-journalist.sec to /srv/salt/securedrop_salt
@@ -553,7 +542,6 @@ def main():
                 sys.exit(0)
         print("Applying configuration...")
         validate_config(SCRIPTS_PATH)
-        install_pvh_support()
         copy_config()
         refresh_salt()
         provision_and_configure()
