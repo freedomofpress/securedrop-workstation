@@ -5,7 +5,7 @@ on: [push, pull_request, merge_group]
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container:
       image: registry.fedoraproject.org/fedora:37
     steps:
@@ -21,7 +21,7 @@ jobs:
           git config --global --add safe.directory '*'
           make lint
   build-rpm:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container:
       image: registry.fedoraproject.org/fedora:37
     steps:
@@ -39,7 +39,7 @@ jobs:
           make test-deps
           make reprotest
   launcher-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container:
       image: registry.fedoraproject.org/fedora:37
     steps:

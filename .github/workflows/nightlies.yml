@@ -17,7 +17,7 @@ defaults:
 
 jobs:
   build-rpm:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container:
       image: registry.fedoraproject.org/fedora:37
     steps:
@@ -39,7 +39,7 @@ jobs:
           if-no-files-found: error
 
   commit-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: debian:bookworm
     needs:
       - build-rpm
