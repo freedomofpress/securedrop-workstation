@@ -1,0 +1,6 @@
+# Systemd user unit presets for production SDW configuration.
+# Don't override Qubes systemd settings (75-qubes-dom0-user.preset)
+# or systemd settings (90-systemd.preset).
+enable securedrop-user-xfce-icon-size.service
+enable securedrop-user-xfce-settings.service
+enable sdw-notify.timer
