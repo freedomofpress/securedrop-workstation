@@ -103,14 +103,12 @@ class SDWConfigValidator:
             gpg_env = {"GNUPGHOME": d}
             # Call out to gpg to confirm it's a valid keyfile
             try:
-                subprocess.check_call(
-                    gpg_cmd, env=gpg_env, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL
-                )
+                subprocess.check_output(gpg_cmd, env=gpg_env, stderr=subprocess.STDOUT)
                 result = True
-            except subprocess.CalledProcessError:
-                # suppress error since "result" is checked next
-                pass
-
+            except subprocess.CalledProcessError as err:
+                if err.output and "No pinentry" in err.output.decode():
+                    raise ValidationError("PGP key is passphrase-protected.")
+                # Otherwise, continue; "result" is checked next
         if not result:
             raise ValidationError(f"PGP secret key is not valid: {self.secret_key_filepath}")
 
