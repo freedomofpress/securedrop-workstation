@@ -83,20 +83,32 @@ class SDWConfigValidator:
         """
         if not os.path.exists(self.secret_key_filepath):
             raise ValidationError(f"PGP secret key file not found: {self.secret_key_filepath}")
+        with open(self.secret_key_filepath) as f:
+            for line in f:
+                sline = line.strip()
+                if not sline:
+                    # Whitespace at top of file
+                    continue
+                if sline.startswith("-----BEGIN PGP PRIVATE KEY BLOCK-----"):
+                    # Good enough; it is imported later to check it's well-formed
+                    break
+                else:
+                    # Expecting a file with an armored secret key only
+                    raise ValidationError(
+                        "PGP secret key file provided is not an armored private key"
+                    )
         gpg_cmd = ["gpg", "--import", self.secret_key_filepath]
         result = False
         with tempfile.TemporaryDirectory() as d:
             gpg_env = {"GNUPGHOME": d}
             # Call out to gpg to confirm it's a valid keyfile
             try:
-                subprocess.check_call(
-                    gpg_cmd, env=gpg_env, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL
-                )
+                subprocess.check_output(gpg_cmd, env=gpg_env, stderr=subprocess.STDOUT)
                 result = True
-            except subprocess.CalledProcessError:
-                # suppress error since "result" is checked next
-                pass
-
+            except subprocess.CalledProcessError as err:
+                if err.output and "No pinentry" in err.output.decode():
+                    raise ValidationError("PGP key is passphrase-protected.")
+                # Otherwise, continue; "result" is checked next
         if not result:
             raise ValidationError(f"PGP secret key is not valid: {self.secret_key_filepath}")
 
