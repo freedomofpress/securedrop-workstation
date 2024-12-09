@@ -32,9 +32,6 @@ sd-app:
     - features:
       - set:
         - vm-config.SD_MIME_HANDLING: sd-app
-{% if d.environment == "prod" %}
-        - internal: 1
-{% endif %}
       - enable:
         - service.paxctld
         - service.securedrop-mime-handling
