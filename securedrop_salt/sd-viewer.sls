@@ -40,9 +40,11 @@ sd-viewer:
     - features:
       - set:
         - vm-config.SD_MIME_HANDLING: sd-viewer
-{% if d.environment == "prod" %}
+        {% if d.environment == "prod" %}
         - internal: 1
-{% endif %}
+        {% else %}
+        - internal: 0
+        {% endif %}
       - enable:
         - service.paxctld
         - service.securedrop-mime-handling
