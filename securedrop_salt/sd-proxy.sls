@@ -25,11 +25,13 @@ sd-proxy-dvm:
       - netvm: sd-whonix
       - template_for_dispvms: True
       - default_dispvm: ""
-  {% if d.environment == "prod" %}
     - features:
       - set:
+        {% if d.environment == "prod" %}
         - internal: 1
-  {% endif %}
+        {% else %}
+        - internal: 0
+        {% endif %}
     - tags:
       - add:
         - sd-workstation
@@ -55,9 +57,11 @@ sd-proxy-create-named-dispvm:
       - set:
           - vm-config.SD_MIME_HANDLING: default
           - servicevm: 1
-      {% if d.environment == "prod" %}
+          {% if d.environment == "prod" %}
           - internal: 1
-      {% endif %}
+          {% else %}
+          - internal: 0
+          {% endif %}
     - tags:
       - add:
         - sd-workstation
