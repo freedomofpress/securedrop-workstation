@@ -9,7 +9,6 @@ import argparse
 import os
 import subprocess
 import sys
-from typing import List, Optional
 
 from qubesadmin import Qubes
 
@@ -146,7 +145,7 @@ def provision_all():
     )
 
 
-def configure(step_description: str, targets: List[str], restart: Optional[List[str]] = None):
+def configure(step_description: str, targets: list[str], restart: list[str] | None = None):
     """
     Apply configuration to a list of qubes
     """
@@ -171,7 +170,7 @@ def configure(step_description: str, targets: List[str], restart: Optional[List[
         run_cmd(["qvm-start", "--"] + restart)
 
 
-def qubesctl_call(step_description: str, args: List[str]):
+def qubesctl_call(step_description: str, args: list[str]):
     qubesctl_cmd = ["sudo", "qubesctl", "--show-output"] + args
     print("\n..........................................................................")
     print(step_description)
@@ -219,7 +218,7 @@ def validate_config(path):
         raise SDWAdminException("Error while validating configuration")
 
 
-def get_appvms_for_template(vm_name: str) -> List[str]:
+def get_appvms_for_template(vm_name: str) -> list[str]:
     """
     Return a list of AppVMs that use the specified VM as a template
     """
