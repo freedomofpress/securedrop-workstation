@@ -25,6 +25,7 @@ types-setuptools = "^75.6.0"
 ruff = "^0.8.3"
 python-debian = "^0.1.49"
 pysequoia = "^0.1.25"
+zizmor = "*"
 
 [tool.ruff]
 line-length = 100
