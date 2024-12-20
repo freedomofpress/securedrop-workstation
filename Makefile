@@ -210,7 +210,7 @@ venv: ## Provision a Python 3 virtualenv for development (ensure to also install
 check: lint test ## Runs linters and tests
 
 .PHONY: lint
-lint: check-ruff mypy rpmlint shellcheck ## Runs linters (ruff, mypy, rpmlint, and shellcheck)
+lint: check-ruff mypy rpmlint shellcheck zizmor ## Runs all linters
 
 .PHONY: test-launcher
 test-launcher: ## Runs launcher tests
@@ -237,6 +237,10 @@ rpmlint: ## Runs rpmlint on the spec file
 .PHONY: shellcheck
 shellcheck: ## Runs shellcheck on all shell scripts
 	./scripts/shellcheck.sh
+
+.PHONY: zizmor
+zizmor: ## Lint GitHub Actions workflows
+	poetry run zizmor .
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.

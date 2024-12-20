@@ -11,6 +11,8 @@ jobs:
     steps:
       - run: dnf install -y git make
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Install dependencies
         run: |
           make test-deps
@@ -27,6 +29,8 @@ jobs:
     steps:
       - run: dnf install -y git make
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Install dependencies
         run: |
           make build-deps
@@ -45,6 +49,8 @@ jobs:
     steps:
       - run: dnf install -y make
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Install dependencies
         run: |
           make test-deps

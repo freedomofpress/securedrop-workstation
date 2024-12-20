@@ -23,6 +23,8 @@ jobs:
     steps:
       - run: dnf install -y make git
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Install dependencies
         run: make build-deps
       - name: Build RPM
@@ -56,6 +58,8 @@ jobs:
           path: "securedrop-yum-test"
           lfs: true
           token: ${{ secrets.PUSH_TOKEN }}
+          # We need to store credentials here
+          persist-credentials: true
       - name: Commit and push
         run: |
           git config --global user.email "securedrop@freedom.press"
