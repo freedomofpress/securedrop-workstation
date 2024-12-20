@@ -155,6 +155,31 @@ test-whonix: test-prereqs ## Runs tests for SD Whonix VM
 test-gpg: test-prereqs ## Runs tests for SD GPG functionality
 	python3 -m unittest discover -v tests -p test_gpg.py
 
+# Client autologin variables
+CLIENT_TOTP=$(shell oathtool --totp --base32 JHCOGO7VCER3EJ4L --start-time "$(shell date -d "+5 seconds" +"%Y-%m-%d %H:%M:%S")")
+XDOTOOL_PATH=$(shell command -v xdotool)
+OATHTOOL_PATH=$(shell command -v oathtool)
+PHONY: run-client
+run-client: assert-dom0 ## Run client application (automatic login)
+ifeq ($(XDOTOOL_PATH),)
+	@echo $(XDOTOOL_PATH)
+	@echo 'please install xdotool with "sudo qubes-dom0-update xdotool"'
+	@false
+endif
+ifeq ($(OATHTOOL_PATH),)
+	@echo 'please install oathtool with "sudo qubes-dom0-update oathtool"'
+	@false
+endif
+	qvm-run --service sd-app qubes.StartApp+press.freedom.SecureDropClient
+	@sleep 3
+	@xdotool type "journalist"
+	@xdotool key Tab
+	@xdotool type "correct horse battery staple profanity oil chewy"
+	@xdotool key Tab
+	@xdotool key Tab
+	@xdotool type "$(CLIENT_TOTP)"
+	@xdotool key Return
+
 validate: assert-dom0 ## Checks for local requirements in dev env
 	@./files/validate_config.py
 
