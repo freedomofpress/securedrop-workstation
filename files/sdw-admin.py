@@ -105,11 +105,11 @@ def provision_and_configure():
 
     sync_appmenus()
 
-    if "sd-fedora-40-dvm" in Qubes().domains:
-        # If sd-fedora-40-dvm exists it's because salt determined that sys-usb was disposable
+    if "sd-fedora-41-dvm" in Qubes().domains:
+        # If sd-fedora-41-dvm exists it's because salt determined that sys-usb was disposable
         configure(
             "Add SecureDrop export device handling to sys-usb (disposable)",
-            ["sd-fedora-40-dvm"],
+            ["sd-fedora-41-dvm"],
             restart=["sys-usb"],
         )
     else:
