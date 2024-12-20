@@ -1,3 +1,6 @@
+[project]
+requires-python = ">=3.11"
+
 [tool.poetry]
 name = "securedrop-workstation-dom0-config"
 version = "0.0.0"
