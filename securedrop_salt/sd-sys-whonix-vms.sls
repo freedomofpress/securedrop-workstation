@@ -7,19 +7,9 @@
 ##
 
 include:
-  - securedrop_salt.sd-upgrade-templates
+  - qvm.anon-whonix
 
 {% set sd_supported_whonix_version = '17' %}
-
-whonix-gateway-installed:
-  qvm.template_installed:
-    - name: whonix-gateway-{{ sd_supported_whonix_version }}
-    - fromrepo: qubes-templates-community
-
-whonix-workstation-installed:
-  qvm.template_installed:
-    - name: whonix-workstation-{{ sd_supported_whonix_version }}
-    - fromrepo: qubes-templates-community
 
 dom0-enabled-apparmor-on-whonix-gw-template:
   qvm.vm:
@@ -27,9 +17,7 @@ dom0-enabled-apparmor-on-whonix-gw-template:
     - prefs:
       - kernelopts: "apparmor=1 security=apparmor"
     - require:
-      - sls: securedrop_salt.sd-upgrade-templates
-      - qvm: whonix-gateway-installed
-      - qvm: whonix-workstation-installed
+      - sls: qvm.anon-whonix
 
 dom0-enabled-apparmor-on-whonix-ws-template:
   qvm.vm:
@@ -37,9 +25,27 @@ dom0-enabled-apparmor-on-whonix-ws-template:
     - prefs:
       - kernelopts: "apparmor=1 security=apparmor"
     - require:
-      - sls: securedrop_salt.sd-upgrade-templates
-      - qvm: whonix-gateway-installed
-      - qvm: whonix-workstation-installed
+      - sls: qvm.anon-whonix
+
+sys-whonix-poweroff:
+  # Shut down in order to apply template changes
+  qvm.shutdown:
+    - name: sys-whonix
+    - flags:
+      - force
+      - wait
+    - require:
+      - qvm: dom0-enabled-apparmor-on-whonix-gw-template
+
+anon-whonix-poweroff:
+  # Shut down in order to apply template changes
+  qvm.shutdown:
+    - name: anon-whonix
+    - flags:
+      - force
+      - wait
+    - require:
+      - qvm: dom0-enabled-apparmor-on-whonix-ws-template
 
 # The Qubes logic is too polite about enforcing template
 # settings, using "present" rather than "prefs". Below
@@ -50,7 +56,7 @@ sys-whonix-template-config:
     - prefs:
       - template: whonix-gateway-{{ sd_supported_whonix_version }}
     - require:
-      - qvm: dom0-enabled-apparmor-on-whonix-gw-template
+      - qvm: sys-whonix-poweroff
 
 anon-whonix-template-config:
   qvm.vm:
@@ -58,4 +64,4 @@ anon-whonix-template-config:
     - prefs:
       - template: whonix-workstation-{{ sd_supported_whonix_version }}
     - require:
-      - qvm: dom0-enabled-apparmor-on-whonix-ws-template
+      - qvm: anon-whonix-poweroff
