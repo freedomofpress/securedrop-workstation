@@ -74,18 +74,6 @@ if [[ $TASK == "prepare" ]]; then
         fi
     fi
 
-    # Kill sys-whonix, to make sure connected clients don't prevent shutdown.
-    if qvm-check --quiet sys-whonix; then
-        BASE_TEMPLATE=$(qvm-prefs sys-whonix template)
-        if [[ ! $BASE_TEMPLATE =~ "17" ]]; then
-            if qvm-check --quiet --running sys-whonix; then
-                qvm-kill sys-whonix
-                # Wait for machine to stop fully, since qvm-kill doesn't block
-                sleep 5
-            fi
-        fi
-    fi
-
     # For sd-gpg, we simply shutdown the machine
     if qvm-check --quiet sd-gpg; then
         BASE_TEMPLATE=$(qvm-prefs sd-gpg template)
