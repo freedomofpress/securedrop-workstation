@@ -20,7 +20,10 @@ sd-app:
   qvm.vm:
     - name: sd-app
     - present:
+      # Sets attributes if creating VM for the first time,
+      # otherwise `prefs` must be used.
       - label: yellow
+      - template: sd-small-{{ sdvars.distribution }}-template
     - prefs:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""

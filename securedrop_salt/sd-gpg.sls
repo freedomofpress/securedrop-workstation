@@ -17,14 +17,13 @@
 
 include:
   - securedrop_salt.sd-workstation-template
-  - securedrop_salt.sd-upgrade-templates
 
 sd-gpg:
   qvm.vm:
     - name: sd-gpg
     - present:
-      - template: sd-small-{{ sdvars.distribution }}-template
       - label: purple
+      - template: sd-small-{{ sdvars.distribution }}-template
     - prefs:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""
