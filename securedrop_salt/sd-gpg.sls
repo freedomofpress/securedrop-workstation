@@ -17,11 +17,14 @@
 
 include:
   - securedrop_salt.sd-workstation-template
+  - securedrop_salt.sd-upgrade-templates
 
 sd-gpg:
   qvm.vm:
     - name: sd-gpg
     - present:
+      # Sets attributes if creating VM for the first time,
+      # otherwise `prefs` must be used.
       - label: purple
       - template: sd-small-{{ sdvars.distribution }}-template
     - prefs:

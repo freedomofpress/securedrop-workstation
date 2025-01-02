@@ -69,6 +69,7 @@ create-{{ required_dispvm }}:
     - name: {{ required_dispvm }}
     - present:
       - label: red
+      - template: {{ sd_fedora_base_template }}
     - prefs:
       - template: {{ sd_fedora_base_template }}
       - template_for_dispvms: True

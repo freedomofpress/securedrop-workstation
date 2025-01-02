@@ -14,7 +14,7 @@
 
 include:
   - securedrop_salt.sd-workstation-template
-  - securedrop_salt.sd-upgrade-templates
+  - securedrop_salt.sd-viewer
 
 sd-app:
   qvm.vm:
@@ -43,6 +43,7 @@ sd-app:
         - service.securedrop-mime-handling
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
+      - sls: securedrop_salt.sd-viewer
 
 sd-app-config:
   qvm.features:
