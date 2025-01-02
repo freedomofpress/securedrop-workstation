@@ -15,7 +15,6 @@
 
 include:
   - securedrop_salt.sd-workstation-template
-  - securedrop_salt.sd-upgrade-templates
 
 sd-log:
   qvm.vm:

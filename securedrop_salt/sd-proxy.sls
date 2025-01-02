@@ -12,7 +12,6 @@
 
 include:
   - securedrop_salt.sd-whonix
-  - securedrop_salt.sd-upgrade-templates
   - securedrop_salt.sd-workstation-template
 
 sd-proxy-dvm:
