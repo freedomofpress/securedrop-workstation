@@ -23,8 +23,10 @@ sd-gpg:
   qvm.vm:
     - name: sd-gpg
     - present:
-      - template: sd-small-{{ sdvars.distribution }}-template
+      # Sets attributes if creating VM for the first time,
+      # otherwise `prefs` must be used.
       - label: purple
+      - template: sd-small-{{ sdvars.distribution }}-template
     - prefs:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""

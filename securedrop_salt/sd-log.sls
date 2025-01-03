@@ -15,14 +15,15 @@
 
 include:
   - securedrop_salt.sd-workstation-template
-  - securedrop_salt.sd-upgrade-templates
 
 sd-log:
   qvm.vm:
     - name: sd-log
     - present:
-      - template: sd-small-{{ sdvars.distribution }}-template
+      # Sets attributes if creating VM for the first time,
+      # otherwise `prefs` must be used.
       - label: red
+      - template: sd-small-{{ sdvars.distribution }}-template
     - prefs:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""

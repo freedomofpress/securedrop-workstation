@@ -68,8 +68,8 @@ create-{{ required_dispvm }}:
   qvm.vm:
     - name: {{ required_dispvm }}
     - present:
-      - template: {{ sd_fedora_base_template }}
       - label: red
+      - template: {{ sd_fedora_base_template }}
     - prefs:
       - template: {{ sd_fedora_base_template }}
       - template_for_dispvms: True

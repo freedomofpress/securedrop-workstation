@@ -19,14 +19,15 @@
 
 include:
   - securedrop_salt.sd-workstation-template
-  - securedrop_salt.sd-upgrade-templates
 
 sd-viewer:
   qvm.vm:
     - name: sd-viewer
     - present:
-      - template: sd-large-{{ sdvars.distribution }}-template
+      # Sets attributes if creating VM for the first time,
+      # otherwise `prefs` must be used.
       - label: green
+      - template: sd-large-{{ sdvars.distribution }}-template
     - prefs:
       - template: sd-large-{{ sdvars.distribution }}-template
       - netvm: ""

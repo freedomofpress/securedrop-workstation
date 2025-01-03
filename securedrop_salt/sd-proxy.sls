@@ -12,14 +12,16 @@
 
 include:
   - securedrop_salt.sd-whonix
-  - securedrop_salt.sd-upgrade-templates
   - securedrop_salt.sd-workstation-template
 
 sd-proxy-dvm:
   qvm.vm:
     - name: sd-proxy-dvm
     - present:
+      # Sets attributes if creating VM for the first time,
+      # otherwise `prefs` must be used.
       - label: blue
+      - template: sd-small-{{ sdvars.distribution }}-template
     - prefs:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: sd-whonix
@@ -45,9 +47,10 @@ sd-proxy-create-named-dispvm:
     - name: sd-proxy
     - present:
       - label: blue
-      - class: DispVM
       - template: sd-proxy-dvm
+      - class: DispVM
     - prefs:
+      - template: sd-proxy-dvm
       - netvm: sd-whonix
       - autostart: true
       - default_dispvm: ""
