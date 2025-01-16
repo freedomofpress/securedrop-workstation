@@ -15,7 +15,7 @@ SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "s
 SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
 SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_TEMPLATE_LARGE, SD_TEMPLATE_SMALL]
 
-CURRENT_FEDORA_VERSION = "40"
+CURRENT_FEDORA_VERSION = "41"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"
 CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
 CURRENT_WHONIX_VERSION = "17"
