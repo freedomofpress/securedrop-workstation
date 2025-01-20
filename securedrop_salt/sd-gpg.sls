@@ -34,7 +34,7 @@ sd-gpg:
       - enable:
         - service.securedrop-logging-disabled
       - set:
-        - internal: 0
+        - internal: ""
     - tags:
       - add:
         - sd-workstation

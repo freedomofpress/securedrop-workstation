@@ -30,7 +30,7 @@ sd-proxy-dvm:
         {% if d.environment == "prod" %}
         - internal: 1
         {% else %}
-        - internal: 0
+        - internal: ""
         {% endif %}
     - tags:
       - add:
@@ -60,7 +60,7 @@ sd-proxy-create-named-dispvm:
           {% if d.environment == "prod" %}
           - internal: 1
           {% else %}
-          - internal: 0
+          - internal: ""
           {% endif %}
     - tags:
       - add:

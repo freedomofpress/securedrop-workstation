@@ -32,7 +32,7 @@ sd-app:
     - features:
       - set:
         - vm-config.SD_MIME_HANDLING: sd-app
-        - internal: 0
+        - internal: ""
       - enable:
         - service.paxctld
         - service.securedrop-mime-handling

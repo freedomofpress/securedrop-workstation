@@ -43,7 +43,7 @@ sd-viewer:
         {% if d.environment == "prod" %}
         - internal: 1
         {% else %}
-        - internal: 0
+        - internal: ""
         {% endif %}
       - enable:
         - service.paxctld
