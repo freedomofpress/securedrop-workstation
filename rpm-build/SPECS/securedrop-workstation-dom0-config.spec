@@ -90,8 +90,8 @@ install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicol
 install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 install -m 755 files/sdw-updater.py %{buildroot}/%{_bindir}/sdw-updater
 install -m 755 files/sdw-notify.py %{buildroot}/%{_bindir}/sdw-notify
-install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
-install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
+install -m 644 files/securedrop-workstation-notify.service %{buildroot}/%{_userunitdir}/
+install -m 644 files/securedrop-workstation-notify.timer %{buildroot}/%{_userunitdir}/
 install -m 644 files/securedrop-logind-override-disable.service %{buildroot}/%{_unitdir}/
 install -m 644 files/95-securedrop-systemd-user.preset %{buildroot}/%{_userpresetdir}/
 
@@ -126,8 +126,8 @@ install -m 644 files/app-press.freedom.SecureDropUpdater@autostart.service %{bui
 %{python3_sitelib}/*%{version}.dist-info/*
 %{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
-%{_userunitdir}/sdw-notify.service
-%{_userunitdir}/sdw-notify.timer
+%{_userunitdir}/securedrop-workstation-notify.service
+%{_userunitdir}/securedrop-workstation-notify.timer
 %{_userunitdir}/securedrop-user-xfce-settings.service
 %{_userunitdir}/securedrop-user-xfce-icon-size.service
 %{_userunitdir}/app-press.freedom.SecureDropUpdater@autostart.service
@@ -170,7 +170,7 @@ systemctl enable securedrop-logind-override-disable.service ||:
 %systemd_user_post securedrop-user-xfce-settings.service
 
 # Enable notification timer
-%systemd_user_post sdw-notify.timer
+%systemd_user_post securedrop-workstation-notify.timer
 
 # Invoke login/updater on boot
 %systemd_user_post app-press.freedom.SecureDropUpdater@autostart.service
@@ -180,7 +180,7 @@ if [ $1 -eq 0 ]; then
     %systemd_preun securedrop-logind-override-disable.service
     %systemd_user_preun securedrop-user-xfce-icon-size.service
     %systemd_user_preun securedrop-user-xfce-settings.service
-    %systemd_user_preun sdw-notify.timer
+    %systemd_user_preun securedrop-workstation-notify.timer
 fi
 
 %changelog
