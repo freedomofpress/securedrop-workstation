@@ -29,8 +29,16 @@ dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 	sdw-admin --apply
 
 .PHONY: build-rpm
+build-rpm: OUT:=build-log/securedrop-workstation-$(shell date +%Y%m%d).log
 build-rpm: ## Build RPM package
-	USE_BUILD_CONTAINER=true $(CONTAINER) ./scripts/build-rpm.sh
+	@mkdir -p build-log
+	@echo "Building SecureDop Workstation RPM..."
+	@export TERM=dumb
+	@USE_BUILD_CONTAINER=true script \
+		--command "$(CONTAINER) ./scripts/build-rpm.sh" \
+		--return $(OUT)
+	@echo
+	@echo "Build log available at $(OUT)"
 
 # FIXME: the time variations have been temporarily removed from reprotest
 # Suspecting upstream issues in rpm land is causing issues with 1 file\'s modification time not being clamped correctly only in a reprotest environment

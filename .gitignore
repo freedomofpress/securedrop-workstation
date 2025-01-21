@@ -2,6 +2,7 @@ config.json
 *.swp
 builder/build/*
 sd-journalist.sec
+build-log/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
