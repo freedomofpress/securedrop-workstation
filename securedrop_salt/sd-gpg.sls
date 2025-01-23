@@ -23,8 +23,12 @@ sd-gpg:
   qvm.vm:
     - name: sd-gpg
     - present:
-      - template: sd-small-{{ sdvars.distribution }}-template
+      # Sets attributes if creating VM for the first time,
+      # otherwise `prefs` must be used.
+      # Label color is set during initial configuration but
+      # not enforced on every Salt run, in case of user customization.
       - label: purple
+      - template: sd-small-{{ sdvars.distribution }}-template
     - prefs:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""

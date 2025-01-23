@@ -14,13 +14,18 @@
 
 include:
   - securedrop_salt.sd-workstation-template
-  - securedrop_salt.sd-upgrade-templates
+  - securedrop_salt.sd-viewer
 
 sd-app:
   qvm.vm:
     - name: sd-app
     - present:
+      # Sets attributes if creating VM for the first time,
+      # otherwise `prefs` must be used.
+      # Label color is set during initial configuration but
+      # not enforced on every Salt run, in case of user customization.
       - label: yellow
+      - template: sd-small-{{ sdvars.distribution }}-template
     - prefs:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""
@@ -38,6 +43,7 @@ sd-app:
         - service.securedrop-mime-handling
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
+      - sls: securedrop_salt.sd-viewer
 
 sd-app-config:
   qvm.features:

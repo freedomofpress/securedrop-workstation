@@ -23,6 +23,7 @@ sd-whonix:
     - name: sd-whonix
     - present:
       - label: purple
+      - template: whonix-gateway-17
       - mem: 500
     - prefs:
       - template: whonix-gateway-17

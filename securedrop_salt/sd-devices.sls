@@ -11,14 +11,17 @@
 
 include:
   - securedrop_salt.sd-workstation-template
-  - securedrop_salt.sd-upgrade-templates
 
 sd-devices-dvm:
   qvm.vm:
     - name: sd-devices-dvm
     - present:
-      - template: sd-large-{{ sdvars.distribution }}-template
+      # Sets attributes if creating VM for the first time,
+      # otherwise `prefs` must be used.
+      # Label color is set during initial configuration but
+      # not enforced on every Salt run, in case of user customization.
       - label: red
+      - template: sd-large-{{ sdvars.distribution }}-template
     - prefs:
       - template: sd-large-{{ sdvars.distribution }}-template
       - netvm: ""
@@ -39,11 +42,15 @@ sd-devices-create-named-dispvm:
   qvm.vm:
     - name: sd-devices
     - present:
+      # Sets attributes if creating VM for the first time,
+      # otherwise `prefs` must be used.
+      - label: red
       - template: sd-devices-dvm
       - class: DispVM
-      - label: red
     - prefs:
+      - template: sd-devices-dvm
       - default_dispvm: ""
+      - netvm: ""
     - tags:
       - add:
         - sd-workstation
