@@ -13,6 +13,7 @@
 
 # Imports "sdvars" for environment config
 {% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
+{% set whonix_version = salt['pillar.get']('qvm:whonix:version', '17') %}
 
 include:
   - securedrop_salt.sd-upgrade-templates
@@ -25,7 +26,7 @@ sd-whonix:
       - label: purple
       - mem: 500
     - prefs:
-      - template: whonix-gateway-17
+      - template: whonix-gateway-{{ whonix_version }}
       - provides-network: true
       - netvm: "sys-firewall"
       - autostart: true

@@ -6,7 +6,7 @@
 # and ensure sys-whonix and anon-whonix use latest version.
 ##
 
-# https://github.com/saltstack/salt/issues/5667
+{% set whonix_version = salt['pillar.get']('qvm:whonix:version', '17') %}
 
 include:
   - qvm.anon-whonix
@@ -14,37 +14,51 @@ include:
   - qvm.template-whonix-gateway
   - qvm.template-whonix-workstation
 
-{% set sd_supported_whonix_version = '17' %}
+# If sys-whonix or anon-whonix VMs are using an outdated whonix template,
+# upgrade them
+{% set upgrade_flag = false %}
 
-dom0-shut-down-whonix-stack:
-  cmd.run:
-    - name: qvm-shutdown --force --wait sys-whonix anon-whonix
-    - order: 1
-
-dom0-enabled-apparmor-on-whonix-gw-template:
-  qvm.vm:
-    - name: whonix-gateway-{{ sd_supported_whonix_version }}
-    - prefs:
-      - kernelopts: "apparmor=1 security=apparmor"
+{% for vm in ['sys-whonix', 'anon-whonix'] %}
+{% if not salt['pillar.get']('qvm:' ~ vm ~ ':template', '')|string.endswith(~ whonix_version ~) %}
+{% set upgrade_flag = true %}
+poweroff-{{ vm }}:
+  qvm.shutdown:
+    - name: {{ vm }}
+    - flags:
+      - force
+      - wait
     - require:
-      - qvm: template-whonix-gateway
+      - qvm: {{ vm }}-exists
 
-dom0-enabled-apparmor-on-whonix-ws-template:
+{{ vm }}-exists:
   qvm.vm:
-    - name: whonix-workstation-{{ sd_supported_whonix_version }}
-    - prefs:
-      - kernelopts: "apparmor=1 security=apparmor"
+    - name: {{ vm }}
     - require:
-      - qvm: template-whonix-workstation
+      - qvm.template-whonix-workstation
+      - qvm.template-whonix-gateway
 
-# The Qubes logic is too polite about enforcing template
-# settings, using "present" rather than "prefs". Below
-# we force the template updates.
+{% endfor %}
+
+# Enable apparmor on workstation and gateway templates
+# by extending the upstream qvm.vm configuration state
 extend:
-  anon-whonix:
+  qvm.whonix-workstation-tag:
     - prefs:
-      - template: whonix-workstation-{{ sd_supported_whonix_version }}
+      - kernelopts: "apparmor=1 security=apparmor"
 
-  sys-whonix:
+  qvm.whonix-gateway-tag:
     - prefs:
-      - template: whonix-gateway-{{ sd_supported_whonix_version }}
+      - kernelopts: "apparmor=1 security=apparmor"
+
+{% if upgrade_flag %}
+The Qubes logic is too polite about enforcing template
+# settings, using "present" rather than "prefs". Below
+# we force the template updates. 
+  qvm.sys-whonix:
+    - prefs:
+      - template: whonix-gateway-{{ whonix_version }}
+
+  qvm.anon-whonix:
+    - prefs:
+      - template: whonix-workstation-{{ whonix_version }}
+{% endif %}
