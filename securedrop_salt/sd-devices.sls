@@ -57,6 +57,7 @@ sd-devices-create-named-dispvm:
     - features:
       - enable:
         - service.securedrop-mime-handling
+        - service.avahi
       - set:
         - vm-config.SD_MIME_HANDLING: sd-devices
         - menu-items: "org.gnome.Nautilus.desktop org.gnome.DiskUtility.desktop"
