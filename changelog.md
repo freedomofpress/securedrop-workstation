@@ -1,5 +1,20 @@
 # changelog
 
+## 1.0.2
+
+This release is in response to a security issue in the logging component of
+SecureDrop Client (CVE-2025-24889), please see our advisory for more details.
+
+A manual step will be needed to apply this update; please follow
+[these instructions](https://workstation.securedrop.org/en/stable/admin/reference/troubleshooting_updates.html#expired-securedrop-signing-key)
+to retrieve the updated expiry date for our release signing key.
+If you need help or have any questions with this step, please reach out.
+
+* Recreate sd-log VM from scratch; save backup in new sd-retain-logvm VM
+* Update dom0 release signing key expiry to May 2027
+
+Note that the 1.0.1 version was skipped because of an issue while preparing this release.
+
 ## 1.0.0
 
 This is the first release targeting Qubes 4.2 and will require
