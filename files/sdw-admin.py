@@ -166,8 +166,10 @@ def configure(step_description: str, targets: list[str], restart: list[str] | No
     run_cmd(["qvm-shutdown", "--wait", "--"] + targets)
 
     if restart:
-        run_cmd(["qvm-shutdown", "--wait", "--"] + restart)
-        run_cmd(["qvm-start", "--"] + restart)
+        for domain in restart:
+            if domain in Qubes().domains:
+                run_cmd(["qvm-shutdown", "--force", "--wait", "--"] + [domain])
+                run_cmd(["qvm-start", "--"] + [domain])
 
 
 def qubesctl_call(step_description: str, args: list[str]):
