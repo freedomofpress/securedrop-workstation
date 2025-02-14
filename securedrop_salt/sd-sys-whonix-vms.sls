@@ -6,56 +6,62 @@
 # and ensure sys-whonix and anon-whonix use latest version.
 ##
 
+{% set whonix_version = salt['pillar.get']('qvm:whonix:version', '17') %}
+
 include:
-  - securedrop_salt.sd-upgrade-templates
+  - qvm.anon-whonix
+  - qvm.sys-whonix
+  - qvm.template-whonix-gateway
+  - qvm.template-whonix-workstation
 
-{% set sd_supported_whonix_version = '17' %}
+# If sys-whonix or anon-whonix VMs are using an outdated template,
+# upgrade them. If VMs are absent, configure them.
 
-whonix-gateway-installed:
-  qvm.template_installed:
-    - name: whonix-gateway-{{ sd_supported_whonix_version }}
-    - fromrepo: qubes-templates-community
+{% for vm in ['sys-whonix', 'anon-whonix'] %}
 
-whonix-workstation-installed:
-  qvm.template_installed:
-    - name: whonix-workstation-{{ sd_supported_whonix_version }}
-    - fromrepo: qubes-templates-community
-
-dom0-enabled-apparmor-on-whonix-gw-template:
-  qvm.vm:
-    - name: whonix-gateway-{{ sd_supported_whonix_version }}
-    - prefs:
-      - kernelopts: "apparmor=1 security=apparmor"
+poweroff-{{ vm }}:
+  qvm.shutdown:
+    - name: {{ vm }}
+    - flags:
+      - force
+      - wait
+    - onlyif:
+      - qvm-check --quiet {{ vm }} 
     - require:
-      - sls: securedrop_salt.sd-upgrade-templates
-      - qvm: whonix-gateway-installed
-      - qvm: whonix-workstation-installed
-
-dom0-enabled-apparmor-on-whonix-ws-template:
+      - qvm: {{ vm }}-present
+ 
+{{ vm }}-present:
   qvm.vm:
-    - name: whonix-workstation-{{ sd_supported_whonix_version }}
-    - prefs:
-      - kernelopts: "apparmor=1 security=apparmor"
+    - name: {{ vm }}
     - require:
-      - sls: securedrop_salt.sd-upgrade-templates
-      - qvm: whonix-gateway-installed
-      - qvm: whonix-workstation-installed
+      - sls: qvm.template-whonix-workstation
+      - sls: qvm.template-whonix-gateway
+
+{% endfor %}
+
+# Enable apparmor on workstation and gateway templates
+# by extending the upstream template configuration states
+extend:
+  whonix-workstation-tag:
+    qvm.vm:
+      - prefs:
+        - kernelopts: "apparmor=1 security=apparmor"
+
+  whonix-gateway-tag:
+    qvm.vm:
+      - prefs:
+        - kernelopts: "apparmor=1 security=apparmor"
 
 # The Qubes logic is too polite about enforcing template
-# settings, using "present" rather than "prefs". Below
-# we force the template updates.
-sys-whonix-template-config:
-  qvm.vm:
-    - name: sys-whonix
-    - prefs:
-      - template: whonix-gateway-{{ sd_supported_whonix_version }}
-    - require:
-      - qvm: dom0-enabled-apparmor-on-whonix-gw-template
+# settings, using "present" rather than "prefs". Below we
+# force the template updates by extending the upstream states,
+# which will also create the VMs if they are missing.
+  sys-whonix:
+    qvm.vm:
+      - prefs:
+        - template: whonix-gateway-{{ whonix_version }}
 
-anon-whonix-template-config:
-  qvm.vm:
-    - name: anon-whonix
-    - prefs:
-      - template: whonix-workstation-{{ sd_supported_whonix_version }}
-    - require:
-      - qvm: dom0-enabled-apparmor-on-whonix-ws-template
+  anon-whonix:
+    qvm.vm:
+      - prefs:
+        - template: whonix-workstation-{{ whonix_version }}
