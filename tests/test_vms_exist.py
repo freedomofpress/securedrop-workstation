@@ -179,7 +179,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(vm.features["service.securedrop-log-server"], "1")
         self.assertEqual(vm.features["service.securedrop-logging-disabled"], "1")
         # See sd-log.sls "sd-install-epoch" feature
-        self.assertEqual(vm.features["sd-install-epoch"], "1")
+        self.assertEqual(vm.features["sd-install-epoch"], "1001")
 
         self.assertFalse(vm.template_for_dispvms)
         self.assertIn("sd-workstation", vm.tags)
