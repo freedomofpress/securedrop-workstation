@@ -3,6 +3,8 @@ name: ci
 
 on: [push, pull_request, merge_group]
 
+permissions: {}
+
 jobs:
   lint:
     runs-on: ubuntu-latest
