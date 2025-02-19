@@ -22,7 +22,7 @@ setuptools.setup(
         "Development Status :: 3 - Alpha",
         "Programming Language :: Python :: 3",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "License :: OSI Approved :: " "GNU Affero General Public License v3 (AGPLv3)",
+        "License :: OSI Approved :: GNU Affero General Public License v3 (AGPLv3)",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
     ],

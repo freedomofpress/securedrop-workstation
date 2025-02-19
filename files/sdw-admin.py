@@ -121,7 +121,7 @@ def provision_and_configure():
 
 
 def run_cmd(args):
-    print(f"Running \"{' '.join(args)}\"")
+    print(f'Running "{" ".join(args)}"')
     try:
         subprocess.check_call(args)
     except subprocess.CalledProcessError:
@@ -174,7 +174,7 @@ def qubesctl_call(step_description: str, args: list[str]):
     qubesctl_cmd = ["sudo", "qubesctl", "--show-output"] + args
     print("\n..........................................................................")
     print(step_description)
-    print(f"Running \"{' '.join(qubesctl_cmd)}\"")
+    print(f'Running "{" ".join(qubesctl_cmd)}"')
 
     try:
         subprocess.check_call(qubesctl_cmd)

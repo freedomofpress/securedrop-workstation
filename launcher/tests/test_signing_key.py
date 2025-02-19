@@ -32,6 +32,6 @@ def assert_key(cert_bytes: bytes):
     )
     assert key.expiration.year == 2027
     # Fail if we are within 6 months of the key's expiry
-    assert datetime.now(tz=UTC) < (
-        key.expiration - timedelta(days=6 * 30)
-    ), "key expires in less than 6 months"
+    assert datetime.now(tz=UTC) < (key.expiration - timedelta(days=6 * 30)), (
+        "key expires in less than 6 months"
+    )
