@@ -1,6 +1,6 @@
 # changelog
 
-## 1.1.0-rc1
+## 1.1.0-rc2
    - Enforce template setting via qvm-prefs (#1226)
    - Revert "internal" setting for sd-app and sd-devices (#1216)
    - Bump supported Fedora version to Fedora-41 (#1221)
