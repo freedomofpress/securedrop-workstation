@@ -209,6 +209,8 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(vm_type, "DispVM")
         self.assertIn("sd-workstation", vm.tags)
 
+        self.assertEqual(vm.features["service.avahi"], "1")
+
         # MIME handling
         self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
         self.assertEqual(vm.features["vm-config.SD_MIME_HANDLING"], "sd-devices")
