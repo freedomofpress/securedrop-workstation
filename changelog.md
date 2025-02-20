@@ -1,5 +1,16 @@
 # changelog
 
+## 1.1.0-rc1
+   - Enforce template setting via qvm-prefs (#1226)
+   - Revert "internal" setting for sd-app and sd-devices (#1216)
+   - Bump supported Fedora version to Fedora-41 (#1221)
+   - Remove nopat kernelopt (#1172)
+   - Add additional Submission Key validation checks in SDWConfigValidator (#1205)
+   - Provisioning/configuration tooling improvements (#1159)
+   - Updater improvements (#1165)
+   - Use systemd timer instead of Salt for sdw-notify (#1088)
+   - Remove Salt orchestration of libreoffice and handle via Debian packages (#1162)
+
 ## 1.0.2
 
 This release is in response to a security issue in the logging component of
