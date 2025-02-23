@@ -86,7 +86,7 @@ class SD_VM_Local_Test(unittest.TestCase):
         #   * QubesVMNotStartedError (from qubesadmin.base)
         for v in list(self.vm.connected_vms.values()):
             if v.is_running():
-                msg = f"Need to halt connected VM {v}" " before testing"
+                msg = f"Need to halt connected VM {v} before testing"
                 print(msg)
                 v.shutdown()
                 while v.is_running():

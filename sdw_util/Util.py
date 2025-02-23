@@ -25,7 +25,7 @@ OS_RELEASE_FILE = "/etc/os-release"
 LOCK_ERROR = "Error obtaining lock on '{}'. Process may already be running."
 
 # Format for those logs
-LOG_FORMAT = "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
+LOG_FORMAT = "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) %(levelname)s: %(message)s"
 
 # Namespace for primary logger, additional namespaces should be defined by module user
 SD_LOGGER_PREFIX = "sd"
