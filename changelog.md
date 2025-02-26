@@ -1,6 +1,6 @@
 # changelog
 
-## 1.1.0-rc4
+## 1.1.0
    - Set up sd-log at the same time as other VMs (#1253)
    - Enforce template setting via qvm-prefs (#1226)
    - Revert "internal" setting for sd-app and sd-devices (#1216)
