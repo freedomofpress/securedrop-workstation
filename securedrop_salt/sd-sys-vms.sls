@@ -14,6 +14,8 @@ include:
 {% set sd_supported_fedora_version = 'fedora-41' %}
 {% set sd_fedora_base_template = sd_supported_fedora_version + '-xfce' %}
 
+{% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
+
 # Install latest templates required for SDW VMs.
 dom0-install-fedora-template:
   cmd.run:
@@ -33,6 +35,7 @@ set-fedora-template-as-default-mgmt-dvm:
 update-fedora-template-if-new:
   cmd.wait:
     - name: qubes-vm-update --quiet --force-update --targets {{ sd_fedora_base_template }}
+    - runas: {{ gui_user }}
     - require:
       - cmd: dom0-install-fedora-template
       # Update the mgmt-dvm setting first, to avoid problems during first update
