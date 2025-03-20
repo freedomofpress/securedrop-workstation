@@ -164,7 +164,6 @@ test-gpg: test-prereqs ## Runs tests for SD GPG functionality
 	python3 -m unittest discover -v tests -p test_gpg.py
 
 # Client autologin variables
-CLIENT_TOTP=$(shell oathtool --totp --base32 JHCOGO7VCER3EJ4L --start-time "$(shell date -d "+5 seconds" +"%Y-%m-%d %H:%M:%S")")
 XDOTOOL_PATH=$(shell command -v xdotool)
 OATHTOOL_PATH=$(shell command -v oathtool)
 PHONY: run-client
@@ -185,7 +184,7 @@ endif
 	@xdotool type "correct horse battery staple profanity oil chewy"
 	@xdotool key Tab
 	@xdotool key Tab
-	@xdotool type "$(CLIENT_TOTP)"
+	@xdotool type $(shell oathtool --totp --base32 JHCOGO7VCER3EJ4L)
 	@xdotool key Return
 
 validate: assert-dom0 ## Checks for local requirements in dev env
