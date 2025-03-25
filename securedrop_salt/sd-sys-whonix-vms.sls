@@ -38,7 +38,6 @@ whonix-{{ component }}-{{ whonix_version }}-apparmor:
     - require:
       - qvm: whonix-{{ component }}-{{ whonix_version }}-installed
 
-{% if not salt['cmd.run']('qvm-prefs ' + vm + ' template').endswith(whonix_version) %}
 # The Qubes logic is too polite about enforcing template
 # settings, using "present" rather than "prefs". Below we
 # force the template updates.
@@ -50,6 +49,8 @@ poweroff-{{ vm }}:
       - wait
     - onlyif:
       - qvm-check --quiet {{ vm }}
+    - unless:
+      - qvm-prefs {{ vm }} template | grep -q whonix-{{ component }}-{{ whonix_version }}
 
 # cmd.run is used instead of qvm.vm to avoid a recursive
 # requisite issue via the "name" parameter of qvm.vm.
@@ -60,7 +61,7 @@ poweroff-{{ vm }}:
       - qvm: poweroff-{{ vm }}
       - qvm: whonix-{{ component }}-{{ whonix_version }}-apparmor
       - sls: qvm.{{ vm }}
-
-{% endif %}
+    - unless:
+      - qvm-prefs {{ vm }} template | grep -q whonix-{{ component }}-{{ whonix_version }}
 
 {% endfor %}

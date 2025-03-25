@@ -18,8 +18,21 @@
 {% set whonix_version = salt['pillar.get']('qvm:whonix:version', whonix.whonix_version) %}
 
 include:
-  - securedrop_salt.sd-upgrade-templates
   - securedrop_salt.sd-sys-whonix-vms
+
+{% for vm in ['sd-proxy', 'sd-whonix'] %}
+poweroff-{{ vm }}:
+  qvm.shutdown:
+    - name: {{ vm }}
+    - flags:
+      - force
+      - wait
+    - onlyif:
+      - qvm-check --quiet {{ vm }}
+    - unless:
+      - qvm-prefs sd-whonix template | grep -q whonix-gateway-{{ whonix_version }}
+
+{% endfor %}
 
 sd-whonix:
   qvm.vm:
@@ -43,7 +56,6 @@ sd-whonix:
       - enable:
         - service.securedrop-whonix-config
     - require:
-      - sls: securedrop_salt.sd-upgrade-templates
       - sls: securedrop_salt.sd-sys-whonix-vms
 
 {% import_json "securedrop_salt/config.json" as d %}
