@@ -14,19 +14,35 @@
 # Imports "sdvars" for environment config
 {% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
+{%- import "qvm/whonix.jinja" as whonix -%}
+{% set whonix_version = salt['pillar.get']('qvm:whonix:version', whonix.whonix_version) %}
+
 include:
-  - securedrop_salt.sd-upgrade-templates
   - securedrop_salt.sd-sys-whonix-vms
+
+{% for vm in ['sd-proxy', 'sd-whonix'] %}
+poweroff-{{ vm }}:
+  qvm.shutdown:
+    - name: {{ vm }}
+    - flags:
+      - force
+      - wait
+    - onlyif:
+      - qvm-check --quiet {{ vm }}
+    - unless:
+      - qvm-prefs sd-whonix template | grep -q whonix-gateway-{{ whonix_version }}
+
+{% endfor %}
 
 sd-whonix:
   qvm.vm:
     - name: sd-whonix
     - present:
       - label: purple
-      - template: whonix-gateway-17
+      - template: whonix-gateway-{{ whonix_version }}
       - mem: 500
     - prefs:
-      - template: whonix-gateway-17
+      - template: whonix-gateway-{{ whonix_version }}
       - provides-network: true
       - netvm: "sys-firewall"
       - autostart: true
@@ -40,7 +56,6 @@ sd-whonix:
       - enable:
         - service.securedrop-whonix-config
     - require:
-      - sls: securedrop_salt.sd-upgrade-templates
       - sls: securedrop_salt.sd-sys-whonix-vms
 
 {% import_json "securedrop_salt/config.json" as d %}
