@@ -197,6 +197,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertIn("sd-workstation", vm.tags)
         self.assertTrue(vm.template_for_dispvms)
 
+        self.assertNotIn("service.avahi", vm.features)
         # MIME handling (dvm does NOT setup mime, only its disposables do)
         self.assertNotIn("service.securedrop-mime-handling", vm.features)
         self._check_service_running(vm, "securedrop-mime-handling", running=False)
@@ -208,6 +209,8 @@ class SD_VM_Tests(unittest.TestCase):
         vm_type = vm.klass
         self.assertEqual(vm_type, "DispVM")
         self.assertIn("sd-workstation", vm.tags)
+
+        self.assertEqual(vm.features["service.avahi"], "1")
 
         # MIME handling
         self.assertEqual(vm.features["service.securedrop-mime-handling"], "1")
