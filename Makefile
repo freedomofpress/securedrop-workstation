@@ -113,26 +113,26 @@ prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./files/validate_config.py
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
-	@./scripts/destroy-vm.py sd-whonix
+	@./files/destroy-vm.py sd-whonix
 
 remove-sd-viewer: assert-dom0 ## Destroys SD Submission reading VM
-	@./scripts/destroy-vm.py sd-viewer
+	@./files/destroy-vm.py sd-viewer
 
 remove-sd-proxy: assert-dom0 ## Destroys SD Proxy VM
-	@./scripts/destroy-vm.py sd-proxy
+	@./files/destroy-vm.py sd-proxy
 
 remove-sd-app: assert-dom0 ## Destroys SD APP VM
-	@./scripts/destroy-vm.py sd-app
+	@./files/destroy-vm.py sd-app
 
 remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
-	@./scripts/destroy-vm.py sd-gpg
+	@./files/destroy-vm.py sd-gpg
 
 remove-sd-devices: assert-dom0 ## Destroys SD EXPORT VMs
-	@./scripts/destroy-vm.py sd-devices
-	@./scripts/destroy-vm.py sd-devices-dvm
+	@./files/destroy-vm.py sd-devices
+	@./files/destroy-vm.py sd-devices-dvm
 
 remove-sd-log: assert-dom0 ## Destroys SD logging VM
-	@./scripts/destroy-vm.py sd-log
+	@./files/destroy-vm.py sd-log
 
 clean: assert-dom0 prep-dev ## Destroys all SD VMs
 # Use the local script path, since system PATH location will be absent
