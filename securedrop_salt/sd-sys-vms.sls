@@ -18,9 +18,8 @@ include:
 
 # Install latest templates required for SDW VMs.
 dom0-install-fedora-template:
-  cmd.run:
-    - name: >
-        qvm-template info --machine-readable {{ sd_fedora_base_template }} | grep -q "installed|{{ sd_fedora_base_template }}|" || qvm-template install {{ sd_fedora_base_template }}
+  qvm.template_installed:
+    - name: {{ sd_fedora_base_template }}
 
 # Update the mgmt VM before updating the new Fedora VM. The order is required
 set-fedora-template-as-default-mgmt-dvm:
@@ -29,7 +28,7 @@ set-fedora-template-as-default-mgmt-dvm:
         qvm-shutdown --wait default-mgmt-dvm &&
         qvm-prefs default-mgmt-dvm template {{ sd_fedora_base_template }}
     - require:
-      - cmd: dom0-install-fedora-template
+      - qvm: dom0-install-fedora-template
 
 # If the VM has just been installed via package manager, update it immediately
 update-fedora-template-if-new:
@@ -37,11 +36,11 @@ update-fedora-template-if-new:
     - name: qubes-vm-update --quiet --force-update --targets {{ sd_fedora_base_template }}
     - runas: {{ gui_user }}
     - require:
-      - cmd: dom0-install-fedora-template
+      - qvm: dom0-install-fedora-template
       # Update the mgmt-dvm setting first, to avoid problems during first update
       - cmd: set-fedora-template-as-default-mgmt-dvm
     - watch:
-      - cmd: dom0-install-fedora-template
+      - qvm: dom0-install-fedora-template
 
 # qvm.default-dispvm is not strictly required here, but we want it to be
 # updated as soon as possible to ensure make clean completes successfully, as
@@ -50,7 +49,7 @@ set-fedora-default-template-version:
   cmd.run:
     - name: qubes-prefs default_template {{ sd_fedora_base_template }}
     - require:
-      - cmd: dom0-install-fedora-template
+      - qvm: dom0-install-fedora-template
       - sls: qvm.default-dispvm
 
 # On 4.1, several sys qubes are disposable by default - since we also want to
@@ -80,7 +79,7 @@ create-{{ required_dispvm }}:
       - netvm: ""
 {% endif %}
     - require:
-      - cmd: dom0-install-fedora-template
+      - qvm: dom0-install-fedora-template
 {% endfor %}
 
 # Now proceed with rebooting all the sys-* VMs, since the new template is up to date.
@@ -103,13 +102,13 @@ sd-{{ sys_vm }}-fedora-version-halt:
   qvm.kill:
     - name: {{ sys_vm }}
     - require:
-      - cmd: dom0-install-fedora-template
+      - qvm: dom0-install-fedora-template
 
 sd-{{ sys_vm }}-fedora-version-halt-wait:
   cmd.run:
     - name: sleep 5
     - require:
-      - cmd: dom0-install-fedora-template
+      - qvm: dom0-install-fedora-template
 
 sd-{{ sys_vm }}-fedora-version-update:
   qvm.vm:
