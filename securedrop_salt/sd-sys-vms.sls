@@ -39,7 +39,7 @@ update-fedora-template-if-new:
       - qvm: dom0-install-fedora-template
       # Update the mgmt-dvm setting first, to avoid problems during first update
       - cmd: set-fedora-template-as-default-mgmt-dvm
-    - watch:
+    - onchanges:
       - qvm: dom0-install-fedora-template
 
 # qvm.default-dispvm is not strictly required here, but we want it to be
