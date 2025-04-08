@@ -81,31 +81,31 @@ sd-workstation-template: prep-dev ## Provisions base template for SDW AppVMs
 	sudo qubesctl --show-output --skip-dom0 --targets sd-base-bookworm-template state.highstate
 
 sd-proxy: prep-dev ## Provisions SD Proxy VM
-	sudo qubesctl --show-output state.sls sd-proxy
+	sudo qubesctl --show-output state.sls securedrop_salt.sd-proxy
 	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-proxy-dvm,sd-proxy state.highstate
 
 sd-gpg: prep-dev ## Provisions SD GPG keystore VM
-	sudo qubesctl --show-output state.sls sd-gpg
+	sudo qubesctl --show-output state.sls securedrop_salt.sd-gpg
 	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-gpg state.highstate
 
 sd-app: prep-dev ## Provisions SD APP VM
-	sudo qubesctl --show-output state.sls sd-app
+	sudo qubesctl --show-output state.sls securedrop_salt.sd-app
 	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-app state.highstate
 
 sd-whonix: prep-dev ## Provisions SD Whonix VM
-	sudo qubesctl --show-output state.sls sd-whonix
+	sudo qubesctl --show-output state.sls securedrop_salt.sd-whonix
 	sudo qubesctl --show-output --skip-dom0 --targets whonix-gateway-17,sd-whonix state.highstate
 
 sd-viewer: prep-dev ## Provisions SD Submission Viewing VM
-	sudo qubesctl --show-output state.sls sd-viewer
+	sudo qubesctl --show-output state.sls securedrop_salt.sd-viewer
 	sudo qubesctl --show-output --skip-dom0 --targets sd-large-bookworm-template,sd-viewer state.highstate
 
 sd-devices: prep-dev ## Provisions SD Export VM
-	sudo qubesctl --show-output state.sls sd-devices
+	sudo qubesctl --show-output state.sls securedrop_salt.sd-devices
 	sudo qubesctl --show-output --skip-dom0 --targets sd-large-bookworm-template,sd-devices,sd-devices-dvm state.highstate
 
 sd-log: prep-dev ## Provisions SD logging VM
-	sudo qubesctl --show-output state.sls sd-log
+	sudo qubesctl --show-output state.sls securedrop_salt.sd-log
 	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-log state.highstate
 
 prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
@@ -113,26 +113,26 @@ prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./files/validate_config.py
 
 remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
-	@./scripts/destroy-vm.py sd-whonix
+	@./files/destroy-vm.py sd-whonix
 
 remove-sd-viewer: assert-dom0 ## Destroys SD Submission reading VM
-	@./scripts/destroy-vm.py sd-viewer
+	@./files/destroy-vm.py sd-viewer
 
 remove-sd-proxy: assert-dom0 ## Destroys SD Proxy VM
-	@./scripts/destroy-vm.py sd-proxy
+	@./files/destroy-vm.py sd-proxy
 
 remove-sd-app: assert-dom0 ## Destroys SD APP VM
-	@./scripts/destroy-vm.py sd-app
+	@./files/destroy-vm.py sd-app
 
 remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
-	@./scripts/destroy-vm.py sd-gpg
+	@./files/destroy-vm.py sd-gpg
 
 remove-sd-devices: assert-dom0 ## Destroys SD EXPORT VMs
-	@./scripts/destroy-vm.py sd-devices
-	@./scripts/destroy-vm.py sd-devices-dvm
+	@./files/destroy-vm.py sd-devices
+	@./files/destroy-vm.py sd-devices-dvm
 
 remove-sd-log: assert-dom0 ## Destroys SD logging VM
-	@./scripts/destroy-vm.py sd-log
+	@./files/destroy-vm.py sd-log
 
 clean: assert-dom0 prep-dev ## Destroys all SD VMs
 # Use the local script path, since system PATH location will be absent
