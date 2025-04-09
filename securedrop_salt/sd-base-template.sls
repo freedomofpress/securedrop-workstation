@@ -24,4 +24,4 @@ sd-base-template:
       - enable:
         - service.paxctld
     - require:
-      - cmd: dom0-install-debian-minimal-template
+      - qvm: dom0-install-debian-minimal-template
