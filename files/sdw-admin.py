@@ -250,7 +250,7 @@ def perform_uninstall():
         )
         print("Destroying all VMs")
         provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-deprecated-qubes")
-        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all"])
+        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all-tagged"])
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/clean-salt")])
