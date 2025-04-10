@@ -8,6 +8,7 @@ from base import (
     SD_TEMPLATE_LARGE,
     SD_TEMPLATE_SMALL,
     SD_TEMPLATES,
+    SD_UNTAGGED_DEPRECATED_VMS,
     SD_VMS,
 )
 from qubesadmin import Qubes
@@ -31,6 +32,10 @@ class SD_VM_Tests(unittest.TestCase):
         sdw_tagged_vm_names = [vm.name for vm in self.sdw_tagged_vms]
         expected_vms = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
         self.assertEqual(set(sdw_tagged_vm_names), set(expected_vms))
+
+        # Check for untagged VMs
+        for vm_name in SD_UNTAGGED_DEPRECATED_VMS:
+            self.assertRaises(KeyError, lambda: self.app.domains[vm_name])  # noqa: PT027
 
     @unittest.skipIf(CONFIG["environment"] != "prod", "Skipping on non-prod system")
     def test_internal(self):
