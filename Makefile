@@ -196,8 +196,8 @@ validate: assert-dom0 ## Checks for local requirements in dev env
 prep-dom0: prep-dev # Copies dom0 config files
 	sudo qubesctl --show-output --targets dom0 state.highstate
 
-destroy-all: ## Destroys all VMs managed by Workstation salt config
-	./scripts/destroy-vm.py --all
+destroy-all-tagged: ## Destroys all VMs managed by Workstation salt config (may exclude untagged VMs)
+	./scripts/destroy-vm.py --all-tagged
 
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
