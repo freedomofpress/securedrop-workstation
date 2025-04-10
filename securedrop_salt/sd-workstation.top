@@ -16,6 +16,7 @@ base:
     - securedrop_salt.sd-viewer
     - securedrop_salt.sd-app
     - securedrop_salt.sd-whonix
+    - securedrop_salt.sd-remove-deprecated-qubes
     - securedrop_salt.sd-remove-unused-templates
 
   sd-base-bookworm-template:
