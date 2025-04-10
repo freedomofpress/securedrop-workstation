@@ -249,11 +249,7 @@ def perform_uninstall():
             ["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-default-dispvm"]
         )
         print("Destroying all VMs")
-        # sd-retain-logvm is not tagged with `sd-workstation` tag;
-        # it must be removed before its template
-        subprocess.check_call(
-            ["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-remove-untagged-vms"]
-        )
+        provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-deprecated-qubes")
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all"])
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
