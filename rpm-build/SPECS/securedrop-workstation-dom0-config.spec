@@ -148,11 +148,14 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %license LICENSE
 
 %post
+# Update Salt Configuration
+qubesctl saltutil.clear_cache -l quiet --out quiet > /dev/null || true
+qubesctl saltutil.sync_all refresh=true -l quiet --out quiet > /dev/null || true
 qubesctl top.enable securedrop_salt.sd-workstation > /dev/null ||:
 
 # Force full run of all Salt states - uncomment in release branch
-# mkdir -p /tmp/sdw-migrations
-# touch /tmp/sdw-migrations/whonix-17-update
+mkdir -p /tmp/sdw-migrations
+touch /tmp/sdw-migrations/f41-update
 
 # Enable service that conditionally removes our systemd-logind customizations
 # on dev machines only.
