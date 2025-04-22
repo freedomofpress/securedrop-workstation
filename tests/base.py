@@ -14,6 +14,7 @@ SD_TEMPLATE_SMALL = f"sd-small-{DEBIAN_VERSION}-template"
 SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-whonix", "sd-devices"]
 SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
 SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_TEMPLATE_LARGE, SD_TEMPLATE_SMALL]
+SD_UNTAGGED_DEPRECATED_VMS = ["sd-retain-logvm"]
 
 CURRENT_FEDORA_VERSION = "41"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"

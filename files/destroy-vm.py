@@ -16,11 +16,11 @@ SDW_DEFAULT_TAG = "sd-workstation"
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--all",
+        "--all-tagged",
         default=False,
         required=False,
         action="store_true",
-        help="Destroys all SDW VMs",
+        help="Destroys all SDW VMs (except untagged-ones)",
     )
     parser.add_argument(
         "targets",
@@ -28,7 +28,7 @@ def parse_args():
         nargs=argparse.REMAINDER,
     )
     args = parser.parse_args()
-    if not args.all and len(args.targets) < 1:
+    if not args.all_tagged and len(args.targets) < 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
     return args
@@ -48,7 +48,7 @@ def destroy_vm(vm):
     print("OK")
 
 
-def destroy_all():
+def destroy_all_tagged():
     """
     Destroys all VMs marked with the 'sd-workstation' tag, in the following order:
     DispVMs, AppVMs, then TemplateVMs. Excludes VMs for which
@@ -75,8 +75,8 @@ def destroy_all():
 if __name__ == "__main__":
     args = parse_args()
     q = qubesadmin.Qubes()
-    if args.all:
-        destroy_all()
+    if args.all_tagged:
+        destroy_all_tagged()
     else:
         for t in args.targets:
             vm = q.domains[t]

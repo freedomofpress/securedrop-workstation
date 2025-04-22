@@ -1,5 +1,9 @@
 # changelog
 
+## 1.1.2
+
+* Remove `sd-retain-logvm` (#1285)
+
 ## 1.1.1
    - Run qubes-vm-update as gui user during Fedora VM provisioning (#1260)
 
