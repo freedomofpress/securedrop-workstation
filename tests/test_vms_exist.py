@@ -35,7 +35,7 @@ class SD_VM_Tests(unittest.TestCase):
 
         # Check for untagged VMs
         for vm_name in SD_UNTAGGED_DEPRECATED_VMS:
-            self.assertRaises(KeyError, lambda: self.app.domains[vm_name])  # noqa: PT027
+            self.assertNotIn(vm_name, self.app.domains)
 
     @unittest.skipIf(CONFIG["environment"] != "prod", "Skipping on non-prod system")
     def test_internal(self):
