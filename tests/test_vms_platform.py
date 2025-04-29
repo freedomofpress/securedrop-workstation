@@ -46,7 +46,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         Asserts that the given AppVM is based on an OS listed in the
         SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
-        sd-whonix is based on the whonix-17 template.
+        sd-whonix is based on the whonix-XX template.
         All other workstation-provisioned VMs should be
         SUPPORTED_SD_DEBIAN_DIST based.
         """

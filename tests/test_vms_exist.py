@@ -13,6 +13,8 @@ from base import (
 )
 from qubesadmin import Qubes
 
+from sdw_util import Util
+
 with open("config.json") as f:
     CONFIG = json.load(f)
 
@@ -95,7 +97,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(nvm.name, "sys-firewall")
         wanted_kernelopts = "apparmor=1 security=apparmor"
         self.assertEqual(vm.kernelopts, wanted_kernelopts)
-        self.assertEqual(vm.template, "whonix-gateway-17")
+        self.assertEqual(vm.template, f"whonix-gateway-{Util.get_whonix_version()}")
         self.assertTrue(vm.provides_network)
         self.assertTrue(vm.autostart)
         self.assertFalse(vm.template_for_dispvms)
