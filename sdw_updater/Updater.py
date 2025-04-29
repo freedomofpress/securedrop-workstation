@@ -34,6 +34,7 @@ DETAIL_LOGGER_PREFIX = "detail"  # For detailed logs such as Salt states
 MIGRATION_DIR = "/tmp/sdw-migrations"
 
 DEBIAN_VERSION = "bookworm"
+WHONIX_VERSION = Util.get_whonix_version()
 
 sdlog = Util.get_logger(module=__name__)
 detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
@@ -48,7 +49,7 @@ current_vms = {
     "sd-log": f"sd-small-{DEBIAN_VERSION}-template",
     "sd-devices": f"sd-large-{DEBIAN_VERSION}-template",
     "sd-proxy": f"sd-small-{DEBIAN_VERSION}-template",
-    "sd-whonix": "whonix-gateway-17",
+    "sd-whonix": f"whonix-gateway-{WHONIX_VERSION}",
     "sd-gpg": f"sd-small-{DEBIAN_VERSION}-template",
 }
 

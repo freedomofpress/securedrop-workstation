@@ -5,6 +5,8 @@ import unittest
 
 from qubesadmin import Qubes
 
+from sdw_util import Util
+
 # Reusable constant for DRY import across tests
 DEBIAN_VERSION = "bookworm"
 SD_TEMPLATE_BASE = f"sd-base-{DEBIAN_VERSION}-template"
@@ -19,7 +21,7 @@ SD_UNTAGGED_DEPRECATED_VMS = ["sd-retain-logvm"]
 CURRENT_FEDORA_VERSION = "41"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"
 CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
-CURRENT_WHONIX_VERSION = "17"
+CURRENT_WHONIX_VERSION = str(Util.get_whonix_version())
 CURRENT_DEBIAN_VERSION = "bookworm"
 
 
