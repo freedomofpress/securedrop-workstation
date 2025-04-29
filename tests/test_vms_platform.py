@@ -16,7 +16,6 @@ from qubesadmin import Qubes
 BOOKWORM_STRING = "Debian GNU/Linux 12 (bookworm)"
 
 SUPPORTED_SD_DEBIAN_DIST = "bookworm"
-SUPPORTED_WHONIX_PLATFORMS = [BOOKWORM_STRING]
 
 IS_CI = os.environ.get("CI") == "true"
 
@@ -51,10 +50,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         SUPPORTED_SD_DEBIAN_DIST based.
         """
         platform = self._get_platform_info(vm)
-        if vm.name in ["sd-whonix"]:
-            self.assertIn(platform, SUPPORTED_WHONIX_PLATFORMS)
-        else:
-            self.assertIn(SUPPORTED_SD_DEBIAN_DIST, platform)
+        self.assertIn(SUPPORTED_SD_DEBIAN_DIST, platform)
 
     def _validate_apt_sources(self, vm):
         """

@@ -96,7 +96,7 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(nvm.name, "sys-firewall")
         wanted_kernelopts = "apparmor=1 security=apparmor"
         self.assertEqual(vm.kernelopts, wanted_kernelopts)
-        self.assertEqual(vm.template, f"whonix-gateway-{Util.get_whonix_version()}")
+        self.assertEqual(vm.template.features.get("os-version"), str(Util.get_whonix_version()))
         self.assertTrue(vm.provides_network)
         self.assertTrue(vm.autostart)
         self.assertFalse(vm.template_for_dispvms)
