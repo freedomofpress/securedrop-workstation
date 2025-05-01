@@ -174,10 +174,8 @@ def get_whonix_version():
             universal_newlines=True,
         )
         whonix_version = int(output.strip())
-    except subprocess.CalledProcessError:
-        return None
-    except (AttributeError, ValueError):
-        return None
+    except (AttributeError, ValueError, subprocess.CalledProcessError):
+        raise RuntimeError("Whonix version could not be obtained")
 
     return whonix_version
 
