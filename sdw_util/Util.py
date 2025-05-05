@@ -158,6 +158,8 @@ def get_whonix_version():
         {{ whonix.whonix_version }}
 
     This function extracts this value so that it can be on this script.
+
+    NOTE: function takes a few seconds to run
     """
 
     try:
