@@ -3,6 +3,7 @@ import subprocess
 import unittest
 
 from base import (
+    CURRENT_WHONIX_VERSION,
     SD_DVM_TEMPLATES,
     SD_TEMPLATE_BASE,
     SD_TEMPLATE_LARGE,
@@ -12,8 +13,6 @@ from base import (
     SD_VMS,
 )
 from qubesadmin import Qubes
-
-from sdw_util import Util
 
 with open("config.json") as f:
     CONFIG = json.load(f)
