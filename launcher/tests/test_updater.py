@@ -20,6 +20,7 @@ debian_based_vms = [
     "sd-devices",
 ]
 
+WHONIX_VERSION = 17
 DEBIAN_VERSION = "bookworm"
 
 TEST_RESULTS_OK = {
@@ -51,12 +52,14 @@ TEST_RESULTS_UPDATES = {
 }
 
 
-def test_updater_vms_present():
-    assert len(Updater.current_vms) == 8
+@mock.patch("sdw_util.Util.get_whonix_version", return_value=WHONIX_VERSION)
+def test__get_current_vms(mocked_get_whonix_version):
+    assert len(Updater._get_current_vms()) == 8
 
 
-def test_updater_templatevms_present():
-    assert len(Updater.current_templates) == 4
+@mock.patch("sdw_util.Util.get_whonix_version", return_value=WHONIX_VERSION)
+def test__get_current_templates(mocked_get_whonix_version):
+    assert len(Updater._get_current_templates()) == 4
 
 
 @mock.patch("sdw_updater.Updater._write_updates_status_flag_to_disk")
@@ -91,13 +94,16 @@ def test_apply_updates_dom0_no_updates(
     assert not apply_dom0.called
 
 
+@mock.patch("sdw_updater.Updater._get_current_templates", return_value=[])
 @mock.patch("sdw_updater.Updater._write_updates_status_flag_to_disk")
 @mock.patch("sdw_updater.Updater._write_last_updated_flags_to_disk")
 @mock.patch("sdw_updater.Updater._start_qubes_updater_proc")
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
-def test_apply_templates_success(mocked_info, mocked_error, mock_proc, write_updated, write_status):
-    result = Updater.apply_updates_templates(templates=[])
+def test_apply_templates_success(
+    mocked_info, mocked_error, mock_proc, write_updated, write_status, mocked_templates
+):
+    result = Updater.apply_updates_templates()
     mock_proc.assert_called_once()
     assert result == UpdateStatus.UPDATES_OK
     assert not mocked_error.called
@@ -123,17 +129,21 @@ def test_apply_templates_success(mocked_info, mocked_error, mock_proc, write_upd
         ),
     ],
 )
-def test_apply_templates(templates, stderr, expected):
-    with mock.patch(
-        "sdw_updater.Updater._start_qubes_updater_proc",
-        return_value=subprocess.Popen(  # noqa: S602
-            f"echo '{stderr}' >> /dev/stderr",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+@mock.patch("sdw_util.Util.get_whonix_version", return_value=WHONIX_VERSION)
+def test_apply_templates(whonix_ver_mock, templates, stderr, expected):
+    with (
+        mock.patch(
+            "sdw_updater.Updater._start_qubes_updater_proc",
+            return_value=subprocess.Popen(  # noqa: S602
+                f"echo '{stderr}' >> /dev/stderr",
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            ),
         ),
+        mock.patch("sdw_updater.Updater._get_current_templates", return_value=templates),
     ):
-        result = Updater.apply_updates_templates(templates=templates)
+        result = Updater.apply_updates_templates()
         assert result == expected
 
 
