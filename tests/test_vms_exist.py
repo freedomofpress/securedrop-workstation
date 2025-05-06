@@ -14,6 +14,8 @@ from base import (
 )
 from qubesadmin import Qubes
 
+from sdw_util import Util
+
 with open("config.json") as f:
     CONFIG = json.load(f)
 
@@ -96,11 +98,17 @@ class SD_VM_Tests(unittest.TestCase):
         self.assertEqual(nvm.name, "sys-firewall")
         wanted_kernelopts = "apparmor=1 security=apparmor"
         self.assertEqual(vm.kernelopts, wanted_kernelopts)
-        self.assertEqual(vm.template.features.get("os-version"), str(Util.get_whonix_version()))
         self.assertTrue(vm.provides_network)
         self.assertTrue(vm.autostart)
         self.assertFalse(vm.template_for_dispvms)
         self.assertIn("sd-workstation", vm.tags)
+
+        # Whonix version checking
+        self.assertEqual(
+            Util.get_whonix_version(),  # If mismatch, whonix may have been updated.
+            CURRENT_WHONIX_VERSION,  # Fix the test by bumping CURRENT_WHONIX_VERSION
+        )
+        self.assertEqual(vm.template.features.get("os-version"), int(CURRENT_WHONIX_VERSION))
 
     def test_sd_proxy_config(self):
         vm = self.app.domains["sd-proxy"]
