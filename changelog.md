@@ -3,7 +3,7 @@
 ## 1.2.0-rc1
 
 This release mainly enables support for driverless printing, which
-the the upcoming SecureDrop Client release will make use of. It
+the upcoming SecureDrop Client release will make use of. It
 also lays the groundwork for future Whonix releases.
 
 * Enable driverless printing on sd-devices (#1235)
