@@ -92,10 +92,6 @@ sd-app: prep-dev ## Provisions SD APP VM
 	sudo qubesctl --show-output state.sls securedrop_salt.sd-app
 	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-app state.highstate
 
-sd-whonix: prep-dev ## Provisions SD Whonix VM
-	sudo qubesctl --show-output state.sls securedrop_salt.sd-whonix
-	sudo qubesctl --show-output --skip-dom0 --targets whonix-gateway-17,sd-whonix state.highstate
-
 sd-viewer: prep-dev ## Provisions SD Submission Viewing VM
 	sudo qubesctl --show-output state.sls securedrop_salt.sd-viewer
 	sudo qubesctl --show-output --skip-dom0 --targets sd-large-bookworm-template,sd-viewer state.highstate

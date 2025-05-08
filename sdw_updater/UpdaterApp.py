@@ -5,7 +5,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QDialog
 
 from sdw_updater import Updater, strings
-from sdw_updater.Updater import UpdateStatus, current_templates
+from sdw_updater.Updater import UpdateStatus
 from sdw_updater.UpdaterAppUiQt5 import Ui_UpdaterDialog
 from sdw_util import Util
 
@@ -282,7 +282,6 @@ class UpgradeThread(QThread):
             )
 
         results["templates"] = Updater.apply_updates_templates(
-            current_templates,
             templates_progress_callback,
         )
 
