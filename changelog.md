@@ -14,7 +14,8 @@ also lays the groundwork for future Whonix releases.
   * Minor test fixes (#1297, #1293)
   * Code comments fixes (#1277)
   * Makefile: do make <vm> work again (#1281)
-  * Fix development-facing autologin #1275
+  * Fix development-facing autologin (#1275)
+  * Clear salt cache on package install (#1287)
 
 ## 1.1.2
 
