@@ -106,9 +106,9 @@ class SD_VM_Tests(unittest.TestCase):
         # Whonix version checking
         self.assertEqual(
             Util.get_whonix_version(),  # If mismatch, whonix may have been updated.
-            CURRENT_WHONIX_VERSION,  # Fix the test by bumping CURRENT_WHONIX_VERSION
+            int(CURRENT_WHONIX_VERSION),  # Fix the test by bumping CURRENT_WHONIX_VERSION
         )
-        self.assertEqual(vm.template.features.get("os-version"), int(CURRENT_WHONIX_VERSION))
+        self.assertEqual(vm.template.features.get("os-version"), CURRENT_WHONIX_VERSION)
 
     def test_sd_proxy_config(self):
         vm = self.app.domains["sd-proxy"]
