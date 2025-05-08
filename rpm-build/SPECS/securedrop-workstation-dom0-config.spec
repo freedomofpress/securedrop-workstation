@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	1.1.2
+Version:	1.2.0rc1
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
