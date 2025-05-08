@@ -2,8 +2,7 @@
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/freedomofpress/securedrop)
 
-![Example of viewing submitted documents inside Qubes OS using the SecureDrop Client](docs/images/current_screenshot.png)
-
+![Example of viewing submitted documents inside Qubes OS using the SecureDrop Client](https://workstation.securedrop.org/en/stable/_images/screenshot_dispvm.png)
 
 ## Bringing SecureDrop to Qubes
 
@@ -69,7 +68,7 @@ on any submission of interest.
 5. The decrypted submission is stored on the `sd-app` *Secure Viewing Station VM*, where it's placed in a local database.
 6. Any file opened by the *SecureDrop Client* in the *Secure Viewing Station VM* is opened in a Disposable VM, largely mitigating attacks from malicious content.
 
-See below for a closer examination of this process, and see `docs/images` for screenshots related to the steps above.
+See below for a closer examination of this process, and see [the end-user documentation](https://workstation.securedrop.org) for screenshots related to the steps above.
 
 ## What's In This Repo?
 
