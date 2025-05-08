@@ -33,26 +33,31 @@ DETAIL_LOGGER_PREFIX = "detail"  # For detailed logs such as Salt states
 # logic to leverage the Qubes Python API.
 MIGRATION_DIR = "/tmp/sdw-migrations"
 
-DEBIAN_VERSION = "bookworm"
-
 sdlog = Util.get_logger(module=__name__)
 detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 
-# The are the TemplateVMs that require full patch level at boot in order to start the client,
-# as well as their associated TemplateVMs.
-# In the future, we could use qvm-prefs to extract this information.
-current_vms = {
-    "fedora": "fedora-41-xfce",
-    "sd-viewer": f"sd-large-{DEBIAN_VERSION}-template",
-    "sd-app": f"sd-small-{DEBIAN_VERSION}-template",
-    "sd-log": f"sd-small-{DEBIAN_VERSION}-template",
-    "sd-devices": f"sd-large-{DEBIAN_VERSION}-template",
-    "sd-proxy": f"sd-small-{DEBIAN_VERSION}-template",
-    "sd-whonix": "whonix-gateway-17",
-    "sd-gpg": f"sd-small-{DEBIAN_VERSION}-template",
-}
 
-current_templates = set([val for key, val in current_vms.items() if key != "dom0"])
+def _get_current_vms():
+    debian_version = "bookworm"
+    whonix_version = Util.get_whonix_version()
+
+    # The are the TemplateVMs that require full patch level at boot in order to start the client,
+    # as well as their associated TemplateVMs.
+    # In the future, we could use qvm-prefs to extract this information.
+    return {
+        "fedora": "fedora-41-xfce",
+        "sd-viewer": f"sd-large-{debian_version}-template",
+        "sd-app": f"sd-small-{debian_version}-template",
+        "sd-log": f"sd-small-{debian_version}-template",
+        "sd-devices": f"sd-large-{debian_version}-template",
+        "sd-proxy": f"sd-small-{debian_version}-template",
+        "sd-whonix": f"whonix-gateway-{whonix_version}",
+        "sd-gpg": f"sd-small-{debian_version}-template",
+    }
+
+
+def _get_current_templates():
+    return set([val for key, val in _get_current_vms().items() if key != "dom0"])
 
 
 def get_dom0_path(folder):
@@ -117,10 +122,11 @@ def apply_updates_dom0():
     return upgrade_results
 
 
-def apply_updates_templates(templates=current_templates, progress_callback=None):
+def apply_updates_templates(progress_callback=None):
     """
     Apply updates to all TemplateVMs.
     """
+    templates = _get_current_templates()
     sdlog.info(f"Applying all updates to VMs: {', '.join(templates)}")
     try:
         proc = _start_qubes_updater_proc(templates)

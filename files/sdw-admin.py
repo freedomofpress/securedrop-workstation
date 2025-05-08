@@ -12,6 +12,8 @@ import sys
 
 from qubesadmin import Qubes
 
+from sdw_util import Util
+
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
 # errors from qubesctl. It may be possible to raise this again.
 MAX_CONCURRENCY = 2
@@ -91,7 +93,7 @@ def provision_and_configure():
     provision("Provisioning base template", "securedrop_salt.sd-base-template")
     configure("Configuring base template", ["sd-base-bookworm-template"])
     provision_all()
-    configure("Enabling Whonix customizations", ["whonix-gateway-17"])
+    configure("Enabling Whonix customizations", [f"whonix-gateway-{Util.get_whonix_version()}"])
     configure(
         "Configure all SecureDrop Workstation VMs with service-specific configs",
         [q.name for q in Qubes().domains if "sd-workstation" in q.tags],
@@ -193,9 +195,10 @@ def sync_appmenus():
     run_cmd(["qvm-sync-appmenus", "sd-large-bookworm-template"])
     run_cmd(["qvm-shutdown", "sd-large-bookworm-template"])
 
-    run_cmd(["qvm-start", "--skip-if-running", "whonix-gateway-17"])
-    run_cmd(["qvm-sync-appmenus", "whonix-gateway-17"])
-    run_cmd(["qvm-shutdown", "whonix-gateway-17"])
+    whonix_gateway = f"whonix-gateway-{Util.get_whonix_version()}"
+    run_cmd(["qvm-start", "--skip-if-running", whonix_gateway])
+    run_cmd(["qvm-sync-appmenus", whonix_gateway])
+    run_cmd(["qvm-shutdown", whonix_gateway])
 
     # These are the ones we show in prod VMs, so sync explicitly
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-devices"])

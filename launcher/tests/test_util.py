@@ -20,6 +20,7 @@ CONFLICTING_PROCESS_REGEX = r"Conflicting process .* is currently running."
 FIXTURES_PATH = Path(__file__).parent / "fixtures"
 
 DEBIAN_VERSION = "bookworm"
+WHONIX_VERSION = 17
 
 
 @mock.patch("sdw_util.Util.sdlog.error")
@@ -303,3 +304,14 @@ def test_is_sdapp_halted_error(patched_subprocess, os_release_fixture, version_c
     """
 
     assert not Util.is_sdapp_halted()
+
+
+@mock.patch("subprocess.check_output", return_value=str(WHONIX_VERSION))
+def test_get_whonix_version(patched_subprocess):
+    assert Util.get_whonix_version() == WHONIX_VERSION
+
+
+@mock.patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"))
+def test_get_whonix_version__on_error(patched_subprocess):
+    with pytest.raises(RuntimeError, match="Whonix version could not be obtained"):
+        Util.get_whonix_version()

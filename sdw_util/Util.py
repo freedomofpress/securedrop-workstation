@@ -148,6 +148,40 @@ def get_qubes_version():
     return version
 
 
+def get_whonix_version():
+    """
+    Obtain Whonix version from /srv/formulas/base/virtual-machine-formula/qvm/whonix.jinja
+
+    In '.sls' files the whonix version is obtained with
+
+        {% import "qvm/whonix.jinja" as whonix %}
+        {{ whonix.whonix_version }}
+
+    This function extracts this value so that it can be on this script.
+
+    NOTE: function takes a few seconds to run
+    """
+
+    try:
+        output = subprocess.check_output(
+            [
+                "sudo",
+                "qubesctl",
+                "jinja.load_map",
+                "qvm/whonix.jinja",
+                "whonix_version",
+                "--out",
+                "newline_values_only",
+            ],  # avoid "local:" prefix
+            universal_newlines=True,
+        )
+        whonix_version = int(output.strip())
+    except (AttributeError, ValueError, subprocess.CalledProcessError):
+        raise RuntimeError("Whonix version could not be obtained")
+
+    return whonix_version
+
+
 def get_logger(prefix=SD_LOGGER_PREFIX, module=None):
     if module is None:
         return logging.getLogger(prefix)
