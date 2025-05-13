@@ -1,5 +1,21 @@
 # changelog
 
+## 1.2.0
+
+This release mainly enables support for driverless printing, which
+the upcoming SecureDrop Client release will make use of. It
+also lays the groundwork for future Whonix releases.
+
+* Enable driverless printing on sd-devices (#1235)
+* Delegate Whonix-related qubes setup to upstream formulas (#1227, #1295)
+
+* Internal and development
+  * Update README to reflect open beta phase (#1283)
+  * Minor test fixes (#1297, #1293)
+  * Code comments fixes (#1277)
+  * Makefile: do make <vm> work again (#1281)
+  * Fix development-facing autologin #1275
+
 ## 1.1.2
 
 * Remove `sd-retain-logvm` (#1285)
