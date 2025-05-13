@@ -1,6 +1,6 @@
 # changelog
 
-## 1.2.0-rc1
+## 1.2.0
 
 This release mainly enables support for driverless printing, which
 the upcoming SecureDrop Client release will make use of. It
