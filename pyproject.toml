@@ -115,5 +115,9 @@ exclude = [
     "tests/",
 ]
 
+#[tool.pytest.ini_options]
+#addopts = "--cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util"
+
 [tool.pytest.ini_options]
-addopts = "--cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util"
+addopts = "--junitxml=test-data.xml"
+junit_family = "xunit2"

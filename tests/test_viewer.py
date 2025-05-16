@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from base import SD_Unnamed_DVM_Local_Test
+from tests.base import SD_Unnamed_DVM_Local_Test
 
 
 class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):

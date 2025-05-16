@@ -135,29 +135,35 @@ clean: assert-dom0 prep-dev ## Destroys all SD VMs
 # if clean has already been run.
 	./scripts/sdw-admin.py --uninstall --force
 
+PYTEST_PATH=$(shell command -v pytest)
 .PHONY: test-prereqs
 test-prereqs: assert-dom0 ## Checks that test prerequisites are satisfied
 	@echo "Checking prerequisites before running test suite..."
 	test -e config.json || exit 1
 	test -e sd-journalist.sec || exit 1
+ifeq ($(PYTEST_PATH),)
+	@echo $(PYTEST_PATH)
+	@echo 'please install pytest with "sudo qubes-dom0-update python3-pytest"'
+	@false
+endif
 
 test: test-prereqs ## Runs all application tests (no integration tests yet)
-	python3 -m unittest discover -v tests
+	python3 -m pytest -v tests
 
 test-base: test-prereqs ## Runs tests for VMs layout
-	python3 -m unittest discover -v tests -p test_vms_exist.py
+	python3 -m pytest -v tests/test_vms_exist.py
 
 test-app: test-prereqs ## Runs tests for SD APP VM config
-	python3 -m unittest discover -v tests -p test_app.py
+	python3 -m pytest -v tests/test_app.py
 
 test-proxy: test-prereqs ## Runs tests for SD Proxy VM
-	python3 -m unittest discover -v tests -p test_proxy_vm.py
+	python3 -m pytest -v tests/test_proxy_vm.py
 
 test-whonix: test-prereqs ## Runs tests for SD Whonix VM
-	python3 -m unittest discover -v tests -p test_sd_whonix.py
+	python3 -m pytest -v tests/test_sd_whonix.py
 
 test-gpg: test-prereqs ## Runs tests for SD GPG functionality
-	python3 -m unittest discover -v tests -p test_gpg.py
+	python3 -m pytest -v tests/test_gpg.py
 
 # Client autologin variables
 XDOTOOL_PATH=$(shell command -v xdotool)

@@ -2,7 +2,7 @@ import json
 import subprocess
 import unittest
 
-from base import (
+from tests.base import (
     CURRENT_WHONIX_VERSION,
     SD_DVM_TEMPLATES,
     SD_TEMPLATE_BASE,

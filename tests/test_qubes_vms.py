@@ -1,6 +1,6 @@
 import unittest
 
-from base import CURRENT_FEDORA_DVM, CURRENT_FEDORA_TEMPLATE, CURRENT_WHONIX_VERSION
+from tests.base import CURRENT_FEDORA_DVM, CURRENT_FEDORA_TEMPLATE, CURRENT_WHONIX_VERSION
 from qubesadmin import Qubes
 
 

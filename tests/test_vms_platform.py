@@ -4,7 +4,7 @@ import re
 import subprocess
 import unittest
 
-from base import (
+from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     CURRENT_WHONIX_VERSION,
     SD_TEMPLATE_LARGE,
