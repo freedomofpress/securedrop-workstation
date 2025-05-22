@@ -49,9 +49,8 @@ dom0-workstation-rpm-repo:
 
 # Ensure debian-12-minimal is present for use as base template
 dom0-install-debian-minimal-template:
-  cmd.run:
-    - name: >
-        qvm-template info --machine-readable debian-12-minimal | grep -q "installed|debian-12-minimal|" || qvm-template install debian-12-minimal
+  qvm.template_installed:
+    - name: debian-12-minimal
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 
