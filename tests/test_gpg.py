@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 import unittest
 
-from base import SD_VM_Local_Test
+from tests.base import SD_VM_Local_Test
 
 
 class SD_GPG_Tests(SD_VM_Local_Test):

@@ -2,7 +2,10 @@ import json
 import subprocess
 import unittest
 
-from base import (
+from qubesadmin import Qubes
+
+from sdw_util import Util
+from tests.base import (
     CURRENT_WHONIX_VERSION,
     SD_DVM_TEMPLATES,
     SD_TEMPLATE_BASE,
@@ -12,9 +15,6 @@ from base import (
     SD_UNTAGGED_DEPRECATED_VMS,
     SD_VMS,
 )
-from qubesadmin import Qubes
-
-from sdw_util import Util
 
 with open("config.json") as f:
     CONFIG = json.load(f)

@@ -3,7 +3,7 @@ import string
 import subprocess
 import unittest
 
-from base import CURRENT_DEBIAN_VERSION, SD_VM_Local_Test
+from tests.base import CURRENT_DEBIAN_VERSION, SD_VM_Local_Test
 
 
 class SD_Log_Tests(SD_VM_Local_Test):

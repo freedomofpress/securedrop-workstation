@@ -4,14 +4,15 @@ import re
 import subprocess
 import unittest
 
-from base import (
+from qubesadmin import Qubes
+
+from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     CURRENT_WHONIX_VERSION,
     SD_TEMPLATE_LARGE,
     SD_TEMPLATE_SMALL,
     SD_VMS,
 )
-from qubesadmin import Qubes
 
 BOOKWORM_STRING = "Debian GNU/Linux 12 (bookworm)"
 
