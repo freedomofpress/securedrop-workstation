@@ -16,12 +16,11 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
         assert not self._fileExists("/usr/bin/do-not-open-here")
 
     def test_sd_proxy_package_installed(self):
-        self.assertTrue(self._package_is_installed("securedrop-proxy"))
+        assert self._package_is_installed("securedrop-proxy")
 
     def test_sd_proxy_config(self, dom0_config):
-        self.assertEqual(
-            f"http://{dom0_config['hidserv']['hostname']}",
-            self._vm_config_read("SD_PROXY_ORIGIN"),
+        assert f"http://{dom0_config['hidserv']['hostname']}" == self._vm_config_read(
+            "SD_PROXY_ORIGIN"
         )
 
     def test_whonix_ws_repo_absent(self):
@@ -45,10 +44,10 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
                 # Skip comments and the leading [Default Applications]
                 continue
             mime, target = line.split("=", 1)
-            self.assertEqual(target, "open-in-dvm.desktop;")
+            assert target == "open-in-dvm.desktop;"
             # Now functionally test it
             actual_app = self._run(f"xdg-mime query default {mime}")
-            self.assertEqual(actual_app, "open-in-dvm.desktop")
+            assert actual_app == "open-in-dvm.desktop"
 
     def test_mailcap_hardened(self):
         self.mailcap_hardened()

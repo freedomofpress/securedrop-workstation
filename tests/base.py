@@ -147,31 +147,31 @@ class SD_VM_Local_Test(unittest.TestCase):
         """
         actual = set(self._run("qubesdb-list /vm-config/").split("\n"))
         actual.discard("")  # if "qubesdb-list" returned nothing
-        self.assertEqual(actual, set(expected))
+        assert actual == set(expected)
 
     def logging_configured(self):
         """
         Make sure rsyslog is configured to send in data to sd-log vm.
         """
         # Logging is not disabled
-        self.assertFalse(self._fileExists("/var/run/qubes-service/securedrop-logging-disabled"))
+        assert not self._fileExists("/var/run/qubes-service/securedrop-logging-disabled")
 
-        self.assertTrue(self._package_is_installed("securedrop-log"))
-        self.assertTrue(self._fileExists("/usr/sbin/sd-rsyslog"))
-        self.assertTrue(self._fileExists("/etc/rsyslog.d/sdlog.conf"))
-        self.assertTrue(self._fileExists("/etc/sd-rsyslog.conf"))
+        assert self._package_is_installed("securedrop-log")
+        assert self._fileExists("/usr/sbin/sd-rsyslog")
+        assert self._fileExists("/etc/rsyslog.d/sdlog.conf")
+        assert self._fileExists("/etc/sd-rsyslog.conf")
         # Then we check the configuration inside of the file.
         file_content = self._get_file_contents("/etc/sd-rsyslog.conf")
         static_content = """[sd-rsyslog]
 remotevm = sd-log
 """
-        self.assertEqual(file_content, static_content)
+        assert file_content == static_content
         # Check for evidence of misconfigured logging in syslog,
         # fail if matching events found
         # Several VMs show this error message even though they're shipping logs,
         # so let's investigate further.
         # cmd_output = self._run("sudo grep -F \"action 'action-0-omprog' suspended (module 'omprog')\" /var/log/syslog | wc -l").strip()  # noqa
-        # self.assertEqual(cmd_output, "0")
+        # assert cmd_output == "0"
 
     def mailcap_hardened(self):
         """
@@ -182,8 +182,8 @@ remotevm = sd-log
         # Ensure that mailcap configuration files are present in the expected
         # locations and contain the expected contents. Rules in `~/.mailcap`
         # take precedence over those in `/etc/mailcap`.
-        self.assertTrue(self._fileExists("/home/user/.mailcap"))
-        self.assertTrue(self._fileExists("/opt/sdw/mailcap.default"))
+        assert self._fileExists("/home/user/.mailcap")
+        assert self._fileExists("/opt/sdw/mailcap.default")
         self.assertFileHasLine("/home/user/.mailcap", '*/*; logger "Mailcap is disabled."')
 
         # Because we target an AppVM, we cannot easily use the Pyhton tempfile
@@ -200,7 +200,7 @@ remotevm = sd-log
         self._run(f"rm {tmpfile_name}")
 
         # Ensure that the wildcard rule worked as expected.
-        self.assertEqual(mailcap_result, f'logger "Mailcap is disabled." <{tmpfile_name}')
+        assert mailcap_result == f'logger "Mailcap is disabled." <{tmpfile_name}'
 
     def test_vm_config_keys(self):
         """Every VM should check that it has only the configuration keys it
@@ -211,13 +211,13 @@ remotevm = sd-log
     def test_lsm_enabled(self):
         """Check that the expected LSM is enabled"""
         if self.lsm == "apparmor":
-            self.assertTrue(self._package_is_installed("apparmor"))
+            assert self._package_is_installed("apparmor")
             # returns error code if AppArmor not enabled
             self._run("sudo aa-status --enabled")
         elif self.lsm == "selinux":
             sestatus = self._run("sudo sestatus")
-            self.assertIn("SELinux status:                 enabled\n", sestatus)
-            self.assertIn("Current mode:                   enforcing\n", sestatus)
+            assert "SELinux status:                 enabled\n" in sestatus
+            assert "Current mode:                   enforcing\n" in sestatus
         else:
             raise ValueError(f"Unsupported LSM: {self.lsm}")
 
@@ -227,7 +227,7 @@ remotevm = sd-log
             raise unittest.SkipTest(f"No enforced AppArmor profiles in {self.vm_name}")
         results = json.loads(self._run("sudo aa-status --json"))
         for profile in self.enforced_apparmor_profiles:
-            self.assertEqual(results["profiles"][profile], "enforce")
+            assert results["profiles"][profile] == "enforce"
 
 
 class SD_Unnamed_DVM_Local_Test(SD_VM_Local_Test):

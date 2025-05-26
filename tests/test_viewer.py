@@ -24,15 +24,15 @@ class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
         }
 
     def test_sd_viewer_metapackage_installed(self):
-        self.assertTrue(self._package_is_installed("securedrop-workstation-viewer"))
-        self.assertFalse(self._package_is_installed("securedrop-workstation-svs-disp"))
+        assert self._package_is_installed("securedrop-workstation-viewer")
+        assert not self._package_is_installed("securedrop-workstation-svs-disp")
 
     def test_sd_viewer_evince_installed(self):
         pkg = "evince"
-        self.assertTrue(self._package_is_installed(pkg))
+        assert self._package_is_installed(pkg)
 
     def test_sd_viewer_libreoffice_installed(self):
-        self.assertTrue(self._package_is_installed("libreoffice"))
+        assert self._package_is_installed("libreoffice")
 
     def test_logging_configured(self):
         self.logging_configured()
@@ -42,8 +42,8 @@ class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
         Only the log collector, i.e. sd-log, needs redis, so redis will be
         present in small template, but not in large.
         """
-        self.assertFalse(self._package_is_installed("redis"))
-        self.assertFalse(self._package_is_installed("redis-server"))
+        assert not self._package_is_installed("redis")
+        assert not self._package_is_installed("redis-server")
 
     def test_mime_types(self):
         filepath = os.path.join(
@@ -56,7 +56,7 @@ class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
                     mime_type = line.split("=")[0]
                     expected_app = line.split("=")[1].rstrip()
                     actual_app = self._run(f"xdg-mime query default {mime_type}")
-                    self.assertEqual(actual_app, expected_app)
+                    assert actual_app == expected_app
 
     def test_mimetypes_service(self):
         self._service_is_active("securedrop-mime-handling")
@@ -65,6 +65,6 @@ class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
         self.mailcap_hardened()
 
     def test_mimetypes_symlink(self):
-        self.assertTrue(self._fileExists(".local/share/applications/mimeapps.list"))
+        assert self._fileExists(".local/share/applications/mimeapps.list")
         symlink_location = self._get_symlink_location(".local/share/applications/mimeapps.list")
         assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
