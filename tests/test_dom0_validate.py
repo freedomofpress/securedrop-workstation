@@ -64,7 +64,3 @@ class SD_Dom0_Validate_Tests(unittest.TestCase):
                 SDWConfigValidator(dir)
 
             assert "Invalid PGP key fingerprint specified" in str(err.exception)
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Dom0_Validate_Tests)

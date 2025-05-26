@@ -1,5 +1,3 @@
-import unittest
-
 from tests.base import SD_VM_Local_Test
 
 
@@ -54,7 +52,3 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
 
     def test_mailcap_hardened(self):
         self.mailcap_hardened()
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Proxy_Tests)

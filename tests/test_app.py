@@ -1,5 +1,3 @@
-import unittest
-
 from tests.base import SD_VM_Local_Test
 
 
@@ -52,7 +50,3 @@ class SD_App_Tests(SD_VM_Local_Test):
 
     def test_logging_configured(self):
         self.logging_configured()
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_App_Tests)

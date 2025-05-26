@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from tests.base import SD_Unnamed_DVM_Local_Test
 
@@ -69,7 +68,3 @@ class SD_Viewer_Tests(SD_Unnamed_DVM_Local_Test):
         self.assertTrue(self._fileExists(".local/share/applications/mimeapps.list"))
         symlink_location = self._get_symlink_location(".local/share/applications/mimeapps.list")
         assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Viewer_Tests)

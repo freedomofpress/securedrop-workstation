@@ -1,7 +1,6 @@
 import re
 import subprocess
 import tempfile
-import unittest
 
 from tests.base import SD_VM_Local_Test
 
@@ -49,20 +48,16 @@ class SD_GPG_Tests(SD_VM_Local_Test):
         line = "export QUBES_GPG_AUTOACCEPT=28800"
         self.assertFileHasLine("/home/user/.profile", line)
 
-    def test_local_key_in_remote_keyring(self):
+    def test_local_key_in_remote_keyring(self, fingerprint):
         """Verify the key present in dom0 and sd-gpg matches what's configured in config.json"""
         local_fp = self.get_dom0_fingerprint()
         remote_fp = self.get_vm_fingerprint()
 
         # This also verifies only one secret key is in the keyring
-        self.assertEqual(local_fp, [self.fingerprint])
-        self.assertEqual(remote_fp, [self.fingerprint])
+        self.assertEqual(local_fp, [fingerprint])
+        self.assertEqual(remote_fp, [fingerprint])
 
     def test_logging_disabled(self):
         # Logging to sd-log should be disabled on sd-gpg
         self.assertFalse(self._fileExists("/etc/rsyslog.d/sdlog.conf"))
         self.assertTrue(self._fileExists("/var/run/qubes-service/securedrop-logging-disabled"))
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_GPG_Tests)

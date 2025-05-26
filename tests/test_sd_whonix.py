@@ -1,5 +1,3 @@
-import unittest
-
 from tests.base import SD_VM_Local_Test
 
 
@@ -51,7 +49,3 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
             torrc_contents,
             "Whonix GW torrc contains duplicate %include lines",
         )
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Whonix_Tests)

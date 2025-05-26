@@ -76,7 +76,3 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
         )
         self.assertEqual(self._qrexec("sys-net", "sd-gpg", "qubes.Gpg2"), RETURNCODE_DENIED)
         self.assertEqual(self._qrexec("sys-firewall", "sd-gpg", "qubes.Gpg2"), RETURNCODE_DENIED)
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Qubes_Rpc_Tests)

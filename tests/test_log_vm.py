@@ -1,7 +1,6 @@
 import secrets
 import string
 import subprocess
-import unittest
 
 from tests.base import CURRENT_DEBIAN_VERSION, SD_VM_Local_Test
 
@@ -70,7 +69,3 @@ class SD_Log_Tests(SD_VM_Local_Test):
         log_dirs = cmd_output.split("\n")
         # Confirm we don't have 'host' entries from Whonix VMs
         self.assertNotIn("host", log_dirs)
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Log_Tests)

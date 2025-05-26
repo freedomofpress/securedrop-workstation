@@ -52,7 +52,3 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
             vm = self.app.domains[whonix_vm]
             self.assertTrue(vm.template.name.startswith("whonix-"))
             self.assertTrue(vm.template.name.endswith("-" + CURRENT_WHONIX_VERSION))
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Qubes_VM_Tests)

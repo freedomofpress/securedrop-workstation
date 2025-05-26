@@ -53,7 +53,3 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
             found_lines = [x.strip() for x in f.readlines()]
 
         self.assertEqual(found_lines, wanted_lines)
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Dom0_Rpm_Repo_Tests)

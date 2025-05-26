@@ -212,7 +212,3 @@ class SD_VM_Platform_Tests(unittest.TestCase):
                         "amd64 Packages\n",
                         contents,
                     )
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_VM_Platform_Tests)

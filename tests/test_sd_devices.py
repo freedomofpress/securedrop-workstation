@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from tests.base import SD_VM_Local_Test
 
@@ -47,7 +46,3 @@ class SD_Devices_Tests(SD_VM_Local_Test):
         ]
         for line in expected_contents:
             self.assertIn(line, contents)
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Devices_Tests)

@@ -244,7 +244,3 @@ class SD_VM_Tests(unittest.TestCase):
         nvm = vm.netvm
         self.assertIsNone(nvm)
         self.assertIn("sd-workstation", vm.tags)
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_VM_Tests)
