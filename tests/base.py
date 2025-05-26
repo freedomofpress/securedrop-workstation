@@ -1,6 +1,5 @@
 import json
 import subprocess
-import time
 import unittest
 
 from qubesadmin import Qubes
@@ -55,7 +54,6 @@ class SD_VM_Local_Test(unittest.TestCase):
     def setUp(self):
         self.app = Qubes()
         self.vm = self.app.domains[self.vm_name]
-        # self._reboot()
         if self.vm.is_running():
             pass
         else:
@@ -69,33 +67,6 @@ class SD_VM_Local_Test(unittest.TestCase):
         self.lsm = "apparmor"
         # AppArmor profiles that should be enforced.
         self.enforced_apparmor_profiles = set()
-
-    # def tearDown(self):
-    #     self.vm.shutdown()
-
-    def _reboot(self):
-        # The for-loop below should be couched in a try/except block.
-        # Further testing required to determine which specific exceptions
-        # to catch; a few ideas:
-        #
-        #   * CalledProcessorError
-        #   * QubesVMError (from qubesadmin.base)
-        #   * QubesVMNotStartedError (from qubesadmin.base)
-        for v in list(self.vm.connected_vms.values()):
-            if v.is_running():
-                msg = f"Need to halt connected VM {v}" " before testing"
-                print(msg)
-                v.shutdown()
-                while v.is_running():
-                    time.sleep(1)
-
-        if self.vm.is_running():
-            self.vm.shutdown()
-
-        while self.vm.is_running():
-            time.sleep(1)
-
-        self.vm.start()
 
     def _run(self, cmd, user=""):
         full_cmd = ["qvm-run", "-p"]
@@ -134,17 +105,6 @@ class SD_VM_Local_Test(unittest.TestCase):
             else:
                 raise e
         return results == "active"
-
-    def assertFilesMatch(self, remote_path, local_path):
-        remote_content = self._get_file_contents(remote_path)
-
-        content = False
-        with open(local_path) as f:
-            content = f.read()
-        import difflib
-
-        print("".join(difflib.unified_diff(remote_content, content)), end="")
-        self.assertEqual(remote_content, content)
 
     def assertFileHasLine(self, remote_path, wanted_line):
         remote_content = self._get_file_contents(remote_path)
