@@ -2,15 +2,23 @@ import re
 import subprocess
 import tempfile
 
+import pytest
+
 from tests.base import SD_VM_Local_Test
+
+
+@pytest.fixture
+def fingerprint(dom0_config):
+    """
+    Obtain the fingerprint explicitly configured in dom0 and injected into VMs.
+    """
+    return dom0_config["submission_key_fpr"]
 
 
 class SD_GPG_Tests(SD_VM_Local_Test):
     def setUp(self):
         self.vm_name = "sd-gpg"
         super().setUp()
-        # Obtain the fingerprint explicitly configured in dom0 and injected into VMs.
-        self.fingerprint = self.dom0_config["submission_key_fpr"]
 
     def get_dom0_fingerprint(self):
         """

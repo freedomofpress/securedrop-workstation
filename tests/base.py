@@ -61,10 +61,6 @@ class SD_VM_Local_Test(unittest.TestCase):
         else:
             self.vm.start()
 
-        # Make the dom0 "config.json" available to tests.
-        with open("config.json") as config_file:
-            self.dom0_config = json.load(config_file)
-
         # A VM shouldn't have any configuration keys it doesn't explicitly
         # expect.
         self.expected_config_keys = set()
