@@ -62,10 +62,10 @@ class SD_GPG_Tests(SD_VM_Local_Test):
         remote_fp = self.get_vm_fingerprint()
 
         # This also verifies only one secret key is in the keyring
-        self.assertEqual(local_fp, [fingerprint])
-        self.assertEqual(remote_fp, [fingerprint])
+        assert local_fp == [fingerprint]
+        assert remote_fp == [fingerprint]
 
     def test_logging_disabled(self):
         # Logging to sd-log should be disabled on sd-gpg
-        self.assertFalse(self._fileExists("/etc/rsyslog.d/sdlog.conf"))
-        self.assertTrue(self._fileExists("/var/run/qubes-service/securedrop-logging-disabled"))
+        assert not self._fileExists("/etc/rsyslog.d/sdlog.conf")
+        assert self._fileExists("/var/run/qubes-service/securedrop-logging-disabled")

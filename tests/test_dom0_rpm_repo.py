@@ -36,7 +36,7 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
         with open(self.pubkey_wanted) as f:
             pubkey_wanted_contents = f.readlines()
 
-        self.assertEqual(pubkey_actual_contents, pubkey_wanted_contents)
+        assert pubkey_actual_contents == pubkey_wanted_contents
 
     def test_rpm_repo_config(self):
         repo_file = "/etc/yum.repos.d/securedrop-workstation-dom0.repo"
@@ -52,4 +52,4 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
         with open(repo_file) as f:
             found_lines = [x.strip() for x in f.readlines()]
 
-        self.assertEqual(found_lines, wanted_lines)
+        assert found_lines == wanted_lines

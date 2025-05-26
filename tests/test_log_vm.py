@@ -11,24 +11,24 @@ class SD_Log_Tests(SD_VM_Local_Test):
         super().setUp()
 
     def test_sd_log_package_installed(self):
-        self.assertTrue(self._package_is_installed("securedrop-log"))
+        assert self._package_is_installed("securedrop-log")
 
     def test_sd_log_redis_is_installed(self):
-        self.assertTrue(self._package_is_installed("redis"))
-        self.assertTrue(self._package_is_installed("redis-server"))
+        assert self._package_is_installed("redis")
+        assert self._package_is_installed("redis-server")
 
     def test_log_utility_installed(self):
-        self.assertTrue(self._fileExists("/usr/sbin/securedrop-log-saver"))
-        self.assertTrue(self._fileExists("/etc/qubes-rpc/securedrop.Log"))
+        assert self._fileExists("/usr/sbin/securedrop-log-saver")
+        assert self._fileExists("/etc/qubes-rpc/securedrop.Log")
 
     def test_sd_log_has_no_custom_rsyslog(self):
-        self.assertFalse(self._fileExists("/etc/rsyslog.d/sdlog.conf"))
+        assert not self._fileExists("/etc/rsyslog.d/sdlog.conf")
 
     def test_sd_log_service_running(self):
-        self.assertTrue(self._service_is_active("securedrop-log-server"))
+        assert self._service_is_active("securedrop-log-server")
 
     def test_redis_service_running(self):
-        self.assertTrue(self._service_is_active("redis"))
+        assert self._service_is_active("redis")
 
     def test_logs_are_flowing(self):
         """
@@ -60,12 +60,12 @@ class SD_Log_Tests(SD_VM_Local_Test):
                 continue
             syslog = f"/home/user/QubesIncomingLogs/{vm_name}/syslog.log"
             if vm_name in no_log_vms:
-                self.assertFalse(self._fileExists(syslog))
+                assert not self._fileExists(syslog)
             else:
-                self.assertIn(token, self._get_file_contents(syslog))
+                assert token in self._get_file_contents(syslog)
 
     def test_log_dirs_properly_named(self):
         cmd_output = self._run("ls -1 /home/user/QubesIncomingLogs")
         log_dirs = cmd_output.split("\n")
         # Confirm we don't have 'host' entries from Whonix VMs
-        self.assertNotIn("host", log_dirs)
+        assert "host" not in log_dirs

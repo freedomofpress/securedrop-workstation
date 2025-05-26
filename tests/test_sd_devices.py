@@ -10,14 +10,14 @@ class SD_Devices_Tests(SD_VM_Local_Test):
         self.expected_config_keys = {"SD_MIME_HANDLING"}
 
     def test_files_are_properly_copied(self):
-        self.assertTrue(self._fileExists("/usr/bin/send-to-usb"))
-        self.assertTrue(self._fileExists("/usr/share/applications/send-to-usb.desktop"))
-        self.assertTrue(self._fileExists("/usr/share/mime/packages/application-x-sd-export.xml"))
+        assert self._fileExists("/usr/bin/send-to-usb")
+        assert self._fileExists("/usr/share/applications/send-to-usb.desktop")
+        assert self._fileExists("/usr/share/mime/packages/application-x-sd-export.xml")
 
     def test_sd_export_package_installed(self):
-        self.assertTrue(self._package_is_installed("udisks2"))
-        self.assertTrue(self._package_is_installed("securedrop-export"))
-        self.assertTrue(self._package_is_installed("gnome-disk-utility"))
+        assert self._package_is_installed("udisks2")
+        assert self._package_is_installed("securedrop-export")
+        assert self._package_is_installed("gnome-disk-utility")
 
     def test_logging_configured(self):
         self.logging_configured()
@@ -33,7 +33,7 @@ class SD_Devices_Tests(SD_VM_Local_Test):
                     mime_type = line.split("=")[0]
                     expected_app = line.split("=")[1].split(";")[0]
                     actual_app = self._run(f"xdg-mime query default {mime_type}")
-                    self.assertEqual(actual_app, expected_app)
+                    assert actual_app == expected_app
 
     def test_mailcap_hardened(self):
         self.mailcap_hardened()
@@ -45,4 +45,4 @@ class SD_Devices_Tests(SD_VM_Local_Test):
             "Exec=/usr/bin/qvm-open-in-vm --view-only @dispvm:sd-viewer %f",
         ]
         for line in expected_contents:
-            self.assertIn(line, contents)
+            assert line in contents

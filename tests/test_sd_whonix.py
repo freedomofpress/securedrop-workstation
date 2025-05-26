@@ -12,10 +12,8 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         assert self._qubes_service_enabled("securedrop-whonix-config")
 
     def test_sd_whonix_config(self, dom0_config):
-        self.assertEqual(
-            dom0_config["hidserv"]["hostname"], self._vm_config_read("SD_HIDSERV_HOSTNAME")
-        )
-        self.assertEqual(dom0_config["hidserv"]["key"], self._vm_config_read("SD_HIDSERV_KEY"))
+        assert dom0_config["hidserv"]["hostname"] == self._vm_config_read("SD_HIDSERV_HOSTNAME")
+        assert dom0_config["hidserv"]["key"] == self._vm_config_read("SD_HIDSERV_KEY")
 
     def test_v3_auth_private_file(self):
         hidserv_hostname = self._vm_config_read("SD_HIDSERV_HOSTNAME")
@@ -44,8 +42,6 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
         torrc_contents = self._get_file_contents("/etc/tor/torrc")
         duplicate_includes = """%include /etc/torrc.d/
 %include /etc/torrc.d/95_whonix.conf"""
-        self.assertNotIn(
-            duplicate_includes,
-            torrc_contents,
-            "Whonix GW torrc contains duplicate %include lines",
-        )
+        assert (
+            duplicate_includes not in torrc_contents
+        ), r"Whonix GW torrc contains duplicate %\include lines"

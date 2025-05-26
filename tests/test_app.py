@@ -19,7 +19,7 @@ class SD_App_Tests(SD_VM_Local_Test):
             "Exec=/usr/bin/qvm-open-in-vm --view-only @dispvm:sd-viewer %f",
         ]
         for line in expected_contents:
-            self.assertIn(line, contents)
+            assert line in contents
 
     def test_mimeapps(self):
         results = self._run("cat /usr/share/applications/mimeapps.list")
@@ -28,25 +28,23 @@ class SD_App_Tests(SD_VM_Local_Test):
                 # Skip comments and the leading [Default Applications]
                 continue
             mime, target = line.split("=", 1)
-            self.assertEqual(target, "open-in-dvm.desktop;")
+            assert target == "open-in-dvm.desktop;"
             # Now functionally test it
             actual_app = self._run(f"xdg-mime query default {mime}")
-            self.assertEqual(actual_app, "open-in-dvm.desktop")
+            assert actual_app == "open-in-dvm.desktop"
 
     def test_mailcap_hardened(self):
         self.mailcap_hardened()
 
     def test_sd_client_package_installed(self):
-        self.assertTrue(self._package_is_installed("securedrop-client"))
+        assert self._package_is_installed("securedrop-client")
 
     def test_sd_client_dependencies_installed(self):
-        self.assertTrue(self._package_is_installed("python3-pyqt5"))
-        self.assertTrue(self._package_is_installed("python3-pyqt5.qtsvg"))
+        assert self._package_is_installed("python3-pyqt5")
+        assert self._package_is_installed("python3-pyqt5.qtsvg")
 
     def test_sd_client_config(self, dom0_config):
-        self.assertEqual(
-            dom0_config["submission_key_fpr"], self._vm_config_read("SD_SUBMISSION_KEY_FPR")
-        )
+        assert dom0_config["submission_key_fpr"] == self._vm_config_read("SD_SUBMISSION_KEY_FPR")
 
     def test_logging_configured(self):
         self.logging_configured()

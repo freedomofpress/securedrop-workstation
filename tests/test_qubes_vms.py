@@ -35,11 +35,10 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
                 else:
                     wanted_templates.append(CURRENT_FEDORA_DVM)
 
-            self.assertTrue(
-                vm.template.name in wanted_templates,
+            assert vm.template.name in wanted_templates, (
                 f"Unexpected template for {sys_vm}\n"
                 + f"Current: {vm.template.name}\n"
-                + "Expected: {}".format(", ".join(wanted_templates)),
+                + "Expected: {}".format(", ".join(wanted_templates))
             )
 
     def test_current_whonix_vms(self):
@@ -50,5 +49,5 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
         whonix_vms = ["sys-whonix", "anon-whonix"]
         for whonix_vm in whonix_vms:
             vm = self.app.domains[whonix_vm]
-            self.assertTrue(vm.template.name.startswith("whonix-"))
-            self.assertTrue(vm.template.name.endswith("-" + CURRENT_WHONIX_VERSION))
+            assert vm.template.name.startswith("whonix-")
+            assert vm.template.name.endswith("-" + CURRENT_WHONIX_VERSION)
