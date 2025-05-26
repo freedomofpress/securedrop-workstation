@@ -3,6 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import pytest
+
 from files.validate_config import SDWConfigValidator, ValidationError
 
 
@@ -22,10 +24,10 @@ class SD_Dom0_Validate_Tests(unittest.TestCase):
 
     def test_missing_config(self):
         with tempfile.TemporaryDirectory() as dir:
-            with self.assertRaises(ValidationError) as err:  # noqa: PT027
+            with pytest.raises(ValidationError) as exc_info:
                 SDWConfigValidator(dir)
 
-            assert "Config file does not exist" in str(err.exception)
+            assert "Config file does not exist" in exc_info.exconly()
 
     def test_config_malformed_key(self):
         with tempfile.TemporaryDirectory() as dir:
@@ -34,11 +36,11 @@ class SD_Dom0_Validate_Tests(unittest.TestCase):
                 f"{self.test_resources}/files/example_key.asc.malformed", f"{dir}/sd-journalist.sec"
             )
 
-            with self.assertRaises(ValidationError) as err:  # noqa: PT027
+            with pytest.raises(ValidationError) as exc_info:
                 SDWConfigValidator(dir)
 
-            assert "PGP secret key file provided is not an armored private key" in str(
-                err.exception
+            assert (
+                "PGP secret key file provided is not an armored private key" in exc_info.exconly()
             )
 
     def test_config_malformed_onion_json(self):
@@ -48,10 +50,10 @@ class SD_Dom0_Validate_Tests(unittest.TestCase):
             )
             shutil.copy(f"{self.test_resources}/files/example_key.asc", f"{dir}/sd-journalist.sec")
 
-            with self.assertRaises(ValidationError) as err:  # noqa: PT027
+            with pytest.raises(ValidationError) as exc_info:
                 SDWConfigValidator(dir)
 
-            assert "Invalid hidden service hostname specified" in str(err.exception)
+            assert "Invalid hidden service hostname specified" in exc_info.exconly()
 
     def test_config_malformed_fpr_json(self):
         with tempfile.TemporaryDirectory() as dir:
@@ -60,7 +62,7 @@ class SD_Dom0_Validate_Tests(unittest.TestCase):
             )
             shutil.copy(f"{self.test_resources}/files/example_key.asc", f"{dir}/sd-journalist.sec")
 
-            with self.assertRaises(ValidationError) as err:  # noqa: PT027
+            with pytest.raises(ValidationError) as exc_info:
                 SDWConfigValidator(dir)
 
-            assert "Invalid PGP key fingerprint specified" in str(err.exception)
+            assert "Invalid PGP key fingerprint specified" in exc_info.exconly()
