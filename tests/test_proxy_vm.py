@@ -18,9 +18,9 @@ class SD_Proxy_Tests(SD_VM_Local_Test):
     def test_sd_proxy_package_installed(self):
         self.assertTrue(self._package_is_installed("securedrop-proxy"))
 
-    def test_sd_proxy_config(self):
+    def test_sd_proxy_config(self, dom0_config):
         self.assertEqual(
-            f"http://{self.dom0_config['hidserv']['hostname']}",
+            f"http://{dom0_config['hidserv']['hostname']}",
             self._vm_config_read("SD_PROXY_ORIGIN"),
         )
 

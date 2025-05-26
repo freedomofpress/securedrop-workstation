@@ -11,11 +11,11 @@ class SD_Whonix_Tests(SD_VM_Local_Test):
     def test_sd_whonix_config_enabled(self):
         assert self._qubes_service_enabled("securedrop-whonix-config")
 
-    def test_sd_whonix_config(self):
+    def test_sd_whonix_config(self, dom0_config):
         self.assertEqual(
-            self.dom0_config["hidserv"]["hostname"], self._vm_config_read("SD_HIDSERV_HOSTNAME")
+            dom0_config["hidserv"]["hostname"], self._vm_config_read("SD_HIDSERV_HOSTNAME")
         )
-        self.assertEqual(self.dom0_config["hidserv"]["key"], self._vm_config_read("SD_HIDSERV_KEY"))
+        self.assertEqual(dom0_config["hidserv"]["key"], self._vm_config_read("SD_HIDSERV_KEY"))
 
     def test_v3_auth_private_file(self):
         hidserv_hostname = self._vm_config_read("SD_HIDSERV_HOSTNAME")

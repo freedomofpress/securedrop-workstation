@@ -43,9 +43,9 @@ class SD_App_Tests(SD_VM_Local_Test):
         self.assertTrue(self._package_is_installed("python3-pyqt5"))
         self.assertTrue(self._package_is_installed("python3-pyqt5.qtsvg"))
 
-    def test_sd_client_config(self):
+    def test_sd_client_config(self, dom0_config):
         self.assertEqual(
-            self.dom0_config["submission_key_fpr"], self._vm_config_read("SD_SUBMISSION_KEY_FPR")
+            dom0_config["submission_key_fpr"], self._vm_config_read("SD_SUBMISSION_KEY_FPR")
         )
 
     def test_logging_configured(self):
