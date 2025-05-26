@@ -3,6 +3,7 @@ import os
 import re
 import subprocess
 import unittest
+import pytest
 
 from qubesadmin import Qubes
 
@@ -106,7 +107,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             try:
                 stdout, stderr = vm.run(cmd)
             except subprocess.CalledProcessError:
-                self.assertTrue(False, fail_msg)
+                pytest.fail(fail_msg)
             # 'stdout' will contain timestamped progress info; ignore it
             results = stderr.rstrip().decode("utf-8")
             stdout_lines = results.split("\n")
