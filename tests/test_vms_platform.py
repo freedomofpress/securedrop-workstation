@@ -3,8 +3,8 @@ import os
 import re
 import subprocess
 import unittest
-import pytest
 
+import pytest
 from qubesadmin import Qubes
 
 from tests.base import (
