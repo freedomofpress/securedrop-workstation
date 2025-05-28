@@ -7,7 +7,7 @@ import unittest
 import pytest
 from qubesadmin import Qubes
 
-from tests.base import (
+from .. import (
     CURRENT_FEDORA_TEMPLATE,
     CURRENT_WHONIX_VERSION,
     SD_TEMPLATE_LARGE,

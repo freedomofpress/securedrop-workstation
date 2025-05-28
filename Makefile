@@ -155,19 +155,19 @@ test: test-prereqs ## Runs all application tests (no integration tests yet)
 	pytest -v tests
 
 test-base: test-prereqs ## Runs tests for VMs layout
-	pytest -v tests/test_vms_exist.py
+	pytest -v tests/test_provision/test_vms_exist.py
 
 test-app: test-prereqs ## Runs tests for SD APP VM config
-	pytest -v tests/test_app.py
+	pytest -v tests/test_configure/test_sd_app.py
 
 test-proxy: test-prereqs ## Runs tests for SD Proxy VM
-	pytest -v tests/test_proxy_vm.py
+	pytest -v tests/test_configure/test_sd_proxy.py
 
 test-whonix: test-prereqs ## Runs tests for SD Whonix VM
-	pytest -v tests/test_sd_whonix.py
+	pytest -v tests/test_configure/test_sd_whonix.py
 
 test-gpg: test-prereqs ## Runs tests for SD GPG functionality
-	pytest -v tests/test_gpg.py
+	pytest -v tests/test_configure/test_sd_gpg.py
 
 # Client autologin variables
 XDOTOOL_PATH=$(shell command -v xdotool)

@@ -2,7 +2,7 @@ import unittest
 
 from qubesadmin import Qubes
 
-from tests.base import CURRENT_FEDORA_DVM, CURRENT_FEDORA_TEMPLATE, CURRENT_WHONIX_VERSION
+from .. import CURRENT_FEDORA_DVM, CURRENT_FEDORA_TEMPLATE, CURRENT_WHONIX_VERSION
 
 
 class SD_Qubes_VM_Tests(unittest.TestCase):

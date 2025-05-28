@@ -1,6 +1,6 @@
 import pytest
 
-from tests.base import (
+from . import (
     QubeWrapper,
     Test_SD_VM_Local,  # noqa: F401 [HACK: import so base tests run]
 )

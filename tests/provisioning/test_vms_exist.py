@@ -5,7 +5,8 @@ import unittest
 from qubesadmin import Qubes
 
 from sdw_util import Util
-from tests.base import (
+
+from .. import (
     CURRENT_WHONIX_VERSION,
     SD_DVM_TEMPLATES,
     SD_TEMPLATE_BASE,
