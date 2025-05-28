@@ -89,8 +89,6 @@ ignore = [
     "S101",
     # Tests use /tmp
     "S108",
-    # Use a regular `assert` instead of unittest-style `assertEqual`
-    "PT009",
 ]
 "sdw_util/Util.py" = [
     # lock functions return file handles, so it's safe to ignore here
