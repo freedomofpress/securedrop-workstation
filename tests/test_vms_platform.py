@@ -192,6 +192,9 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             vm = self.app.domains[vm_name]
             # First verify it looks like what we provisioned
             self._validate_apt_sources(vm)
+            stdout, stderr = vm.run("cat /etc/apt/sources.list.d/apt_freedom_press.sources")
+            contents = stdout.decode().strip()
+            self.assertIn("apt.freedom.press", contents)
             stdout, stderr = vm.run("apt-get indextargets")
             contents = stdout.decode().strip()
             self.assertIn(
