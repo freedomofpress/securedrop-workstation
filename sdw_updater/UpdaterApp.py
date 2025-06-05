@@ -18,6 +18,7 @@ def launch_securedrop_client():
     """
     try:
         logger.info("Launching SecureDrop client")
+        subprocess.Popen(["qvm-start", "sd-proxy"])
         subprocess.Popen(["qvm-run", "sd-app", "gtk-launch press.freedom.SecureDropClient"])
     except subprocess.CalledProcessError as e:
         logger.error("Error while launching SecureDrop client")
