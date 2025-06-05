@@ -49,7 +49,7 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
         return p.stdout
 
     def _policy_graph_rule_exists(self, source, target, service):
-        policy_str = f"\"{source}\" -> \"{target}\" \[label=\"{service}\""
+        policy_str = f"\"{source}\" -> \"{target}\" [label=\"{service}\""
         policy_graph_output = self._qrexec_policy_graph(source, target, service)
         return policy_str in policy_graph_output
 
