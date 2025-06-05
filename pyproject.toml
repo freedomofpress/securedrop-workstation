@@ -116,4 +116,4 @@ exclude = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util"
+addopts = "--cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util --junitxml=test-data.xml"

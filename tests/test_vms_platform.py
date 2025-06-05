@@ -4,14 +4,16 @@ import re
 import subprocess
 import unittest
 
-from base import (
+import pytest
+from qubesadmin import Qubes
+
+from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     CURRENT_WHONIX_VERSION,
     SD_TEMPLATE_LARGE,
     SD_TEMPLATE_SMALL,
     SD_VMS,
 )
-from qubesadmin import Qubes
 
 BOOKWORM_STRING = "Debian GNU/Linux 12 (bookworm)"
 
@@ -50,7 +52,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         SUPPORTED_SD_DEBIAN_DIST based.
         """
         platform = self._get_platform_info(vm)
-        self.assertIn(SUPPORTED_SD_DEBIAN_DIST, platform)
+        assert SUPPORTED_SD_DEBIAN_DIST in platform
 
     def _validate_apt_sources(self, vm):
         """
@@ -77,11 +79,11 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         stdout, stderr = vm.run(f"cat {filename}")
         contents = stdout.decode("utf-8").rstrip("\n")
 
-        self.assertIn(f"Components: {component}\n", contents, f"{vm.name} wrong component")
-        self.assertIn(f"URIs: {url}\n", contents, f"{vm.name} wrong URL")
-        self.assertIn(
-            f"Suites: {SUPPORTED_SD_DEBIAN_DIST}\n", contents, f"{vm.name} wrong suite/codename"
-        )
+        assert f"Components: {component}\n" in contents, f"{vm.name} wrong component"
+        assert f"URIs: {url}\n" in contents, f"{vm.name} wrong URL"
+        assert (
+            f"Suites: {SUPPORTED_SD_DEBIAN_DIST}\n" in contents
+        ), f"{vm.name} wrong suite/codename"
 
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
@@ -98,14 +100,14 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             results = stdout.rstrip().decode("utf-8")
             # `apt list` will always print "Listing..." to stdout,
             # so expect only that string.
-            self.assertEqual(results, "Listing...", fail_msg)
+            assert results == "Listing...", fail_msg
         else:
             cmd = "sudo dnf check-update"
             # Will raise CalledProcessError if updates available
             try:
                 stdout, stderr = vm.run(cmd)
             except subprocess.CalledProcessError:
-                self.assertTrue(False, fail_msg)
+                pytest.fail(fail_msg)
             # 'stdout' will contain timestamped progress info; ignore it
             results = stderr.rstrip().decode("utf-8")
             stdout_lines = results.split("\n")
@@ -116,7 +118,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
                 if not x.startswith("Warning: Enforcing GPG signature check")
             ]
             results = "".join(stdout_lines)
-            self.assertEqual(results, "", fail_msg)
+            assert results == "", fail_msg
 
     @unittest.skipIf(IS_CI, "Skipping on CI")
     def test_all_sd_vms_uptodate(self):
@@ -178,7 +180,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         cmd = ["qubes-prefs", "default_dispvm"]
         result = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
-        self.assertEqual(result, "sd-viewer")
+        assert result == "sd-viewer"
 
     def test_sd_vm_apt_sources(self):
         """
@@ -194,24 +196,20 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             self._validate_apt_sources(vm)
             stdout, stderr = vm.run("apt-get indextargets")
             contents = stdout.decode().strip()
-            self.assertIn(
-                "Description: https://apt.freedom.press bookworm/main amd64 Packages\n", contents
+            assert (
+                "Description: https://apt.freedom.press bookworm/main amd64 Packages\n" in contents
             )
             if self.config["environment"] == "prod":
                 # prod setups shouldn't have any apt-test sources
-                self.assertNotIn("apt-test.freedom.press", contents)
+                assert "apt-test.freedom.press" not in contents
             else:
                 # staging/dev
                 test_components = ["main"]
                 if self.config["environment"] == "dev":
                     test_components.append("nightlies")
                 for component in test_components:
-                    self.assertIn(
+                    assert (
                         f"Description: https://apt-test.freedom.press bookworm/{component} "
-                        "amd64 Packages\n",
-                        contents,
+                        + "amd64 Packages\n"
+                        in contents
                     )
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_VM_Platform_Tests)
