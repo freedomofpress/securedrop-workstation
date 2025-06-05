@@ -18,11 +18,11 @@ RETURNCODE_DENIED = 126
 class SD_Qubes_Rpc_Tests(unittest.TestCase):
     # TODO(vicki): use setUpClass to create "state" to store the vms by tag 
     # vms: Set(str)
-    # vms_by_tag: Map(str,str) tag : vm.name
+    # vms_by_tag: Map(str,Set(str)) tag : {vm.name, ...}
 
     @classmethod 
     def setUpClass(cls):
-        cls.all_vms = {}
+        cls.all_vms = set()
         cls.vms_by_tag = {} 
         app = Qubes() 
         for vm in app.domains:
@@ -32,7 +32,7 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
             for tag in vm.tags:
                 if tag in vms_by_tag:
                     cls.vms_by_tag.add(vm.name)
-                cls.vms_by_tag[tag] = {vm.name}
+                cls.vms_by_tag[tag] = set(vm.name)
 
     def _qrexec_policy_graph(self, source, target, service):
         cmd = [
