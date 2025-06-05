@@ -9,7 +9,49 @@ RETURNCODE_ERROR = 1
 RETURNCODE_DENIED = 126
 
 
+# qrexec-policy-graph
+# prints one line with direction that is allowed 
+# can filter SOURCE, TARGET, and SERVICE
+# not sure if we can filter by tag? but perhaps we can get the VMs by tag
+
+
 class SD_Qubes_Rpc_Tests(unittest.TestCase):
+    # TODO(vicki): use setUpClass to create "state" to store the vms by tag 
+    # vms: Set(str)
+    # vms_by_tag: Map(str,str) tag : vm.name
+
+    @classmethod 
+    def setUpClass(cls):
+        cls.all_vms = {}
+        cls.vms_by_tag = {} 
+        app = Qubes() 
+        for vm in app.domains:
+            if vm.name == "dom0":
+                continue
+            all_vms.add(vm.name)
+            for tag in vm.tags:
+                if tag in vms_by_tag:
+                    vms_by_tag.add(vm.name)
+                vms_by_tag[tag] = {vm.name}
+
+    def _qrexec_policy_graph(self, source, target, service):
+        cmd = [
+            "qrexec-policy-graph",
+            "--source",
+            source,
+            "--target",
+            target,
+            "--service",
+            service
+        ]
+        p = subprocess.run(cmd, capture_output=True, text=True, check=False)
+        return p.stdout
+
+    def _policy_graph_rule_exists(self, source, target, service):
+        policy_str = f"\"{source}\" -> \"{target}\" \[label=\"{service}\""
+        policy_graph_output = self._qrexec_policy_graph(source, target, service)
+        return policy_str in policy_graph_output
+
     def _qrexec(self, source_vm, dest_vm, policy_name):
         cmd = [
             "qvm-run",
@@ -39,17 +81,18 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
 
     # securedrop.Log from @tag:sd-workstation to sd-log should be allowed
     def test_sdlog_from_sdw_to_sdlog_allowed(self):
-        vms_with_tag, _ = self._get_running_vms_with_and_without_tag("sd-workstation")
-        for vm in vms_with_tag:
+        # vms_with_tag, _ = self._get_running_vms_with_and_without_tag("sd-workstation")
+        sd_workstation_vms = self.vms_by_tag["sd-workstation"]
+        for vm in sd_workstation_vms:
             if vm != "sd-log":
-                self.assertEqual(self._qrexec(vm, "sd-log", "securedrop.Log"), RETURNCODE_SUCCESS)
+                self.assertTrue(self._policy_graph_rule_exists(source=vm, target="sd-log", service="securedrop.Log"))
 
     # securedrop.Log from anything else to sd-log should be denied
     def test_sdlog_from_other_to_sdlog_denied(self):
-        _, vms_without_tag = self._get_running_vms_with_and_without_tag("sd-workstation")
+        vms_without_tag = self.all_vms.difference(self.vms_by_tag["sd-workstation"])
         for vm in vms_without_tag:
             if vm != "sd-log":
-                self.assertEqual(self._qrexec(vm, "sd-log", "securedrop.Log"), RETURNCODE_DENIED)
+                self.assertFalse(self._policy_graph_rule_exists(source=vm, target="sd-log", service="securedrop.Log"))
 
     # securedrop.Proxy from sd-app to sd-proxy should be allowed
     def test_sdproxy_from_sdapp_to_sdproxy_allowed(self):
