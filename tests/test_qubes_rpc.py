@@ -28,11 +28,11 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
         for vm in app.domains:
             if vm.name == "dom0":
                 continue
-            all_vms.add(vm.name)
+            cls.all_vms.add(vm.name)
             for tag in vm.tags:
                 if tag in vms_by_tag:
-                    vms_by_tag.add(vm.name)
-                vms_by_tag[tag] = {vm.name}
+                    cls.vms_by_tag.add(vm.name)
+                cls.vms_by_tag[tag] = {vm.name}
 
     def _qrexec_policy_graph(self, source, target, service):
         cmd = [
