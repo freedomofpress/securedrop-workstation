@@ -135,21 +135,12 @@ clean: assert-dom0 prep-dev ## Destroys all SD VMs
 # if clean has already been run.
 	./scripts/sdw-admin.py --uninstall --force
 
-PYTEST_PATH=$(shell command -v pytest)
-COVERAGE_PATH=$(shell command -v coverage) # instead of pytest-cov, check for its dep.
 .PHONY: test-prereqs
 test-prereqs: assert-dom0 ## Checks that test prerequisites are satisfied
 	@echo "Checking prerequisites before running test suite..."
-	test -e config.json || exit 1
-	test -e sd-journalist.sec || exit 1
-ifeq ($(PYTEST_PATH),)
-	@echo 'please install pytest with "sudo qubes-dom0-update python3-pytest"'
-	@false
-endif
-ifeq ($(COVERAGE_PATH),)
-	@echo 'please install pytest with "sudo qubes-dom0-update python3-pytest-cov"'
-	@false
-endif
+	test -e config.json || (echo "Ensure config.json is in this directory" && exit 1)
+	test -e sd-journalist.sec || (echo "Ensure sd-journalist.sec is in this directory" && exit 1)
+	which pytest coverage || (echo 'please install test dependencies with "sudo qubes-dom0-update python3-pytest python3-pytest-cov"' && exit 1)
 
 test: test-prereqs ## Runs all application tests (no integration tests yet)
 	pytest -v tests
