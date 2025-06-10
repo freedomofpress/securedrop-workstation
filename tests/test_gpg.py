@@ -6,7 +6,9 @@ import pytest
 
 from tests.base import (
     QubeWrapper,
-    Test_SD_VM_Local,  # noqa: F401 [HACK: import so base tests run]
+)
+from tests.base import (
+    Test_SD_VM_Common as Test_SD_Gpg_Common,  # noqa: F401 [HACK: import so base tests run]
 )
 
 
