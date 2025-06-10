@@ -7,7 +7,7 @@ import pytest
 from tests.base import (
     CURRENT_DEBIAN_VERSION,
     QubeWrapper,
-    Test_SD_VM_Local,  # noqa: F401 [HACK: import so base tests run]
+    Test_SD_VM_Common as Test_SD_Log_Common,  # noqa: F401 [HACK: import so base tests run]
 )
 
 

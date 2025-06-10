@@ -4,7 +4,7 @@ import pytest
 
 from tests.base import (
     QubeWrapper,
-    Test_SD_VM_Local,  # noqa: F401 [HACK: import so base tests run]
+    Test_SD_VM_Common as Test_SD_Devices_Common,  # noqa: F401 [HACK: import so base tests run]
 )
 
 
