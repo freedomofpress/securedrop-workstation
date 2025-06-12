@@ -1,7 +1,15 @@
 ---
 name: ci
 
-on: [push, pull_request, merge_group]
+on:
+  - push
+  - pull_request
+  - merge_group
+
+# Only build for latest push/PR unless it's main or release/
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && !startsWith( github.ref, 'refs/heads/release/' ) && !startsWith( github.ref, 'refs/heads/gh-readonly-queue/' ) }}
 
 jobs:
   lint:
@@ -59,3 +67,94 @@ jobs:
       - name: Run launcher tests
         run: |
           make test-launcher
+  # If the most recent commit message contains "openqa" (case insensitive), run the openqa job
+  check-openqa:
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check.outputs.should-run }}
+    env:
+      COMMIT_MSG: ${{ github.event.head_commit.message }}
+    steps:
+      - name: Check commit message
+        id: check
+        run: |
+          if echo "${COMMIT_MSG}" | grep -iq "openqa"; then
+            echo "running OpenQA job"
+            echo "should-run=true" >> $GITHUB_OUTPUT
+          else
+            echo "skipping OpenQA job"
+            echo "should-run=false" >> $GITHUB_OUTPUT
+          fi
+  openqa:
+    runs-on: ubuntu-latest
+    # Do not start until all other checks have passed
+    needs:
+      - lint
+      - build-rpm
+      - launcher-tests
+      - check-openqa
+    # Run only if:
+    # 1. This is a push (not pull_request)
+    # 2. We're not on main
+    # 3. We're not on a merge queue branch
+    # 4. The "openqa" string is present
+    if: |
+      github.event_name == 'push' && github.ref != 'refs/heads/main' && !startsWith( github.ref, 'refs/heads/gh-readonly-queue/' )
+      && needs.check-openqa.outputs.should-run == 'true'
+    env:
+      OPENQA_HOST: "https://openqa.qubes-os.org/"
+      OPENQA_KEY: ${{ secrets.OPENQA_KEY }}
+      OPENQA_SECRET: ${{ secrets.OPENQA_SECRET }}
+      GIT_REF: ${{ github.event.head_commit.id }}
+    container:
+      image: debian:trixie
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install --yes openqa-client jq
+      - name: Start openQA jobs
+        run: |
+          echo "Queuing openQA jobs for commit ${GIT_REF}"
+          openqa-cli api \
+            --host "$OPENQA_HOST" \
+            --apikey "$OPENQA_KEY" \
+            --apisecret "$OPENQA_SECRET" \
+            isos -X post \
+            VERSION=4.2 \
+            BUILD=$(date +%Y%m%d%H%M)-4.2 \
+            DISTRI=qubesos ARCH=x86_64 \
+            GIT_REF="$GIT_REF" \
+            FLAVOR=securedrop \
+            NEEDLES_DIR="%%CASEDIR%%/needles" \
+            CASEDIR="https://github.com/deeplow/openqa-tests-qubesos.git#securedrop-basic-functionality"\
+            MAX_JOB_TIME=10800 | tee openqa.json
+      - name: Wait for openQA
+        run: |
+          openqa-cli monitor \
+            --host "$OPENQA_HOST" \
+            --apikey "$OPENQA_KEY" \
+            --apisecret "$OPENQA_SECRET" \
+            $(jq -r '.ids[]' openqa.json)
+      - name: Cancel openQA test (if needed)
+        if: cancelled()
+        run: |
+          # Cancel all the jobs we queued in a best-effort manner
+          for id in $(jq -r '.ids[]' openqa.json); do
+            openqa-cli api \
+              --host "$OPENQA_HOST" \
+              --apikey "$OPENQA_KEY" \
+              --apisecret "$OPENQA_SECRET" \
+              -X POST "jobs/${id}/cancel" ||:
+          done
+      - name: View logs
+        if: always()
+        run: |
+          echo "View the logs for this run at:"
+
+          for id in $(jq -r '.ids[]' openqa.json); do
+            echo "${OPENQA_HOST}tests/${id}"
+          done
