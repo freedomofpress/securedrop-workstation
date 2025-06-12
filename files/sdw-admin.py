@@ -22,6 +22,9 @@ SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
 SALT_PATH = "/srv/salt/securedrop_salt/"
 BASE_TEMPLATE = "debian-12-minimal"
 
+TAILS_GNUPG_PATH = "/run/media/user/TailsData/gnupg/"
+TAILS_JOURNALIST_INTERFACE_CONFIG_PATH = "/run/media/user/TailsData/Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
+
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator, ValidationError  # noqa: E402
 
@@ -57,6 +60,13 @@ def parse_args():
         required=False,
         action="store_true",
         help="During uninstall action, don't prompt for confirmation, proceed immediately",
+    )
+    parser.add_argument(
+        "--configure",
+        default=False,
+        required=False,
+        action="store_true",
+        help="Configure SecureDrop Workstation and import submission key and Journalist Interface configuration",
     )
     return parser.parse_args()
 
@@ -270,6 +280,125 @@ def perform_uninstall():
     )
 
 
+def extract_fingerprint(gpg_output):
+    lines = gpg_output.strip().split("\n")
+
+    primary_key = True
+    for line in lines:
+        if not line.strip():
+            continue
+        fields = line.split(":")
+        record_type = fields[0]
+
+        if record_type == "sec":
+            primary_key = True
+            continue 
+        if record_type == "ssb":
+            primary_key = False 
+            continue
+        if record_type == "fpr" and primary_key:
+            if len(fields) > 9 and fields[9]:
+                return fields[9]
+    return None
+
+
+def import_submission_key():
+    """
+    Imports SecureDrop submission key from USB drive to dom0. Assumes that the USB drive
+    is successfully attached to vault VM and decrypted.
+    Returns the submission key fingerprint.
+    """
+    gpg_output = subprocess.check_output(
+        [
+            "qvm-run",
+            "--pass-io",
+            "vault",
+            f'gpg --homedir {TAILS_DATA_GNUPG_PATH} -K --fingerprint --with-colon',
+        ],
+        text=True,
+    )
+    fingerprint = extract_fingerprint(gpg_output)
+    if not fingerprint:
+        raise SDWAdminException("Error reading submission key fingerprint")
+
+    gpg_privkey = subprocess.check_output(
+        [
+            "qvm-run",
+            "--pass-io",
+            "vault",
+            f'gpg --homedir {TAILS_DATA_GNUPG_PATH} --export-secret-keys --armor {fingerprint}',
+        ],
+        text=True,
+    )
+
+    with open(SCRIPTS_PATH + "sd-journalist.sec", 'w') as f:
+        f.write(gpg_privkey)
+
+    return fingerprint
+
+
+def import_journalist_interface_config():
+    """
+    Imports Journalist Interface address and authentication info from USB drive to dom0. 
+    Assumes that USB drive is attached to vault VM and decrypted.
+    Returns (hostname, key) of the journalist interface hidserv
+    """
+    journalist_interface_config = subprocess.check_output(
+        [
+            "qvm-run",
+            "--pass-io",
+            "vault",
+            f'cat ${TAILS_JOURNALIST_INTERFACE_CONFIG_PATH}',
+        ],
+        text=True
+    )
+    fields = journalist_interface_config.split(':')
+    addr = fields[0]
+    auth_token = fields[3]
+    return addr, auth_token
+
+
+def configure():
+    print("Importing SecureDrop submission key from USB.\n"
+        "Ensure that USB containing submission key is connected.\n\n"
+        "Attach the USB to the vault VM and decrypt by opening the file\n"
+        "manager in the vault VM and entering the passphrase when prompted.\n\n"
+    )
+    response = input("Are you ready to proceed (y/N)?")
+    if response.lower() != "y":
+        print("Exiting.")
+        return
+    print("Importing submission key...")
+    submission_key_fingerprint = import_submission_key() 
+    print(
+        "Submission key import complete! Please detach and disconnect the USB containing the submission key\n\n\n"
+    )
+
+    print("Importing Journalist Interface details\n"
+        "Ensure that Admin Workstation or Journalist Workstation USB is connected.\n"
+        "Attach the USB to the vault VM and decrypt by opening the file\n"
+        "manager in the vault VM and entering the passphrase when prompted.\n\n"
+    )
+    response = input("Are you ready to proceed (y/N)?")
+    if response.lower() != "y":
+        print("Exiting.")
+        return
+    ji_addr, ji_auth_token = import_journalist_interface_config()
+    config = {
+        "submission_key_fpr": submission_key_fingerprint,
+        "hidserv.hostname": ji_addr,
+        "hidserv.key": ji_auth_token,
+        "environment": "prod",
+    }
+    with open(SCRIPTS_PATH + "config.json", 'w') as f:
+        json.dump(data, f)
+    print("Journalist Interface import complete! Please detach and disconnect the USB drive.\n\n\n")
+    print("Validating configuration...")
+    validate_config(SCRIPTS_PATH)
+    print!("Validation successful!")
+    return
+    
+
 def main():
     if os.geteuid() == 0:
         print("Please do not run this script as root.")
@@ -317,6 +446,11 @@ def main():
                 sys.exit(0)
         refresh_salt()
         perform_uninstall()
+    elif args.configure:
+        print("Preparing to configure SecureDrop Workstation...\n\n")
+        print("Make sure you have the USB with the submission key and an\n")
+        print("Admin Workstation or Journalist Workstation USB drive accessible.\n\n\n")
+        configure()
     else:
         sys.exit(0)
 
