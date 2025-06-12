@@ -17,7 +17,3 @@ class SD_Dom0_Salt_Config_Tests(unittest.TestCase):
 
         except subprocess.CalledProcessError:
             self.fail("Error checking topfiles")
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Dom0_Salt_Config_Tests)
