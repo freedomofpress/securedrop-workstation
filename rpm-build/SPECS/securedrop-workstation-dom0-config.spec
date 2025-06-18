@@ -27,14 +27,9 @@ Summary:	SecureDrop Workstation
 
 License:	AGPLv3
 URL:		https://github.com/freedomofpress/securedrop-workstation
-# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/SourceURL/#_troublesome_urls
-Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
 BuildArch:		noarch
 BuildRequires:	python3-devel
-BuildRequires:	python3-pip
-BuildRequires:	python3-setuptools
-BuildRequires:	python3-wheel
 BuildRequires:	systemd-rpm-macros
 
 # This package installs all standard VMs in Qubes
@@ -49,32 +44,27 @@ configuration over time.
 
 
 %prep
-%setup -q -n %{name}-%{version}
-
+# No prep needed
 
 %build
 # No building necessary here, but this soothes rpmlint
 
 
 %install
-%{python3} -m pip install --no-compile --no-index --no-build-isolation --root %{buildroot} .
-# direct_url.json is is not reproducible and not strictly needed
-rm %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/direct_url.json
-sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/RECORD
 
 install -m 755 -d %{buildroot}/srv/salt/
-cp -a securedrop_salt %{buildroot}/srv/salt/
+cp -a %{_projdir}/securedrop_salt %{buildroot}/srv/salt/
 
 install -m 755 -d %{buildroot}/%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}/%{_bindir}
 install -m 755 -d %{buildroot}/opt/securedrop
 install -m 755 -d %{buildroot}/usr/bin/securedrop
-install -m 755 files/update-xfce-settings %{buildroot}/usr/bin/securedrop/
-install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 755 files/destroy-vm.py %{buildroot}/%{_datadir}/%{name}/scripts/destroy-vm
-install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
-install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
+install -m 755 %{_projdir}/files/update-xfce-settings %{buildroot}/usr/bin/securedrop/
+install -m 755 %{_projdir}/files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
+install -m 755 %{_projdir}/files/destroy-vm.py %{buildroot}/%{_datadir}/%{name}/scripts/destroy-vm
+install -m 755 %{_projdir}/files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
+install -m 755 %{_projdir}/files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
+install -m 644 %{_projdir}/files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 
 install -m 755 -d %{buildroot}/%{_bindir}
 install -m 755 -d %{buildroot}/%{_datadir}/applications/
@@ -84,29 +74,29 @@ install -m 755 -d %{buildroot}/%{_sharedstatedir}/%{name}/
 install -m 755 -d %{buildroot}/%{_userunitdir}/
 install -m 755 -d %{buildroot}/%{_unitdir}
 install -m 755 -d %{buildroot}/%{_userpresetdir}/
-install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
-install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/salt/securedrop_salt/press.freedom.SecureDropUpdater.desktop
-install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
-install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
-install -m 755 files/sdw-updater.py %{buildroot}/%{_bindir}/sdw-updater
-install -m 755 files/sdw-notify.py %{buildroot}/%{_bindir}/sdw-notify
-install -m 755 files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
-install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
-install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
-install -m 644 files/securedrop-logind-override-disable.service %{buildroot}/%{_unitdir}/
-install -m 644 files/95-securedrop-systemd-user.preset %{buildroot}/%{_userpresetdir}/
+install -m 644 %{_projdir}/files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
+install -m 644 %{_projdir}/files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/salt/securedrop_salt/press.freedom.SecureDropUpdater.desktop
+install -m 644 %{_projdir}/files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
+install -m 644 %{_projdir}/files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
+install -m 755 %{_projdir}/files/sdw-updater.py %{buildroot}/%{_bindir}/sdw-updater
+install -m 755 %{_projdir}/files/sdw-notify.py %{buildroot}/%{_bindir}/sdw-notify
+install -m 755 %{_projdir}/files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
+install -m 644 %{_projdir}/files/sdw-notify.service %{buildroot}/%{_userunitdir}/
+install -m 644 %{_projdir}/files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
+install -m 644 %{_projdir}/files/securedrop-logind-override-disable.service %{buildroot}/%{_unitdir}/
+install -m 644 %{_projdir}/files/95-securedrop-systemd-user.preset %{buildroot}/%{_userpresetdir}/
 
 install -m 755 -d %{buildroot}/etc/qubes/policy.d/
-install -m 644 files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
-install -m 644 files/32-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
+install -m 644 %{_projdir}/files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
+install -m 644 %{_projdir}/files/32-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
 
 install -m 755 -d %{buildroot}/usr/share/securedrop/icons
-install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/icons/sd-logo.png
+install -m 644 %{_projdir}/files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/icons/sd-logo.png
 
 install -m 755 -d %{buildroot}/etc/systemd/logind.conf.d/
-install -m 644 files/10-securedrop-logind_override.conf %{buildroot}/etc/systemd/logind.conf.d/
-install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}/%{_userunitdir}/
-install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_userunitdir}/
+install -m 644 %{_projdir}/files/10-securedrop-logind_override.conf %{buildroot}/etc/systemd/logind.conf.d/
+install -m 644 %{_projdir}/files/securedrop-user-xfce-settings.service %{buildroot}/%{_userunitdir}/
+install -m 644 %{_projdir}/files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_userunitdir}/
 
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
@@ -144,8 +134,8 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 
 %attr(755, root, root) /usr/bin/securedrop/update-xfce-settings
 
-%doc README.md
-%license LICENSE
+%doc %{_projdir}/README.md
+%license %{_projdir}/LICENSE
 
 %post
 # Update Salt Configuration

@@ -19,6 +19,7 @@ cp dist/*.tar.gz rpm-build/SOURCES/
 
 rpmbuild \
     --define "_topdir $PWD/rpm-build" \
+    --define "_projdir $PWD" \
     -bb --clean "rpm-build/SPECS/${PROJECT}.spec"
 
 # Check reproducibility
