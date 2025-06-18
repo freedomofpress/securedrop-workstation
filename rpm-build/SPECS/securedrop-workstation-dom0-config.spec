@@ -202,6 +202,14 @@ fi
 * Thu Jul 11 2024 SecureDrop Team <securedrop@freedom.press> - 1.0.0
 - See changelog.md
 
+* Tue Jul 2 2024 SecureDrop Team <securedrop@freedom.press> - 0.11.1
+- Update the SecureDrop release signing key
+- Automate signing key update in RPM database via systemd unit
+- Ensure correct mtime clamping for reproducible RPMs
+
+* Wed May 1 2024 SecureDrop Team <securedrop@freedom.press> - 0.11.0
+- Use Fedora 39 base template
+
 * Wed Feb 7 2024 SecureDrop Team <securedrop@freedom.press> - 0.10.0
 - Use Whonix-17 template for sd-whonix
 
