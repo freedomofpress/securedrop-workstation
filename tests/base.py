@@ -211,7 +211,7 @@ remotevm = sd-log
         assert mailcap_result == f'logger "Mailcap is disabled." <{tmpfile_name}'
 
 
-class Test_SD_VM_Local:
+class Test_SD_VM_Common:
     def test_vm_config_keys(self, qube):
         """Every VM should check that it has only the configuration keys it
         expects.
