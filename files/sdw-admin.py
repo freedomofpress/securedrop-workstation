@@ -6,6 +6,7 @@ does it handle the config.
 """
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -18,9 +19,19 @@ from sdw_util import Util
 # errors from qubesctl. It may be possible to raise this again.
 MAX_CONCURRENCY = 2
 
+DEFAULT_SD_APP_GB = 10
+DEFAULT_SD_LOG_GB = 5
+
 SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
 SALT_PATH = "/srv/salt/securedrop_salt/"
 BASE_TEMPLATE = "debian-12-minimal"
+
+SUBMISSION_KEY = "sd-journalist.sec"
+TAILS_PATH = "/run/media/user/TailsData/"
+TAILS_GNUPG_PATH = TAILS_PATH + "gnupg/"
+TAILS_JOURNALIST_INTERFACE_CONFIG = (
+    TAILS_PATH + "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
+)
 
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator, ValidationError  # noqa: E402
@@ -57,6 +68,13 @@ def parse_args():
         required=False,
         action="store_true",
         help="During uninstall action, don't prompt for confirmation, proceed immediately",
+    )
+    parser.add_argument(
+        "--configure",
+        default=False,
+        required=False,
+        action="store_true",
+        help="Configure SecureDrop Workstation",
     )
     return parser.parse_args()
 
@@ -270,6 +288,185 @@ def perform_uninstall():
     )
 
 
+def extract_fingerprint(gpg_output):
+    lines = gpg_output.strip().split("\n")
+
+    primary_key = True
+    for line in lines:
+        if not line.strip():
+            continue
+        fields = line.split(":")
+        record_type = fields[0]
+
+        if record_type == "sec":
+            primary_key = True
+            continue
+        if record_type == "ssb":
+            primary_key = False
+            continue
+        if record_type == "fpr" and primary_key and len(fields) > 9 and fields[9]:
+            return fields[9]
+    return None
+
+
+def _try_read_submission_key():
+    """
+    Checks if SecureDrop submission key is written to dom0. If so, returns
+    submission key fingerprint
+    """
+    if not os.path.exists(SCRIPTS_PATH + SUBMISSION_KEY):
+        return None
+    gpg_output = subprocess.check_output(
+        ["gpg", "--show-keys", "--with-fingerprint", "--with-colon", SCRIPTS_PATH + SUBMISSION_KEY],
+        text=True,
+    )
+    return extract_fingerprint(gpg_output)
+
+
+def import_submission_key():
+    """
+    Imports SecureDrop submission key from USB drive to dom0. Assumes that the USB drive
+    is successfully attached to vault VM and decrypted.
+    Returns the submission key fingerprint.
+    """
+    gpg_output = subprocess.check_output(
+        [
+            "qvm-run",
+            "--pass-io",
+            "vault",
+            f"gpg --homedir {TAILS_GNUPG_PATH} -K --fingerprint --with-colon",
+        ],
+        text=True,
+    )
+    fingerprint = extract_fingerprint(gpg_output)
+    if not fingerprint:
+        raise SDWAdminException("Error reading submission key fingerprint")
+
+    gpg_privkey = subprocess.check_output(
+        [
+            "qvm-run",
+            "--pass-io",
+            "vault",
+            f"gpg --homedir {TAILS_GNUPG_PATH} --export-secret-keys --armor {fingerprint}",
+        ],
+        text=True,
+    )
+
+    temp_file = "/tmp/sd-journalist.sec"
+    with open(temp_file, "w") as f:
+        f.write(gpg_privkey)
+
+    subprocess.check_call(["sudo", "cp", temp_file, SCRIPTS_PATH])
+
+    return fingerprint
+
+
+def import_journalist_interface_config():
+    """
+    Imports Journalist Interface address and authentication info from USB drive to dom0.
+    Assumes that USB drive is attached to vault VM and decrypted.
+    Returns (hostname, key) of the journalist interface hidserv
+    """
+    journalist_interface_config = subprocess.check_output(
+        [
+            "qvm-run",
+            "--pass-io",
+            "vault",
+            f"cat {TAILS_JOURNALIST_INTERFACE_CONFIG}",
+        ],
+        text=True,
+    )
+    fields = journalist_interface_config.strip().split(":")
+    addr = fields[0]
+    auth_token = fields[3]
+    return addr, auth_token
+
+
+def import_config():
+    submission_key_fingerprint = _try_read_submission_key()
+    if not submission_key_fingerprint:
+        subprocess.Popen(
+            ["qvm-start", "vault"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        print(
+            "Importing SecureDrop submission key from USB...\n\n\n"
+            "Ensure that USB containing submission key is connected.\n\n"
+            "1. Attach the USB to the vault VM\n"
+            "2. Open Thunar File Manager in the vault VM\n"
+            "3. Select the USB drive in the left sidebar of the file manager.\n"
+            "It should be listed under Devices as 'N GB Encrypted'.\n"
+            "Enter the correct passphrase when prompted.\n\n"
+        )
+        response = input("Are you ready to proceed (y/N)?")
+        if response.lower() != "y":
+            print("Exiting.")
+            return
+        print("Importing submission key...")
+        submission_key_fingerprint = import_submission_key()
+        print(
+            "Submission key import complete!\n"
+            "Please detach and disconnect the USB containing the submission key\n\n"
+        )
+    else:
+        print("Found submission key file, proceeding")
+
+    try:
+        validate_config(SCRIPTS_PATH)
+        print("Valid configuration found, configuration complete")
+    except SDWAdminException:
+        subprocess.Popen(
+            ["qvm-start", "vault"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        print(
+            "Importing Journalist Interface details...\n\n\n"
+            "Ensure that Admin Workstation or Journalist Workstation USB is connected.\n\n"
+            "1. Attach the USB to the vault VM\n"
+            "2. Open Thunar File Manager in the vault VM\n"
+            "3. Select the USB drive in the left sidebar of the file manager.\n"
+            "It should be listed under Devices as 'N GB Encrypted'.\n"
+            "Enter the correct passphrase when prompted.\n\n"
+        )
+        response = input("Are you ready to proceed (y/N)?")
+        if response.lower() != "y":
+            print("Exiting.")
+            return
+        ji_addr, ji_auth_token = import_journalist_interface_config()
+
+        # Configure private volume sizes
+        sd_app_gb = input(
+            f"Enter desired size for sd-app private volume in GiB (default: {DEFAULT_SD_APP_GB}GiB)"
+        )
+        if not sd_app_gb:
+            sd_app_gb = DEFAULT_SD_APP_GB
+        sd_log_gb = input(
+            f"Enter desired size for sd-log private volume in GiB (default: {DEFAULT_SD_LOG_GB}GiB)"
+        )
+        if not sd_log_gb:
+            sd_log_gb = DEFAULT_SD_LOG_GB
+
+        config = {
+            "submission_key_fpr": submission_key_fingerprint,
+            "hidserv": {
+                "hostname": ji_addr,
+                "key": ji_auth_token,
+            },
+            "environment": "prod",
+            "vmsizes": {"sd_app": sd_app_gb, "sd_log": sd_log_gb},
+        }
+        temp_file = "/tmp/config.json"
+        with open(temp_file, "w") as f:
+            json.dump(config, f, indent=2)
+        subprocess.check_call(["sudo", "cp", temp_file, SCRIPTS_PATH])
+        print(
+            "Journalist Interface import complete!\n"
+            "Please detach and disconnect the USB drive.\n\n"
+        )
+        print("Validating configuration...")
+        validate_config(SCRIPTS_PATH)
+        print("Validation successful!")
+    return
+
+
 def main():
     if os.geteuid() == 0:
         print("Please do not run this script as root.")
@@ -317,6 +514,13 @@ def main():
                 sys.exit(0)
         refresh_salt()
         perform_uninstall()
+    elif args.configure:
+        print(
+            "Preparing to import SecureDrop Workstation configuration...\n\n"
+            "Make sure you have the USB with the submission key and an\n"
+            "Admin Workstation or Journalist Workstation USB drive accessible.\n\n\n"
+        )
+        import_config()
     else:
         sys.exit(0)
 
