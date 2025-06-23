@@ -1,4 +1,5 @@
 import functools
+import os
 import subprocess
 import unittest
 
@@ -25,6 +26,11 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
         service_policy_graph = self._qrexec_policy_graph(service)
         policy_str = f'"{source}" -> "{target}" [label="{service}"'
         return policy_str in service_policy_graph
+
+    def test_policy_files_exist(self):
+        """verify the policies are installed"""
+        assert os.path.exists("/etc/qubes/policy.d/31-securedrop-workstation.policy")
+        assert os.path.exists("/etc/qubes/policy.d/32-securedrop-workstation.policy")
 
     # securedrop.Log from @tag:sd-workstation to sd-log should be allowed
     def test_sdlog_from_sdw_to_sdlog_allowed(self):
