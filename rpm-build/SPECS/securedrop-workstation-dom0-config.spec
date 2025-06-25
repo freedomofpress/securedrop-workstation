@@ -41,6 +41,12 @@ BuildRequires:	systemd-rpm-macros
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
 Requires:		python3-qt5
 
+# Require keyring boostrap package.
+# To ensure that production systems can only be provisioned with prod repos,
+# require any non-prod repo configuration to depend on a dev-only virtual package that
+# is built locally
+Requires:       (securedrop-workstation-keyring or ((securedrop-workstation-keyring-staging or securedrop-workstation-keyring-dev or securedrop-workstation-keyring-qa) and sdw-dev))
+
 %description
 This package contains VM configuration files for the Qubes-based
 SecureDrop Workstation project. The package should be installed
