@@ -288,25 +288,31 @@ def perform_uninstall():
     )
 
 
-def extract_fingerprint(gpg_output):
+def extract_secret_key_fingerprints(gpg_output):
+    """
+    Parses gpg output to return fingerprints for all secret keys in the keyring.
+    """
     lines = gpg_output.strip().split("\n")
+    fingerprints = []
 
     primary_key = True
-    for line in lines:
+    for idx, line in enumerate(lines):
         if not line.strip():
             continue
+        if idx >= len(lines) - 1:
+            continue
+        
         fields = line.split(":")
         record_type = fields[0]
 
+        # Secret key
         if record_type == "sec":
-            primary_key = True
-            continue
-        if record_type == "ssb":
-            primary_key = False
-            continue
-        if record_type == "fpr" and primary_key and len(fields) > 9 and fields[9]:
-            return fields[9]
-    return None
+            # Following line should be the secret key fingerprint
+            fpr_fields = lines[idx+1].split(":")
+            if fpr_fields[0] == "fpr" and len(fpr_fields) > 9 and fpr_fields[9]:
+                fingerprints.append(fpr_fields[9])
+
+    return fingerprints
 
 
 def _try_read_submission_key():
@@ -323,6 +329,26 @@ def _try_read_submission_key():
     return extract_fingerprint(gpg_output)
 
 
+def _prompt_choose_submission_key(fingerprints):
+    print(
+        "Multiple eligible secret keys found in the keyring.\n"
+        "Please select which secret key to use as the SecureDrop submission key.\n\n"
+    )
+    for i, fpr_option in enumerate(fingerprints, 1):
+        print(f"{i}. {fpr_option}")
+    try:
+        choice = int(input(f"Submission key [1-{len(fingerprints)}]: "))
+        if 1 <= choice <= len(options): 
+            fingerprint = fingerprints[choice-1]
+            print(f"Selected key {choice}: {fingerprint}")
+            return fingerprint
+        else:
+            print("Invalid choice. Exiting.")
+            return None
+    except ValueError:
+        print("Invalid input. Exiting.")
+        return None
+
 def import_submission_key():
     """
     Imports SecureDrop submission key from USB drive to dom0. Assumes that the USB drive
@@ -338,9 +364,15 @@ def import_submission_key():
         ],
         text=True,
     )
-    fingerprint = extract_fingerprint(gpg_output)
-    if not fingerprint:
-        raise SDWAdminException("Error reading submission key fingerprint")
+    fingerprints = extract_secret_key_fingerprints(gpg_output)
+    if len(fingerprints) == 0:
+        raise SDWAdminException("Error reading submission key fingerprint: no private keys found")
+    if len(fingerprints) > 1:
+        fingerprint = _prompt_choose_submission_key(fingerprints)
+        if not fingerprint:
+            raise SDWAdminException("Error importing submission key: unable to select from multiple eligible keys")
+    else:
+        fingerprint = fingerprints[0]
 
     gpg_privkey = subprocess.check_output(
         [
@@ -431,6 +463,15 @@ def import_config():
             print("Exiting.")
             return
         ji_addr, ji_auth_token = import_journalist_interface_config()
+        print(
+            "Journalist Interface details imported.\n\n"
+            f"Onion address: {ji_addr}.onion\n"
+            f"Auth token: {ji_auth_token}\n"
+        )
+        resonse = input("Confirm that these values are correct to proceed (y/N)")
+        if response.lower() != "y":
+            print("Exiting.")
+            return
 
         # Configure private volume sizes
         sd_app_gb = input(
@@ -447,7 +488,7 @@ def import_config():
         config = {
             "submission_key_fpr": submission_key_fingerprint,
             "hidserv": {
-                "hostname": ji_addr,
+                "hostname": ji_addr + ".onion",
                 "key": ji_auth_token,
             },
             "environment": "prod",
