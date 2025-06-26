@@ -347,7 +347,7 @@ def _prompt_choose_submission_key(fingerprints):
         print(f"{i}. {fpr_option}")
     try:
         choice = int(input(f"Submission key [1-{len(fingerprints)}]: "))
-        if 1 <= choice <= len(options): 
+        if 1 <= choice <= len(fingerprints): 
             fingerprint = fingerprints[choice-1]
             print(f"Selected key {choice}: {fingerprint}")
             return fingerprint
@@ -430,15 +430,15 @@ def import_config():
             ["qvm-start", "vault"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
         print(
-            "Importing SecureDrop submission key from USB...\n\n\n"
+            "Preparing to import SecureDrop submission key from USB...\n\n\n"
             "Ensure that USB containing submission key is connected.\n\n"
             "1. Attach the USB to the vault VM\n"
             "2. Open File Manager in the vault VM\n"
             "3. Select the USB drive in the left sidebar of the file manager.\n"
             "It should be listed under Devices as 'N GB Encrypted'.\n"
             "Enter the correct passphrase when prompted.\n\n"
-            "Note: you may see an error 'Failed to open directory TailsData'."
-            "This is expected, and the import can still proceed.\n\n"
+            "Note: you may see an error 'Failed to open directory TailsData'.\n"
+            "This can safely be ignored and the import can still proceed.\n\n"
         )
         response = input("Are you ready to proceed (y/N)? ")
         if response.lower() != "y":
@@ -572,7 +572,11 @@ def main():
             "Make sure you have the USB with the submission key and an\n"
             "Admin Workstation or Journalist Workstation USB drive accessible.\n\n\n"
         )
-        import_config()
+        try:
+            validate_config(SCRIPTS_PATH)
+            print("Valid configuration found, configuration complete")
+        except SDWAdminException:
+            import_config()
     else:
         sys.exit(0)
 
