@@ -326,7 +326,16 @@ def _try_read_submission_key():
         ["gpg", "--show-keys", "--with-fingerprint", "--with-colon", SCRIPTS_PATH + SUBMISSION_KEY],
         text=True,
     )
-    return extract_fingerprint(gpg_output)
+    fingerprints = extract_secret_key_fingerprints(gpg_output)
+    if len(fingerprints) == 0:
+        raise SDWAdminException("Error reading submission key: no private keys found")
+    if len(fingerprints) > 1:
+        fingerprint = _prompt_choose_submission_key(fingerprints)
+        if not fingerprint:
+            raise SDWAdminException("Error reading submission key: unable to select from multiple eligible keys")
+        return fingerprint
+    else:
+        return fingerprints[0]
 
 
 def _prompt_choose_submission_key(fingerprints):
@@ -424,12 +433,14 @@ def import_config():
             "Importing SecureDrop submission key from USB...\n\n\n"
             "Ensure that USB containing submission key is connected.\n\n"
             "1. Attach the USB to the vault VM\n"
-            "2. Open Thunar File Manager in the vault VM\n"
+            "2. Open File Manager in the vault VM\n"
             "3. Select the USB drive in the left sidebar of the file manager.\n"
             "It should be listed under Devices as 'N GB Encrypted'.\n"
             "Enter the correct passphrase when prompted.\n\n"
+            "Note: you may see an error 'Failed to open directory TailsData'."
+            "This is expected, and the import can still proceed.\n\n"
         )
-        response = input("Are you ready to proceed (y/N)?")
+        response = input("Are you ready to proceed (y/N)? ")
         if response.lower() != "y":
             print("Exiting.")
             return
@@ -458,7 +469,7 @@ def import_config():
             "It should be listed under Devices as 'N GB Encrypted'.\n"
             "Enter the correct passphrase when prompted.\n\n"
         )
-        response = input("Are you ready to proceed (y/N)?")
+        response = input("Are you ready to proceed (y/N)? ")
         if response.lower() != "y":
             print("Exiting.")
             return
@@ -468,7 +479,7 @@ def import_config():
             f"Onion address: {ji_addr}.onion\n"
             f"Auth token: {ji_auth_token}\n"
         )
-        resonse = input("Confirm that these values are correct to proceed (y/N)")
+        response = input("Confirm that these values are correct to proceed (y/N) ")
         if response.lower() != "y":
             print("Exiting.")
             return
