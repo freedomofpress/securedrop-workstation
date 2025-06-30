@@ -301,14 +301,14 @@ def extract_secret_key_fingerprints(gpg_output):
             continue
         if idx >= len(lines) - 1:
             continue
-        
+
         fields = line.split(":")
         record_type = fields[0]
 
         # Secret key
         if record_type == "sec":
             # Following line should be the secret key fingerprint
-            fpr_fields = lines[idx+1].split(":")
+            fpr_fields = lines[idx + 1].split(":")
             if fpr_fields[0] == "fpr" and len(fpr_fields) > 9 and fpr_fields[9]:
                 fingerprints.append(fpr_fields[9])
 
@@ -332,7 +332,9 @@ def _try_read_submission_key():
     if len(fingerprints) > 1:
         fingerprint = _prompt_choose_submission_key(fingerprints)
         if not fingerprint:
-            raise SDWAdminException("Error reading submission key: unable to select from multiple eligible keys")
+            raise SDWAdminException(
+                "Error reading submission key: unable to select from multiple eligible keys"
+            )
         return fingerprint
     else:
         return fingerprints[0]
@@ -347,8 +349,8 @@ def _prompt_choose_submission_key(fingerprints):
         print(f"{i}. {fpr_option}")
     try:
         choice = int(input(f"Submission key [1-{len(fingerprints)}]: "))
-        if 1 <= choice <= len(fingerprints): 
-            fingerprint = fingerprints[choice-1]
+        if 1 <= choice <= len(fingerprints):
+            fingerprint = fingerprints[choice - 1]
             print(f"Selected key {choice}: {fingerprint}")
             return fingerprint
         else:
@@ -357,6 +359,7 @@ def _prompt_choose_submission_key(fingerprints):
     except ValueError:
         print("Invalid input. Exiting.")
         return None
+
 
 def import_submission_key():
     """
@@ -379,7 +382,9 @@ def import_submission_key():
     if len(fingerprints) > 1:
         fingerprint = _prompt_choose_submission_key(fingerprints)
         if not fingerprint:
-            raise SDWAdminException("Error importing submission key: unable to select from multiple eligible keys")
+            raise SDWAdminException(
+                "Error importing submission key: unable to select from multiple eligible keys"
+            )
     else:
         fingerprint = fingerprints[0]
 
