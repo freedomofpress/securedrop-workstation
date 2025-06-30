@@ -295,7 +295,6 @@ def extract_secret_key_fingerprints(gpg_output):
     lines = gpg_output.strip().split("\n")
     fingerprints = []
 
-    primary_key = True
     for idx, line in enumerate(lines):
         if not line.strip():
             continue
