@@ -194,6 +194,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             vm = self.app.domains[vm_name]
             # First verify it looks like what we provisioned
             self._validate_apt_sources(vm)
+
             stdout, stderr = vm.run("apt-get indextargets")
             contents = stdout.decode().strip()
             assert (
