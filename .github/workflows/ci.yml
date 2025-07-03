@@ -130,7 +130,7 @@ jobs:
             GIT_REF="$GIT_REF" \
             FLAVOR=securedrop \
             NEEDLES_DIR="%%CASEDIR%%/needles" \
-            CASEDIR="https://github.com/deeplow/openqa-tests-qubesos.git#securedrop-basic-functionality"\
+            CASEDIR="https://github.com/QubesOS/openqa-tests-qubesos.git#main"\
             MAX_JOB_TIME=10800 | tee openqa.json
       - name: Wait for openQA
         run: |
