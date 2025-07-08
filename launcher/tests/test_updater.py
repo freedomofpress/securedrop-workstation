@@ -387,12 +387,11 @@ def test_read_dom0_update_flag_from_disk(mocked_error, mocked_subprocess, status
     assert not mocked_error.called
 
 
-@pytest.mark.parametrize("status", UpdateStatus)
 @mock.patch("subprocess.check_call")
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
 def test_read_dom0_update_flag_from_disk_fails(
-    mocked_info, mocked_error, mocked_subprocess, status, tmp_path
+    mocked_info, mocked_error, mocked_subprocess, tmp_path
 ):
     with mock.patch(
         "sdw_updater.Updater.get_dom0_path",
