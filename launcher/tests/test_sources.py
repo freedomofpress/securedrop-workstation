@@ -5,6 +5,15 @@ Strictly speaking this doesn't have to do with the launcher, but
 it needs dependencies installed and to be run under pytest
 """
 
+import socket
+
+import pytest
+
+if socket.gethostname() == "dom0":
+    pytest.skip(
+        reason="not running due to unavailable dom0 python modules", allow_module_level=True
+    )
+
 from pathlib import Path
 
 import pysequoia

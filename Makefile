@@ -7,6 +7,10 @@ CONTAINER := $(if $(shell grep "Thirty Seven" /etc/fedora-release),,./scripts/co
 
 HOST=$(shell hostname)
 
+ifneq ($(HOST),dom0)
+	POETRY_ARGS=poetry run
+endif
+
 assert-dom0: ## Confirms command is being run under dom0
 ifneq ($(HOST),dom0)
 	@echo "     ------ Some targets of securedrop-workstation's makefile must be used only on dom0! ------"
@@ -73,7 +77,7 @@ clean: assert-dom0 ## Destroys all SD VMs
 	./scripts/sdw-admin.py --uninstall --force
 
 .PHONY: test-prereqs
-test-prereqs: assert-dom0 ## Checks that test prerequisites are satisfied
+test-prereqs: ## Checks that test prerequisites are satisfied
 	@echo "Checking prerequisites before running test suite..."
 	test -e config.json || (echo "Ensure config.json is in this directory" && exit 1)
 	test -e sd-journalist.sec || (echo "Ensure sd-journalist.sec is in this directory" && exit 1)
@@ -147,9 +151,13 @@ check: lint test ## Runs linters and tests
 .PHONY: lint
 lint: check-ruff mypy rpmlint shellcheck zizmor ## Runs all linters
 
+
 .PHONY: test-launcher
 test-launcher: ## Runs launcher tests
-	xvfb-run poetry run python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater/ --cov=sdw_util -v launcher/tests/
+ifeq ($(HOST),dom0)
+	@which pytest coverage xvfb-run || (echo 'please install test dependencies with "sudo qubes-dom0-update xorg-x11-server-Xvfb"' && exit 1)
+endif
+	xvfb-run $(POETRY_ARGS) python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater/ --cov=sdw_util -v launcher/tests/
 
 .PHONY: check-ruff
 check-ruff: ## Check Python source code formatting with ruff
