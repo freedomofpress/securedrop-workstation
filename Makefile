@@ -84,7 +84,7 @@ test-prereqs: ## Checks that test prerequisites are satisfied
 	which pytest coverage || (echo 'please install test dependencies with "sudo qubes-dom0-update python3-pytest python3-pytest-cov"' && exit 1)
 
 test: test-prereqs ## Runs all application tests (no integration tests yet)
-	pytest -v tests
+	pytest -v tests -v launcher/tests
 
 test-base: test-prereqs ## Runs tests for VMs layout
 	pytest -v tests/test_vms_exist.py
