@@ -1,3 +1,12 @@
+import socket
+
+import pytest
+
+if socket.gethostname() == "dom0":
+    pytest.skip(
+        reason="not running due to unavailable dom0 python modules", allow_module_level=True
+    )
+
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
