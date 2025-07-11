@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           make test-deps
-          pip install poetry==1.8.2
+          pip install poetry==2.1.1
           poetry install --no-ansi
       - name: Run linters
         run: |
@@ -62,7 +62,7 @@ jobs:
       - name: Install dependencies
         run: |
           make test-deps
-          pip install poetry==1.8.2
+          pip install poetry==2.1.1
           poetry install --no-ansi
       - name: Run launcher tests
         run: |
