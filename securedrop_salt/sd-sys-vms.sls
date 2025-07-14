@@ -31,6 +31,16 @@ set-fedora-template-as-default-mgmt-dvm:
     - require:
       - cmd: dom0-install-fedora-template
 
+# Temporary workaround for https://github.com/QubesOS/qubes-issues/issues/9503
+fedora-bypass-selinux:
+  qvm.vm:
+    - name: {{ sd_fedora_base_template }}
+    - features:
+      - disable:
+        - selinux
+    - require:
+      - cmd: set-fedora-template-as-default-mgmt-dvm
+
 # If the VM has just been installed via package manager, update it immediately
 update-fedora-template-if-new:
   cmd.wait:
@@ -41,7 +51,7 @@ update-fedora-template-if-new:
       # Update the mgmt-dvm setting first, to avoid problems during first update
       - cmd: set-fedora-template-as-default-mgmt-dvm
     - watch:
-      - cmd: dom0-install-fedora-template
+      - qvm: fedora-bypass-selinux
 
 # qvm.default-dispvm is not strictly required here, but we want it to be
 # updated as soon as possible to ensure make clean completes successfully, as
