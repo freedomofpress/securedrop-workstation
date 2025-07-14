@@ -9,7 +9,7 @@ include:
   # DispVM is created
   - qvm.default-dispvm
 
-# 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to 
+# 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to
 # follow simple - like sd-fedora-NN-dvm
 {% set sd_supported_fedora_version = 'fedora-41' %}
 {% set sd_fedora_base_template = sd_supported_fedora_version + '-xfce' %}
@@ -31,12 +31,13 @@ set-fedora-template-as-default-mgmt-dvm:
     - require:
       - cmd: dom0-install-fedora-template
 
-# Temporary workaround for https://github.com/QubesOS/qubes-issues/issues/9503
-fedora-bypass-selinux:
+# Ensure SELinux enabled due to having once disabled as a temporary workaround
+# for https://github.com/QubesOS/qubes-issues/issues/9503.
+fedora-reenable-selinux:
   qvm.vm:
     - name: {{ sd_fedora_base_template }}
     - features:
-      - disable:
+      - enable:
         - selinux
     - require:
       - cmd: set-fedora-template-as-default-mgmt-dvm
@@ -51,7 +52,7 @@ update-fedora-template-if-new:
       # Update the mgmt-dvm setting first, to avoid problems during first update
       - cmd: set-fedora-template-as-default-mgmt-dvm
     - watch:
-      - qvm: fedora-bypass-selinux
+      - qvm: fedora-reenable-selinux
 
 # qvm.default-dispvm is not strictly required here, but we want it to be
 # updated as soon as possible to ensure make clean completes successfully, as
