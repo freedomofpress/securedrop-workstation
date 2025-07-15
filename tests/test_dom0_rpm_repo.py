@@ -3,7 +3,7 @@ import subprocess
 import unittest
 from string import Template
 
-FEDORA_VERSION = "f37"
+FEDORA_VERSION = "f41"
 
 REPO_CONFIG = {
     "prod": {
