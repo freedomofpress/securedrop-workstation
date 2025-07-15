@@ -25,6 +25,7 @@ jobs:
         run: |
           make test-deps
           pip install poetry==2.1.1
+          poetry env use python3.11
           poetry install --no-ansi
       - name: Run linters
         run: |
