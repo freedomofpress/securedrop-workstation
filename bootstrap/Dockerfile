@@ -1,6 +1,6 @@
-FROM registry.fedoraproject.org/fedora:37
+FROM registry.fedoraproject.org/fedora:41
 LABEL org="Freedom of the Press"
-LABEL image_name="securedrop-workstation-qubes-4.2"
+LABEL image_name="securedrop-workstation-qubes-4.3"
 
 ARG USER_NAME
 ENV USER_NAME ${USER_NAME:-root}
