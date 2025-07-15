@@ -58,7 +58,7 @@ build-deps: ## Install package dependencies to build RPMs
 test-deps: build-deps ## Install package dependencies for running tests
 	dnf install -y \
 		python3-qt5 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
-		hostname
+		hostname python3.11
 	dnf --setopt=install_weak_deps=False -y install reprotest
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
