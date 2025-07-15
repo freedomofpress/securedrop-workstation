@@ -14,8 +14,14 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fedora_version:
+          - 37  # Qubes 4.2
+          - 41  # Qubes 4.3
     container:
-      image: quay.io/fedora/fedora:37
+      image: quay.io/fedora/fedora:${{ matrix.fedora_version }}
     steps:
       - run: dnf install -y git make
       - uses: actions/checkout@v6
