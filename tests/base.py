@@ -2,6 +2,7 @@ import json
 import subprocess
 import unittest
 
+import pytest
 from qubesadmin import Qubes
 
 # Reusable constant for DRY import across tests
@@ -220,6 +221,8 @@ class Test_SD_VM_Common:
 
     def test_lsm_enabled(self, qube):
         """Check that the expected LSM is enabled"""
+        if qube.name == "sys-usb":
+            pytest.skip("Temporarily skipped due qubes-issues#1369")
         if qube.linux_security_modules == "apparmor":
             assert qube.package_is_installed("apparmor")
             # returns error code if AppArmor not enabled
