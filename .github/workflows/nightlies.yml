@@ -19,7 +19,7 @@ jobs:
   build-rpm:
     runs-on: ubuntu-latest
     container:
-      image: quay.io/fedora/fedora:37
+      image: quay.io/fedora/fedora:41
     steps:
       - run: dnf install -y make git
       - uses: actions/checkout@v4
@@ -65,8 +65,8 @@ jobs:
           git config --global user.email "securedrop@freedom.press"
           git config --global user.name "sdcibot"
           cd securedrop-yum-test
-          mkdir -p workstation/dom0/f37-nightlies
-          cp -v ../rpm-build/*.rpm workstation/dom0/f37-nightlies/
+          mkdir -p workstation/dom0/f41-nightlies
+          cp -v ../rpm-build/*.rpm workstation/dom0/f41-nightlies/
           git add .
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
           git push origin main
