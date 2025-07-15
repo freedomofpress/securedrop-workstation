@@ -3,23 +3,25 @@ import subprocess
 import unittest
 from string import Template
 
-FEDORA_VERSION = "f37"
+import rpm
+
+FEDORA_VERSION = rpm.expandMacro("%{fedora}")
 
 REPO_CONFIG = {
     "prod": {
         "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation",
         "repo_file_name": "securedrop-workstation-dom0.repo",
-        "yum_repo_url": "https://yum.securedrop.org/workstation/dom0/$FEDORA_VERSION/",
+        "yum_repo_url": "https://yum.securedrop.org/workstation/dom0/f$FEDORA_VERSION/",
     },
     "dev": {
         "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",
         "repo_file_name": "securedrop-workstation-dom0-dev.repo",
-        "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/$FEDORA_VERSION-nightlies/",
+        "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/f$FEDORA_VERSION-nightlies/",
     },
     "staging": {
         "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",
         "repo_file_name": "securedrop-workstation-dom0-staging.repo",
-        "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/$FEDORA_VERSION/",
+        "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/f$FEDORA_VERSION/",
     },
 }
 
