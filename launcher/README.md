@@ -29,8 +29,6 @@ virtual environment.
 
 ## Running the Updater
 
-Qubes 4.1.1 uses an end-of-life Fedora template in dom0 (fedora-32). See rationale here: https://www.qubes-os.org/doc/supported-releases/#note-on-dom0-and-eol.
-
 If you installed SecureDrop Updater on your Qubes machine's `dom0`, you can run the updater like this:
 1. Open a `dom0` terminal
 2. Run `sdw-updater --skip-delta 0`
@@ -41,7 +39,7 @@ To run the notifier that pops up if `/proc/uptime` (how long the system has been
 
 ## Developer environment
 
-Because `securedrop-updater` is used exclusively with Fedora 32 (see above), it follows that we target Python 3.8. To make development for this target more accessible, we use a containerized build and test environment. Here are the instructions to set it up:
+Because `securedrop-updater` is used exclusively with Fedora 32, it follows that we target Python 3.8. To make development for this target more accessible, we use a containerized build and test environment. Here are the instructions to set it up:
 
 - Install dependencies for building and testing:
    - `make`
