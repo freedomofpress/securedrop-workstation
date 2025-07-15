@@ -1,15 +1,18 @@
 [project]
 requires-python = ">=3.11"
+name = "securedrop-workstation-dom0-config"
+dynamic = [ "version", "classifiers" ]
+description = ""
+authors = [
+    {name = "SecureDrop Team", email = "securedrop@freedom.press"}
+    ]
+license = {text = "AGPLv3+"}
+dependencies = []
+readme = "README.md"
 
 [tool.poetry]
-name = "securedrop-workstation-dom0-config"
-version = "0.0.0"
-description = ""
-authors = ["SecureDrop Team"]
-license = "AGPLv3+"
-
-[tool.poetry.dependencies]
-python = "^3.11"
+package-mode = false
+requires-poetry = ">=2.1.0,<3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 # In production these are installed as a system package so match the
