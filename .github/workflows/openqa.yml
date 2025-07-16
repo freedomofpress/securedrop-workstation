@@ -3,7 +3,7 @@ name: ci
 
 on:
   - workflow_call
-  
+
 jobs:
   openqa:
     runs-on: ubuntu-latest
@@ -36,8 +36,8 @@ jobs:
             --apikey "$OPENQA_KEY" \
             --apisecret "$OPENQA_SECRET" \
             isos -X post \
-            VERSION=4.2 \
-            BUILD=$(date +%Y%m%d%H%M)-4.2 \
+            VERSION=4.3 \
+            BUILD=$(date +%Y%m%d%H%M)-4.3 \
             DISTRI=qubesos ARCH=x86_64 \
             GIT_REF="$GIT_REF" \
             FLAVOR=securedrop \
