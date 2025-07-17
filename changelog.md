@@ -1,5 +1,9 @@
 # changelog
 
+## 1.2.1
+
+* Disable SELinux to work around failed update of Fedora templates (#1370)
+
 ## 1.2.0
 
 This release mainly enables support for driverless printing, which

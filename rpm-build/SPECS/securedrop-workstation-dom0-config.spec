@@ -155,7 +155,7 @@ qubesctl top.enable securedrop_salt.sd-workstation > /dev/null ||:
 
 # Force full run of all Salt states - uncomment in release branch
 # mkdir -p /tmp/sdw-migrations
-# touch /tmp/sdw-migrations/whonix-17-update
+# touch /tmp/sdw-migrations/fedora-selinux-fix
 
 # Enable service that conditionally removes our systemd-logind customizations
 # on dev machines only.
@@ -181,7 +181,10 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
-* Tue May 13 2025 SecureDrop Team <securedrop@freedom.press> - 1.3.0rc1
+* Mon Jul 14 2025 SecureDrop Team <securedrop@freedom.press> - 1.3.0rc1
+- See changelog.md
+
+* Mon Jul 14 2025 SecureDrop Team <securedrop@freedom.press> - 1.2.1
 - See changelog.md
 
 * Tue May 13 2025 SecureDrop Team <securedrop@freedom.press> - 1.2.0
