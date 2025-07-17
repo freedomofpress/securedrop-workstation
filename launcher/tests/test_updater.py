@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 from datetime import datetime, timedelta
+from pathlib import Path
 from unittest import mock
 from unittest.mock import call
 
@@ -386,25 +387,24 @@ def test_read_dom0_update_flag_from_disk(mocked_error, mocked_subprocess, status
     assert not mocked_error.called
 
 
-@pytest.mark.parametrize("status", UpdateStatus)
 @mock.patch("subprocess.check_call")
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
 def test_read_dom0_update_flag_from_disk_fails(
-    mocked_info, mocked_error, mocked_subprocess, status, tmp_path
+    mocked_info, mocked_error, mocked_subprocess, tmp_path
 ):
-    with mock.patch("os.path.expanduser", return_value=tmp_path):
-        flag_file_dom0 = Updater.get_dom0_path(Updater.FLAG_FILE_STATUS_DOM0)
-    updater_path = tmp_path / ".securedrop_updater"
-    updater_path.mkdir()
-    with open(flag_file_dom0, "w") as f:
-        f.write("something")
-
-    info_calls = [call("Cannot read dom0 status flag, assuming first run")]
-
-    assert Updater.read_dom0_update_flag_from_disk() is None
-    assert not mocked_error.called
-    mocked_info.assert_has_calls(info_calls)
+    with mock.patch(
+        "sdw_updater.Updater.get_dom0_path",
+        return_value=tmp_path / Path(Updater.FLAG_FILE_STATUS_DOM0),
+    ):
+        flag_file_dom0 = Path(Updater.get_dom0_path(Updater.FLAG_FILE_STATUS_DOM0))
+        flag_file_dom0.parent.mkdir()
+        with open(flag_file_dom0, "w") as f:
+            f.write("something")
+        info_calls = [call("Cannot read dom0 status flag, assuming first run")]
+        assert Updater.read_dom0_update_flag_from_disk() is None
+        assert not mocked_error.called
+        mocked_info.assert_has_calls(info_calls)
 
 
 @mock.patch(
