@@ -181,7 +181,10 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
-* Tue May 13 2025 SecureDrop Team <securedrop@freedom.press> - 1.3.0rc1
+* Mon Jul 14 2025 SecureDrop Team <securedrop@freedom.press> - 1.3.0rc1
+- See changelog.md
+
+* Mon Jul 14 2025 SecureDrop Team <securedrop@freedom.press> - 1.2.1
 - See changelog.md
 
 * Tue May 13 2025 SecureDrop Team <securedrop@freedom.press> - 1.2.0
