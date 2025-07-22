@@ -25,9 +25,22 @@ all: assert-dom0
 
 dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 	./scripts/configure-environment.py --env $@
+	$(MAKE) assert-keyring-%
 	@./scripts/prep-dev
 	@./files/validate_config.py
 	sdw-admin --apply
+
+.PHONY: assert-keyring-%
+assert-keyring-%: ## Correct keyring pkg installed
+	@rpm -q securedrop-workstation-keyring-$* >/dev/null 2>&1 || { \
+		echo "Error: Install securedrop-workstation-keyring-$*" >&2; exit 1; \
+	}
+	@if [ "$*" = "staging" ]; then \
+		if rpm -q securedrop-workstation-keyring-dev >/dev/null 2>&1; then \
+			echo "Error: Uninstall securedrop-workstation-keyring-dev" >&2; \
+			exit 1; \
+		fi \
+	fi
 
 .PHONY: build-rpm
 build-rpm: OUT:=build-log/securedrop-workstation-$(shell date +%Y%m%d).log
