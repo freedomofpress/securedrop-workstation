@@ -9,44 +9,6 @@
 # Imports "sdvars" for environment config
 {% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
-dom0-rpm-test-key:
-  file.managed:
-    # We write the pubkey to the repos config location, because the repos
-    # config location is automatically sent to dom0's UpdateVM. Otherwise,
-    # we must place the GPG key inside the fedora TemplateVM, then
-    # restart sys-firewall.
-    - name: /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
-    - source: "salt://securedrop_salt/{{ sdvars.signing_key_filename }}"
-    - user: root
-    - group: root
-    - mode: 644
-
-dom0-rpm-test-key-import:
-  cmd.run:
-    - name: sudo rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
-    - require:
-      - file: dom0-rpm-test-key
-
-dom0-workstation-rpm-repo:
-  # We use file.managed rather than pkgrepo.managed, because Qubes dom0
-  # settings write new repos to /etc/yum.real.repos.d/, but only /etc/yum.repos.d/
-  # is copied to the UpdateVM for fetching dom0 packages.
-  file.managed:
-    - name: /etc/yum.repos.d/securedrop-workstation-dom0.repo
-    - user: root
-    - group: root
-    - mode: 644
-    - contents: |
-        [securedrop-workstation-dom0]
-        gpgcheck=1
-        skip_if_unavailable=False
-        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
-        enabled=1
-        baseurl={{ sdvars.dom0_yum_repo_url }}
-        name=SecureDrop Workstation Qubes dom0 repo
-    - require:
-      - file: dom0-rpm-test-key
-
 # Ensure debian-12-minimal is present for use as base template
 dom0-install-debian-minimal-template:
   cmd.run:
@@ -87,17 +49,6 @@ dom0-securedrop-launcher-desktop-shortcut:
     - mode: 755
 
 {% import_json "securedrop_salt/config.json" as d %}
-{% if d.environment != "dev" %}
-# In the dev environment, we've already installed the rpm from
-# local sources, so don't also pull in from the yum-test repo.
-dom0-install-securedrop-workstation-dom0-config:
-  pkg.installed:
-    - pkgs:
-      - securedrop-workstation-dom0-config
-    - require:
-      - file: dom0-workstation-rpm-repo
-{% endif %}
-
 dom0-environment-directory:
   file.directory:
     - name: /var/lib/securedrop-workstation/
