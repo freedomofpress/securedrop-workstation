@@ -4,6 +4,9 @@
 ##
 # Handles loading of config variables, via environment-specific
 # setting in the config file.
+# These settings apply only to apt repo components used in
+# individual VMs. dom0 rpm settings are managed by the
+# securedrop-workstation-keyring package.
 
 # Load YAML vars file
 {% load_yaml as sdvars_defaults %}
@@ -27,7 +30,5 @@
   {% set _ = sdvars.update({"component": "main"}) %}
 {% endif %}
 
-# Append repo URL with appropriate dom0 Fedora version
-{% set fedora_repo = "f37" %}
+# Append repo URL with appropriate distribution
 {% set _ = sdvars.update({"distribution": "bookworm"}) %}
-{% set _ = sdvars.update({"dom0_yum_repo_url": sdvars["dom0_yum_repo_url"] + fedora_repo}) %}
