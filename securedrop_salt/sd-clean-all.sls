@@ -54,9 +54,6 @@ include:
 remove-dom0-sdw-config-files:
   file.absent:
     - names:
-      - /etc/yum.repos.d/securedrop-workstation-dom0.repo
-      - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
-      - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
       - /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/.securedrop_updater
