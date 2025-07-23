@@ -7,9 +7,6 @@ CONTAINER := $(if $(shell grep "Thirty Seven" /etc/fedora-release),,./scripts/co
 
 HOST=$(shell hostname)
 
-ifneq ($(HOST),dom0)
-	POETRY_ARGS=poetry run
-endif
 
 assert-dom0: ## Confirms command is being run under dom0
 ifneq ($(HOST),dom0)
@@ -152,12 +149,12 @@ check: lint test ## Runs linters and tests
 lint: check-ruff mypy rpmlint shellcheck zizmor ## Runs all linters
 
 
+ifneq ($(HOST),dom0)  # Not necessary in dom0
+RUN_WRAPPERS=xvfb-run poetry run
+endif
 .PHONY: test-launcher
 test-launcher: ## Runs launcher tests
-ifeq ($(HOST),dom0)
-	@which pytest coverage xvfb-run || (echo 'please install test dependencies with "sudo qubes-dom0-update xorg-x11-server-Xvfb"' && exit 1)
-endif
-	xvfb-run $(POETRY_ARGS) python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater/ --cov=sdw_util -v launcher/tests/
+	$(RUN_WRAPPERS) python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater/ --cov=sdw_util -v launcher/tests/
 
 .PHONY: check-ruff
 check-ruff: ## Check Python source code formatting with ruff
