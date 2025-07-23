@@ -1,5 +1,3 @@
-import os
-import subprocess
 import unittest
 from unittest import mock
 
@@ -12,12 +10,9 @@ from sdw_updater.Updater import UpdateStatus, overall_update_status
 
 @pytest.fixture(scope="module", autouse=True)
 def app():
-    with subprocess.Popen(["/usr/bin/Xvfb", ":99"]) as xvfb:
-        os.environ["DISPLAY"] = ":99"
-        app = QApplication([])
-        yield app
-        app.quit()
-        xvfb.kill()
+    app = QApplication([])
+    yield app
+    app.quit()
 
 
 @mock.patch("sdw_updater.Updater.apply_updates_dom0", return_value=UpdateStatus.UPDATES_FAILED)
