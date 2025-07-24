@@ -1,35 +1,13 @@
-## Status
+Fixes #
 
-Ready for review / Work in progress
-
-## Description of Changes
-
-Fixes #.
-
-Changes proposed in this pull request:
-
-## Testing
-
-If you made non-trivial code changes, include a test plan and validated it for this PR.
-
-## Deployment
-
-Any special considerations for deployment? Consider both:
-
-1. Upgrading existing pilot instances
-2. New installs
+## Test plan
+<!-- Delete this section if not applicable (e.g., some docs-only changes) -->
 
 ## Checklist
 
-### If you have made changes to the provisioning logic
+<!-- If you leave any box below unchecked, please clarify where you may need support.
+     If you're unsure, that's fine — a reviewer can help you out. -->
 
-- [ ] All tests (`make test`) pass in `dom0`
-
-### If you have added or removed files
-
-- [ ] I have updated `MANIFEST.in` and `rpm-build/SPECS/securedrop-workstation-dom0-config.spec`
-
-### If documentation is required
-
-- [ ] I have opened a PR in the [docs repo](https://github.com/freedomofpress/securedrop-workstation-docs) for these changes, or will do so later
-- [ ] I would appreciate help with the documentation
+This change accounts for:
+- [ ] any necessary RPM packaging updates (e.g., added/removed files, see `MANIFEST.in` and `rpm-build/SPECS/securedrop-workstation-dom0-config.spec`)
+- [ ] any required documentation
