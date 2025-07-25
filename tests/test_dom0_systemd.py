@@ -92,11 +92,11 @@ def units_present_enabled(expected_units: list[str], is_userspace: bool = False)
     """
     # Format of systemctl list-unit-files is UNIT_FILE\tSTATE\tPRESET
     unit_count = 0
-    units = systemd_list_sd_units(is_userspace=is_userspace).split("\n")
+    units = systemd_list_sd_units(is_userspace=is_userspace).strip().split("\n")
     for unit_and_status in units:
         unit = unit_and_status.split()
         if unit not in expected_units:
-            raise Dom0TestException(f"Unexpected unit file {unit[0]}")
+            raise Dom0TestException(f"Unexpected unit file {unit[0]} (Expected: {expected_units})")
         else:
             # Right now, all units are enabled
             unit_count += 1
@@ -127,8 +127,8 @@ def test_user_units_well_formed():
 
 
 def test_system_units_present_enabled():
-    units_present_enabled(SYSTEM_UNITS)
+    assert units_present_enabled(SYSTEM_UNITS)
 
 
 def test_user_units_present_enabled():
-    units_present_enabled(USER_UNITS, is_userspace=True)
+    assert units_present_enabled(USER_UNITS, is_userspace=True)
