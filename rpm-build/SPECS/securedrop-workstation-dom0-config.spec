@@ -41,6 +41,9 @@ BuildRequires:	systemd-rpm-macros
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
 Requires:		python3-qt5
 
+# NOTE: Support same version as Qubes with 4.2
+Requires:       python3.11
+
 %description
 This package contains VM configuration files for the Qubes-based
 SecureDrop Workstation project. The package should be installed
