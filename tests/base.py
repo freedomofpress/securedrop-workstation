@@ -2,7 +2,6 @@ import json
 import subprocess
 import unittest
 
-import pytest
 from qubesadmin import Qubes
 
 # Reusable constant for DRY import across tests
@@ -16,7 +15,7 @@ SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
 SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_TEMPLATE_LARGE, SD_TEMPLATE_SMALL]
 SD_UNTAGGED_DEPRECATED_VMS = ["sd-retain-logvm"]
 
-CURRENT_FEDORA_VERSION = "41"
+CURRENT_FEDORA_VERSION = "42"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"
 CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
 CURRENT_WHONIX_VERSION = "17"
@@ -221,8 +220,6 @@ class Test_SD_VM_Common:
 
     def test_lsm_enabled(self, qube):
         """Check that the expected LSM is enabled"""
-        if qube.name == "sys-usb":
-            pytest.skip("Temporarily skipped due qubes-issues#1369")
         if qube.linux_security_modules == "apparmor":
             assert qube.package_is_installed("apparmor")
             # returns error code if AppArmor not enabled

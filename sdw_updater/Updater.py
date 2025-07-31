@@ -45,7 +45,7 @@ def _get_current_vms():
     # as well as their associated TemplateVMs.
     # In the future, we could use qvm-prefs to extract this information.
     return {
-        "fedora": "fedora-41-xfce",
+        "fedora": "fedora-42-xfce",
         "sd-viewer": f"sd-large-{debian_version}-template",
         "sd-app": f"sd-small-{debian_version}-template",
         "sd-log": f"sd-small-{debian_version}-template",
