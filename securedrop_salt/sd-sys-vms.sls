@@ -9,9 +9,9 @@ include:
   # DispVM is created
   - qvm.default-dispvm
 
-# 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to 
+# 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to
 # follow simple - like sd-fedora-NN-dvm
-{% set sd_supported_fedora_version = 'fedora-41' %}
+{% set sd_supported_fedora_version = 'fedora-42' %}
 {% set sd_fedora_base_template = sd_supported_fedora_version + '-xfce' %}
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
@@ -136,9 +136,9 @@ sd-{{ sys_vm }}-fedora-version-update:
 # the template, in case it's being used elsewhere, but the `sd-` VMs we can
 # reasonably manage (remove) ourselves.
 {% if sys_vm == "sys-usb" %}
-remove-sd-fedora-40-dvm:
+remove-sd-fedora-41-dvm:
   qvm.absent:
-    - name: sd-fedora-40-dvm
+    - name: sd-fedora-41-dvm
     - require:
       - qvm: sd-sys-usb-fedora-version-update
 {% endif %}
