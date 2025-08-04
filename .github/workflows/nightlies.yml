@@ -19,7 +19,7 @@ jobs:
   build-rpm:
     runs-on: ubuntu-latest
     container:
-      image: registry.fedoraproject.org/fedora:37
+      image: quay.io/fedora/fedora:37
     steps:
       - run: dnf install -y make git
       - uses: actions/checkout@v4
