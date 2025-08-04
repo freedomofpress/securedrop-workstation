@@ -1,4 +1,4 @@
-FROM registry.fedoraproject.org/fedora:37
+FROM quay.io/fedora/fedora:37
 LABEL org="Freedom of the Press"
 LABEL image_name="securedrop-workstation-qubes-4.2"
 
