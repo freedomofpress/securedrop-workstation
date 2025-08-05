@@ -1,5 +1,20 @@
 # changelog
 
+## 1.3.0
+
+* Update Fedora base template to `fedora-42-xfce` (#1383)
+* Add `--configure` option to `sdw-admin` to simplify installation (#1349)
+* Start sd-proxy VM before starting client (#1340)
+
+* Internal and development
+  * Use `quay.io` to pull fedora images for CI and build proceses (#1387, #1388)
+  * Update `poetry` to version 2.1.1 (#1368)
+  * Use OpenQA for testing (#1343, #1350, #1356)
+  * Updated tests against qubes-rpc to use `qrexec-policy-graph` (#1346, #1352)
+  * Updated dom0 tests to use pytest (#1329)
+  * Added script to build and deploy test packages from a PR (#1290)
+  * version updater script fixes (#1318)
+
 ## 1.2.1
 
 * Disable SELinux to work around failed update of Fedora templates (#1370)
