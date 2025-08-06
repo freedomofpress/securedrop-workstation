@@ -30,8 +30,7 @@ autoremove-old-packages:
 
 # If we're on a prod environment, ensure there isn't a test .sources
 # file. (Should never happen in real usage, but may in testing)
-{% import_json "securedrop_salt/config.json" as d %}
-{% if d.environment == "prod" %}
+{% if apt_config['env'] == "prod" %}
 clean-old-test-sources:
   file.absent:
     - name: "/etc/apt/sources.list.d/apt-test_freedom_press.sources"
@@ -50,7 +49,7 @@ configure-fpf-apt-repo:
         apt_signing_key: {{ salt['file.get'](apt_config['keyfile']) }}
     - require:
       - cmd: autoremove-old-packages
-      {% if d.environment == "prod" %}
+      {% if apt_config['env'] == "prod" %}
       - file: clean-old-test-sources
       {% endif %}
 
