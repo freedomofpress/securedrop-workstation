@@ -13,8 +13,8 @@
 #  - update.qubes-vm
 #  - securedrop_salt.sd-default-config
 
-# Imports "sdvars" for environment config
-{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
+# Imports "apt_config" for environment config
+{% from 'securedrop_salt/sd-default-config.sls' import apt_config with context %}
 
 # Using apt-get requires manual approval when releaseinfo changes,
 # just get it over with in the beginning
