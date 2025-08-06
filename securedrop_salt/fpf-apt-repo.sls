@@ -37,15 +37,17 @@ clean-old-test-sources:
     - name: "/etc/apt/sources.list.d/apt-test_freedom_press.sources"
 {% endif %}
 
-# Install the relevant .sources file based on our environment.
+# Create the relevant .sources file based on our environment.
 configure-fpf-apt-repo:
   file.managed:
-    - name: "/etc/apt/sources.list.d/{{ sdvars.apt_sources_filename }}"
-    - source: "salt://securedrop_salt/{{ sdvars.apt_sources_filename }}.j2"
+    - name: "/etc/apt/sources.list.d/{{ apt_config['filename'] }}"
+    - source: salt://securedrop_salt/apt_freedom_press.sources.j2
     - template: jinja
     - context:
+        url: {{ apt_config['url'] }}
         codename: {{ grains['oscodename'] }}
-        component: {{ sdvars.component }}
+        component: {{ apt_config['component'] }}
+        apt_signing_key: {{ salt['file.get'](apt_config['keyfile']) }}
     - require:
       - cmd: autoremove-old-packages
       {% if d.environment == "prod" %}
