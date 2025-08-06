@@ -1,8 +1,6 @@
 [Unit]
 Description=Enable XFCE customizations for SDW
-ConditionPathExists=|!/var/lib/securedrop-workstation/dev
-ConditionPathExists=|/var/lib/securedrop-workstation/prod
-ConditionPathExists=|/var/lib/securedrop-workstation/staging
+ConditionPathExists=!/etc/yum.repos.d/securedrop-workstation-dom0-dev.repo
 
 [Service]
 Type=oneshot

@@ -44,23 +44,7 @@ dom0-securedrop-launcher-desktop-shortcut:
     - group: {{ gui_user }}
     - mode: 755
 
-{% import_json "securedrop_salt/config.json" as d %}
-dom0-environment-directory:
-  file.directory:
+# No longer used, can be removed n+1 versions after keyring support
+dom0-remove-old-environment-dir:
+  file.absent:
     - name: /var/lib/securedrop-workstation/
-    - mode: 755
-    - makedirs: true
-
-dom0-remove-old-environment-flag:
-  file.tidied:
-    - name: /var/lib/securedrop-workstation/
-    - require:
-      - file: dom0-environment-directory
-
-dom0-write-environment-flag:
-  file.managed:
-    - name: /var/lib/securedrop-workstation/{{ d.environment }}
-    - mode: 644
-    - replace: False
-    - require:
-      - file: dom0-remove-old-environment-flag

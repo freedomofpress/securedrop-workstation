@@ -1,6 +1,6 @@
 [Unit]
 Description=Disable logind power management customization (dev systems only)
-ConditionPathExists=/var/lib/securedrop-workstation/dev
+ConditionPathExists=/etc/yum.repos.d/securedrop-workstation-dom0-dev.repo
 Before=systemd-logind.service
 
 [Service]
