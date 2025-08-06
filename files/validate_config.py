@@ -48,16 +48,6 @@ class SDWConfigValidator:
                 "Create from config.json.example"
             )
 
-    def confirm_environment_valid(self):
-        """
-        The 'environment' config item is required to determine
-        whether prod or dev URLs are used for installing packages.
-        """
-        if "environment" not in self.config:
-            raise ValidationError
-        if self.config["environment"] not in ("prod", "dev", "staging"):
-            raise ValidationError(f"Invalid environment: {self.config['environment']}")
-
     def confirm_onion_config_valid(self):
         """
         Only v3 onion services are supported.
