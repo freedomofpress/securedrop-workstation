@@ -14,9 +14,6 @@
 # Imports "apt_config" for environment config
 {% from 'securedrop_salt/sd-default-config.sls' import apt_config with context %}
 
-# Check environment
-{% import_json "securedrop_salt/config.json" as d %}
-
 include:
   - securedrop_salt.sd-workstation-template
 
@@ -43,7 +40,7 @@ sd-viewer:
     - features:
       - set:
         - vm-config.SD_MIME_HANDLING: sd-viewer
-        {% if d.environment == "prod" %}
+        {% if apt_config['env'] == "prod" %}
         - internal: 1
         {% else %}
         - internal: ""
