@@ -57,8 +57,6 @@ sd-whonix:
     - require:
       - sls: securedrop_salt.sd-sys-whonix-vms
 
-{% import_json "securedrop_salt/config.json" as d %}
-
 sd-whonix-config:
   qvm.features:
     - name: sd-whonix
