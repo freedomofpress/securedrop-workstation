@@ -11,8 +11,8 @@
 #
 ##
 
-# Imports "sdvars" for environment config
-{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
+# Imports "apt_config" for environment config
+{% from 'securedrop_salt/sd-default-config.sls' import apt_config with context %}
 
 {% import "qvm/whonix.jinja" as whonix %}
 
@@ -50,7 +50,7 @@ sd-whonix:
     - tags:
       - add:
         - sd-workstation
-        - sd-{{ sdvars.distribution }}
+        - sd-{{ apt_config.distribution }}
     - features:
       - enable:
         - service.securedrop-whonix-config
