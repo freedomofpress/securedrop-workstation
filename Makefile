@@ -24,8 +24,8 @@ all: assert-dom0
 
 dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 	./scripts/configure-environment.py --env $@
-	$(MAKE) validate
-	$(MAKE) prep-dev
+	@./scripts/prep-dev
+	@./files/validate_config.py
 	sdw-admin --apply
 
 .PHONY: build-rpm
@@ -67,70 +67,10 @@ clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 clone-norpm: assert-dom0 ## As above, but skip creating RPM
 	@BUILD_RPM=false ./scripts/clone-to-dom0
 
-qubes-rpc: prep-dev ## Places default deny qubes-rpc policies for sd-app and sd-gpg
-	sudo qubesctl --show-output --targets securedrop_salt.sd-dom0-qvm-rpc state.highstate
-
-add-usb-autoattach: prep-dom0 ## Adds udev rules and scripts to sys-usb
-	sudo qubesctl --show-output --skip-dom0 --targets sys-usb state.highstate
-
-remove-usb-autoattach: prep-dev ## Removes udev rules and scripts from sys-usb
-	sudo qubesctl --show-output state.sls securedrop_salt.sd-usb-autoattach-remove
-
-sd-workstation-template: prep-dev ## Provisions base template for SDW AppVMs
-	sudo qubesctl --show-output state.sls securedrop_salt.sd-base-template
-	sudo qubesctl --show-output --skip-dom0 --targets sd-base-bookworm-template state.highstate
-
-sd-proxy: prep-dev ## Provisions SD Proxy VM
-	sudo qubesctl --show-output state.sls securedrop_salt.sd-proxy
-	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-proxy-dvm,sd-proxy state.highstate
-
-sd-gpg: prep-dev ## Provisions SD GPG keystore VM
-	sudo qubesctl --show-output state.sls securedrop_salt.sd-gpg
-	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-gpg state.highstate
-
-sd-app: prep-dev ## Provisions SD APP VM
-	sudo qubesctl --show-output state.sls securedrop_salt.sd-app
-	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-app state.highstate
-
-sd-viewer: prep-dev ## Provisions SD Submission Viewing VM
-	sudo qubesctl --show-output state.sls securedrop_salt.sd-viewer
-	sudo qubesctl --show-output --skip-dom0 --targets sd-large-bookworm-template,sd-viewer state.highstate
-
-sd-devices: prep-dev ## Provisions SD Export VM
-	sudo qubesctl --show-output state.sls securedrop_salt.sd-devices
-	sudo qubesctl --show-output --skip-dom0 --targets sd-large-bookworm-template,sd-devices,sd-devices-dvm state.highstate
-
-sd-log: prep-dev ## Provisions SD logging VM
-	sudo qubesctl --show-output state.sls securedrop_salt.sd-log
-	sudo qubesctl --show-output --skip-dom0 --targets sd-small-bookworm-template,sd-log state.highstate
-
 prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
 	@./scripts/prep-dev
-	@./files/validate_config.py
 
-remove-sd-whonix: assert-dom0 ## Destroys SD Whonix VM
-	@./files/destroy-vm.py sd-whonix
-
-remove-sd-viewer: assert-dom0 ## Destroys SD Submission reading VM
-	@./files/destroy-vm.py sd-viewer
-
-remove-sd-proxy: assert-dom0 ## Destroys SD Proxy VM
-	@./files/destroy-vm.py sd-proxy
-
-remove-sd-app: assert-dom0 ## Destroys SD APP VM
-	@./files/destroy-vm.py sd-app
-
-remove-sd-gpg: assert-dom0 ## Destroys SD GPG keystore VM
-	@./files/destroy-vm.py sd-gpg
-
-remove-sd-devices: assert-dom0 ## Destroys SD EXPORT VMs
-	@./files/destroy-vm.py sd-devices
-	@./files/destroy-vm.py sd-devices-dvm
-
-remove-sd-log: assert-dom0 ## Destroys SD logging VM
-	@./files/destroy-vm.py sd-log
-
-clean: assert-dom0 prep-dev ## Destroys all SD VMs
+clean: assert-dom0 ## Destroys all SD VMs
 # Use the local script path, since system PATH location will be absent
 # if clean has already been run.
 	./scripts/sdw-admin.py --uninstall --force
@@ -184,14 +124,8 @@ endif
 	@xdotool type $(shell oathtool --totp --base32 JHCOGO7VCER3EJ4L)
 	@xdotool key Return
 
-validate: assert-dom0 ## Checks for local requirements in dev env
-	@./files/validate_config.py
-
 # Not requiring dom0 for linting as that requires extra packages, which we're
 # not installing on dom0, so are only in the developer environment, i.e. Work VM
-
-prep-dom0: prep-dev # Copies dom0 config files
-	sudo qubesctl --show-output --targets dom0 state.highstate
 
 destroy-all-tagged: ## Destroys all VMs managed by Workstation salt config (may exclude untagged VMs)
 	./scripts/destroy-vm.py --all-tagged
