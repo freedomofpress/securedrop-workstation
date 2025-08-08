@@ -1,21 +1,17 @@
 import socket
-
-import pytest
-
-if socket.gethostname() == "dom0":
-    pytest.skip(
-        reason="not running due to unavailable dom0 python modules", allow_module_level=True
-    )
-
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-import pysequoia
-from debian import deb822
+if socket.gethostname() != "dom0":
+    import pysequoia
+    from debian import deb822
+
+from conftest import skip_in_dom0
 
 ROOT = Path(__name__).parent.parent
 
 
+@skip_in_dom0
 def test_apt_sources():
     """Verify the key in the sources file is our prod signing key"""
     path = ROOT / "securedrop_salt/apt_freedom_press.sources.j2"
@@ -24,6 +20,7 @@ def test_apt_sources():
     assert_key(sources["Signed-By"].encode())
 
 
+@skip_in_dom0
 def test_dom0_key():
     path = ROOT / "securedrop_salt/securedrop-release-signing-pubkey-2021.asc"
     assert_key(path.read_bytes())
