@@ -5,14 +5,19 @@ Strictly speaking this doesn't have to do with the launcher, but
 it needs dependencies installed and to be run under pytest
 """
 
+import socket
 from pathlib import Path
 
-import pysequoia
-from debian import deb822
+if socket.gethostname() != "dom0":
+    import pysequoia
+    from debian import deb822
+
+from conftest import skip_in_dom0
 
 SECUREDROP_SALT = Path(__file__).parent.parent.parent / "securedrop_salt"
 
 
+@skip_in_dom0
 def test_prod_sources():
     """Verify the key in the aptsources file is our prod signing key"""
     path = SECUREDROP_SALT / "apt_freedom_press.sources.j2"
@@ -28,6 +33,7 @@ def test_prod_sources():
     assert key.expiration.year == 2027
 
 
+@skip_in_dom0
 def test_test_sources():
     """Verify the key in the apt-test sources file is our dev signing key"""
     path = SECUREDROP_SALT / "apt-test_freedom_press.sources.j2"
