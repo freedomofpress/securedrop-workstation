@@ -186,7 +186,7 @@ def configure(step_description: str, targets: list[str], restart: list[str] | No
 
 
 def qubesctl_call(step_description: str, args: list[str]):
-    qubesctl_cmd = ["sudo", "qubesctl", "--show-output"] + args
+    qubesctl_cmd = ["sudo", "qubesctl", "--show-output", "--out=profile"] + args
     print("\n..........................................................................")
     print(step_description)
     print(f"Running \"{' '.join(qubesctl_cmd)}\"")
