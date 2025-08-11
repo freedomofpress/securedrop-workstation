@@ -67,9 +67,6 @@ clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 clone-norpm: assert-dom0 ## As above, but skip creating RPM
 	@BUILD_RPM=false ./scripts/clone-to-dom0
 
-prep-dev: assert-dom0 ## Configures Salt layout for SD workstation VMs
-	@./scripts/prep-dev
-
 clean: assert-dom0 ## Destroys all SD VMs
 # Use the local script path, since system PATH location will be absent
 # if clean has already been run.
