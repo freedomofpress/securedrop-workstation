@@ -30,7 +30,11 @@ set-fedora-template-as-default-mgmt-dvm:
     - require:
       - qvm: dom0-install-fedora-template
 
-# If the VM has just been installed via package manager, update it immediately
+# If the VM has just been installed via qvm-template, update it immediately.
+# This is to ensure management VMs are up-to-date. When this state is run via
+# the GUI updater (as part of its routine dom0 highstate run), it ensures that
+# updates are applied to a new template even if the running updater has a stale list
+# (see https://github.com/freedomofpress/securedrop-workstation/issues/758).
 update-fedora-template-if-new:
   cmd.wait:
     - name: qubes-vm-update --quiet --force-update --targets {{ sd_fedora_base_template }}
