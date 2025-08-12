@@ -18,7 +18,7 @@ jobs:
       image: quay.io/fedora/fedora:37
     steps:
       - run: dnf install -y git make
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
       - name: Install dependencies
@@ -36,7 +36,7 @@ jobs:
       image: quay.io/fedora/fedora:37
     steps:
       - run: dnf install -y git make
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
       - name: Install dependencies
@@ -56,7 +56,7 @@ jobs:
       image: quay.io/fedora/fedora:37
     steps:
       - run: dnf install -y make
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
       - name: Install dependencies
@@ -110,7 +110,7 @@ jobs:
     container:
       image: debian:trixie
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
       - name: Install dependencies
