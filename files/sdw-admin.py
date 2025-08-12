@@ -148,7 +148,7 @@ def provision(step_description: str, salt_state: str):
     Create, change or delete qubes
     """
 
-    qubesctl_call(step_description, ["--", "state.sls", salt_state])
+    qubesctl_call(step_description, ["state.sls", salt_state])
 
 
 def provision_all():
@@ -186,7 +186,7 @@ def configure(step_description: str, targets: list[str], restart: list[str] | No
 
 
 def qubesctl_call(step_description: str, args: list[str]):
-    qubesctl_cmd = ["sudo", "qubesctl", "--show-output", "--out=profile"] + args
+    qubesctl_cmd = ["sudo", "qubesctl", "--show-output"] + args + ["--out=profile"]
     print("\n..........................................................................")
     print(step_description)
     print(f"Running \"{' '.join(qubesctl_cmd)}\"")
