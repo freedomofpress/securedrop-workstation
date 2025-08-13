@@ -29,6 +29,12 @@ dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 	@./files/validate_config.py
 	sdw-admin --apply
 
+# This installs the (dev or staging) keyring package.
+# To uninstall, remove the package and delete the .repo file
+# /etc/yum.repos.d/securedrop-workstation-keyring-{dev|staging}.repo.
+bootstrap-%: assert-dom0 ## Configure the keyring
+	@./scripts/bootstrap-keyring.py --env $*
+
 .PHONY: build-rpm
 build-rpm: OUT:=build-log/securedrop-workstation-$(shell date +%Y%m%d).log
 build-rpm: ## Build RPM package
