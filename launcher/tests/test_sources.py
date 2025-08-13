@@ -14,6 +14,11 @@ if socket.gethostname() != "dom0":
 
 from conftest import skip_in_dom0
 
+# A couple of tests are skipped in dom0 since:
+#  - they rely on poetry-installed dependencies (not trival to get in dom0)
+#  - This test may go away later once the .sources files in the keyring package
+
+
 SECUREDROP_SALT = Path(__file__).parent.parent.parent / "securedrop_salt"
 
 
