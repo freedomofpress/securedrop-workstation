@@ -1,12 +1,21 @@
+import socket
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-import pysequoia
-from debian import deb822
+if socket.gethostname() != "dom0":
+    import pysequoia
+    from debian import deb822
+
+from conftest import skip_in_dom0
+
+# A couple of tests are skipped in dom0 since:
+#  - they rely on poetry-installed dependencies (not trival to get in dom0)
+#  - This test may go away later once the .sources files in the keyring package
 
 ROOT = Path(__name__).parent.parent
 
 
+@skip_in_dom0
 def test_apt_sources():
     """Verify the key in the sources file is our prod signing key"""
     path = ROOT / "securedrop_salt/apt_freedom_press.sources.j2"
@@ -15,6 +24,7 @@ def test_apt_sources():
     assert_key(sources["Signed-By"].encode())
 
 
+@skip_in_dom0
 def test_dom0_key():
     path = ROOT / "securedrop_salt/securedrop-release-signing-pubkey-2021.asc"
     assert_key(path.read_bytes())
