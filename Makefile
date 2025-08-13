@@ -29,6 +29,9 @@ dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 	@./files/validate_config.py
 	sdw-admin --apply
 
+bootstrap-%: assert-dom0 ## Configure the keyring
+	@./scripts/bootstrap-keyring.py --env $(subst bootstrap-,,$@)
+
 .PHONY: build-rpm
 build-rpm: OUT:=build-log/securedrop-workstation-$(shell date +%Y%m%d).log
 build-rpm: ## Build RPM package
