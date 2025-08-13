@@ -7,8 +7,8 @@
 # This VM has no network configured.
 ##
 
-# Imports "sdvars" for environment config
-{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
+# Imports "apt_config" for environment config
+{% from 'securedrop_salt/sd-default-config.sls' import apt_config with context %}
 
 # Check environment
 {% import_json "securedrop_salt/config.json" as d %}
@@ -51,9 +51,9 @@ install-sd-log:
       # Label color is set during initial configuration but
       # not enforced on every Salt run, in case of user customization.
       - label: red
-      - template: sd-small-{{ sdvars.distribution }}-template
+      - template: sd-small-{{ apt_config.distribution }}-template
     - prefs:
-      - template: sd-small-{{ sdvars.distribution }}-template
+      - template: sd-small-{{ apt_config.distribution }}-template
       - netvm: ""
       - autostart: true
       - default_dispvm: ""
@@ -70,7 +70,7 @@ install-sd-log:
         - sd-install-epoch: {{ sdlog_epoch }}
         - menu-items: "org.gnome.Nautilus.desktop"
     - require:
-      - qvm: sd-small-{{ sdvars.distribution }}-template
+      - qvm: sd-small-{{ apt_config.distribution }}-template
 
 # The private volume size should be set in config.json
 sd-log-private-volume-size:
