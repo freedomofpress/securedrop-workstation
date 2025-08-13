@@ -13,8 +13,8 @@
 #  - update.qubes-vm
 #  - securedrop_salt.sd-default-config
 
-# Imports "sdvars" for environment config
-{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
+# Imports "apt_config" for environment config
+{% from 'securedrop_salt/sd-default-config.sls' import apt_config with context %}
 
 # Using apt-get requires manual approval when releaseinfo changes,
 # just get it over with in the beginning
@@ -30,25 +30,26 @@ autoremove-old-packages:
 
 # If we're on a prod environment, ensure there isn't a test .sources
 # file. (Should never happen in real usage, but may in testing)
-{% import_json "securedrop_salt/config.json" as d %}
-{% if d.environment == "prod" %}
+{% if apt_config['env'] == "prod" %}
 clean-old-test-sources:
   file.absent:
     - name: "/etc/apt/sources.list.d/apt-test_freedom_press.sources"
 {% endif %}
 
-# Install the relevant .sources file based on our environment.
+# Create the relevant .sources file based on our environment.
 configure-fpf-apt-repo:
   file.managed:
-    - name: "/etc/apt/sources.list.d/{{ sdvars.apt_sources_filename }}"
-    - source: "salt://securedrop_salt/{{ sdvars.apt_sources_filename }}.j2"
+    - name: "/etc/apt/sources.list.d/{{ apt_config['filename'] }}"
+    - source: salt://securedrop_salt/apt_freedom_press.sources.j2
     - template: jinja
     - context:
+        url: {{ apt_config['url'] }}
         codename: {{ grains['oscodename'] }}
-        component: {{ sdvars.component }}
+        component: {{ apt_config['component'] }}
+        apt_signing_key: {{ salt['file.get'](apt_config['keyfile']) }}
     - require:
       - cmd: autoremove-old-packages
-      {% if d.environment == "prod" %}
+      {% if apt_config['env'] == "prod" %}
       - file: clean-old-test-sources
       {% endif %}
 

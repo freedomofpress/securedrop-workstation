@@ -54,9 +54,6 @@ include:
 remove-dom0-sdw-config-files:
   file.absent:
     - names:
-      - /etc/yum.repos.d/securedrop-workstation-dom0.repo
-      - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation
-      - /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
       - /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/.securedrop_updater
@@ -88,8 +85,10 @@ dom0-reset-icon-size-xfce:
     - args: reset-icon-size
     - runas: {{ gui_user }}
 
-# Reset power management options to their original values
-{% if d.environment == "prod" or d.environment == "staging" %}
+# Reset power management options to Qubes default values.
+# TODO: We don't officially recommend prod uninstalls without
+# fully reinstalling the OS. We should decide if we want to keep
+# maintaining this logic (targets developer staging, prod setups)
 dom0-reset-power-management-xfce:
   cmd.script:
     - name: /usr/bin/securedrop/update-xfce-settings
