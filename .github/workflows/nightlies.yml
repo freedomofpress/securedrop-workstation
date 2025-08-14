@@ -70,3 +70,7 @@ jobs:
           git add .
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
           git push origin main
+
+  openqa-nightly:
+    uses: ./.github/workflows/openqa.yml
+    secrets: inherit

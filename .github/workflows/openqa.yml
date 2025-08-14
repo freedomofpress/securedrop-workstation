@@ -1,0 +1,130 @@
+---
+name: ci
+
+on:
+  - workflow_call
+  
+jobs:
+  openqa:
+    runs-on: ubuntu-latest
+    # Run only if:
+    # 1. This is a push (not pull_request)
+    # 2. We're not on main
+    # 3. We're not on a merge queue branch
+    # 4. The "openqa" string is present
+    env:
+      OPENQA_HOST: "https://openqa.qubes-os.org/"
+      OPENQA_KEY: ${{ secrets.OPENQA_KEY }}
+      OPENQA_SECRET: ${{ secrets.OPENQA_SECRET }}
+      GIT_REF: ${{ github.event.head_commit.id }}
+      GH_TOKEN: ${{ github.token }}
+    container:
+      image: debian:trixie
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install --yes openqa-client jq curl
+      - name: Start openQA jobs
+        run: |
+          echo "Queuing openQA jobs for commit ${GIT_REF}"
+          openqa-cli api \
+            --host "$OPENQA_HOST" \
+            --apikey "$OPENQA_KEY" \
+            --apisecret "$OPENQA_SECRET" \
+            isos -X post \
+            VERSION=4.2 \
+            BUILD=$(date +%Y%m%d%H%M)-4.2 \
+            DISTRI=qubesos ARCH=x86_64 \
+            GIT_REF="$GIT_REF" \
+            FLAVOR=securedrop \
+            NEEDLES_DIR="%%CASEDIR%%/needles" \
+            CASEDIR="https://github.com/QubesOS/openqa-tests-qubesos.git#main"\
+            MAX_JOB_TIME=10800 | tee openqa.json
+
+          for id in $(jq -r '.ids[]' openqa.json); do
+
+            # Obtain mapping (test_id, test_name)
+            openqa-cli api \
+              --host "$OPENQA_HOST" \
+              --apikey "$OPENQA_KEY" \
+              --apisecret "$OPENQA_SECRET" \
+              -X GET "jobs/${id}" | jq -r ".job.settings.TEST" >  "${id}_name.txt"
+            read TEST_NAME < "${id}_name.txt"
+
+            # Make OpenQA links visible by creating Github check for each
+            curl -L -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
+            -d "{\"state\": \"pending\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / $TEST_NAME\"}"
+
+          done
+      - name: Wait for openQA
+        run: |
+          openqa-cli monitor \
+            --host "$OPENQA_HOST" \
+            --apikey "$OPENQA_KEY" \
+            --apisecret "$OPENQA_SECRET" \
+            $(jq -r '.ids[]' openqa.json) || :
+      - name: Get result
+        run: |
+          for id in $(jq -r '.ids[]' openqa.json); do
+            read TEST_NAME < "${id}_name.txt"
+
+            # Obtain mapping (test_id, test_name)
+            openqa_result=`openqa-cli api \
+              --host "$OPENQA_HOST" \
+              --apikey "$OPENQA_KEY" \
+              --apisecret "$OPENQA_SECRET" \
+              -X GET "jobs/${id}" | jq -r ".job.result"`
+
+            # Apply result mapping: OpenQA -> GitHub
+            case $openqa_result in
+                "passed")
+                    github_state="success"
+                    ;;
+                "failed")
+                    github_state="failure"
+                    ;;
+                "skipped"|"incomplete"|"user_cancelled")
+                    github_state="error"
+                    ;;
+                "none")
+                    continue
+                    ;;
+                *)
+                    echo "Unknown test status: $openqa_result"
+                    exit 1
+                    ;;
+            esac
+            curl -L -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
+            -d "{\"state\": \"$github_state\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / $TEST_NAME\"}"
+          done
+      - name: Cancel openQA test (if needed)
+        if: cancelled()
+        run: |
+          # Cancel all the jobs we queued in a best-effort manner
+          for id in $(jq -r '.ids[]' openqa.json); do
+            openqa-cli api \
+              --host "$OPENQA_HOST" \
+              --apikey "$OPENQA_KEY" \
+              --apisecret "$OPENQA_SECRET" \
+              -X POST "jobs/${id}/cancel" ||:
+
+            read TEST_NAME < "${id}_name.txt"
+            curl -L -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
+            -d "{\"state\": \"error\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / $TEST_NAME\"}" ||:
+          done
