@@ -70,6 +70,11 @@ jobs:
   # If the most recent commit message contains "openqa" (case insensitive), run the openqa job
   check-openqa:
     runs-on: ubuntu-latest
+    # Do not start until all other checks have passed
+    needs:
+      - lint
+      - build-rpm
+      - launcher-tests
     outputs:
       should-run: ${{ steps.check.outputs.should-run }}
     env:
@@ -87,11 +92,8 @@ jobs:
           fi
   openqa:
     runs-on: ubuntu-latest
-    # Do not start until all other checks have passed
+        # Do not start until all other checks have passed
     needs:
-      - lint
-      - build-rpm
-      - launcher-tests
       - check-openqa
     # Run only if:
     # 1. This is a push (not pull_request)
