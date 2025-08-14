@@ -1,9 +1,9 @@
 DEFAULT_GOAL: help
 PYTHON3 := $(if $(shell bash -c "command -v python3.11"), python3.11, python3)
-# If we're on anything but Fedora 37, execute some commands in a container
-# Note: if your development environment is Fedora 37 based, you may want to
+# If we're on anything but Fedora 41, execute some commands in a container
+# Note: if your development environment is Fedora 41 based, you may want to
 # manually prepend ./scripts/container.sh to commands you want to execute
-CONTAINER := $(if $(shell grep "Thirty Seven" /etc/fedora-release),,./scripts/container.sh)
+CONTAINER := $(if $(shell grep "Forty One" /etc/fedora-release),,./scripts/container.sh)
 
 HOST=$(shell hostname)
 
@@ -59,7 +59,7 @@ build-deps: ## Install package dependencies to build RPMs
 test-deps: build-deps ## Install package dependencies for running tests
 	dnf install -y \
 		python3-qt5 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
-		hostname
+		hostname python3.11
 	dnf --setopt=install_weak_deps=False -y install reprotest
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0

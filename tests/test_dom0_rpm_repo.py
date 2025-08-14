@@ -2,7 +2,7 @@ import json
 import unittest
 
 DEBIAN_VERSION = "bookworm"
-FEDORA_VERSION = "f37"
+FEDORA_VERSION = "f41"
 
 
 class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
