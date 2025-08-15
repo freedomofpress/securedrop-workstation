@@ -89,6 +89,7 @@ def main():
         )
 
     # Install keyring package
+    print("Importing key to rpm db")
     rpm_import(key_file)
 
     if not is_key_imported(TEST_KEY_RPMID):
@@ -100,7 +101,6 @@ def main():
         sys.exit(1)
 
     dom0_install_keyring(args.env)
-
 
 if __name__ == "__main__":
     main()
