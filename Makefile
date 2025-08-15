@@ -23,14 +23,28 @@ all: assert-dom0
 	@echo "These targets will set your config.json to the appropriate environment."
 	@false
 
-dev staging: assert-dom0 ## Configures and builds a dev or staging environment
-	./scripts/configure-environment.py --env $@
-	@./scripts/prep-dev
+# Configure SDW with a given environment.
+# `make dev`     :  dev keyring, locally-built dom0 config rpm
+# `make nightly` :  dev keyring, fedora-nightlies rpm
+# `make staging` :  staging keyring, staging rpm
+dev staging nightly: SDW_ENV := $@
+dev staging nightly: RPM_STRATEGY := $(if $(filter nightly,$@),dev,$@)
+dev staging nightly: assert-dom0 ## Configure environment
+	$(MAKE) bootstrap-$(SDW_ENV)
+	$(MAKE) install-rpm RPM_TYPE=$(RPM_STRATEGY)
+	./scripts/configure-environment.py --env $(SDW_ENV)
 	@./files/validate_config.py
 	sdw-admin --apply
 
-bootstrap-%: assert-dom0 ## Configure the keyring
-	@./scripts/bootstrap-keyring.py --env $(subst bootstrap-,,$@)
+bootstrap-%: assert-dom0 ## Configure keyring
+	@./scripts/bootstrap-keyring.py --env $*
+
+install-rpm: assert-dom0 ## Install locally-built rpm (dev) or download published rpm (nightly, staging)
+ifeq ($(RPM_STRATEGY),dev)
+	@./scripts/prep-dev
+else
+	@sudo qubes-dom0-update -y securedrop-workstation-dom0-config
+endif
 
 .PHONY: build-rpm
 build-rpm: OUT:=build-log/securedrop-workstation-$(shell date +%Y%m%d).log

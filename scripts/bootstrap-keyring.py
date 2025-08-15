@@ -15,15 +15,8 @@ BASEURL = "https://yum-test.securedrop.org"
 
 def get_fedora_version():
     try:
-        with open("/etc/os-release") as f:
-            for line in f:
-                if line.startswith("VERSION_ID="):
-                    version = line.split("=")[1].strip().strip('"')
-                    if version == "4.2":
-                        return "37"
-                    elif version == "4.3":
-                        return "41"
-    except Exception as e:
+        return subprocess.check_output(["rpm", "--eval", "%{fedora}"]).decode().strip()
+    except subprocess.CalledProcessError as e:
         print(f"Error retrieving Fedora version: {e}")
         sys.exit(1)
 
@@ -87,9 +80,10 @@ def main():
         )
 
     # Install keyring package
+    print("Importing key to rpm db")
     rpm_import(key_file)
+    print(f"Installing {args.env} keyring")
     dom0_install_keyring(args.env)
-
 
 if __name__ == "__main__":
     main()
