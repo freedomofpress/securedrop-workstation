@@ -1,55 +1,87 @@
 import json
+import subprocess
 import unittest
+from string import Template
 
-DEBIAN_VERSION = "bookworm"
 FEDORA_VERSION = "f37"
 
 
 class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
-    pubkey_wanted = ""
-    yum_repo_url = ""
-    pubkey_actual = "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation"
-    pubkey_wanted_prod = "securedrop_salt/securedrop-release-signing-pubkey-2021.asc"
-    pubkey_wanted_test = "securedrop_salt/apt-test-pubkey.asc"
-    yum_repo_url_prod = f"https://yum.securedrop.org/workstation/dom0/{FEDORA_VERSION}"
-    yum_repo_url_test = f"https://yum-test.securedrop.org/workstation/dom0/{FEDORA_VERSION}"
-
     def setUp(self):
         # Enable full diff output in test report, to aid in debugging
         self.maxDiff = None
+
         with open("config.json") as c:
             config = json.load(c)
-            if "environment" not in config:
-                config["environment"] = "dev"
+            self.env = config.get("environment")
 
-            if config["environment"] == "prod":
-                self.pubkey_wanted = self.pubkey_wanted_prod
-                self.yum_repo_url = self.yum_repo_url_prod
-            else:
-                self.pubkey_wanted = self.pubkey_wanted_test
-                self.yum_repo_url = self.yum_repo_url_test
+            # Fall back to checking environment via keyring package
+            # (will eventually replace config.json environment)
+            if not self.env:
+                self.env = self._get_env_by_package()
 
-    def test_rpm_repo_public_key(self):
-        with open(self.pubkey_actual) as f:
-            pubkey_actual_contents = f.readlines()
+        with open("tests/files/repo_config.json") as repo_config:
+            config_options = json.load(repo_config)
+            self.config = config_options[self.env]
 
-        with open(self.pubkey_wanted) as f:
-            pubkey_wanted_contents = f.readlines()
-
-        assert pubkey_actual_contents == pubkey_wanted_contents
+            # Fedora version is a placeholder, so fix that
+            self.config["yum_repo_url"] = Template(self.config["yum_repo_url"]).safe_substitute(
+                {"FEDORA_VERSION": FEDORA_VERSION}
+            )
 
     def test_rpm_repo_config(self):
-        repo_file = "/etc/yum.repos.d/securedrop-workstation-dom0.repo"
+        repo = self.config["repo_file_name"]
+        baseurl = self.config["yum_repo_url"]
+        repo_file = f"/etc/yum.repos.d/{repo}"
         wanted_lines = [
             "[securedrop-workstation-dom0]",
             "gpgcheck=1",
             "skip_if_unavailable=False",
-            "gpgkey=file://{}".format(self.pubkey_actual),  # noqa
+            "gpgkey=file://{}".format(self.config.get("signing_key")),
             "enabled=1",
-            f"baseurl={self.yum_repo_url}",
+            f"baseurl={baseurl}",
             "name=SecureDrop Workstation Qubes dom0 repo",
         ]
         with open(repo_file) as f:
             found_lines = [x.strip() for x in f.readlines()]
 
         assert found_lines == wanted_lines
+
+    def _get_env_by_package(self):
+        """
+        Check which environment we are using by checking keyring package.
+        The order matters; due to package versioning, an installed dev package
+        means a dev setup, so check dev, staging, then prod.
+        """
+        for env, suffix in [("dev", "-dev"), ("staging", "-staging"), ("prod", "")]:
+            if self._is_installed(f"securedrop-workstation-keyring{suffix}"):
+                return env
+        self.fail("No keyring package")
+        # Unreachable, but ruff was unhappy
+        return None
+
+    def _is_installed(self, pkg: str):
+        """
+        Check if package is installed.
+        """
+        try:
+            subprocess.check_call(
+                ["rpm", "-q", pkg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+
+            return True
+        except subprocess.CalledProcessError:
+            return False
+
+    def test_dom0_has_keyring_package(self):
+        # Prod keyring is always installed
+        assert self._is_installed("securedrop-workstation-keyring")
+
+        # TODO: remove this check when config.json does not specify
+        # "environment" anymore.
+        # Until then, the order matters; a dev setup may also have
+        # a staging package, but not vice-versa.
+        if self.env == "dev":
+            assert self._is_installed("securedrop-workstation-keyring-dev")
+        elif self.env == "staging":
+            assert self._is_installed("securedrop-workstation-keyring-staging")
