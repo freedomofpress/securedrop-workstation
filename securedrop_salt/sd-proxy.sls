@@ -6,8 +6,8 @@
 # and the SecureDrop servers.
 ##
 
-# Imports "sdvars" for environment config
-{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
+# Imports "apt_config" for environment config
+{% from 'securedrop_salt/sd-default-config.sls' import apt_config with context %}
 {% import_json "securedrop_salt/config.json" as d %}
 
 include:
@@ -23,15 +23,15 @@ sd-proxy-dvm:
       # Label color is set during initial configuration but
       # not enforced on every Salt run, in case of user customization.
       - label: blue
-      - template: sd-small-{{ sdvars.distribution }}-template
+      - template: sd-small-{{ apt_config.distribution }}-template
     - prefs:
-      - template: sd-small-{{ sdvars.distribution }}-template
+      - template: sd-small-{{ apt_config.distribution }}-template
       - netvm: sd-whonix
       - template_for_dispvms: True
       - default_dispvm: ""
     - features:
       - set:
-        {% if d.environment == "prod" %}
+        {% if apt_config['env'] == "prod" %}
         - internal: 1
         {% else %}
         - internal: ""
@@ -39,10 +39,10 @@ sd-proxy-dvm:
     - tags:
       - add:
         - sd-workstation
-        - sd-{{ sdvars.distribution }}
+        - sd-{{ apt_config.distribution }}
     - require:
       - qvm: sd-whonix
-      - qvm: sd-small-{{ sdvars.distribution }}-template
+      - qvm: sd-small-{{ apt_config.distribution }}-template
 
 sd-proxy-create-named-dispvm:
   qvm.vm:
@@ -62,7 +62,7 @@ sd-proxy-create-named-dispvm:
       - set:
           - vm-config.SD_MIME_HANDLING: default
           - servicevm: 1
-          {% if d.environment == "prod" %}
+          {% if apt_config['env'] == "prod" %}
           - internal: 1
           {% else %}
           - internal: ""
@@ -70,7 +70,7 @@ sd-proxy-create-named-dispvm:
     - tags:
       - add:
         - sd-workstation
-        - sd-{{ sdvars.distribution }}
+        - sd-{{ apt_config.distribution }}
     - require:
       - qvm: sd-proxy-dvm
 

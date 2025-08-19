@@ -6,8 +6,8 @@
 # This VM has no network configured.
 ##
 
-# Imports "sdvars" for environment config
-{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
+# Imports "apt_config" for environment config
+{% from 'securedrop_salt/sd-default-config.sls' import apt_config with context %}
 
 include:
   - securedrop_salt.sd-workstation-template
@@ -21,22 +21,22 @@ sd-devices-dvm:
       # Label color is set during initial configuration but
       # not enforced on every Salt run, in case of user customization.
       - label: red
-      - template: sd-large-{{ sdvars.distribution }}-template
+      - template: sd-large-{{ apt_config.distribution }}-template
     - prefs:
-      - template: sd-large-{{ sdvars.distribution }}-template
+      - template: sd-large-{{ apt_config.distribution }}-template
       - netvm: ""
       - template_for_dispvms: True
       - default_dispvm: ""
     - tags:
       - add:
         - sd-workstation
-        - sd-{{ sdvars.distribution }}
+        - sd-{{ apt_config.distribution }}
     - features:
       - enable:
         - service.paxctld
         - service.cups
     - require:
-      - qvm: sd-large-{{ sdvars.distribution }}-template
+      - qvm: sd-large-{{ apt_config.distribution }}-template
 
 sd-devices-create-named-dispvm:
   qvm.vm:

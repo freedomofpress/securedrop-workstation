@@ -2,33 +2,48 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 #
 ##
-# Handles loading of config variables, via environment-specific
-# setting in the config file.
-# These settings apply only to apt repo components used in
-# individual VMs. dom0 rpm settings are managed by the
-# securedrop-workstation-keyring package.
+# Environment-specific configuration based on securedrop-workstation-keyring
+# bootstrap package.
 
-# Load YAML vars file
-{% load_yaml as sdvars_defaults %}
-{% include "securedrop_salt/sd-default-config.yml" %}
-{% endload %}
+# Possible configurations (apt repo components, Debian-based VMs)
+{% set environments = {
+    'dev': {
+        'url': 'https://apt-test.freedom.press',
+        'component': 'main nightlies',
+        'filename': 'apt-test_freedom_press.sources',
+        'keyfile': '/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
+    },
+    'staging': {
+        'url': 'https://apt-test.freedom.press',
+        'component': 'main',
+        'filename': 'apt-test_freedom_press.sources',
+        'keyfile': '/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
+    },
+    'prod': {
+        'url': 'https://apt.freedom.press',
+        'component': 'main',
+        'filename': 'apt_freedom_press.sources',
+        'keyfile': '/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation'
+    }
+} %}
 
-# Load JSON config file
-{% import_json "securedrop_salt/config.json" as d %}
+# Find all installed keyring packages (prod is always installed)
+{% set keyring_name = "securedrop-workstation-keyring" %}
+{% set pkgs_installed = salt['pkg.list_pkgs']() | list %}
 
-# Respect "dev" env if provided, default to "prod"
-{% if d.environment == "dev" %}
-  # use apt-test and nightlies
-  {% set sdvars = sdvars_defaults["test"] %}
-  {% set _ = sdvars.update({"component": "main nightlies"}) %}
-{% elif d.environment == "staging" %}
-  # use apt-test and main (RC/test builds)
-  {% set sdvars = sdvars_defaults["test"] %}
-  {% set _ = sdvars.update({"component": "main"}) %}
-{% else %}
-  {% set sdvars = sdvars_defaults["prod"] %}
-  {% set _ = sdvars.update({"component": "main"}) %}
+# Package precedence: dev, staging, prod (default to prod)
+{% set env = "prod" %}
+
+{% if keyring_name ~ "-dev" in pkgs_installed %}
+  {% set env = "dev" %}
+{% elif keyring_name ~ "-staging" in pkgs_installed %}
+  {% set env = "staging" %}
 {% endif %}
 
-# Append repo URL with appropriate distribution
-{% set _ = sdvars.update({"distribution": "bookworm"}) %}
+{% set apt_config = environments.get(env) %}
+
+# Store which environment we are using
+{% set _ = apt_config.update({"env": env }) %}
+
+# Our supported Debian distribution is configured here
+{% set _ = apt_config.update({"distribution": "bookworm"}) %}
