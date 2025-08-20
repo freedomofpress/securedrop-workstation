@@ -37,7 +37,7 @@ assert-keyring-%: ## Correct keyring pkg installed
 	}
 	@if [ "$*" = "staging" ]; then \
 		if rpm -q securedrop-workstation-keyring-dev >/dev/null 2>&1; then \
-			echo "Error: Uninstall securedrop-workstation-keyring-dev" >&2; \
+			echo "Error: Uninstall securedrop-workstation-keyring-dev to use staging" >&2; \
 			exit 1; \
 		fi \
 	fi
