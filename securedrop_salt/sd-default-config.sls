@@ -29,14 +29,14 @@
 
 # Find all installed keyring packages (prod is always installed)
 {% set keyring_name = "securedrop-workstation-keyring" %}
-{% set pkgs_installed = salt['pkg.list_pkgs']() | list %}
 
 # Package precedence: dev, staging, prod (default to prod)
 {% set env = "prod" %}
+{% set installed_pkgs = salt['pkg.list_pkgs']() %}
 
-{% if keyring_name ~ "-dev" in pkgs_installed %}
+{% if keyring_name ~ '-dev' in installed_pkgs %}
   {% set env = "dev" %}
-{% elif keyring_name ~ "-staging" in pkgs_installed %}
+{% elif keyring_name ~ '-staging' in installed_pkgs %}
   {% set env = "staging" %}
 {% endif %}
 
