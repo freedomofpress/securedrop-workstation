@@ -42,8 +42,8 @@ assert-keyring-%: ## Correct keyring pkg installed
 		fi \
 	fi
 
-# This installs the (dev or staging) keyring package.
-# To uninstall, remove the package and delete the .repo file
+# This installs the (dev or staging) keyring package along with the prod package.
+# To uninstall, remove the dev or staging package and delete the file
 # /etc/yum.repos.d/securedrop-workstation-keyring-{dev|staging}.repo.
 bootstrap-%: assert-dom0 ## Configure the keyring
 	@./scripts/bootstrap-keyring.py --env $*
