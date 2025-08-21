@@ -5,6 +5,24 @@ from string import Template
 
 FEDORA_VERSION = "f37"
 
+REPO_CONFIG = {
+    "prod": {
+        "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation",
+        "repo_file_name": "securedrop-workstation-dom0.repo",
+        "yum_repo_url": "https://yum.securedrop.org/workstation/dom0/$FEDORA_VERSION/",
+    },
+    "dev": {
+        "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",
+        "repo_file_name": "securedrop-workstation-dom0-dev.repo",
+        "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/$FEDORA_VERSION-nightlies/",
+    },
+    "staging": {
+        "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",
+        "repo_file_name": "securedrop-workstation-dom0-staging.repo",
+        "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/$FEDORA_VERSION/",
+    },
+}
+
 
 class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
     def setUp(self):
@@ -20,14 +38,12 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
             if not self.env:
                 self.env = self._get_env_by_package()
 
-        with open("tests/files/repo_config.json") as repo_config:
-            config_options = json.load(repo_config)
-            self.config = config_options[self.env]
+        self.config = REPO_CONFIG[self.env].copy()
 
-            # Fedora version is a placeholder, so fix that
-            self.config["yum_repo_url"] = Template(self.config["yum_repo_url"]).safe_substitute(
-                {"FEDORA_VERSION": FEDORA_VERSION}
-            )
+        # Fedora version is a placeholder, so fix that
+        self.config["yum_repo_url"] = Template(self.config["yum_repo_url"]).safe_substitute(
+            {"FEDORA_VERSION": FEDORA_VERSION}
+        )
 
     def test_rpm_repo_config(self):
         repo = self.config["repo_file_name"]
