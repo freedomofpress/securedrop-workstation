@@ -48,11 +48,15 @@ def is_key_imported(rpm_id: str):
         return False
 
 
-def dom0_install_keyring(env: str):
-    """Use qubes-dom0-update to install correct keyring package."""
-    package_name = f"{KEYRING_PACKAGENAME}-{env}"
+def dom0_install_keyring(env: str | None = None):
+    """Use qubes-dom0-update to install keyring package."""
     args = ["sudo", "qubes-dom0-update", "-y"]
-    args.append(f"--enablerepo={package_name}")
+
+    if env:
+        package_name = f"{KEYRING_PACKAGENAME}-{env}"
+        args.append(f"--enablerepo={package_name}")
+    else:
+        package_name = KEYRING_PACKAGENAME
     args.append(package_name)
     subprocess.check_call(args)
 
@@ -88,7 +92,7 @@ def main():
             ["sudo", "install", "-m", "0644", str(repo_file_path), str(repo_dest_path)]
         )
 
-    # Install keyring package
+    # Install environment-specific keyring package
     rpm_import(key_file)
 
     if not is_key_imported(TEST_KEY_RPMID):
@@ -100,6 +104,10 @@ def main():
         sys.exit(1)
 
     dom0_install_keyring(args.env)
+
+    # Install prod keyring hosted in yum-test to satisfy dom0 config dependency.
+    # When the prod keyring reaches Qubes-Contrib, this can be removed.
+    dom0_install_keyring()
 
 
 if __name__ == "__main__":
