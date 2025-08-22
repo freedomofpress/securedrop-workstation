@@ -52,14 +52,12 @@ TEST_RESULTS_UPDATES = {
 }
 
 
-@mock.patch("sdw_util.Util.get_whonix_version", return_value=WHONIX_VERSION)
-def test__get_current_vms(mocked_get_whonix_version):
-    assert len(Updater._get_current_vms()) == 8
+def test__get_current_vms():
+    assert len(Updater._get_current_vms()) == 7
 
 
-@mock.patch("sdw_util.Util.get_whonix_version", return_value=WHONIX_VERSION)
-def test__get_current_templates(mocked_get_whonix_version):
-    assert len(Updater._get_current_templates()) == 4
+def test__get_current_templates():
+    assert len(Updater._get_current_templates()) == 3
 
 
 @mock.patch("sdw_updater.Updater._write_updates_status_flag_to_disk")
@@ -129,8 +127,7 @@ def test_apply_templates_success(
         ),
     ],
 )
-@mock.patch("sdw_util.Util.get_whonix_version", return_value=WHONIX_VERSION)
-def test_apply_templates(whonix_ver_mock, templates, stderr, expected):
+def test_apply_templates(templates, stderr, expected):
     with (
         mock.patch(
             "sdw_updater.Updater._start_qubes_updater_proc",

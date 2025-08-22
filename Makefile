@@ -92,9 +92,6 @@ test-app: test-prereqs ## Runs tests for SD APP VM config
 test-proxy: test-prereqs ## Runs tests for SD Proxy VM
 	pytest -v tests/test_proxy_vm.py
 
-test-whonix: test-prereqs ## Runs tests for SD Whonix VM
-	pytest -v tests/test_sd_whonix.py
-
 test-gpg: test-prereqs ## Runs tests for SD GPG functionality
 	pytest -v tests/test_gpg.py
 
