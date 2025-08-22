@@ -36,8 +36,12 @@ base:
   'sd-fedora-42-dvm,sys-usb':
     - match: list
     - securedrop_salt.sd-usb-autoattach-add
-  whonix-gateway-{{ whonix.whonix_version }}:
-    - securedrop_salt.sd-whonix-config
+
+  {# Whonix > 17 does not need cleanup #}
+  {% if whonix.whonix_version == '17' %}
+  whonix-gateway-17:
+    - securedrop_salt.sd-remove-whonix-packages
+  {% endif %}
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.

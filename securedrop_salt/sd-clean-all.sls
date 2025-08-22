@@ -2,7 +2,6 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 {% import_json "securedrop_salt/config.json" as d %}
-{% import "qvm/whonix.jinja" as whonix %}
 
 set-fedora-as-default-dispvm:
   cmd.run:
@@ -74,12 +73,6 @@ sd-cleanup-sys-firewall:
       - qvm-run sys-firewall 'sudo rm -f /rw/config/RPM-GPG-KEY-securedrop-workstation-test'
       - qvm-run sys-firewall 'sudo rm -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation'
       - qvm-run sys-firewall 'sudo rm -f /etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test'
-
-sd-cleanup-whonix-gateway:
-  cmd.run:
-    - names:
-      - qvm-run whonix-gateway-{{ whonix.whonix_version }} 'sudo apt purge --yes securedrop-keyring securedrop-qubesdb-tools securedrop-whonix-config'
-      - qvm-run whonix-gateway-{{ whonix.whonix_version }} 'sudo rm -f /etc/apt/sources.list.d/apt-test_freedom_press.sources'
 
 # Reset desktop icon size to its original value
 dom0-reset-icon-size-xfce:
