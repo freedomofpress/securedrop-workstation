@@ -114,19 +114,21 @@ class SD_VM_Tests(unittest.TestCase):
         vm = self.app.domains["sd-proxy"]
         assert vm.template == "sd-proxy-dvm"
         assert vm.klass == "DispVM"
-        assert vm.netvm.name == "sd-whonix"
+        assert vm.netvm.name == "sys-firewall"
         assert vm.autostart
         assert not vm.provides_network
         assert vm.default_dispvm is None
         assert "sd-workstation" in vm.tags
         assert vm.features["service.securedrop-mime-handling"] == "1"
+        assert vm.features["service.securedrop-proxy-onion-config"] == "1"
         assert vm.features["vm-config.SD_MIME_HANDLING"] == "default"
         self._check_service_running(vm, "securedrop-mime-handling")
+        self._check_service_running(vm, "securedrop-proxy-onion-config")
 
     def test_sd_proxy_dvm(self):
         vm = self.app.domains["sd-proxy-dvm"]
         assert vm.template_for_dispvms
-        assert vm.netvm.name == "sd-whonix"
+        assert vm.netvm.name == "sys-firewall"
         assert vm.template == SD_TEMPLATE_SMALL
         assert vm.default_dispvm is None
         assert "sd-workstation" in vm.tags
