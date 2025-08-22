@@ -58,7 +58,7 @@ def test_logs_are_flowing(qube):
     # TODO: test a sd-viewer based dispVM
     skip = [f"sd-base-{CURRENT_DEBIAN_VERSION}-template", "sd-viewer"]
     # VMs we expect logs will not go to
-    no_log_vms = ["sd-gpg", "sd-log", "sd-whonix"]
+    no_log_vms = ["sd-gpg", "sd-log"]
 
     # We first run the command in each VM, and then do a second loop to
     # look for the token in the log entry, so there's enough time for the

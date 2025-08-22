@@ -17,7 +17,6 @@ debian_based_vms = [
     "sd-viewer",
     "sd-gpg",
     "sd-proxy",
-    "sd-whonix",
     "sd-devices",
 ]
 
