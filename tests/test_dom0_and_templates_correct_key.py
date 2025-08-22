@@ -129,6 +129,8 @@ def test_dom0_has_keyring_package(env):
         assert _is_installed("securedrop-workstation-keyring-dev")
     elif env == "staging":
         assert _is_installed("securedrop-workstation-keyring-staging")
+    else:
+        assert env == "prod"
 
 
 def test_rpm_repo_config(config):

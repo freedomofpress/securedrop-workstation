@@ -44,9 +44,20 @@ def dom0_config():
 
 @pytest.fixture
 def env():
-    with open("config.json") as c:
-        config = json.load(c)
-        return config.get("environment")
+    """
+    Check build variant based on installed .repo filename.
+    Developers who are experimenting with additional disabled .repo files in
+    /etc/yum.repos.d/ should ensure no naming collisions with securedrop-workstation-keyring
+    files, per REPO_CONFIG above or per the securedrop-workstation-keyring rpm spec file.
+    """
+    # Order matters due to package versioning
+    for env_type in ["dev", "staging", "prod"]:
+        repo_filename = REPO_CONFIG[env_type]["repo_file_name"]
+        repo_path = Path(f"/etc/yum.repos.d/{repo_filename}")
+        if repo_path.exists:
+            return env_type
+
+    pytest.fail("Misconfigured environment, env could not be determined.")
 
 
 @pytest.fixture
