@@ -51,7 +51,6 @@ def _get_current_vms():
         "sd-log": f"sd-small-{debian_version}-template",
         "sd-devices": f"sd-large-{debian_version}-template",
         "sd-proxy": f"sd-small-{debian_version}-template",
-        "sd-whonix": f"whonix-gateway-{whonix_version}",
         "sd-gpg": f"sd-small-{debian_version}-template",
     }
 
