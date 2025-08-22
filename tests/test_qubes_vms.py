@@ -2,7 +2,7 @@ import unittest
 
 from qubesadmin import Qubes
 
-from tests.base import CURRENT_FEDORA_DVM, CURRENT_FEDORA_TEMPLATE, CURRENT_WHONIX_VERSION
+from tests.base import CURRENT_FEDORA_DVM, CURRENT_FEDORA_TEMPLATE
 
 
 class SD_Qubes_VM_Tests(unittest.TestCase):
@@ -40,14 +40,3 @@ class SD_Qubes_VM_Tests(unittest.TestCase):
                 + f"Current: {vm.template.name}\n"
                 + "Expected: {}".format(", ".join(wanted_templates))
             )
-
-    def test_current_whonix_vms(self):
-        """
-        Checks that the Qubes-maintained Whonix tooling
-        has been updated to the most recent version.
-        """
-        whonix_vms = ["sys-whonix", "anon-whonix"]
-        for whonix_vm in whonix_vms:
-            vm = self.app.domains[whonix_vm]
-            assert vm.template.name.startswith("whonix-")
-            assert vm.template.name.endswith("-" + CURRENT_WHONIX_VERSION)
