@@ -12,7 +12,7 @@ from tests.base import (
 def qube():
     return QubeWrapper(
         "sd-proxy",
-        expected_config_keys={"SD_PROXY_ORIGIN", "SD_MIME_HANDLING"},
+        expected_config_keys={"SD_PROXY_ORIGIN", "SD_PROXY_ORIGIN_KEY", "SD_MIME_HANDLING"},
         enforced_apparmor_profiles={"/usr/bin/securedrop-proxy"},
     )
 
