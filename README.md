@@ -96,7 +96,6 @@ that contains component code for all of the packages we ship in individual VMs o
 - [SecureDrop Export](https://github.com/freedomofpress/securedrop-client/tree/main/export#readme) is installed in `sd-devices` and is used to manage printing and exporting files.
 - The *SecureDrop Client* opens all submissions in the networkless, disposable `sd-viewer` VM
 - A logging VM, `sd-log`, is provisioned to capture logs locally from various parts of the system
-- A [Whonix](https://www.whonix.org/wiki/Homepage) VM, `sd-whonix`, is provisioned with instance-specific information required to access the authenticated onion service used by journalists.
 
 ### Additional Notes:
 
