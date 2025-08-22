@@ -13,8 +13,6 @@ import sys
 
 from qubesadmin import Qubes
 
-from sdw_util import Util
-
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
 # errors from qubesctl. It may be possible to raise this again.
 MAX_CONCURRENCY = 2
