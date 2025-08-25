@@ -1,7 +1,0 @@
----
-# Production variables, for use with real-world installs
-prod:
-  apt_sources_filename: "apt_freedom_press.sources"
-# Staging and Dev variables, for QAing and local development
-test:
-  apt_sources_filename: "apt-test_freedom_press.sources"

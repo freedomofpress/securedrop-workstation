@@ -1,6 +1,7 @@
 import json
 import subprocess
 import unittest
+from pathlib import Path
 
 from qubesadmin import Qubes
 
@@ -16,8 +17,8 @@ from tests.base import (
     SD_VMS,
 )
 
-with open("config.json") as f:
-    CONFIG = json.load(f)
+DEV_REPO = Path("/etc/yum.repos.d/securedrop-workstation-dom0-dev.repo")
+STAGING_REPO = Path("/etc/yum.repos.d/securedrop-workstation-dom0-staging.repo")
 
 
 class SD_VM_Tests(unittest.TestCase):
@@ -40,7 +41,7 @@ class SD_VM_Tests(unittest.TestCase):
         for vm_name in SD_UNTAGGED_DEPRECATED_VMS:
             assert vm_name not in self.app.domains
 
-    @unittest.skipIf(CONFIG["environment"] != "prod", "Skipping on non-prod system")
+    @unittest.skipIf(STAGING_REPO.exists or DEV_REPO.exists, "Skipping on non-prod system")
     def test_internal(self):
         internal = ["sd-proxy", "sd-proxy-dvm", "sd-viewer"]
 

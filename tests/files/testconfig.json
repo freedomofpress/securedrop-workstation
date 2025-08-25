@@ -4,7 +4,6 @@
       "hostname": "sdolvtfhatvsysc6l34d65ymdwxcujausv7k5jk4cy5ttzhjoi6fzvyd.onion",
       "key": "5U4JPYSZ34N2ZDSOUAL2YLEX2NPI5BLL2Y66QJW24KLSH7R3FEPQ"
     },
-    "environment": "prod",
     "vmsizes": {
        "sd_app": 10,
        "sd_log": 5

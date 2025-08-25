@@ -506,7 +506,6 @@ def import_config():
                 "hostname": ji_addr + ".onion",
                 "key": ji_auth_token,
             },
-            "environment": "prod",
             "vmsizes": {"sd_app": sd_app_gb, "sd_log": sd_log_gb},
         }
         temp_file = "/tmp/config.json"

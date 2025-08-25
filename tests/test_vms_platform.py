@@ -1,8 +1,8 @@
-import json
 import os
 import re
 import subprocess
 import unittest
+from pathlib import Path
 
 import pytest
 from qubesadmin import Qubes
@@ -21,14 +21,22 @@ SUPPORTED_SD_DEBIAN_DIST = "bookworm"
 
 IS_CI = os.environ.get("CI") == "true"
 
+DEV_REPO = Path("/etc/yum.repos.d/securedrop-workstation-dom0-dev.repo")
+STAGING_REPO = Path("/etc/yum.repos.d/securedrop-workstation-dom0-staging.repo")
+
 
 class SD_VM_Platform_Tests(unittest.TestCase):
     def setUp(self):
         self.app = Qubes()
-        with open("config.json") as c:
-            self.config = json.load(c)
-        if "environment" not in self.config:
-            self.config["environment"] = "dev"
+
+        # Order matters; if dev .repo file is installed,
+        # it wins, then staging, due to package versioning
+        if DEV_REPO.exists:
+            self.environment = "dev"
+        elif STAGING_REPO.exists:
+            self.environment = "staging"
+        else:
+            self.environment = "prod"
 
     def tearDown(self):
         pass
@@ -63,11 +71,11 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         if vm.name in ["sd-whonix"]:
             return
 
-        if self.config["environment"] == "prod":
+        if self.environment == "prod":
             component = "main"
             url = "https://apt.freedom.press"
             filename = "/etc/apt/sources.list.d/apt_freedom_press.sources"
-        elif self.config["environment"] == "staging":
+        elif self.environment == "staging":
             component = "main"
             url = "https://apt-test.freedom.press"
             filename = "/etc/apt/sources.list.d/apt-test_freedom_press.sources"
@@ -200,13 +208,13 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             assert (
                 "Description: https://apt.freedom.press bookworm/main amd64 Packages\n" in contents
             )
-            if self.config["environment"] == "prod":
+            if self.environment == "prod":
                 # prod setups shouldn't have any apt-test sources
                 assert "apt-test.freedom.press" not in contents
             else:
                 # staging/dev
                 test_components = ["main"]
-                if self.config["environment"] == "dev":
+                if self.environment == "dev":
                     test_components.append("nightlies")
                 for component in test_components:
                     assert (
