@@ -1,5 +1,4 @@
 import os
-import socket
 import tempfile
 
 import pytest
@@ -13,9 +12,3 @@ def tmpdir():
         os.chdir(tmpdir)
         yield tmpdir
         os.chdir(cwd)
-
-
-skip_in_dom0 = pytest.mark.skipif(
-    socket.gethostname() == "dom0",
-    reason="Test cannot be run in dom0",
-)
