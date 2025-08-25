@@ -15,17 +15,14 @@ ifneq ($(HOST),dom0)
 endif
 
 all: assert-dom0
-	@echo "Please run one of the following targets:"
+	@echo "Please ensure you have a bootsrap rpm installed, then run one of the following targets:"
 	@echo
 	@echo "make dev"
 	@echo "make staging"
-	@echo
-	@echo "These targets will set your config.json to the appropriate environment."
 	@false
 
 dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 	$(MAKE) assert-keyring-$@
-	./scripts/configure-environment.py --env $@
 	@./scripts/prep-dev
 	@./files/validate_config.py
 	sdw-admin --apply
