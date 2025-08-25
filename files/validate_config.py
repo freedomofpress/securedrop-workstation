@@ -38,7 +38,6 @@ class SDWConfigValidator:
         self.confirm_onion_config_valid()
         self.confirm_submission_privkey_file()
         self.confirm_submission_privkey_fingerprint()
-        self.confirm_environment_valid()
         self.validate_existing_size()
 
     def confirm_config_file_exists(self):
@@ -47,16 +46,6 @@ class SDWConfigValidator:
                 f"Config file does not exist: {self.config_filepath}. "
                 "Create from config.json.example"
             )
-
-    def confirm_environment_valid(self):
-        """
-        The 'environment' config item is required to determine
-        whether prod or dev URLs are used for installing packages.
-        """
-        if "environment" not in self.config:
-            raise ValidationError
-        if self.config["environment"] not in ("prod", "dev", "staging"):
-            raise ValidationError(f"Invalid environment: {self.config['environment']}")
 
     def confirm_onion_config_valid(self):
         """
