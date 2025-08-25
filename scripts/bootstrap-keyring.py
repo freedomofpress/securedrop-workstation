@@ -25,7 +25,7 @@ def create_repo_file(env: str, repo_file_path: str, ver: str):
     """Create .repo file based on environment."""
     repo_content = f"""
 [{KEYRING_PACKAGENAME}-{env}]
-enabled=0
+enabled=1
 gpgcheck=1
 baseurl={BASEURL}/workstation/dom0/f{ver}{'-nightlies' if env == 'dev' else ''}
 name=SecureDrop Workstation Keyring ({env})
@@ -52,9 +52,8 @@ def dom0_install_keyring(env: str | None = None):
     """Use qubes-dom0-update to install keyring package."""
     args = ["sudo", "qubes-dom0-update", "-y"]
 
-    if env:
+    if env:  # noqa: SIM108
         package_name = f"{KEYRING_PACKAGENAME}-{env}"
-        args.append(f"--enablerepo={package_name}")
     else:
         package_name = KEYRING_PACKAGENAME
     args.append(package_name)
@@ -87,7 +86,7 @@ def main():
         repo_file_path = Path(temp_dir) / f"{KEYRING_PACKAGENAME}-{args.env}.repo"
 
         create_repo_file(args.env, repo_file_path, fedora_version)
-        repo_dest_path = Path(YUM_REPOS_DIR) / f"{KEYRING_PACKAGENAME}-{args.env}.repo"
+        repo_dest_path = Path(YUM_REPOS_DIR) / f"{KEYRING_PACKAGENAME}-{args.env}-tmp.repo"
         subprocess.check_call(
             ["sudo", "install", "-m", "0644", str(repo_file_path), str(repo_dest_path)]
         )
@@ -103,11 +102,15 @@ def main():
         print(f"Key {TEST_KEY_RPMID} ({TEST_KEY_FILENAME}) not found in rpm db.")
         sys.exit(1)
 
-    dom0_install_keyring(args.env)
+    # Install environment-specific keyring
+    dom0_install_keyring(env=args.env)
 
     # Install prod keyring hosted in yum-test to satisfy dom0 config dependency.
     # When the prod keyring reaches Qubes-Contrib, this can be removed.
     dom0_install_keyring()
+
+    # Remove .repo file
+    subprocess.check_call(["sudo", "rm", str(repo_dest_path)])
 
 
 if __name__ == "__main__":
