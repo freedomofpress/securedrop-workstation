@@ -42,11 +42,25 @@ assert-keyring-%: ## Correct keyring pkg installed
 		fi \
 	fi
 
-# This installs the (dev or staging) keyring package along with the prod package.
-# To uninstall, remove the dev or staging package and delete the file
+# This installs the (dev or staging) keyring package, the prod keyring package
+# (required), and installs the dom0 config rpm.
+# To switch keyrings, remove the dev or staging keyring package and delete the file
 # /etc/yum.repos.d/securedrop-workstation-keyring-{dev|staging}.repo.
-bootstrap-%: assert-dom0 ## Configure the keyring
+bootstrap-%: assert-dom0 ## Configure dom0-config dependencies and install rpm
 	@./scripts/bootstrap-keyring.py --env $*
+	$(MAKE) assert-keyring-$*
+	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$*
+
+install-rpm: assert-dom0 ## Install locally-built rpm (dev) or download published rpm
+ifeq ($(RPM_INSTALL_STRATEGY),dev)
+	@echo "Install dependencies and locally-built rpm"
+	@sudo qubes-dom0-update -y grub2-xen-pvh
+	@./scripts/prep-dev
+else
+	@echo "Install published rpm"
+	@sudo qubes-dom0-update -y securedrop-workstation-dom0-config
+endif
+	@echo "Provide instance-specific configuration and run sdw-admin --apply."
 
 .PHONY: build-rpm
 build-rpm: OUT:=build-log/securedrop-workstation-$(shell date +%Y%m%d).log
