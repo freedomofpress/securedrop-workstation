@@ -11,7 +11,6 @@
 {% import_json "securedrop_salt/config.json" as d %}
 
 include:
-  - securedrop_salt.sd-whonix
   - securedrop_salt.sd-workstation-template
 
 sd-proxy-dvm:
@@ -26,7 +25,7 @@ sd-proxy-dvm:
       - template: sd-small-{{ sdvars.distribution }}-template
     - prefs:
       - template: sd-small-{{ sdvars.distribution }}-template
-      - netvm: sd-whonix
+      - netvm: sys-firewall
       - template_for_dispvms: True
       - default_dispvm: ""
     - features:
@@ -41,7 +40,6 @@ sd-proxy-dvm:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
     - require:
-      - qvm: sd-whonix
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
 sd-proxy-create-named-dispvm:
@@ -53,12 +51,13 @@ sd-proxy-create-named-dispvm:
       - class: DispVM
     - prefs:
       - template: sd-proxy-dvm
-      - netvm: sd-whonix
+      - netvm: sys-firewall
       - autostart: true
       - default_dispvm: ""
     - features:
       - enable:
         - service.securedrop-mime-handling
+        - service.securedrop-arti
       - set:
           - vm-config.SD_MIME_HANDLING: default
           - servicevm: 1
@@ -79,5 +78,6 @@ sd-proxy-config:
     - name: sd-proxy
     - set:
         - vm-config.SD_PROXY_ORIGIN: http://{{ d.hidserv.hostname }}
+        - vm-config.SD_PROXY_ORIGIN_KEY: {{ d.hidserv.key }}
     - require:
       - qvm: sd-proxy-create-named-dispvm
