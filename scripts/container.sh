@@ -25,7 +25,7 @@ fi
 # Use a smaller container with just build dependencies or
 # a larger container with test dependencies too.
 if [[ -z "${USE_BUILD_CONTAINER:-}" ]]; then
-    DEPS="test-deps"
+    DEPS="build-deps test-deps"
     SUFFIX="-dev"
 else
     DEPS="build-deps"

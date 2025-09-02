@@ -7,6 +7,12 @@ CONTAINER := $(if $(shell grep "Thirty Seven" /etc/fedora-release),,./scripts/co
 
 HOST=$(shell hostname)
 
+ifeq ($(HOST),dom0)
+	DNF_CMD = sudo qubes-dom0-update -y --
+else
+	DNF_CMD = dnf install -y
+endif
+
 
 assert-dom0: ## Confirms command is being run under dom0
 ifneq ($(HOST),dom0)
@@ -55,12 +61,13 @@ build-deps: ## Install package dependencies to build RPMs
 		git file rpmdevtools dnf-plugins-core
 	dnf builddep -y rpm-build/SPECS/securedrop-workstation-dom0-config.spec
 
+
 .PHONY: test-deps
-test-deps: build-deps ## Install package dependencies for running tests
-	dnf install -y \
+test-deps:  ## Install package dependencies for running tests
+	$(DNF_CMD) \
 		python3-qt5 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
 		hostname
-	dnf --setopt=install_weak_deps=False -y install reprotest
+	$(DNF_CMD) --setopt=install_weak_deps=False reprotest
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0

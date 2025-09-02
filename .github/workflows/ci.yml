@@ -23,6 +23,7 @@ jobs:
           persist-credentials: false
       - name: Install dependencies
         run: |
+          make build-deps
           make test-deps
           pip install poetry==2.1.1
           poetry install --no-ansi
@@ -48,6 +49,7 @@ jobs:
           make build-rpm
       - name: Check reproducibility
         run: |
+          make build-deps
           make test-deps
           make reprotest
   launcher-tests:
@@ -61,6 +63,7 @@ jobs:
           persist-credentials: false
       - name: Install dependencies
         run: |
+          make build-deps
           make test-deps
           pip install poetry==2.1.1
           poetry install --no-ansi
