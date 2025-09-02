@@ -66,7 +66,7 @@ build-deps: ## Install package dependencies to build RPMs
 test-deps:  ## Install package dependencies for running tests
 	$(DNF_CMD) \
 		python3-qt5 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
-		hostname
+		hostname python3-pytest python3-pytest-cov
 	$(DNF_CMD) --setopt=install_weak_deps=False reprotest
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
@@ -85,7 +85,7 @@ test-prereqs: ## Checks that test prerequisites are satisfied
 	@echo "Checking prerequisites before running test suite..."
 	test -e config.json || (echo "Ensure config.json is in this directory" && exit 1)
 	test -e sd-journalist.sec || (echo "Ensure sd-journalist.sec is in this directory" && exit 1)
-	which pytest coverage || (echo 'please install test dependencies with "sudo qubes-dom0-update python3-pytest python3-pytest-cov"' && exit 1)
+	which pytest coverage || (echo 'please install test dependencies with "make test-deps"' && exit 1)
 
 test: test-prereqs ## Runs all application tests (no integration tests yet)
 	pytest -v tests -v launcher/tests
