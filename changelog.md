@@ -2,8 +2,9 @@
 
 ## 1.4.0-rc1
 
-* Connect to Tor directly sd-proxy instead of through sd-whonix (#1414)
+* Connect to Tor directly in sd-proxy, using Arti, instead of through sd-whonix (#1414)
 * Fix bug where Fedora would unecessarily be updated twice (#1280, #1400)
+* Perform salt 'migration' to fix device auto-attach (#1422)
 
 * Internal and development
   * Remove individual VM provisioning targets from Makefile (#1390)
