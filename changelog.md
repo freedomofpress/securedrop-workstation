@@ -1,5 +1,18 @@
 # changelog
 
+## 1.4.0-rc1
+
+* Connect to Tor directly sd-proxy instead of through sd-whonix (#1414)
+* Fix bug where Fedora would unecessarily be updated twice (#1280, #1400)
+
+* Internal and development
+  * Remove individual VM provisioning targets from Makefile (#1390)
+  * Display OpenQA Tests Results / Links as GitHub PR Checks (#1363)
+  * Remove obsolete project.json and add GHA for dependency review (#1401)
+  * Bump GitHub actions/checkout from 4 to 5 (#1403)
+  * Run launcher tests dom0 (#1362)
+  * Add nightly OpenQA run (#1407)
+
 ## 1.3.0
 
 * Update Fedora base template to `fedora-42-xfce` (#1383)
