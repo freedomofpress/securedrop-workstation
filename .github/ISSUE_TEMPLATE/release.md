@@ -39,8 +39,16 @@ Refer to the [SecureDrop Workstation RM docs](https://developers.securedrop.org/
 
 ## Test Plan
 
-### Fresh install
+### Common tests
 
-### Upgrade testing
+### Scenario: Fresh install
+
+- `config.json` environment:
+- Other QA setup notes:
+
+### Scenario: Upgrade testing
+
+- `config.json` environment:
+- Other QA setup notes:
 
 ### Additional testing (if applicable)
