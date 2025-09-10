@@ -124,7 +124,7 @@ class SD_VM_Tests(unittest.TestCase):
         assert vm.features["vm-config.SD_MIME_HANDLING"] == "default"
         self._check_service_running(vm, "securedrop-mime-handling")
         self._check_service_running(vm, "securedrop-proxy-onion-config")
-        self._check_service_running(vm, "securedrop-arti")
+        self._check_service_running(vm, "tor")
 
     def test_sd_proxy_dvm(self):
         vm = self.app.domains["sd-proxy-dvm"]
