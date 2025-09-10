@@ -42,7 +42,7 @@ class SD_VM_Tests(unittest.TestCase):
 
     @unittest.skipIf(CONFIG["environment"] != "prod", "Skipping on non-prod system")
     def test_internal(self):
-        internal = ["sd-proxy", "sd-proxy-dvm", "sd-viewer"]
+        internal = ["sd-proxy-dvm", "sd-viewer"]
 
         for vm_name in internal:
             vm = self.app.domains[vm_name]
