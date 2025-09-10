@@ -1,6 +1,6 @@
 # changelog
 
-## 1.4.0-rc1
+## 1.4.0
 
 * Connect to Tor directly in sd-proxy, using Arti, instead of through sd-whonix (#1414)
 * Fix bug where Fedora would unecessarily be updated twice (#1280, #1400)
