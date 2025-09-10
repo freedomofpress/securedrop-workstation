@@ -2,7 +2,8 @@
 
 ## 1.4.0
 
-* Connect to Tor directly in sd-proxy, using Arti, instead of through sd-whonix (#1414)
+* Connect to Tor directly in sd-proxy, using Arti, instead of through sd-whonix (#1414, #1427)
+* Unmark sd-proxy as "internal" to allow user-initiated restarts (#1425, #1427)
 * Fix bug where Fedora would unecessarily be updated twice (#1280, #1400)
 * Perform salt 'migration' to fix device auto-attach (#1422)
 
