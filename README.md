@@ -41,7 +41,7 @@ However, the Qubes OS approach is not without downsides. It stands and falls wit
 
 ## Project status
 
-SecureDrop Workstation is in open beta. We continue to move towards general availability of SecureDrop Workstation basd on users' feedback and experience. The current version is compatible with Qubes 4.2 and work is ongoing on 4.3 compatibility. The mainline of this repo will be in flux and not suitable for production deployment until the work is completed and audited.
+SecureDrop Workstation is in open beta. We continue to move towards general availability of SecureDrop Workstation based on users' feedback and experience. The current version is compatible with Qubes 4.2 and work is ongoing on 4.3 compatibility. The mainline of this repo will be in flux and not suitable for production deployment until the work is completed and audited.
 
 For now, if you want to try SecureDrop Workstation's functionality we recommend following the installation instructions at [https://workstation.securedrop.org](https://workstation.securedrop.org), which will guide you through installing the latest stable version of SecureDrop Workstation on Qubes 4.2.
 
