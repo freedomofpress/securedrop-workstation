@@ -39,7 +39,6 @@ detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 
 def _get_current_vms():
     debian_version = "bookworm"
-    whonix_version = Util.get_whonix_version()
 
     # The are the TemplateVMs that require full patch level at boot in order to start the client,
     # as well as their associated TemplateVMs.
@@ -51,7 +50,6 @@ def _get_current_vms():
         "sd-log": f"sd-small-{debian_version}-template",
         "sd-devices": f"sd-large-{debian_version}-template",
         "sd-proxy": f"sd-small-{debian_version}-template",
-        "sd-whonix": f"whonix-gateway-{whonix_version}",
         "sd-gpg": f"sd-small-{debian_version}-template",
     }
 
