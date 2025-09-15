@@ -107,7 +107,7 @@ that contains component code for all of the packages we ship in individual VMs o
 
 Installing this project is involved. It requires an up-to-date Qubes 4.2 installation running on a machine with at least 16GB of RAM (32 GB recommended).
 
-**The project is currently in open beta. See our [blog post](https://securedrop.org/news/securedrop-workstation-1_0_0-released/) for more information. if you are interested in using SecureDrop Workstation, please reach out to us via the [contact form](https://securedrop.org/help/).**
+**The project is currently in open beta. See our [blog post](https://securedrop.org/news/securedrop-workstation-1_0_0-released/) for more information. If you are interested in using SecureDrop Workstation, please reach out to us via the [contact form](https://securedrop.org/help/).**
 
 To install a development version (using test data on the server and a test encryption key to decrypt it), in summary, you will need to:
 
