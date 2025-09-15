@@ -8,7 +8,7 @@
 
 This project aims to improve journalists' experience using SecureDrop, by moving the journalist workflow to a single computer running multiple virtual machines with [Qubes OS](https://qubes-os.org). Data is moved as automatically and transparently as possible between otherwise isolated VMs.
 
-We are currently piloting this project with a small number of news organizations; see [our blog post](https://securedrop.org/news/piloting-securedrop-workstation-qubes-os/) for additional information.
+We initially piloted this project with a small number of news organizations; see [our blog post](https://securedrop.org/news/piloting-securedrop-workstation-qubes-os/) for additional information. In July 2024, we transitioned SecureDrop Workstation to an open beta with the [1.0.0 release](https://securedrop.org/news/securedrop-workstation-1_0_0-released/).
 
 1. [Detailed Rationale](#detailed-rationale)
 1. [Project Status](#project-status)
@@ -41,9 +41,9 @@ However, the Qubes OS approach is not without downsides. It stands and falls wit
 
 ## Project status
 
-We intend to bring the pilot program to a close in 2024, and move forward with general availability of SecureDrop Workstation following final updates based on the pilot participants' feedback and experience. The general availability version will be compatible with Qubes 4.2. Work is ongoing on 4.2 compatibility, and the mainline of this repo will be in flux and not suitable for production deployment until the work is completed and audited.
+SecureDrop Workstation is in open beta. We continue to move towards general availability of SecureDrop Workstation based on users' feedback and experience. The current version is compatible with Qubes 4.2 and work is ongoing on 4.3 compatibility. The mainline of this repo will be in flux and not suitable for production deployment until the work is completed and audited.
 
-For now, if you want to preview SecureDrop Workstation's functionality we recommend following the installation instructions at [https://workstation.securedrop.org](https://workstation.securedrop.org), which will guide you through installing the latest stable version of SecureDrop Workstation on Qubes 4.1.
+For now, if you want to try SecureDrop Workstation's functionality we recommend following the installation instructions at [https://workstation.securedrop.org](https://workstation.securedrop.org), which will guide you through installing the latest stable version of SecureDrop Workstation on Qubes 4.2.
 
 ## Architecture
 
@@ -53,9 +53,8 @@ The current architecture replaces the *Journalist Workstation* and *Secure Viewi
 
 Currently, the following VMs are provisioned:
 
-- `sd-proxy` is where the SecureDrop proxy resides, which allows the non-networked `sd-app` vm to communicate with the *Journalist Interface* over Tor.
+- `sd-proxy` is where the SecureDrop proxy and the Tor gateway reside, which allows the non-networked `sd-app` vm to communicate with the *Journalist Interface* over Tor.
 - `sd-app` is a non-networked VM in which the *SecureDrop Client* runs used to store and explore submissions after they're unarchived and decrypted. Any files opened in this VM are opened in a disposable VM.
-- `sd-whonix` is the Tor gateway used to contact the journalist Tor hidden service. It's configured with the auth key for the hidden service. The default Qubes Whonix workstation uses the non-SecureDrop Whonix gateway, and thus won't be able to access the *Journalist Interface*.
 - `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
 - `sd-viewer` is an AppVM used as the template for the disposable VMs used for processing and opening files.
 - `sd-log` is an AppVM used for centralized logging - logs will appear in `~/QubesIncomingLogs` from each AppVM using the centralized logging service.
@@ -108,7 +107,7 @@ that contains component code for all of the packages we ship in individual VMs o
 
 Installing this project is involved. It requires an up-to-date Qubes 4.2 installation running on a machine with at least 16GB of RAM (32 GB recommended).
 
-**The project is currently in open beta. See our [blog post](https://securedrop.org/news/securedrop-workstation-1_0_0-released/) for more information. if you are interested in using SecureDrop Workstation, please reach out to us via the [support portal](https://docs.securedrop.org/en/stable/getting_support.html).**
+**The project is currently in open beta. See our [blog post](https://securedrop.org/news/securedrop-workstation-1_0_0-released/) for more information. If you are interested in using SecureDrop Workstation, please reach out to us via the [contact form](https://securedrop.org/help/).**
 
 To install a development version (using test data on the server and a test encryption key to decrypt it), in summary, you will need to:
 
@@ -162,6 +161,7 @@ The *Display VM* (sd-viewer) is disposable, does not have network access, and is
 
 #### What Compromise of the *Proxy VM* (`sd-proxy`) Can Achieve
 
+* An adversary can obtain the *Journalist Interface's* ATHS cookie.
 * An adversary can intercept and modify any and all communication between the Tor Browser and the SecureDrop *Journalist Interface*, including but not limited to:
   * Send messages to (but not view messages from) sources.
   * Delete messages and submissions.
@@ -169,16 +169,6 @@ The *Display VM* (sd-viewer) is disposable, does not have network access, and is
   * Access plaintext journalist passwords to the *Journalist Interface*.
 * An adversary can attempt to elevate their privileges and escape the VM.
 * An adversary can exhaust storage in the centralized logging VM (`sd-log`).
-
-#### What Compromise of the *Whonix Gateway VM* (`sd-whonix`) Can Achieve
-
-* An adversary can obtain the *Journalist Interface's* ATHS cookie.
-* An adversary can intercept and modify any and all communication between the Proxy VM and the SecureDrop *Journalist Interface*, including but not limited to:
-  * Send messages to sources (but not view messages from a source).
-  * Delete messages and submissions.
-  * Access encrypted messages and submissions.
-  * Access plaintext journalist passwords to the *Journalist Interface*.
-* An adversary can attempt to elevate their privileges and escape the VM.
 
 #### What compromise of the *App VM* (`sd-app`) can achieve
 The *App VM* is where securedrop-client resides. It does not have network access, and the Qubes split-gpg mechanism permits access to GPG keys from this VM.
