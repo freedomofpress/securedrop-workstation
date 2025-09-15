@@ -8,7 +8,7 @@
 
 This project aims to improve journalists' experience using SecureDrop, by moving the journalist workflow to a single computer running multiple virtual machines with [Qubes OS](https://qubes-os.org). Data is moved as automatically and transparently as possible between otherwise isolated VMs.
 
-We initially piloted this project with a small number of news organizations; see [our blog post](https://securedrop.org/news/piloting-securedrop-workstation-qubes-os/) for additional information. In July 2024, we transitioned SecureDrop Workstation to an open beta with [1.0.0 release](https://securedrop.org/news/securedrop-workstation-1_0_0-released/).
+We initially piloted this project with a small number of news organizations; see [our blog post](https://securedrop.org/news/piloting-securedrop-workstation-qubes-os/) for additional information. In July 2024, we transitioned SecureDrop Workstation to an open beta with the [1.0.0 release](https://securedrop.org/news/securedrop-workstation-1_0_0-released/).
 
 1. [Detailed Rationale](#detailed-rationale)
 1. [Project Status](#project-status)
