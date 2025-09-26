@@ -49,27 +49,38 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update && apt-get install --yes git git-lfs
+
       - uses: actions/download-artifact@v4
         with:
           pattern: "*"
+
       - uses: actions/checkout@v5
         with:
           repository: "freedomofpress/securedrop-yum-test"
           path: "securedrop-yum-test"
           lfs: true
-          token: ${{ secrets.PUSH_TOKEN }}
-          # We need to store credentials here
-          persist-credentials: true
+          persist-credentials: false
+
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.FPF_BRANCH_UPDATER_APP_ID }}
+          private-key: ${{ secrets.FPF_BRANCH_UPDATER_APP_PRIVKEY }}
+          repositories: securedrop-yum-test
+
       - name: Commit and push
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TARGET_REPO: freedomofpress/securedrop-yum-test
         run: |
           git config --global user.email "securedrop@freedom.press"
-          git config --global user.name "sdcibot"
+          git config --global user.name "sdcibot-nightlies[bot]"
           cd securedrop-yum-test
           mkdir -p workstation/dom0/f37-nightlies
           cp -v ../rpm-build/*.rpm workstation/dom0/f37-nightlies/
           git add .
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
-          git push origin main
+          git push https://x-access-token:${GH_TOKEN}@github.com/${TARGET_REPO}.git main
 
   openqa-nightly:
     uses: ./.github/workflows/openqa.yml
