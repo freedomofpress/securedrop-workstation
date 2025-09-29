@@ -54,37 +54,6 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         platform = self._get_platform_info(vm)
         assert SUPPORTED_SD_DEBIAN_DIST in platform
 
-    def _validate_apt_sources(self, vm):
-        """
-        Check that the given AppVM has the proper apt .sources file
-        """
-
-        # sd-whonix does not use the fpf-apt-test-repo
-        if vm.name in ["sd-whonix"]:
-            return
-
-        if self.config["environment"] == "prod":
-            component = "main"
-            url = "https://apt.freedom.press"
-            filename = "/etc/apt/sources.list.d/apt_freedom_press.sources"
-        elif self.config["environment"] == "staging":
-            component = "main"
-            url = "https://apt-test.freedom.press"
-            filename = "/etc/apt/sources.list.d/apt-test_freedom_press.sources"
-        else:
-            component = "main nightlies"
-            url = "https://apt-test.freedom.press"
-            filename = "/etc/apt/sources.list.d/apt-test_freedom_press.sources"
-
-        stdout, stderr = vm.run(f"cat {filename}")
-        contents = stdout.decode("utf-8").rstrip("\n")
-
-        assert f"Components: {component}\n" in contents, f"{vm.name} wrong component"
-        assert f"URIs: {url}\n" in contents, f"{vm.name} wrong URL"
-        assert (
-            f"Suites: {SUPPORTED_SD_DEBIAN_DIST}\n" in contents
-        ), f"{vm.name} wrong suite/codename"
-
     def _ensure_packages_up_to_date(self, vm, fedora=False):
         """
         Asserts that all available packages are installed; no pending
@@ -192,25 +161,41 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             f"whonix-gateway-{CURRENT_WHONIX_VERSION}",
         ]:
             vm = self.app.domains[vm_name]
-            # First verify it looks like what we provisioned
-            self._validate_apt_sources(vm)
 
-            stdout, stderr = vm.run("apt-get indextargets")
-            contents = stdout.decode().strip()
-            assert (
-                "Description: https://apt.freedom.press bookworm/main amd64 Packages\n" in contents
+            # First, check the prod apt repo is configured, which happens unconditionally
+            # via securedrop-keyring deb package
+            self.assert_apt_source(
+                vm,
+                "main",
+                "https://apt.freedom.press",
+                "/etc/apt/sources.list.d/apt_freedom_press.sources",
             )
+
             if self.config["environment"] == "prod":
-                # prod setups shouldn't have any apt-test sources
-                assert "apt-test.freedom.press" not in contents
-            else:
-                # staging/dev
-                test_components = ["main"]
-                if self.config["environment"] == "dev":
-                    test_components.append("nightlies")
-                for component in test_components:
-                    assert (
-                        f"Description: https://apt-test.freedom.press bookworm/{component} "
-                        + "amd64 Packages\n"
-                        in contents
-                    )
+                # No test sources should be present
+                stdout, stderr = vm.run("ls /etc/apt/sources.list.d/")
+                sources_list = stdout.decode("utf-8").rstrip("\n")
+                assert "apt-test_freedom_press.sources" not in sources_list
+                continue
+
+            # we're in staging or dev, so check for that file
+            components = ["main"]
+            if self.config["environment"] == "dev":
+                components.append("nightlies")
+
+            self.assert_apt_source(
+                vm,
+                " ".join(components),
+                "https://apt-test.freedom.press",
+                "/etc/apt/sources.list.d/apt-test_freedom_press.sources",
+            )
+
+    def assert_apt_source(self, vm, component, url, filename):
+        stdout, stderr = vm.run(f"cat {filename}")
+        contents = stdout.decode("utf-8").rstrip("\n")
+
+        assert f"Components: {component}\n" in contents, f"{vm.name} wrong component"
+        assert f"URIs: {url}\n" in contents, f"{vm.name} wrong URL"
+        assert (
+            f"Suites: {SUPPORTED_SD_DEBIAN_DIST}\n" in contents
+        ), f"{vm.name} wrong suite/codename"
