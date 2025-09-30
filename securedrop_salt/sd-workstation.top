@@ -10,7 +10,6 @@ base:
     - securedrop_salt.sd-base-template
     - securedrop_salt.sd-workstation-template
     - securedrop_salt.sd-upgrade-templates
-    - securedrop_salt.sd-sys-whonix-vms
     - securedrop_salt.sd-log
     - securedrop_salt.sd-devices
     - securedrop_salt.sd-gpg
@@ -19,6 +18,11 @@ base:
     - securedrop_salt.sd-app
     - securedrop_salt.sd-remove-unused-qubes
     - securedrop_salt.sd-remove-unused-templates
+
+    {# Whonix > 17 does not need cleanup #}
+    {% if whonix.whonix_version == '17' %}
+    - securedrop_salt.sd-reset-whonix-prefs
+    {% endif %}
 
   sd-base-bookworm-template:
     - securedrop_salt.sd-base-template-packages
