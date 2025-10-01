@@ -9,6 +9,8 @@
 #  mere presence of the repo/package, does not affect regular system behavior.
 ##
 
+# NOTE: 'cmd.run' necessary since 'pkg.del_repo' or 'pkg.purge' fail due to:
+#    "The pkg module could not be loaded: unsupported OS family"
 sd-cleanup-whonix-gateway:
   cmd.run:
     - names:
