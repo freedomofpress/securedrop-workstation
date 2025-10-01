@@ -2,7 +2,6 @@ import json
 import subprocess
 import unittest
 
-import pytest
 from qubesadmin import Qubes
 
 from tests.base import (
@@ -97,6 +96,26 @@ class SD_VM_Tests(unittest.TestCase):
         But we've since removed it and included a Tor proxy in sd-proxy.
         """
         assert "sd-whonix" not in self.app.domains
+
+    def test_whonix_vms_reset(self):
+        """
+        Whonix templates used to be modified by the workstation (<=1.4.0).
+        Ensure they were properly reset.
+        """
+
+        whonix_qubes = [
+            "whonix-workstation-17",
+            "whonix-gateway-17",
+            "sys-whonix",
+            "anon-whonix",
+            "whonix-workstation-17-dvm",
+        ]
+        for qube_name in whonix_qubes:
+            if qube_name not in self.app.domains:
+                # skip check on nonexitent qubes
+                continue
+            qube = self.app.domains[qube_name]
+            assert qube.property_is_default("kernelopts")
 
     def test_sd_proxy_config(self):
         vm = self.app.domains["sd-proxy"]
