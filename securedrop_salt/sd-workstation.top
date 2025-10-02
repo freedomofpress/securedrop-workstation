@@ -10,16 +10,19 @@ base:
     - securedrop_salt.sd-base-template
     - securedrop_salt.sd-workstation-template
     - securedrop_salt.sd-upgrade-templates
-    - securedrop_salt.sd-sys-whonix-vms
     - securedrop_salt.sd-log
     - securedrop_salt.sd-devices
     - securedrop_salt.sd-gpg
     - securedrop_salt.sd-proxy
     - securedrop_salt.sd-viewer
     - securedrop_salt.sd-app
-    - securedrop_salt.sd-whonix
-    - securedrop_salt.sd-remove-deprecated-qubes
+    - securedrop_salt.sd-remove-unused-qubes
     - securedrop_salt.sd-remove-unused-templates
+
+    {# Whonix > 17 does not need cleanup #}
+    {% if whonix.whonix_version == '17' %}
+    - securedrop_salt.sd-reset-whonix-prefs
+    {% endif %}
 
   sd-base-bookworm-template:
     - securedrop_salt.sd-base-template-packages
@@ -36,8 +39,12 @@ base:
   'sd-fedora-42-dvm,sys-usb':
     - match: list
     - securedrop_salt.sd-usb-autoattach-add
-  whonix-gateway-{{ whonix.whonix_version }}:
-    - securedrop_salt.sd-whonix-config
+
+  {# Whonix > 17 does not need cleanup #}
+  {% if whonix.whonix_version == '17' %}
+  whonix-gateway-17:
+    - securedrop_salt.sd-remove-whonix-packages
+  {% endif %}
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.

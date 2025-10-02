@@ -4,9 +4,7 @@ import unittest
 
 from qubesadmin import Qubes
 
-from sdw_util import Util
 from tests.base import (
-    CURRENT_WHONIX_VERSION,
     SD_DVM_TEMPLATES,
     SD_TEMPLATE_BASE,
     SD_TEMPLATE_LARGE,
@@ -52,9 +50,9 @@ class SD_VM_Tests(unittest.TestCase):
         """
         Confirms expected grsecurity-patched kernel is running.
         """
-        # base doesn't have kernel configured and whonix uses dom0 kernel
+        # base doesn't have kernel configured
         # TODO: test in sd-viewer based dispVM
-        exceptions = [SD_TEMPLATE_BASE, "sd-whonix", "sd-viewer"]
+        exceptions = [SD_TEMPLATE_BASE, "sd-viewer"]
 
         for vm in self.sdw_tagged_vms:
             if vm.name in exceptions:
@@ -92,23 +90,32 @@ class SD_VM_Tests(unittest.TestCase):
             else:
                 assert vm.default_dispvm is None, f"{vm.name} has dispVM set"
 
-    def test_sd_whonix_config(self):
-        vm = self.app.domains["sd-whonix"]
-        nvm = vm.netvm
-        assert nvm.name == "sys-firewall"
-        wanted_kernelopts = "apparmor=1 security=apparmor"
-        assert vm.kernelopts == wanted_kernelopts
-        assert vm.provides_network
-        assert vm.autostart
-        assert not vm.template_for_dispvms
-        assert "sd-workstation" in vm.tags
+    def test_sd_whonix_absent(self):
+        """
+        The sd-whonix once existed to proxy sd-proxy's traffic throgh Tor.
+        But we've since removed it and included a Tor proxy in sd-proxy.
+        """
+        assert "sd-whonix" not in self.app.domains
 
-        # Whonix version checking:
-        #   If mismatch, whonix may have been updated.
-        #   Fix the test by bumping CURRENT_WHONIX_VERSION
-        assert Util.get_whonix_version() == int(CURRENT_WHONIX_VERSION)
+    def test_whonix_vms_reset(self):
+        """
+        Whonix templates used to be modified by the workstation (<=1.4.0).
+        Ensure they were properly reset.
+        """
 
-        assert vm.template.features.get("os-version") == CURRENT_WHONIX_VERSION
+        whonix_qubes = [
+            "whonix-workstation-17",
+            "whonix-gateway-17",
+            "sys-whonix",
+            "anon-whonix",
+            "whonix-workstation-17-dvm",
+        ]
+        for qube_name in whonix_qubes:
+            if qube_name not in self.app.domains:
+                # skip check on nonexitent qubes
+                continue
+            qube = self.app.domains[qube_name]
+            assert qube.property_is_default("kernelopts")
 
     def test_sd_proxy_config(self):
         vm = self.app.domains["sd-proxy"]

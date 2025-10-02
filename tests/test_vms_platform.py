@@ -9,7 +9,6 @@ from qubesadmin import Qubes
 
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
-    CURRENT_WHONIX_VERSION,
     SD_TEMPLATE_LARGE,
     SD_TEMPLATE_SMALL,
     SD_VMS,
@@ -47,9 +46,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         """
         Asserts that the given AppVM is based on an OS listed in the
         SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
-        sd-whonix is based on the whonix-XX template.
-        All other workstation-provisioned VMs should be
-        SUPPORTED_SD_DEBIAN_DIST based.
+        All workstation-provisioned VMs should be SUPPORTED_SD_DEBIAN_DIST based.
         """
         platform = self._get_platform_info(vm)
         assert SUPPORTED_SD_DEBIAN_DIST in platform
@@ -158,7 +155,6 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         for vm_name in [
             SD_TEMPLATE_SMALL,
             SD_TEMPLATE_LARGE,
-            f"whonix-gateway-{CURRENT_WHONIX_VERSION}",
         ]:
             vm = self.app.domains[vm_name]
 

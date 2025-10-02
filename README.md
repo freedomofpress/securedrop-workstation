@@ -53,7 +53,7 @@ The current architecture replaces the *Journalist Workstation* and *Secure Viewi
 
 Currently, the following VMs are provisioned:
 
-- `sd-proxy` is where the SecureDrop proxy and the Tor gateway reside, which allows the non-networked `sd-app` vm to communicate with the *Journalist Interface* over Tor.
+- `sd-proxy` is where the SecureDrop proxy resides, which allows the non-networked `sd-app` vm to communicate with the *Journalist Interface* over Tor. It's configured with the auth key for the hidden service.
 - `sd-app` is a non-networked VM in which the *SecureDrop Client* runs used to store and explore submissions after they're unarchived and decrypted. Any files opened in this VM are opened in a disposable VM.
 - `sd-gpg` is a Qubes split-gpg AppVM, used to hold submission decryption keys and do the actual submission crypto.
 - `sd-viewer` is an AppVM used as the template for the disposable VMs used for processing and opening files.
@@ -92,11 +92,10 @@ This repo also contains the following developer-facing components:
 SecureDrop Workstation has a companion repository, [SecureDrop Client](https://github.com/freedomofpress/securedrop-client/),
 that contains component code for all of the packages we ship in individual VMs once they have been provisioned:
 - The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client/tree/main/client#readme) is installed in `sd-app` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
-- The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-client/tree/main/proxy#readme) is installed in `sd-proxy` to communicate to the SecureDrop server *Journalist Interface* via `sd-whonix`.
+- The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-client/tree/main/proxy#readme) is installed in `sd-proxy` to communicate to the SecureDrop server *Journalist Interface* via Tor.
 - [SecureDrop Export](https://github.com/freedomofpress/securedrop-client/tree/main/export#readme) is installed in `sd-devices` and is used to manage printing and exporting files.
 - The *SecureDrop Client* opens all submissions in the networkless, disposable `sd-viewer` VM
 - A logging VM, `sd-log`, is provisioned to capture logs locally from various parts of the system
-- A [Whonix](https://www.whonix.org/wiki/Homepage) VM, `sd-whonix`, is provisioned with instance-specific information required to access the authenticated onion service used by journalists.
 
 ### Additional Notes:
 
