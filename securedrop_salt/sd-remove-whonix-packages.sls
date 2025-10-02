@@ -14,5 +14,5 @@
 sd-cleanup-whonix-gateway:
   cmd.run:
     - names:
-      - "sudo apt purge --yes securedrop-keyring securedrop-qubesdb-tools securedrop-whonix-config ||:"
+      - "sudo apt-get purge --yes securedrop-keyring securedrop-qubesdb-tools securedrop-whonix-config ||:"
       - "sudo rm -f /etc/apt/sources.list.d/apt_freedom_press.sources ||:"
