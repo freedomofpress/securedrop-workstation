@@ -265,7 +265,7 @@ def perform_uninstall():
             ["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-default-dispvm"]
         )
         print("Destroying all VMs")
-        provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-deprecated-qubes")
+        provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-unused-qubes")
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all-tagged"])
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
