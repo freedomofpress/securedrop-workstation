@@ -34,6 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: quay.io/fedora/fedora:37
+    outputs:
+      dom0-rpm-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
       - run: dnf install -y git make
       - uses: actions/checkout@v5
@@ -50,6 +52,13 @@ jobs:
         run: |
           make test-deps
           make reprotest
+      - uses: actions/upload-artifact@v4
+        id: upload
+        with:
+          name: rpm-build
+          path: rpm-build/RPMS/noarch/*.rpm
+          if-no-files-found: error
+
   launcher-tests:
     runs-on: ubuntu-latest
     container:
@@ -93,7 +102,9 @@ jobs:
   openqa:
     uses: ./.github/workflows/openqa.yml
     secrets: inherit
-    needs: [check-openqa]
+    needs: [check-openqa, build-rpm]
+    with:
+      dom0-rpm-url: ${{ needs.build-rpm.outputs.dom0-rpm-url }}
     # Run only if:
     # 1. This is a push (not pull_request)
     # 2. We're not on main
