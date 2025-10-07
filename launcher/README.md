@@ -50,10 +50,10 @@ Because `securedrop-updater` is used exclusively with Fedora 32, it follows that
 - Set up the virtual environment:
    - Run `make venv && source .venv/bin/activate` - it will automatically create a virtual environment with `python3.8` if it is available on your machine. Otherwise, it will use your systems default Python interpreter.
    - If  used your systems default Python interpreter, install PyQt5:
-     - (On Debian/Ubuntu) `apt install python3-pyqt5`
-     - (On Fedora) `dnf install python3-qt5`
+     - (On Debian/Ubuntu) `apt install python3-pyqt6`
+     - (On Fedora) `dnf install python3-pyqt6`
    - If you used an alternative Python interpreter to create your virtual environment, install PyQt5 from PyPi:
-     - `pip install PyQt5==5.14.2`
+     - `pip install PyQt6==6.8.1`
 
 After installing the development dependencies:
 
