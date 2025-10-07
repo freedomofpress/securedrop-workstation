@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from sdw_updater import Updater
 from sdw_updater.Updater import should_launch_updater
@@ -27,7 +27,7 @@ def launch_updater(should_skip_netcheck: bool = False):
     app = QApplication(sys.argv)
     form = UpdaterApp(should_skip_netcheck)
     form.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 def main(argv):

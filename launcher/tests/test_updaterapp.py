@@ -2,7 +2,7 @@ import unittest
 from unittest import mock
 
 import pytest
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from sdw_updater import UpdaterApp, strings
 from sdw_updater.Updater import UpdateStatus, overall_update_status
