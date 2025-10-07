@@ -12,6 +12,5 @@
 # A simpler method of detecting when base templates change is required.
 
 run-prep-upgrade-scripts:
-  cmd.script:
-    - name: salt://securedrop_salt/securedrop-handle-upgrade
-    - args: prepare
+  cmd.run:
+    - name: /srv/salt/securedrop_salt/securedrop-handle-upgrade prepare
