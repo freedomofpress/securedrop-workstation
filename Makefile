@@ -165,13 +165,13 @@ update-pip-requirements: ## Updates all Python requirements files via pip-compil
 	pip-compile --allow-unsafe --generate-hashes --output-file=requirements/dev-requirements.txt requirements/dev-requirements.in
 
 .PHONY: venv
-venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt5)
+venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt6)
 	$(PYTHON3) -m venv .venv --system-site-packages
 	.venv/bin/pip install --upgrade pip wheel
 	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
 	@echo "#################"
 	@echo "Virtualenv with system-packages is complete."
-	@echo "Make sure to either install the OS package for PyQt5 or install PyQt5==5.14.2 into this virtual environment."
+	@echo "Make sure to either install the OS package for PyQt6 or install PyQt6==6.8.1 into this virtual environment."
 	@echo "Then run: source .venv/bin/activate"
 
 .PHONY: check
