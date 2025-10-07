@@ -5,7 +5,10 @@ recently. Prompts user to check for updates or defer reminder.
 
 from enum import Enum
 
-from PyQt5.QtWidgets import QMessageBox
+try:
+    from PyQt6.QtWidgets import QMessageBox
+except ImportError:
+    from PyQt5.QtWidgets import QMessageBox
 
 from sdw_notify import Notify, strings
 from sdw_util import Util
@@ -40,13 +43,13 @@ class NotifyDialog(QMessageBox):
 
     def _ui(self):
         self.setWindowTitle(strings.headline_notify_updates)
-        self.setIcon(QMessageBox.Warning)
-        self.setStandardButtons(QMessageBox.No | QMessageBox.Ok)
-        self.setDefaultButton(QMessageBox.Ok)
-        self.setEscapeButton(QMessageBox.No)
-        button_check_now = self.button(QMessageBox.Ok)
+        self.setIcon(QMessageBox.StandardButton.Warning)
+        self.setStandardButtons(QMessageBox.StandardButton.No | QMessageBox.StandardButton.Ok)
+        self.setDefaultButton(QMessageBox.StandardButton.Ok)
+        self.setEscapeButton(QMessageBox.StandardButton.No)
+        button_check_now = self.button(QMessageBox.StandardButton.Ok)
         button_check_now.setText(strings.button_check_for_updates)
-        button_defer = self.button(QMessageBox.No)
+        button_defer = self.button(QMessageBox.StandardButton.No)
         button_defer.setText(strings.button_defer_check)
 
         if self._is_sdapp_stopped:
@@ -58,12 +61,12 @@ class NotifyDialog(QMessageBox):
         """
         Launch dialog and return user selection.
         """
-        result = self.exec_()
+        result = self.exec()
 
-        if result == QMessageBox.Ok:
+        if result == QMessageBox.StandardButton.Ok:
             sdlog.info(f"NotfyDialog returned {result}, user has opted to check for updates")
             return NotifyStatus.CHECK_UPDATES
-        if result == QMessageBox.No:
+        if result == QMessageBox.StandardButton.No:
             sdlog.info(f"NotfyDialog returned {result}, user has opted to defer updates")
             return NotifyStatus.DEFER_UPDATES
 

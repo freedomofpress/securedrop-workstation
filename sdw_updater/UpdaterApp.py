@@ -1,8 +1,12 @@
 import subprocess
 import sys
 
-from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QDialog
+try:
+    from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot
+    from PyQt6.QtWidgets import QDialog
+except ImportError:
+    from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+    from PyQt5.QtWidgets import QDialog
 
 from sdw_updater import Updater, strings
 from sdw_updater.Updater import UpdateStatus
