@@ -7,7 +7,9 @@ Updates the config.json in-place in dom0 to set the environment to 'dev' or
 import argparse
 import json
 import os
+import subprocess
 import sys
+from pathlib import Path
 
 
 def parse_args():
@@ -54,7 +56,21 @@ def set_env_in_config(args):
             json.dump(new_config, f)
 
 
+def apply_config(config_path):
+    """Copying config secrets into place"""
+    config_source = Path(config_path).parent
+
+    for file in ["config.json", "sd-journalist.sec"]:
+        for target_dir in [
+            Path("/usr/share/securedrop-workstation-dom0-config/"),
+            Path("/srv/salt/securedrop_salt/"),
+        ]:
+            subprocess.run(["sudo", "cp", "-v", config_source / file, target_dir], check=True)
+            subprocess.run(["sudo", "chmod", "ugo+r", target_dir / file], check=True)
+
+
 if __name__ == "__main__":
     args = parse_args()
 
     set_env_in_config(args)
+    apply_config(args.config)

@@ -17,7 +17,19 @@ function find_latest_rpm() {
     find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
 }
 
+function find_any_rpm() {
+    # Fallback for CI, which renames rpms. Try installing
+    # any rpm present in the RPMS directory.
+    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "*.rpm" -print0 | xargs -r -0 ls -t | head -n 1
+}
+
+
 latest_rpm="$(find_latest_rpm)"
+if [[ -z "$latest_rpm" ]]; then
+    echo "No exact match, try any rpm in build directory"
+fi
+
+latest_rpm="$(find_any_rpm)"
 if [[ -z "$latest_rpm" ]]; then
     echo "Could not find RPM!"
     exit 1
@@ -29,13 +41,3 @@ sudo dnf clean all
 sudo dnf remove -y securedrop-workstation-dom0-config || true
 echo "Installing RPM at $latest_rpm ..."
 sudo dnf install -y "$latest_rpm"
-
-# Always copy secrets, these won't be configured as part
-# of the RPM installation.
-echo "Copying config secrets into place..."
-for f in config.json sd-journalist.sec ; do
-    sudo cp -v "$f" /usr/share/securedrop-workstation-dom0-config/
-    sudo chmod ugo+r /usr/share/securedrop-workstation-dom0-config/$f
-    sudo cp -v "$f" /srv/salt/securedrop_salt/
-    sudo chmod ugo+r /srv/salt/securedrop_salt/$f
-done

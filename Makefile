@@ -23,11 +23,46 @@ all: assert-dom0
 	@echo "These targets will set your config.json to the appropriate environment."
 	@false
 
-dev staging: assert-dom0 ## Configures and builds a dev or staging environment
-	./scripts/configure-environment.py --env $@
-	@./scripts/prep-dev
-	@./files/validate_config.py
+# This installs the (dev or staging) keyring package, the prod keyring package
+# (required), and installs the dom0 config rpm.
+# To switch keyrings, remove the dev or staging keyring package and delete the file
+# /etc/yum.repos.d/securedrop-workstation-keyring-{dev|staging}.repo.
+dev staging: assert-dom0 ## Installs, configures and builds a dev or staging environment
+	@./scripts/bootstrap-keyring.py --env $@
+	$(MAKE) assert-keyring-$@
+	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$@
+	$(MAKE) configure-env-$@
 	sdw-admin --apply
+
+# Places configuration details its installed directory
+.PHONY: configure-env-%
+configure-env-%:
+	@echo "Configuring $* environment"
+	./scripts/configure-environment.py --env $*
+	./files/validate_config.py
+
+.PHONY: assert-keyring-%
+assert-keyring-%: ## Correct keyring pkg installed
+	@rpm -q securedrop-workstation-keyring-$* >/dev/null 2>&1 || { \
+		echo "Error: Install securedrop-workstation-keyring-$*" >&2; exit 1; \
+	}
+	@if [ "$*" = "staging" ]; then \
+		if rpm -q securedrop-workstation-keyring-dev >/dev/null 2>&1; then \
+			echo "Error: Uninstall securedrop-workstation-keyring-dev to use staging" >&2; \
+			exit 1; \
+		fi \
+	fi
+
+install-rpm: assert-dom0 ## Install locally-built rpm (dev) or download published rpm
+ifeq ($(RPM_INSTALL_STRATEGY),dev)
+	@echo "Install dependencies and locally-built rpm"
+	@sudo qubes-dom0-update -y grub2-xen-pvh
+	@./scripts/prep-dev
+else
+	@echo "Install published rpm"
+	@sudo qubes-dom0-update -y securedrop-workstation-dom0-config
+endif
+	@echo "Provide instance-specific configuration and run sdw-admin --apply."
 
 .PHONY: build-rpm
 build-rpm: OUT:=build-log/securedrop-workstation-$(shell date +%Y%m%d).log
