@@ -4,7 +4,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 
 
 class Ui_UpdaterDialog:
@@ -12,7 +12,7 @@ class Ui_UpdaterDialog:
         UpdaterDialog.setObjectName("UpdaterDialog")
         UpdaterDialog.resize(520, 300)
         sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred
         )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -26,7 +26,7 @@ class Ui_UpdaterDialog:
         self.gridLayout.setHorizontalSpacing(3)
         self.gridLayout.setObjectName("gridLayout")
         spacerItem = QtWidgets.QSpacerItem(
-            20, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed
+            20, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed
         )
         self.gridLayout.addItem(spacerItem, 1, 1, 1, 5)
         self.clientOpenButton = QtWidgets.QPushButton(UpdaterDialog)
@@ -36,7 +36,7 @@ class Ui_UpdaterDialog:
         self.gridLayout.addWidget(self.clientOpenButton, 7, 4, 1, 1)
         self.proposedActionDescription = QtWidgets.QLabel(UpdaterDialog)
         sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum
+            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum
         )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -45,13 +45,15 @@ class Ui_UpdaterDialog:
         )
         self.proposedActionDescription.setSizePolicy(sizePolicy)
         self.proposedActionDescription.setAlignment(
-            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop
+            QtCore.Qt.AlignmentFlag.AlignLeading
+            | QtCore.Qt.AlignmentFlag.AlignLeft
+            | QtCore.Qt.AlignmentFlag.AlignTop
         )
         self.proposedActionDescription.setWordWrap(True)
         self.proposedActionDescription.setObjectName("proposedActionDescription")
         self.gridLayout.addWidget(self.proposedActionDescription, 4, 1, 1, 5)
         spacerItem1 = QtWidgets.QSpacerItem(
-            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+            40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum
         )
         self.gridLayout.addItem(spacerItem1, 7, 1, 1, 1)
         self.rebootButton = QtWidgets.QPushButton(UpdaterDialog)
@@ -76,7 +78,7 @@ class Ui_UpdaterDialog:
         self.gridLayout.addWidget(self.progressBar, 2, 1, 1, 5)
         self.headline = QtWidgets.QLabel(UpdaterDialog)
         sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
         )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -91,7 +93,7 @@ class Ui_UpdaterDialog:
         self.headline.setObjectName("headline")
         self.gridLayout.addWidget(self.headline, 0, 1, 1, 5)
         spacerItem2 = QtWidgets.QSpacerItem(
-            20, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed
+            20, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed
         )
         self.gridLayout.addItem(spacerItem2, 3, 1, 1, 5)
         self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 1, 1)
