@@ -23,10 +23,16 @@ all: assert-dom0
 	@echo "These targets will set your config.json to the appropriate environment."
 	@false
 
-dev staging: assert-dom0 ## Configures and builds a dev or staging environment
-	./scripts/configure-environment.py --env $@
+# This installs the (dev or staging) keyring package, the prod keyring package
+# (required), and installs the dom0 config rpm.
+# To switch keyrings, remove the dev or staging keyring package and delete the file
+# /etc/yum.repos.d/securedrop-workstation-keyring-{dev|staging}.repo.
+dev staging: assert-dom0 ## Installs, configures and builds a dev or staging environment
+	@./scripts/bootstrap-keyring.py --env $@
 	$(MAKE) assert-keyring-$@
-	@./scripts/prep-dev
+
+	./scripts/configure-environment.py --env $@
+	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$@
 	@./files/validate_config.py
 	sdw-admin --apply
 
@@ -41,15 +47,6 @@ assert-keyring-%: ## Correct keyring pkg installed
 			exit 1; \
 		fi \
 	fi
-
-# This installs the (dev or staging) keyring package, the prod keyring package
-# (required), and installs the dom0 config rpm.
-# To switch keyrings, remove the dev or staging keyring package and delete the file
-# /etc/yum.repos.d/securedrop-workstation-keyring-{dev|staging}.repo.
-bootstrap-%: assert-dom0 ## Configure dom0-config dependencies and install rpm
-	@./scripts/bootstrap-keyring.py --env $*
-	$(MAKE) assert-keyring-$*
-	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$*
 
 install-rpm: assert-dom0 ## Install locally-built rpm (dev) or download published rpm
 ifeq ($(RPM_INSTALL_STRATEGY),dev)
