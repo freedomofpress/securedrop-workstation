@@ -105,10 +105,6 @@ def main():
 
     dom0_install_keyring(args.env)
 
-    # Install prod keyring hosted in yum-test to satisfy dom0 config dependency.
-    # When the prod keyring reaches Qubes-Contrib, this can be removed.
-    dom0_install_keyring()
-
 
 if __name__ == "__main__":
     main()
