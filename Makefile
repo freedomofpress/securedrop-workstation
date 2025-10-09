@@ -30,11 +30,16 @@ all: assert-dom0
 dev staging: assert-dom0 ## Installs, configures and builds a dev or staging environment
 	@./scripts/bootstrap-keyring.py --env $@
 	$(MAKE) assert-keyring-$@
-
-	./scripts/configure-environment.py --env $@
 	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$@
-	@./files/validate_config.py
+	$(MAKE) configure-env-$@
 	sdw-admin --apply
+
+# Places configuration details its installed directory
+.PHONY: configure-env-%
+configure-env-%:
+	@echo "Configuring $* environment"
+	./scripts/configure-environment.py --env $*
+	./files/validate_config.py
 
 .PHONY: assert-keyring-%
 assert-keyring-%: ## Correct keyring pkg installed
