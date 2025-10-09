@@ -25,7 +25,7 @@ all: assert-dom0
 
 dev staging: assert-dom0 ## Configures and builds a dev or staging environment
 	./scripts/configure-environment.py --env $@
-	$(MAKE) assert-keyring-%
+	$(MAKE) assert-keyring-$@
 	@./scripts/prep-dev
 	@./files/validate_config.py
 	sdw-admin --apply
