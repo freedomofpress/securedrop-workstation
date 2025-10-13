@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QDialog
 
 from sdw_updater import Updater, strings
 from sdw_updater.Updater import UpdateStatus
-from sdw_updater.UpdaterAppUiQt5 import Ui_UpdaterDialog
+from sdw_updater.UpdaterAppUiQt6 import Ui_UpdaterDialog
 from sdw_util import Util
 
 logger = Util.get_logger(module=__name__)
