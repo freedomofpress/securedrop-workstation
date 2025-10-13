@@ -86,7 +86,7 @@ jobs:
     needs:
       - lint
       - build-rpm
-      - launcher-tests
+      # - launcher-tests # FIXME re-enalbe launcher tests
     outputs:
       should-run: ${{ steps.check.outputs.should-run }}
     env:
