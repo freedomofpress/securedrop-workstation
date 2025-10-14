@@ -93,7 +93,7 @@ build-deps: ## Install package dependencies to build RPMs
 .PHONY: test-deps
 test-deps: build-deps ## Install package dependencies for running tests
 	dnf install -y \
-		python3-qt5 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
+		python3-pyqt6 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
 		hostname
 	dnf --setopt=install_weak_deps=False -y install reprotest
 
