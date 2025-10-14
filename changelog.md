@@ -1,5 +1,34 @@
 # changelog
 
+## 1.5.0-rc1
+
+This release introduced two key changes:
+1. Removal of `sd-whonix`: in the previous release
+[we had switched the Tor connectivity](https://securedrop.org/news/securedrop-workstation-1_4_0-released/)
+to happen directly in `sd-proxy` instead of needing `sd-whonix`. In this release,
+we remove the remaining dependencies that the SecureDrop Workstation had on Whonix
+templates. Please note that Whonix will still be installed as it is a default
+configuration in Qubes.
+2. Simplification of installation procedures, enabled by the publication of a
+`securedrop-workstation-keyring` package in the Qubes-contrib repo. More
+information on this can be found in [this blog post](https://securedrop.org/news/bootstrapping-securedrop-workstation-via-qubes-contrib/).
+
+* Update flow diagram and README to reflect removal of sd-whonix (#1434)
+* Remove sd-whonix and whonix-gateway FPF packages and repos (#1415, #1448)
+* Create bootstrap make target for keyring installation (#1405)
+* Configure dom0 rpm repo settings via bootstrap rpm package (#1210)
+* Make grub2-xen-pvh a dependency of dom0 config rpm (#1211)
+* Merge keyring feature branch (#1450)
+* Revert "internal" setting for sd-proxy (#1425)
+
+*  Internal and development
+    * Fix test_proxy_config (#1427)
+    * Add release template (#1418)
+    * Point to FPF's fork of OpenQA tests (#1435)
+    * Update nightlies GHA workflow to use more narrowly-scoped GH app (#1439)
+    * Simplify and improve testing of apt sources (#1440)
+    * Add install-rpm target that installs dom0 config rpm and dependencies (#1416)
+
 ## 1.4.0
 
 * Connect to Tor directly in sd-proxy, using Arti, instead of through sd-whonix (#1414, #1427)
