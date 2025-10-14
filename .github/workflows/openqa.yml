@@ -42,7 +42,7 @@ jobs:
             GIT_REF="$GIT_REF" \
             FLAVOR=securedrop \
             NEEDLES_DIR="%%CASEDIR%%/needles" \
-            CASEDIR="https://github.com/freedomofpress/openqa-tests-qubesos.git#main"\
+            CASEDIR="https://github.com/freedomofpress/openqa-tests-qubesos.git#qubes-4.3-testing"\
             MAX_JOB_TIME=10800 | tee openqa.json
 
           for id in $(jq -r '.ids[]' openqa.json); do
