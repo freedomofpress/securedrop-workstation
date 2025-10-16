@@ -1,6 +1,6 @@
 # changelog
 
-## 1.5.0-rc1
+## 1.5.0
 
 This release introduced two key changes:
 1. Removal of `sd-whonix`: in the previous release
