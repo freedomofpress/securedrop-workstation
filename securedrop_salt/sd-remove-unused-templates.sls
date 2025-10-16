@@ -14,9 +14,8 @@ include:
   - securedrop_salt.sd-app
 
 run-remove-upgrade-scripts:
-  cmd.script:
-    - name: salt://securedrop_salt/securedrop-handle-upgrade
-    - args: remove
+  cmd.run:
+    - name: /srv/salt/securedrop_salt/securedrop-handle-upgrade remove
     - require:
       - sls: securedrop_salt.sd-upgrade-templates
       - sls: securedrop_salt.sd-log
