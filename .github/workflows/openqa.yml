@@ -41,7 +41,6 @@ jobs:
             DISTRI=qubesos ARCH=x86_64 \
             GIT_REF="$GIT_REF" \
             FLAVOR=securedrop \
-            NEEDLES_DIR="%%CASEDIR%%/needles" \
             CASEDIR="https://github.com/freedomofpress/openqa-tests-qubesos.git#qubes-4.3-testing"\
             MAX_JOB_TIME=10800 | tee openqa.json
 
