@@ -29,8 +29,6 @@ virtual environment.
 
 ## Running the Updater
 
-Qubes 4.1.1 uses an end-of-life Fedora template in dom0 (fedora-32). See rationale here: https://www.qubes-os.org/doc/supported-releases/#note-on-dom0-and-eol.
-
 If you installed SecureDrop Updater on your Qubes machine's `dom0`, you can run the updater like this:
 1. Open a `dom0` terminal
 2. Run `sdw-updater --skip-delta 0`
@@ -41,7 +39,7 @@ To run the notifier that pops up if `/proc/uptime` (how long the system has been
 
 ## Developer environment
 
-Because `securedrop-updater` is used exclusively with Fedora 32 (see above), it follows that we target Python 3.8. To make development for this target more accessible, we use a containerized build and test environment. Here are the instructions to set it up:
+Because `securedrop-updater` is used exclusively with Fedora 32, it follows that we target Python 3.8. To make development for this target more accessible, we use a containerized build and test environment. Here are the instructions to set it up:
 
 - Install dependencies for building and testing:
    - `make`
@@ -52,10 +50,10 @@ Because `securedrop-updater` is used exclusively with Fedora 32 (see above), it 
 - Set up the virtual environment:
    - Run `make venv && source .venv/bin/activate` - it will automatically create a virtual environment with `python3.8` if it is available on your machine. Otherwise, it will use your systems default Python interpreter.
    - If  used your systems default Python interpreter, install PyQt5:
-     - (On Debian/Ubuntu) `apt install python3-pyqt5`
-     - (On Fedora) `dnf install python3-qt5`
+     - (On Debian/Ubuntu) `apt install python3-pyqt6`
+     - (On Fedora) `dnf install python3-pyqt6`
    - If you used an alternative Python interpreter to create your virtual environment, install PyQt5 from PyPi:
-     - `pip install PyQt5==5.14.2`
+     - `pip install PyQt6==6.8.1`
 
 After installing the development dependencies:
 
