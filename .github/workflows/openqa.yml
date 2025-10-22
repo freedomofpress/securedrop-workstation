@@ -54,7 +54,6 @@ jobs:
             GIT_REF="$GIT_REF" \
             SECUREDROP_ENV="$SECUREDROP_ENV" \
             FLAVOR=securedrop \
-            NEEDLES_DIR="%%CASEDIR%%/needles" \
             CASEDIR="${SECUREDROP_OPENQA_REPO_URL}#${SECUREDROP_OPENQA_REPO_BRANCH}" \
             MAX_JOB_TIME=10800 | tee openqa.json
 
