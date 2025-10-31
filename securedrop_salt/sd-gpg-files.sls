@@ -16,7 +16,7 @@ sd-gpg-increase-keyring-access-timeout:
     - marker_start: "### BEGIN securedrop-workstation ###"
     - marker_end: "### END securedrop-workstation ###"
     - content: |
-        export QUBES_GPG_AUTOACCEPT=28800
+        export QUBES_GPG_AUTOACCEPT=2147483647 # hides GPG prompt (max epoch)
 
 sd-gpg-create-keyring-directory:
   file.directory:
