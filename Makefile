@@ -56,7 +56,7 @@ assert-keyring-%: ## Correct keyring pkg installed
 install-rpm: assert-dom0 ## Install locally-built rpm (dev) or download published rpm
 ifeq ($(RPM_INSTALL_STRATEGY),dev)
 	@echo "Install dependencies and locally-built rpm"
-	@sudo qubes-dom0-update -y grub2-xen-pvh
+	@sudo qubes-dom0-update --clean -y grub2-xen-pvh
 	@./scripts/prep-dev
 else
 	@echo "Install published rpm"
