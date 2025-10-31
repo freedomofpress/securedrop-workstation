@@ -50,7 +50,7 @@ def is_key_imported(rpm_id: str):
 
 def dom0_install_keyring(env: str | None = None):
     """Use qubes-dom0-update to install keyring package."""
-    args = ["sudo", "qubes-dom0-update", "-y"]
+    args = ["sudo", "qubes-dom0-update", "--clean", "-y"]
 
     if env:
         package_name = f"{KEYRING_PACKAGENAME}-{env}"
