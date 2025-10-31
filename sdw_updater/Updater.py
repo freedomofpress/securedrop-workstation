@@ -204,7 +204,7 @@ def _qubes_updater_parse_progress(stream, result, templates, progress_callback=N
         try:
             vm, status, info = line.split()
         except ValueError:
-            sdlog.warn("Line in Qubes updater's output could not be parsed")
+            sdlog.warning("Line in Qubes updater's output could not be parsed")
             continue
 
         if status == "updating":
