@@ -40,6 +40,7 @@ jobs:
             BUILD=$(date +%Y%m%d%H%M)-4.3 \
             DISTRI=qubesos ARCH=x86_64 \
             GIT_REF="$GIT_REF" \
+            XRES=1920 YRES=1080 \
             FLAVOR=securedrop \
             CASEDIR="https://github.com/freedomofpress/openqa-tests-qubesos.git#qubes-4.3-testing"\
             MAX_JOB_TIME=10800 | tee openqa.json
