@@ -56,7 +56,7 @@ jobs:
             read TEST_NAME < "${id}_name.txt"
 
             # Make OpenQA links visible by creating Github check for each
-            curl -L -X POST \
+            curl --fail -L -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -102,7 +102,7 @@ jobs:
                     exit 1
                     ;;
             esac
-            curl -L -X POST \
+            curl --fail -L -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
@@ -121,7 +121,7 @@ jobs:
               -X POST "jobs/${id}/cancel" ||:
 
             read TEST_NAME < "${id}_name.txt"
-            curl -L -X POST \
+            curl --fail -L -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
