@@ -1,5 +1,5 @@
 [project]
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 name = "securedrop-workstation-dom0-config"
 dynamic = [ "version", "classifiers" ]
 description = ""
@@ -7,7 +7,6 @@ authors = [
     {name = "SecureDrop Team", email = "securedrop@freedom.press"}
     ]
 license = {text = "AGPLv3+"}
-dependencies = []
 readme = "README.md"
 
 [tool.poetry]
@@ -17,9 +16,8 @@ requires-poetry = ">=2.1.0,<3.0.0"
 [tool.poetry.group.dev.dependencies]
 # In production these are installed as a system package so match the
 # versions exactly
-PyQt5 = "=5.15.9"
-PyQt5-Qt5 = "=5.15.2"
-PyQt5-sip = "=12.11.0"
+PyQt6 = "=6.8.1"
+PyQt6-sip = "=13.9.1"
 
 mypy = "^1.14.1"
 pytest = "^8.3.4"
@@ -101,7 +99,7 @@ ignore = [
 ]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 # No stubs for qubesadmin
 ignore_missing_imports = true
 # These are individual scripts, not a package/modules
