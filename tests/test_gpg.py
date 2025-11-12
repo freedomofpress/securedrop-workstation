@@ -63,7 +63,7 @@ def vm_fingerprint(qube):
 
 
 def test_sd_gpg_timeout(qube):
-    line = "export QUBES_GPG_AUTOACCEPT=28800"
+    line = "export QUBES_GPG_AUTOACCEPT=2147483647"
     qube.assertFileHasLine("/home/user/.profile", line)
 
 
