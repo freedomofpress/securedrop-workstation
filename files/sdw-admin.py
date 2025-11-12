@@ -155,6 +155,12 @@ def configure(step_description: str, targets: list[str], restart: list[str] | No
     Apply configuration to a list of qubes
     """
 
+    # Ignore preloaded qubes (they gret refreshed on template changes)
+    preloaded_qubes = [qube.name for qube in Qubes().domains if getattr(qube, "is_preload", False)]
+    targets = [t for t in targets if t not in preloaded_qubes]
+    if restart:
+        restart = [r for r in restart if r not in preloaded_qubes]
+
     qubesctl_call(
         step_description,
         [
