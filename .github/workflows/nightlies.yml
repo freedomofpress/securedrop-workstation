@@ -18,8 +18,14 @@ defaults:
 jobs:
   build-rpm:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fedora_version:
+          - 37  # Qubes 4.2
+          - 41  # Qubes 4.3
     container:
-      image: quay.io/fedora/fedora:37
+      image: quay.io/fedora/fedora:${{ matrix.fedora_version }}
     steps:
       - run: dnf install -y make git
       - uses: actions/checkout@v5
@@ -36,7 +42,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         id: upload
         with:
-          name: rpm-build
+          name: rpm-build-${{ matrix.fedora_version }}
           path: rpm-build/RPMS/noarch/*.rpm
           if-no-files-found: error
 
@@ -77,7 +83,9 @@ jobs:
           git config --global user.name "sdcibot-nightlies[bot]"
           cd securedrop-yum-test
           mkdir -p workstation/dom0/f37-nightlies
-          cp -v ../rpm-build/*.rpm workstation/dom0/f37-nightlies/
+          cp -v ../rpm-build-37/*.rpm workstation/dom0/f37-nightlies/
+          mkdir -p workstation/dom0/f41-nightlies
+          cp -v ../rpm-build-41/*.rpm workstation/dom0/f41-nightlies/
           git add .
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
           git push https://x-access-token:${GH_TOKEN}@github.com/${TARGET_REPO}.git main
