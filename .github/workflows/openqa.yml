@@ -73,6 +73,8 @@ jobs:
             $(jq -r '.ids[]' openqa.json) || :
       - name: Get result
         run: |
+          workflow_exit_status=0
+
           for id in $(jq -r '.ids[]' openqa.json); do
             read TEST_NAME < "${id}_name.txt"
 
@@ -89,9 +91,11 @@ jobs:
                     github_state="success"
                     ;;
                 "failed")
+                    workflow_exit_status=1
                     github_state="failure"
                     ;;
                 "skipped"|"incomplete"|"user_cancelled")
+                    workflow_exit_status=1
                     github_state="error"
                     ;;
                 "none")
@@ -99,7 +103,7 @@ jobs:
                     ;;
                 *)
                     echo "Unknown test status: $openqa_result"
-                    exit 1
+                    workflow_exit_status=1
                     ;;
             esac
             curl --fail -L -X POST \
@@ -108,7 +112,10 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
             -d "{\"state\": \"$github_state\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / $TEST_NAME\"}"
+
           done
+          exit $workflow_exit_status
+
       - name: Cancel openQA test (if needed)
         if: cancelled()
         run: |
