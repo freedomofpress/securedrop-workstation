@@ -1,6 +1,5 @@
-FROM quay.io/fedora/fedora:37
-LABEL org="Freedom of the Press"
-LABEL image_name="securedrop-workstation-qubes-4.2"
+ARG FEDORA_VERSION=37
+FROM quay.io/fedora/fedora:${FEDORA_VERSION}
 
 ARG USER_NAME
 ENV USER_NAME ${USER_NAME:-root}

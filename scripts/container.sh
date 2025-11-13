@@ -7,14 +7,13 @@ set -eu
 
 source "$(dirname "$0")/common.sh"
 
+OCI_BUILD_ARGUMENTS="${OCI_BUILD_ARGUMENTS:-} --build-arg=FEDORA_VERSION=${FEDORA_VERSION}"
+
 # Whenever we're not on the platform we expect, explicitly tell the container
 # runtime what platform we need
-# This is also relevant for CI, as the --platform argument is only available
-# from Docker API 1.32 onward, while at the time of writing CircleCI still on
-# API 1.23
 if [[ "$(uname -sm)" != "Linux x86_64" ]]; then
     OCI_RUN_ARGUMENTS="${OCI_RUN_ARGUMENTS} --platform linux/amd64"
-    OCI_BUILD_ARGUMENTS="${OCI_RUN_ARGUMENTS} --platform linux/amd64"
+    OCI_BUILD_ARGUMENTS="${OCI_BUILD_ARGUMENTS} --platform linux/amd64"
 fi
 
 # Pass -it if we're a tty
@@ -34,10 +33,10 @@ fi
 
 
 function oci_image() {
-    NAME="${1}${SUFFIX}"
+    NAME="${1}${FEDORA_VERSION}${SUFFIX}"
 
     $OCI_BIN build \
-           ${OCI_BUILD_ARGUMENTS:-} \
+           ${OCI_BUILD_ARGUMENTS} \
            --build-arg=USER_ID="$(id -u)" \
            --build-arg=USER_NAME="${USER:-root}" \
            --build-arg=DEPS="${DEPS}" \

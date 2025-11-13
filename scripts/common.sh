@@ -2,6 +2,7 @@ TOPLEVEL=$(git rev-parse --show-toplevel)
 export TOPLEVEL
 PROJECT="securedrop-workstation-dom0-config"
 export PROJECT
+export FEDORA_VERSION="${FEDORA_VERSION:-37}"
 
 OCI_RUN_ARGUMENTS="${OCI_RUN_ARGUMENTS:-}"
 export OCI_RUN_ARGUMENTS
