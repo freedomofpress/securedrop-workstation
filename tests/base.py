@@ -10,6 +10,9 @@ SD_TEMPLATE_BASE = f"sd-base-{DEBIAN_VERSION}-template"
 SD_TEMPLATE_LARGE = f"sd-large-{DEBIAN_VERSION}-template"
 SD_TEMPLATE_SMALL = f"sd-small-{DEBIAN_VERSION}-template"
 
+SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
+
+# Expectations regarding VMs' existance and versions
 SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-devices"]
 SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
 SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_TEMPLATE_LARGE, SD_TEMPLATE_SMALL]

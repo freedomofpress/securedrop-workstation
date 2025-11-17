@@ -1,11 +1,9 @@
-import json
 import os
 import re
 import subprocess
 import unittest
 
 import pytest
-from qubesadmin import Qubes
 
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
@@ -21,17 +19,7 @@ SUPPORTED_SD_DEBIAN_DIST = "bookworm"
 IS_CI = os.environ.get("CI") == "true"
 
 
-class SD_VM_Platform_Tests(unittest.TestCase):
-    def setUp(self):
-        self.app = Qubes()
-        with open("config.json") as c:
-            self.config = json.load(c)
-        if "environment" not in self.config:
-            self.config["environment"] = "dev"
-
-    def tearDown(self):
-        pass
-
+class SD_VM_Platform_Tests:
     def _get_platform_info(self, vm):
         """
         Retrieve PRETTY_NAME for an AppVM.
@@ -87,17 +75,17 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             assert results == "", fail_msg
 
     @unittest.skipIf(IS_CI, "Skipping on CI")
-    def test_all_sd_vms_uptodate(self):
+    def test_all_sd_vms_uptodate(self, all_vms):
         """
         Asserts that all VMs have all available apt packages at the latest
         versions, with no updates pending.
         """
         for vm_name in SD_VMS:
-            vm = self.app.domains[vm_name]
+            vm = all_vms[vm_name]
             self._ensure_packages_up_to_date(vm)
 
     @unittest.skipIf(IS_CI, "Skipping on CI")
-    def test_all_fedora_vms_uptodate(self):
+    def test_all_fedora_vms_uptodate(self, all_vms):
         """
         Asserts that all Fedora-based templates, such as sys-net, have all
         available packages at the latest versions, with no updates pending.
@@ -106,21 +94,21 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         # sys-usb VMs have their updates installed. This test assumes those
         # AppVMs are based on the most recent Fedora version.
         vm_name = CURRENT_FEDORA_TEMPLATE
-        vm = self.app.domains[vm_name]
+        vm = all_vms[vm_name]
         self._ensure_packages_up_to_date(vm, fedora=True)
         vm.shutdown()
 
-    def test_sd_proxy_template(self):
+    def test_sd_proxy_template(self, all_vms):
         """
         Asserts that the 'sd-proxy' VM is using a supported base OS.
         """
         # This test is a single example of the method for testing: it would
         # be ideal to use a loop construct (such as pytest.mark.parametrize),
         # but doing so would introduce additional dependencies to dom0.
-        vm = self.app.domains["sd-proxy"]
+        vm = all_vms["sd-proxy"]
         self._validate_vm_platform(vm)
 
-    def test_all_sd_vm_platforms(self):
+    def test_all_sd_vm_platforms(self, all_vms):
         """
         Test all VM platforms iteratively.
 
@@ -135,7 +123,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
                 # sd-viewer is unable to start because of the securedrop-mime-handling
                 # systemd service failing, so skip it here.
                 continue
-            vm = self.app.domains[vm_name]
+            vm = all_vms[vm_name]
             self._validate_vm_platform(vm)
 
     def test_dispvm_default_platform(self):
@@ -148,7 +136,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
         result = subprocess.check_output(cmd).decode("utf-8").rstrip("\n")
         assert result == "sd-viewer"
 
-    def test_sd_vm_apt_sources(self):
+    def test_sd_vm_apt_sources(self, config, all_vms):
         """
         Test that the three templates we install our apt sources into are correct
         """
@@ -156,7 +144,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
             SD_TEMPLATE_SMALL,
             SD_TEMPLATE_LARGE,
         ]:
-            vm = self.app.domains[vm_name]
+            vm = all_vms[vm_name]
 
             # First, check the prod apt repo is configured, which happens unconditionally
             # via securedrop-keyring deb package
@@ -167,7 +155,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
                 "/etc/apt/sources.list.d/apt_freedom_press.sources",
             )
 
-            if self.config["environment"] == "prod":
+            if config["environment"] == "prod":
                 # No test sources should be present
                 stdout, stderr = vm.run("ls /etc/apt/sources.list.d/")
                 sources_list = stdout.decode("utf-8").rstrip("\n")
@@ -176,7 +164,7 @@ class SD_VM_Platform_Tests(unittest.TestCase):
 
             # we're in staging or dev, so check for that file
             components = ["main"]
-            if self.config["environment"] == "dev":
+            if config["environment"] == "dev":
                 components.append("nightlies")
 
             self.assert_apt_source(

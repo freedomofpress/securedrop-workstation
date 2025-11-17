@@ -2,10 +2,9 @@ import json
 import subprocess
 import unittest
 
-from qubesadmin import Qubes
-
 from tests.base import (
     SD_DVM_TEMPLATES,
+    SD_TAG,
     SD_TEMPLATE_BASE,
     SD_TEMPLATE_LARGE,
     SD_TEMPLATE_SMALL,
@@ -18,35 +17,22 @@ with open("config.json") as f:
     CONFIG = json.load(f)
 
 
-class SD_VM_Tests(unittest.TestCase):
-    def setUp(self):
-        self.app = Qubes()
-        with open("config.json") as c:
-            self.config = json.load(c)
-        # @tag:sd-workstation
-        self.sdw_tagged_vms = [vm for vm in self.app.domains if "sd-workstation" in vm.tags]
-
-    def tearDown(self):
-        pass
-
-    def test_expected(self):
-        sdw_tagged_vm_names = [vm.name for vm in self.sdw_tagged_vms]
+class SD_VM_Tests:
+    def test_expected(self, all_vms, sdw_tagged_vms):
+        sdw_tagged_vm_names = [vm.name for vm in sdw_tagged_vms]
         expected_vms = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
         assert set(sdw_tagged_vm_names) == set(expected_vms)
 
         # Check for untagged VMs
         for vm_name in SD_UNTAGGED_DEPRECATED_VMS:
-            assert vm_name not in self.app.domains
+            assert vm_name not in all_vms
 
     @unittest.skipIf(CONFIG["environment"] != "prod", "Skipping on non-prod system")
-    def test_internal(self):
-        internal = ["sd-proxy-dvm", "sd-viewer"]
+    def test_internal(self, all_vms):
+        all_vms["sd-proxy-dvm"].features.get("internal") == "1"
+        all_vms["sd-viewer"].features.get("internal") == "1"
 
-        for vm_name in internal:
-            vm = self.app.domains[vm_name]
-            assert vm.features.get("internal") == "1"
-
-    def test_grsec_kernel(self):
+    def test_grsec_kernel(self, sdw_tagged_vms):
         """
         Confirms expected grsecurity-patched kernel is running.
         """
@@ -54,7 +40,7 @@ class SD_VM_Tests(unittest.TestCase):
         # TODO: test in sd-viewer based dispVM
         exceptions = [SD_TEMPLATE_BASE, "sd-viewer"]
 
-        for vm in self.sdw_tagged_vms:
+        for vm in sdw_tagged_vms:
             if vm.name in exceptions:
                 continue
             # Running custom kernel in PVH mode requires pvgrub2-pvh
@@ -82,22 +68,22 @@ class SD_VM_Tests(unittest.TestCase):
                 raise e
         assert service_status == "active" if running else "inactive"
 
-    def test_default_dispvm(self):
+    def test_default_dispvm(self, sdw_tagged_vms):
         """Verify the default DispVM is none for all except sd-app and sd-devices"""
-        for vm in self.sdw_tagged_vms:
+        for vm in sdw_tagged_vms:
             if vm.name == "sd-app":
                 assert vm.default_dispvm.name == "sd-viewer"
             else:
                 assert vm.default_dispvm is None, f"{vm.name} has dispVM set"
 
-    def test_sd_whonix_absent(self):
+    def test_sd_whonix_absent(self, all_vms):
         """
         The sd-whonix once existed to proxy sd-proxy's traffic throgh Tor.
         But we've since removed it and included a Tor proxy in sd-proxy.
         """
-        assert "sd-whonix" not in self.app.domains
+        assert "sd-whonix" not in all_vms
 
-    def test_whonix_vms_reset(self):
+    def test_whonix_vms_reset(self, all_vms):
         """
         Whonix templates used to be modified by the workstation (<=1.4.0).
         Ensure they were properly reset.
@@ -111,21 +97,21 @@ class SD_VM_Tests(unittest.TestCase):
             "whonix-workstation-17-dvm",
         ]
         for qube_name in whonix_qubes:
-            if qube_name not in self.app.domains:
+            if qube_name not in all_vms:
                 # skip check on nonexitent qubes
                 continue
-            qube = self.app.domains[qube_name]
+            qube = all_vms[qube_name]
             assert qube.property_is_default("kernelopts")
 
-    def test_sd_proxy_config(self):
-        vm = self.app.domains["sd-proxy"]
+    def test_sd_proxy_config(self, all_vms):
+        vm = all_vms["sd-proxy"]
         assert vm.template == "sd-proxy-dvm"
         assert vm.klass == "DispVM"
         assert vm.netvm.name == "sys-firewall"
         assert vm.autostart
         assert not vm.provides_network
         assert vm.default_dispvm is None
-        assert "sd-workstation" in vm.tags
+        assert SD_TAG in vm.tags
         assert vm.features["service.securedrop-mime-handling"] == "1"
         assert vm.features["service.securedrop-arti"] == "1"
         assert vm.features["vm-config.SD_MIME_HANDLING"] == "default"
@@ -133,31 +119,31 @@ class SD_VM_Tests(unittest.TestCase):
         self._check_service_running(vm, "securedrop-proxy-onion-config")
         self._check_service_running(vm, "tor")
 
-    def test_sd_proxy_dvm(self):
-        vm = self.app.domains["sd-proxy-dvm"]
+    def test_sd_proxy_dvm(self, all_vms):
+        vm = all_vms["sd-proxy-dvm"]
         assert vm.template_for_dispvms
         assert vm.netvm.name == "sys-firewall"
         assert vm.template == SD_TEMPLATE_SMALL
         assert vm.default_dispvm is None
-        assert "sd-workstation" in vm.tags
+        assert SD_TAG in vm.tags
         assert not vm.autostart
         assert "service.securedrop-mime-handling" not in vm.features
         self._check_service_running(vm, "securedrop-mime-handling", running=False)
 
-    def test_sd_app_config(self):
-        vm = self.app.domains["sd-app"]
+    def test_sd_app_config(self, config, all_vms):
+        vm = all_vms["sd-app"]
         nvm = vm.netvm
         assert nvm is None
         assert vm.template == SD_TEMPLATE_SMALL
         assert not vm.provides_network
         assert not vm.template_for_dispvms
         assert "service.securedrop-log-server" not in vm.features
-        assert "sd-workstation" in vm.tags
+        assert SD_TAG in vm.tags
         assert "sd-client" in vm.tags
         # Check the size of the private volume
         # Should be 10GB
         # >>> 1024 * 1024 * 10 * 1024
-        size = self.config["vmsizes"]["sd_app"]
+        size = config["vmsizes"]["sd_app"]
         vol = vm.volumes["private"]
         assert vol.size == size * 1024 * 1024 * 1024
 
@@ -169,21 +155,21 @@ class SD_VM_Tests(unittest.TestCase):
         # Arti should *not* be running
         self._check_service_running(vm, "securedrop-arti", running=False)
 
-    def test_sd_viewer_config(self):
-        vm = self.app.domains["sd-viewer"]
+    def test_sd_viewer_config(self, all_vms):
+        vm = all_vms["sd-viewer"]
         nvm = vm.netvm
         assert nvm is None
         assert vm.template == SD_TEMPLATE_LARGE
         assert not vm.provides_network
         assert vm.template_for_dispvms
-        assert "sd-workstation" in vm.tags
+        assert SD_TAG in vm.tags
 
         # MIME handling
         assert vm.features["service.securedrop-mime-handling"] == "1"
         assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-viewer"
 
-    def test_sd_gpg_config(self):
-        vm = self.app.domains["sd-gpg"]
+    def test_sd_gpg_config(self, all_vms):
+        vm = all_vms["sd-gpg"]
         nvm = vm.netvm
         assert nvm is None
         # No sd-gpg-template, since keyring is managed in $HOME
@@ -192,10 +178,10 @@ class SD_VM_Tests(unittest.TestCase):
         assert not vm.provides_network
         assert not vm.template_for_dispvms
         assert vm.features["service.securedrop-logging-disabled"] == "1"
-        assert "sd-workstation" in vm.tags
+        assert SD_TAG in vm.tags
 
-    def test_sd_log_config(self):
-        vm = self.app.domains["sd-log"]
+    def test_sd_log_config(self, config, all_vms):
+        vm = all_vms["sd-log"]
         nvm = vm.netvm
         assert nvm is None
         assert vm.template == SD_TEMPLATE_SMALL
@@ -209,19 +195,19 @@ class SD_VM_Tests(unittest.TestCase):
         assert vm.features["sd-install-epoch"] == "1001"
 
         assert not vm.template_for_dispvms
-        assert "sd-workstation" in vm.tags
+        assert SD_TAG in vm.tags
         # Check the size of the private volume
         # Should be same of config.json
         # >>> 1024 * 1024 * 5 * 1024
-        size = self.config["vmsizes"]["sd_log"]
+        size = config["vmsizes"]["sd_log"]
         vol = vm.volumes["private"]
         assert vol.size == size * 1024 * 1024 * 1024
 
-    def test_sd_export_dvm(self):
-        vm = self.app.domains["sd-devices-dvm"]
+    def test_sd_export_dvm(self, all_vms):
+        vm = all_vms["sd-devices-dvm"]
         nvm = vm.netvm
         assert nvm is None
-        assert "sd-workstation" in vm.tags
+        assert SD_TAG in vm.tags
         assert vm.template_for_dispvms
 
         assert "service.avahi" not in vm.features
@@ -229,13 +215,13 @@ class SD_VM_Tests(unittest.TestCase):
         assert "service.securedrop-mime-handling" not in vm.features
         self._check_service_running(vm, "securedrop-mime-handling", running=False)
 
-    def test_sd_export(self):
-        vm = self.app.domains["sd-devices"]
+    def test_sd_export(self, all_vms):
+        vm = all_vms["sd-devices"]
         nvm = vm.netvm
         assert nvm is None
         vm_type = vm.klass
         assert vm_type == "DispVM"
-        assert "sd-workstation" in vm.tags
+        assert SD_TAG in vm.tags
 
         assert vm.features["service.avahi"] == "1"
 
@@ -244,16 +230,16 @@ class SD_VM_Tests(unittest.TestCase):
         assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-devices"
         self._check_service_running(vm, "securedrop-mime-handling")
 
-    def test_sd_small_template(self):
+    def test_sd_small_template(self, all_vms):
         # Kernel check is handled in test_grsec_kernel
-        vm = self.app.domains[SD_TEMPLATE_SMALL]
+        vm = all_vms[SD_TEMPLATE_SMALL]
         nvm = vm.netvm
         assert nvm is None
-        assert "sd-workstation" in vm.tags
+        assert SD_TAG in vm.tags
 
-    def test_sd_large_template(self):
+    def test_sd_large_template(self, all_vms):
         # Kernel check is handled in test_grsec_kernel
-        vm = self.app.domains[SD_TEMPLATE_LARGE]
+        vm = all_vms[SD_TEMPLATE_LARGE]
         nvm = vm.netvm
         assert nvm is None
-        assert "sd-workstation" in vm.tags
+        assert SD_TAG in vm.tags

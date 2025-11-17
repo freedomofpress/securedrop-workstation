@@ -1,21 +1,9 @@
 import functools
 import os
 import subprocess
-import unittest
-
-from qubesadmin import Qubes
 
 
-class SD_Qubes_Rpc_Tests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.all_vms = set()
-        cls.vms_by_tag = {}
-
-        app = Qubes()
-        cls.all_vms = {vm for vm in app.domains if vm.name != "dom0"}
-        cls.sdw_tagged_vms = {vm for vm in app.domains if "sd-workstation" in vm.tags}
-
+class SD_Qubes_Rpc_Tests:
     @functools.cache
     def _qrexec_policy_graph(self, service):
         cmd = ["qrexec-policy-graph", "--service", service]
@@ -33,14 +21,14 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
         assert os.path.exists("/etc/qubes/policy.d/32-securedrop-workstation.policy")
 
     # securedrop.Log from @tag:sd-workstation to sd-log should be allowed
-    def test_sdlog_from_sdw_to_sdlog_allowed(self):
-        for vm in self.sdw_tagged_vms:
+    def test_sdlog_from_sdw_to_sdlog_allowed(self, sdw_tagged_vms):
+        for vm in sdw_tagged_vms:
             if vm != "sd-log":
                 assert self._policy_exists(vm, "sd-log", "securedrop.Log")
 
     # securedrop.Log from anything else to sd-log should be denied
-    def test_sdlog_from_other_to_sdlog_denied(self):
-        non_sd_workstation_vms = self.all_vms.difference(self.sdw_tagged_vms)
+    def test_sdlog_from_other_to_sdlog_denied(self, all_vms, sdw_tagged_vms):
+        non_sd_workstation_vms = set(all_vms).difference(set(sdw_tagged_vms))
         for vm in non_sd_workstation_vms:
             if vm != "sd-log":
                 assert not self._policy_exists(vm, "sd-log", "securedrop.Log")
@@ -62,7 +50,3 @@ class SD_Qubes_Rpc_Tests(unittest.TestCase):
         assert not self._policy_exists("sys-firewall", "sd-gpg", "qubes.GpgImportKey")
         assert not self._policy_exists("sys-net", "sd-gpg", "qubes.Gpg2")
         assert not self._policy_exists("sys-firewall", "sd-gpg", "qubes.Gpg2")
-
-
-def load_tests(loader, tests, pattern):
-    return unittest.TestLoader().loadTestsFromTestCase(SD_Qubes_Rpc_Tests)
