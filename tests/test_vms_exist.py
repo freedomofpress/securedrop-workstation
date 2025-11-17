@@ -110,8 +110,8 @@ def test_whonix_vms_reset(all_vms):
 
 
 def test_sd_proxy_config(all_vms):
-    vm = Qubes().app.domains["sd-proxy"]
-    assert vm.template == "sd-proxy-dvm"
+    vm = all_vms["sd-proxy"]
+    assert vm.template.name == "sd-proxy-dvm"
     assert vm.klass == "DispVM"
     assert vm.netvm.name == "sys-firewall"
     assert vm.autostart
@@ -130,7 +130,7 @@ def test_sd_proxy_dvm(all_vms):
     vm = all_vms["sd-proxy-dvm"]
     assert vm.template_for_dispvms
     assert vm.netvm.name == "sys-firewall"
-    assert vm.template == SD_TEMPLATE_SMALL
+    assert vm.template.name == SD_TEMPLATE_SMALL
     assert vm.default_dispvm is None
     assert SD_TAG in vm.tags
     assert not vm.autostart
@@ -142,7 +142,7 @@ def test_sd_app_config(config, all_vms):
     vm = all_vms["sd-app"]
     nvm = vm.netvm
     assert nvm is None
-    assert vm.template == SD_TEMPLATE_SMALL
+    assert vm.template.name == SD_TEMPLATE_SMALL
     assert not vm.provides_network
     assert not vm.template_for_dispvms
     assert "service.securedrop-log-server" not in vm.features
@@ -168,7 +168,7 @@ def test_sd_viewer_config(all_vms):
     vm = all_vms["sd-viewer"]
     nvm = vm.netvm
     assert nvm is None
-    assert vm.template == SD_TEMPLATE_LARGE
+    assert vm.template.name == SD_TEMPLATE_LARGE
     assert not vm.provides_network
     assert vm.template_for_dispvms
     assert SD_TAG in vm.tags
@@ -183,7 +183,7 @@ def test_sd_gpg_config(all_vms):
     nvm = vm.netvm
     assert nvm is None
     # No sd-gpg-template, since keyring is managed in $HOME
-    assert vm.template == SD_TEMPLATE_SMALL
+    assert vm.template.name == SD_TEMPLATE_SMALL
     assert vm.autostart
     assert not vm.provides_network
     assert not vm.template_for_dispvms
@@ -195,7 +195,7 @@ def test_sd_log_config(config, all_vms):
     vm = all_vms["sd-log"]
     nvm = vm.netvm
     assert nvm is None
-    assert vm.template == SD_TEMPLATE_SMALL
+    assert vm.template.name == SD_TEMPLATE_SMALL
     assert vm.autostart
     assert not vm.provides_network
     assert not vm.template_for_dispvms

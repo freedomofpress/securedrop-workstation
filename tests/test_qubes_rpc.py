@@ -25,7 +25,7 @@ def test_policy_files_exist():
 # securedrop.Log from @tag:sd-workstation to sd-log should be allowed
 def test_sdlog_from_sdw_to_sdlog_allowed(sdw_tagged_vms):
     for vm in sdw_tagged_vms:
-        if vm != "sd-log":
+        if vm.name != "sd-log":
             assert policy_exists(vm, "sd-log", "securedrop.Log")
 
 
@@ -33,7 +33,7 @@ def test_sdlog_from_sdw_to_sdlog_allowed(sdw_tagged_vms):
 def test_sdlog_from_other_to_sdlog_denied(all_vms, sdw_tagged_vms):
     non_sd_workstation_vms = set(all_vms).difference(set(sdw_tagged_vms))
     for vm in non_sd_workstation_vms:
-        if vm != "sd-log":
+        if vm.name != "sd-log":
             assert not policy_exists(vm, "sd-log", "securedrop.Log")
 
 
