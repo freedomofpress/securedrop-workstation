@@ -48,7 +48,7 @@ function oci_image() {
 function oci_run() {
     find . \( -name '*.pyc' -o -name __pycache__ \) -delete
 
-    NAME="${1}${SUFFIX}"
+    NAME="${1}${FEDORA_VERSION}${SUFFIX}"
 
     $OCI_BIN run \
            --rm \
