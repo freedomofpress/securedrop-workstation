@@ -2,7 +2,6 @@ import os
 import subprocess
 
 import pytest
-from qubesadmin import Qubes
 
 from tests.base import (
     QubeWrapper,
@@ -12,9 +11,9 @@ from tests.base import (
 )
 
 
-def _create_test_qube(dispvm_template_name):
+def _create_test_qube(dispvm_template_name, all_vms):
     # VM was running and needs a restart to test on the latest version
-    if dispvm_template_name in Qubes().domains:
+    if dispvm_template_name in all_vms:
         _kill_test_qube(dispvm_template_name)
 
     # Create disposable based on specified template
