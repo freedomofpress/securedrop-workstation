@@ -104,6 +104,8 @@ jobs:
           fi
   openqa:
     uses: ./.github/workflows/openqa.yml
+    with:
+      environment: "dev"
     secrets: inherit
     needs: [check-openqa]
     # Run only if:
