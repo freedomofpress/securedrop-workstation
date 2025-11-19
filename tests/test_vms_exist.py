@@ -29,8 +29,8 @@ def test_expected(all_vms, sdw_tagged_vms):
 
 @unittest.skipIf(CONFIG["environment"] != "prod", "Skipping on non-prod system")
 def test_internal(all_vms):
-    all_vms["sd-proxy-dvm"].features.get("internal") == "1"
-    all_vms["sd-viewer"].features.get("internal") == "1"
+    assert all_vms["sd-proxy-dvm"].features.get("internal") == "1"
+    assert all_vms["sd-viewer"].features.get("internal") == "1"
 
 
 def test_grsec_kernel(sdw_tagged_vms):
