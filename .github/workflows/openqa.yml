@@ -2,8 +2,12 @@
 name: ci
 
 on:
-  - workflow_call
-  
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
 jobs:
   openqa:
     runs-on: ubuntu-latest
@@ -18,6 +22,7 @@ jobs:
       OPENQA_SECRET: ${{ secrets.OPENQA_SECRET }}
       GIT_REF: ${{ github.event.head_commit.id }}
       GH_TOKEN: ${{ github.token }}
+      SECUREDROP_ENV: ${{ inputs.environment }}
     container:
       image: debian:trixie
     steps:
@@ -40,7 +45,7 @@ jobs:
             BUILD=$(date +%Y%m%d%H%M)-4.2 \
             DISTRI=qubesos ARCH=x86_64 \
             GIT_REF="$GIT_REF" \
-            SECUREDROP_ENV="dev" \
+            SECUREDROP_ENV="$SECUREDROP_ENV" \
             FLAVOR=securedrop \
             NEEDLES_DIR="%%CASEDIR%%/needles" \
             CASEDIR="https://github.com/freedomofpress/openqa-tests-qubesos.git#main"\

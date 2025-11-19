@@ -93,3 +93,5 @@ jobs:
   openqa-nightly:
     uses: ./.github/workflows/openqa.yml
     secrets: inherit
+    with:
+      environment: "dev"
