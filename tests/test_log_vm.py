@@ -44,7 +44,7 @@ def test_redis_service_running(qube):
     assert qube.service_is_active("redis")
 
 
-def test_logs_are_flowing(qube):
+def test_logs_are_flowing(qube, sdw_tagged_vms):
     """
     To test that logs work, we run a unique command in each VM we care
     about that gets logged, and then check for that string in the logs.
@@ -52,8 +52,6 @@ def test_logs_are_flowing(qube):
     # Random string, to avoid collisions with other test runs
     token = "".join(secrets.choice(string.ascii_uppercase) for _ in range(10))
 
-    # All @tag:sd-workstation VMs
-    all_vms = [vm.name for vm in qube.app.domains if "sd-workstation" in vm.tags]
     # base template doesn't have sd-log configured
     # TODO: test a sd-viewer based dispVM
     skip = [f"sd-base-{CURRENT_DEBIAN_VERSION}-template", "sd-viewer"]
@@ -63,17 +61,17 @@ def test_logs_are_flowing(qube):
     # We first run the command in each VM, and then do a second loop to
     # look for the token in the log entry, so there's enough time for the
     # log entry to get written.
-    for vm_name in all_vms:
-        if vm_name in skip:
+    for vm in sdw_tagged_vms:
+        if vm.name in skip:
             continue
         # The sudo call will make it into syslog
-        subprocess.check_call(["qvm-run", vm_name, f"sudo echo {token}"])
+        subprocess.check_call(["qvm-run", vm.name, f"sudo echo {token}"])
 
-    for vm_name in all_vms:
-        if vm_name in skip:
+    for vm in sdw_tagged_vms:
+        if vm.name in skip:
             continue
-        syslog = f"/home/user/QubesIncomingLogs/{vm_name}/syslog.log"
-        if vm_name in no_log_vms:
+        syslog = f"/home/user/QubesIncomingLogs/{vm.name}/syslog.log"
+        if vm.name in no_log_vms:
             assert not qube.fileExists(syslog)
         else:
             assert token in qube.get_file_contents(syslog)
