@@ -40,6 +40,7 @@ jobs:
             BUILD=$(date +%Y%m%d%H%M)-4.2 \
             DISTRI=qubesos ARCH=x86_64 \
             GIT_REF="$GIT_REF" \
+            SECUREDROP_ENV="dev" \
             FLAVOR=securedrop \
             NEEDLES_DIR="%%CASEDIR%%/needles" \
             CASEDIR="https://github.com/freedomofpress/openqa-tests-qubesos.git#main"\
