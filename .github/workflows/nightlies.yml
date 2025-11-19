@@ -93,5 +93,3 @@ jobs:
   openqa-nightly:
     uses: ./.github/workflows/openqa.yml
     secrets: inherit
-    env:
-      GIT_REF: "main"
