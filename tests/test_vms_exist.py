@@ -82,7 +82,7 @@ def test_default_dispvm(sdw_tagged_vms):
 
 def test_sd_whonix_absent(all_vms):
     """
-    The sd-whonix once existed to proxy sd-proxy's traffic throgh Tor.
+    The sd-whonix once existed to proxy sd-proxy's traffic through Tor.
     But we've since removed it and included a Tor proxy in sd-proxy.
     """
     assert "sd-whonix" not in all_vms
@@ -103,7 +103,7 @@ def test_whonix_vms_reset(all_vms):
     ]
     for qube_name in whonix_qubes:
         if qube_name not in all_vms:
-            # skip check on nonexitent qubes
+            # skip check on existent qubes
             continue
         qube = all_vms[qube_name]
         assert qube.property_is_default("kernelopts")

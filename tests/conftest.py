@@ -18,7 +18,7 @@ def dom0_config():
 
 @pytest.fixture
 def all_vms():
-    """Obtain all SecureDrop Workstation-exclusive qubes"""
+    """Obtain all qubes present in the system"""
     return Qubes().domains
 
 
