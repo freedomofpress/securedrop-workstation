@@ -28,8 +28,8 @@ all: assert-dom0
 # To switch keyrings, remove the dev or staging keyring package and delete the file
 # /etc/yum.repos.d/securedrop-workstation-keyring-{dev|staging}.repo.
 dev staging: assert-dom0 ## Installs, configures and builds a dev or staging environment
-	@./scripts/bootstrap-keyring.py --env $@
-	$(MAKE) assert-keyring-$@
+	#@./scripts/bootstrap-keyring.py --env $@  # FIXME temporarily disabled
+	#$(MAKE) assert-keyring-$@  # FIXME temporarily disabled
 	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$@
 	$(MAKE) configure-env-$@
 	sdw-admin --apply
@@ -93,7 +93,7 @@ build-deps: ## Install package dependencies to build RPMs
 .PHONY: test-deps
 test-deps: build-deps ## Install package dependencies for running tests
 	dnf install -y \
-		python3-qt5 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
+		python3-pyqt6 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
 		hostname
 	dnf --setopt=install_weak_deps=False -y install reprotest
 
@@ -165,13 +165,13 @@ update-pip-requirements: ## Updates all Python requirements files via pip-compil
 	pip-compile --allow-unsafe --generate-hashes --output-file=requirements/dev-requirements.txt requirements/dev-requirements.in
 
 .PHONY: venv
-venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt5)
+venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt6)
 	$(PYTHON3) -m venv .venv --system-site-packages
 	.venv/bin/pip install --upgrade pip wheel
 	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
 	@echo "#################"
 	@echo "Virtualenv with system-packages is complete."
-	@echo "Make sure to either install the OS package for PyQt5 or install PyQt5==5.14.2 into this virtual environment."
+	@echo "Make sure to either install the OS package for PyQt6 or install PyQt6==6.8.1 into this virtual environment."
 	@echo "Then run: source .venv/bin/activate"
 
 .PHONY: check

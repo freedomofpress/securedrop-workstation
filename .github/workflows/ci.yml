@@ -15,7 +15,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     container:
-      image: quay.io/fedora/fedora:37
+      image: quay.io/fedora/fedora:41
     steps:
       - run: dnf install -y git make
       - uses: actions/checkout@v5
@@ -58,8 +58,18 @@ jobs:
           make reprotest
   launcher-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - name: "4.2"
+            fedora_ver: "37"
+            python_ver: "python3.11"
+          - name: "4.3"
+            fedora_ver: "41"
+            python_ver: "python3.13"
     container:
-      image: quay.io/fedora/fedora:37
+      image: quay.io/fedora/fedora:${{ matrix.os.fedora_ver }}
     steps:
       - run: dnf install -y make
       - uses: actions/checkout@v5
@@ -69,6 +79,7 @@ jobs:
         run: |
           make test-deps
           pip install poetry==2.1.1
+          poetry env use ${{ matrix.os.python_ver }}
           poetry install --no-ansi
       - name: Run launcher tests
         run: |

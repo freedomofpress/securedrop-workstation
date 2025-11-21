@@ -25,7 +25,10 @@ def all_vms():
 @pytest.fixture
 def sdw_tagged_vms(all_vms):
     """Obtain all SecureDrop Workstation-exclusive qubes"""
-    return [vm for vm in all_vms if SD_TAG in vm.tags]
+    sdw_tagged_vms = filter(lambda qube: SD_TAG in qube.tags, all_vms)
+
+    # Exclude preloaded qubes
+    return filter(lambda qube: not getattr(qube, "is_preload", False), sdw_tagged_vms)
 
 
 @pytest.fixture
