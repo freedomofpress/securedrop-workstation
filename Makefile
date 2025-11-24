@@ -7,6 +7,8 @@ CONTAINER := $(if $(shell grep -E "(Thirty Seven|Forty One)" /etc/fedora-release
 
 HOST=$(shell hostname)
 
+SPEC_FILE="rpm-build/SPECS/securedrop-workstation-dom0-config.spec"
+
 
 assert-dom0: ## Confirms command is being run under dom0
 ifneq ($(HOST),dom0)
@@ -86,16 +88,17 @@ reprotest: ## Check RPM package reproducibility
 .PHONY: build-deps
 build-deps: ## Install package dependencies to build RPMs
 # Note: build dependencies are specified in the spec file, not here
-	dnf install -y \
-		git file rpmdevtools dnf-plugins-core
-	dnf builddep -y rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+	dnf install -y git file rpmdevtools dnf-plugins-core rpm-build
+	dnf builddep -y $(SPEC_FILE)
 
 .PHONY: test-deps
 test-deps: build-deps ## Install package dependencies for running tests
-	dnf install -y \
-		python3-qt5 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
+	dnf install -y xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
 		hostname
 	dnf --setopt=install_weak_deps=False -y install reprotest
+
+	@echo "Installing python package dependencies (e.g. PyQt)"
+	dnf install -y `rpmspec --parse $(SPEC_FILE) | sed -n "s/^Requires:.*python3/python3/p"`
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
