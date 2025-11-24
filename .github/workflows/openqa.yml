@@ -93,20 +93,20 @@ jobs:
               --apisecret "$OPENQA_SECRET" \
               -X GET "jobs/${id}" | jq -r ".job.result"`
 
-            # Apply result mapping: OpenQA -> GitHub
+            # Apply result mapping: OpenQA -> GitHub (OpenQA statuses from https://open.qa/docs/#_jobs)
             case $openqa_result in
                 "passed")
                     github_state="success"
                     ;;
-                "failed")
+                "failed"|"done"|"softfailed"|"obsoleted"|"parallel_failed"|"parallel_restarted")
                     workflow_exit_status=1
                     github_state="failure"
                     ;;
-                "skipped"|"incomplete"|"user_cancelled")
+                "skipped"|"incomplete"|"cancelled"|"user_cancelled"|"user_restarted"|"timeout_exceeded")
                     workflow_exit_status=1
                     github_state="error"
                     ;;
-                "none")
+                "none"|"scheduled"|"setup"|"running"|"uploading")
                     continue
                     ;;
                 *)
