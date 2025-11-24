@@ -34,12 +34,12 @@ def test_sdlog_from_sdw_to_sdlog_allowed(sdw_tagged_vms):
     All SDW VMs should be permitted to send logs to `sd-log`,
     with the grant applying to all SDW VMs via `@tag:sd-workstation`.
     """
-    for vm_name in sdw_tagged_vms:
-        if vm_name == "sd-log":
+    for vm in sdw_tagged_vms:
+        if vm.name == "sd-log":
             continue
         assert policy_exists(
-            vm_name, "sd-log", "securedrop.Log"
-        ), f"Missing for logs from {vm_name} to sd-log"
+            vm.name, "sd-log", "securedrop.Log"
+        ), f"Missing for logs from {vm} to sd-log"
 
 
 # securedrop.Log from anything else to sd-log should be denied
