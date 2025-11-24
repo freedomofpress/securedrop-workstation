@@ -4,6 +4,8 @@ import subprocess
 
 import pytest
 
+from tests.base import is_managed_qube
+
 
 @functools.cache
 def qrexec_policy_graph(service):
@@ -47,8 +49,12 @@ def test_sdlog_from_other_to_sdlog_denied(all_vms, sdw_tagged_vms):
     Only SDW VMs should be permitted to send logs to `sd-log`;
     all other VMs on the system should not be able to.
     """
-    non_sd_workstation_vms = set(all_vms).difference(set(sdw_tagged_vms))
 
+    # Filter out preloaded disposables and side-effects from other tests
+    all_vms_set = set(
+        [vm for vm in all_vms if vm.name != "sd-viewer-disposable" and is_managed_qube(vm)]
+    )
+    non_sd_workstation_vms = all_vms_set.difference(set(sdw_tagged_vms))
     for vm in non_sd_workstation_vms:
         if vm.name == "sd-log":
             continue
