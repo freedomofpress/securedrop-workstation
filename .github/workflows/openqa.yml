@@ -112,6 +112,7 @@ jobs:
                 *)
                     echo "Unknown test status: $openqa_result"
                     workflow_exit_status=1
+                    github_state="error"
                     ;;
             esac
             curl --fail -L -X POST \
