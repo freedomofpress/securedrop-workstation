@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from qubesadmin import Qubes
 
-from tests.base import SD_TAG
+from tests.base import is_workstation_qube
 
 PROJ_ROOT = Path(__file__).parent.parent
 
@@ -25,7 +25,7 @@ def all_vms():
 @pytest.fixture
 def sdw_tagged_vms(all_vms):
     """Obtain all SecureDrop Workstation-exclusive qubes"""
-    return [vm for vm in all_vms if SD_TAG in vm.tags]
+    return filter(is_workstation_qube, all_vms)
 
 
 @pytest.fixture

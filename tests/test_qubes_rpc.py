@@ -2,6 +2,8 @@ import functools
 import os
 import subprocess
 
+from tests.base import is_managed_qube
+
 
 @functools.cache
 def qrexec_policy_graph(service):
@@ -31,7 +33,10 @@ def test_sdlog_from_sdw_to_sdlog_allowed(sdw_tagged_vms):
 
 # securedrop.Log from anything else to sd-log should be denied
 def test_sdlog_from_other_to_sdlog_denied(all_vms, sdw_tagged_vms):
-    non_sd_workstation_vms = set(all_vms).difference(set(sdw_tagged_vms))
+    # Exclude preloaded qubes
+    all_vms_set = set(filter(is_managed_qube, all_vms))
+
+    non_sd_workstation_vms = all_vms_set.difference(set(sdw_tagged_vms))
     for vm in non_sd_workstation_vms:
         if vm.name != "sd-log":
             assert not policy_exists(vm, "sd-log", "securedrop.Log")
