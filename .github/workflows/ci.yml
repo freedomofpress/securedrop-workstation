@@ -18,7 +18,7 @@ jobs:
       image: quay.io/fedora/fedora:37
     steps:
       - run: dnf install -y git make
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - name: Install dependencies
@@ -42,7 +42,7 @@ jobs:
       image: quay.io/fedora/fedora:${{ matrix.fedora_version }}
     steps:
       - run: dnf install -y git make
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - name: Install dependencies
@@ -62,7 +62,7 @@ jobs:
       image: quay.io/fedora/fedora:37
     steps:
       - run: dnf install -y make
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
       - name: Install dependencies
