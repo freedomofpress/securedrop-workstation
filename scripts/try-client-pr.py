@@ -42,13 +42,17 @@ def check_out_pr(pr_id):
     print(f"Successfully checked out PR #{pr_id}")
 
 
-def build_debs():
+def build_debs(build_app: bool):
     """Run make build-debs in build VM to build the Debian packages."""
     # TODO: we should download these from CI instead of building them ourselves
     # TODO: an option to also update securedrop-builder?
     print(f"Building Debian packages in {BUILD_VM} VM...")
     run_in_vm(["rm", "-rf", "securedrop-client/build"], BUILD_VM)
-    run_in_vm(["FAST=1", "make", "-C", "securedrop-client", "build-debs"], BUILD_VM)
+    build_args = ["FAST=1"]
+    if build_app:
+        build_args.append("WHAT=app")
+    build_args.extend(["make", "-C", "securedrop-client", "build-debs"])
+    run_in_vm(build_args, BUILD_VM)
     print("Successfully built Debian packages")
 
 
@@ -93,7 +97,7 @@ def move_deb_to_template(dom0_path, template_vm):
     return f"/home/user/QubesIncoming/dom0/{dom0_path.name}"
 
 
-def install_debs_in_template(all_deb_paths, template_vm):
+def install_debs_in_template(all_deb_paths, template_vm, build_app: bool):
     """Install .deb files in template VM."""
 
     # Need to escape "${Package}\n" from being interpreted by bash
@@ -102,6 +106,9 @@ def install_debs_in_template(all_deb_paths, template_vm):
         template_vm,
         capture_output=True,
     ).splitlines()
+    if build_app and "securedrop-client" in wanted_packages:
+        # If this is the VM where the client is installed, also install the app
+        wanted_packages.append("securedrop-app")
     print(f"Going to install into {template_vm}: {', '.join(wanted_packages)}")
 
     template_deb_paths = []
@@ -128,13 +135,16 @@ def install_debs_in_template(all_deb_paths, template_vm):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("pr_id", type=int, help="ID of the Pull Request to test")
+    parser.add_argument(
+        "--app", default=False, action="store_true", help="Build and install SecureDrop App too"
+    )
     args = parser.parse_args()
 
     print(f"Using build VM: {BUILD_VM}")
 
     # Run the workflow
     check_out_pr(args.pr_id)
-    build_debs()
+    build_debs(build_app=args.app)
 
     # Find deb files and get their names
     deb_files = find_debs_in_build_vm()
@@ -144,8 +154,8 @@ def main():
         print(f"Package: {package_name} - {deb_file}")
 
     # Install the deb files in template VMs
-    install_debs_in_template(deb_files, SMALL_TEMPLATE)
-    install_debs_in_template(deb_files, LARGE_TEMPLATE)
+    install_debs_in_template(deb_files, SMALL_TEMPLATE, build_app=args.app)
+    install_debs_in_template(deb_files, LARGE_TEMPLATE, build_app=args.app)
 
     # Shutdown
     all_vms = subprocess.check_output(
