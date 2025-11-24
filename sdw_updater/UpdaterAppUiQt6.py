@@ -9,7 +9,7 @@
 try:
     from PyQt6 import QtCore, QtGui, QtWidgets
 except ImportError:
-    from PyQt5 import QtCore, QtGui, QtWidgets
+    from PyQt5 import QtCore, QtGui, QtWidgets  # type: ignore [no-redef]
 
 
 class Ui_UpdaterDialog:

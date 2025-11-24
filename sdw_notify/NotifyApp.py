@@ -8,7 +8,7 @@ from enum import Enum
 try:
     from PyQt6.QtWidgets import QMessageBox
 except ImportError:
-    from PyQt5.QtWidgets import QMessageBox
+    from PyQt5.QtWidgets import QMessageBox  # type: ignore [no-redef]
 
 from sdw_notify import Notify, strings
 from sdw_util import Util

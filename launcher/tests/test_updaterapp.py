@@ -6,7 +6,7 @@ import pytest
 try:
     from PyQt6.QtWidgets import QApplication
 except ImportError:
-    from PyQt5.QtWidgets import QApplication
+    from PyQt5.QtWidgets import QApplication  # type: ignore [no-redef]
 
 from sdw_updater import UpdaterApp, strings
 from sdw_updater.Updater import UpdateStatus, overall_update_status
