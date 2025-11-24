@@ -50,6 +50,22 @@ def get_qubes_version():
     return version
 
 
+def is_managed_qube(qube):
+    """
+    Help assess if qube is to be managed directly
+
+    Currently excluded qubes:
+    - preloaded qubes: they are restarted when changes are
+    applied to tempaltes and do no need explicit management.
+    """
+    return not getattr(qube, "is_preload", False)
+
+
+def is_workstation_qube(qube):
+    """Is the qube a managed, workstation-tagged qube?"""
+    return is_managed_qube(qube) and SD_TAG in qube.tags
+
+
 class QubeWrapper:
     def __init__(
         self,
