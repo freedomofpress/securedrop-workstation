@@ -26,7 +26,7 @@ def test_policy_files_exist():
 def test_sdlog_from_sdw_to_sdlog_allowed(sdw_tagged_vms):
     for vm in sdw_tagged_vms:
         if vm.name != "sd-log":
-            assert policy_exists(vm, "sd-log", "securedrop.Log")
+            assert policy_exists(vm.name, "sd-log", "securedrop.Log")
 
 
 # securedrop.Log from anything else to sd-log should be denied
