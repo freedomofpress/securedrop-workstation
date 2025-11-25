@@ -12,6 +12,11 @@ git clean -fdX rpm-build/ dist/
 # touch everything to a date in the future, so that way
 # rpm will clamp the mtimes down to the SOURCE_DATE_EPOCH
 find . -type f -exec touch -m -d "+1 day" {} \;
+
+# set a trap to reset the file mtimes to present time, otherwise
+# the `make clone` operation will spew tar errors about timestamps from the future.
+trap 'find . -type f -exec touch -m {} \;' EXIT
+
 /usr/bin/python3 setup.py sdist
 
 # Place tarball where rpmbuild will find it
