@@ -25,7 +25,8 @@ dom0_dev_dir="$HOME/securedrop-workstation"
 # in the subsequent tarball, which is fetched to dom0.
 function build-dom0-rpm() {
     printf "Building RPM on %s ...\n" "${dev_vm}"
-    qvm-run --pass-io "$dev_vm" "make -C $dev_dir build-rpm"
+    dom0_fedora_version="$(rpm --eval '%{fedora}')"
+    qvm-run --pass-io "$dev_vm" "FEDORA_VERSION=$dom0_fedora_version make -C $dev_dir build-rpm"
 }
 
 # Call out to target AppVM to create a tarball in dom0
