@@ -39,9 +39,12 @@ BuildRequires:	systemd-rpm-macros
 
 # This package installs all standard VMs in Qubes
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
-Requires:		python3-qt5
 Requires:       securedrop-workstation-keyring
 Requires:       grub2-xen-pvh
+# Qubes 4.3 dependencies:
+%{?fc41:Requires: python3-pyqt6}
+# Qubes 4.2 dependencies:
+%{?fc37:Requires: python3-qt5}
 
 %description
 This package contains VM configuration files for the Qubes-based

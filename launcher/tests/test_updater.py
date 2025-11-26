@@ -602,7 +602,7 @@ def test_apply_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
 @mock.patch("sdw_updater.Updater.sdlog.info")
 def test_migration_is_required(mocked_info, mocked_listdir, mocked_exists):
     assert Updater.migration_is_required() is True
-    assert mocked_info.called_once_with(
+    mocked_info.assert_called_once_with(
         "Migration is required, will enforce full config during update"
     )
 

@@ -7,6 +7,8 @@ CONTAINER := $(if $(shell grep -E "(Thirty Seven|Forty One)" /etc/fedora-release
 
 HOST=$(shell hostname)
 
+SPEC_FILE="rpm-build/SPECS/securedrop-workstation-dom0-config.spec"
+
 
 assert-dom0: ## Confirms command is being run under dom0
 ifneq ($(HOST),dom0)
@@ -86,16 +88,17 @@ reprotest: ## Check RPM package reproducibility
 .PHONY: build-deps
 build-deps: ## Install package dependencies to build RPMs
 # Note: build dependencies are specified in the spec file, not here
-	dnf install -y \
-		git file rpmdevtools dnf-plugins-core
-	dnf builddep -y rpm-build/SPECS/securedrop-workstation-dom0-config.spec
+	dnf install -y git file rpmdevtools dnf-plugins-core rpm-build
+	dnf builddep -y $(SPEC_FILE)
 
 .PHONY: test-deps
 test-deps: build-deps ## Install package dependencies for running tests
-	dnf install -y \
-		python3-qt5 xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
+	dnf install -y xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
 		hostname
 	dnf --setopt=install_weak_deps=False -y install reprotest
+
+	@echo "Installing python package dependencies (e.g. PyQt)"
+	dnf install -y `rpmspec --parse $(SPEC_FILE) | sed -n "s/^Requires:.*python3/python3/p"`
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
@@ -165,13 +168,13 @@ update-pip-requirements: ## Updates all Python requirements files via pip-compil
 	pip-compile --allow-unsafe --generate-hashes --output-file=requirements/dev-requirements.txt requirements/dev-requirements.in
 
 .PHONY: venv
-venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt5)
+venv: ## Provision a Python 3 virtualenv for development (ensure to also install OS package for PyQt6)
 	$(PYTHON3) -m venv .venv --system-site-packages
 	.venv/bin/pip install --upgrade pip wheel
 	.venv/bin/pip install --require-hashes -r "requirements/dev-requirements.txt"
 	@echo "#################"
 	@echo "Virtualenv with system-packages is complete."
-	@echo "Make sure to either install the OS package for PyQt5 or install PyQt5==5.14.2 into this virtual environment."
+	@echo "Make sure to either install the OS package for PyQt6 or install PyQt6==6.8.1 into this virtual environment."
 	@echo "Then run: source .venv/bin/activate"
 
 .PHONY: check

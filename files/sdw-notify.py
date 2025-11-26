@@ -7,7 +7,10 @@ not stdout. All settings are in Notify utility module.
 
 import sys
 
-from PyQt5.QtWidgets import QApplication
+try:
+    from PyQt6.QtWidgets import QApplication
+except ImportError:
+    from PyQt5.QtWidgets import QApplication  # type: ignore [no-redef]
 
 from sdw_notify import Notify, NotifyApp
 from sdw_updater import Updater, UpdaterApp
@@ -66,7 +69,7 @@ def show_update_warning():
         log.info("Launching Preflight Updater")
         updater = UpdaterApp.UpdaterApp()
         updater.show()
-        sys.exit(app.exec_())
+        sys.exit(app.exec())
     elif result == NotifyApp.NotifyStatus.DEFER_UPDATES:
         # Currently, `DEFER_UPDATES` is a no-op, because the deferral period is
         # simply the period before the next run of the notify script (defined in

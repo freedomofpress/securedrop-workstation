@@ -1,12 +1,16 @@
 import subprocess
 import sys
 
-from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QDialog
+try:
+    from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot
+    from PyQt6.QtWidgets import QDialog
+except ImportError:
+    from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot  # type: ignore [no-redef]
+    from PyQt5.QtWidgets import QDialog  # type: ignore [no-redef]
 
 from sdw_updater import Updater, strings
 from sdw_updater.Updater import UpdateStatus
-from sdw_updater.UpdaterAppUiQt5 import Ui_UpdaterDialog
+from sdw_updater.UpdaterAppUiQt6 import Ui_UpdaterDialog
 from sdw_util import Util
 
 logger = Util.get_logger(module=__name__)
