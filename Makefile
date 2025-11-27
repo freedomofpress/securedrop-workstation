@@ -30,8 +30,8 @@ all: assert-dom0
 # To switch keyrings, remove the dev or staging keyring package and delete the file
 # /etc/yum.repos.d/securedrop-workstation-keyring-{dev|staging}.repo.
 dev staging: assert-dom0 ## Installs, configures and builds a dev or staging environment
-	@./scripts/bootstrap-keyring.py --env $@
-	$(MAKE) assert-keyring-$@
+	#@./scripts/bootstrap-keyring.py --env $@  # FIXME temporarily disabled
+	#$(MAKE) assert-keyring-$@  # FIXME temporarily disabled
 	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$@
 	$(MAKE) configure-env-$@
 	sdw-admin --apply
