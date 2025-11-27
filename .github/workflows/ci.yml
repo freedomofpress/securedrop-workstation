@@ -104,6 +104,9 @@ jobs:
           fi
   openqa:
     uses: ./.github/workflows/openqa.yml
+    with:
+      environment: "dev"
+      git_ref: ${{ github.event.head_commit.id }}
     secrets: inherit
     needs: [check-openqa]
     # Run only if:
