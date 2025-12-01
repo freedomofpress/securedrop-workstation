@@ -34,7 +34,7 @@ def test_sd_proxy_package_installed(qube):
     assert qube.package_is_installed("securedrop-proxy")
 
 
-def test_sd_proxy_config(qube, dom0_config):
+def test_tor_hidserv_auth_url(qube, dom0_config):
     assert f"http://{dom0_config['hidserv']['hostname']}" == qube.vm_config_read("SD_PROXY_ORIGIN")
 
 
