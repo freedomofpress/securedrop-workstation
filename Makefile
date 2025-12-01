@@ -117,12 +117,16 @@ clean: assert-dom0 ## Destroys all SD VMs
 .PHONY: test-prereqs
 test-prereqs: ## Checks that test prerequisites are satisfied
 	@echo "Checking prerequisites before running test suite..."
-	test -e config.json || (echo "Ensure config.json is in this directory" && exit 1)
-	test -e sd-journalist.sec || (echo "Ensure sd-journalist.sec is in this directory" && exit 1)
-	which pytest coverage || (echo 'please install test dependencies with "sudo qubes-dom0-update python3-pytest python3-pytest-cov"' && exit 1)
+	@test -e config.json || (echo "Ensure config.json is in this directory" && exit 1)
+	@test -e sd-journalist.sec || (echo "Ensure sd-journalist.sec is in this directory" && exit 1)
+	@rpm -q python3-pytest python3-pytest-cov python3-pytest-xdist || (echo 'please install test dependencies with "make install-dom0-test-prereqs"' && exit 1)
+
+.PHONY: install-dom0-test-prereqs
+install-dom0-test-prereqs: assert-dom0 ## Installs pytest dependencies in dom0
+	@rpm -q python3-pytest python3-pytest-cov python3-pytest-xdist || sudo qubes-dom0-update -y python3-pytest python3-pytest-cov python3-pytest-xdist
 
 test: test-prereqs ## Runs all application tests (no integration tests yet)
-	pytest -v tests -v launcher/tests
+	pytest -v tests -v launcher/tests -n auto --dist=loadfile --durations=5
 
 test-base: test-prereqs ## Runs tests for VMs layout
 	pytest -v tests/test_vms_exist.py
