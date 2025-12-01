@@ -1,3 +1,7 @@
+"""
+Integration tests for validating SecureDrop Workstation config,
+specifically for the "sd-devices" VM and related functionality.
+"""
 import os
 
 import pytest

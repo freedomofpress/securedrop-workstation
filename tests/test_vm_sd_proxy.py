@@ -1,3 +1,9 @@
+"""
+Integration tests for validating SecureDrop Workstation config,
+specifically for the "sd-proxy" VM and related functionality.
+"""
+
+
 import pytest
 
 from tests.base import (

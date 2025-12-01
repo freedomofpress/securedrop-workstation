@@ -1,3 +1,8 @@
+"""
+Generalized helper functions for testing the SecureDrop Workstation setup.
+Aims to provide a DRY configuration for the pytest suite.
+"""
+
 import json
 import subprocess
 import unittest

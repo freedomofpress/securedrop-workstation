@@ -1,3 +1,8 @@
+"""
+Integration tests for validating SecureDrop Workstation config,
+specifically for the "sd-viewer" VM and related functionality.
+"""
+
 import os
 import subprocess
 
