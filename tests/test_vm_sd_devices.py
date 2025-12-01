@@ -1,8 +1,14 @@
+"""
+Integration tests for validating SecureDrop Workstation config,
+specifically for the "sd-devices" VM and related functionality.
+"""
+
 import os
 
 import pytest
 
 from tests.base import (
+    SD_TAG,
     QubeWrapper,
 )
 from tests.base import (
@@ -57,3 +63,40 @@ def test_open_in_dvm_desktop(qube):
     ]
     for line in expected_contents:
         assert line in contents
+
+
+def test_sd_devices_config(qube, all_vms):
+    """
+    Confirm that qvm-prefs match expectations for this VM.
+    """
+    vm = all_vms["sd-devices"]
+    nvm = vm.netvm
+    assert nvm is None
+    vm_type = vm.klass
+    assert vm_type == "DispVM"
+    assert SD_TAG in vm.tags
+
+    assert vm.features["service.avahi"] == "1"
+
+    # MIME handling
+    assert vm.features["service.securedrop-mime-handling"] == "1"
+    assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-devices"
+    assert qube.service_is_active("securedrop-mime-handling")
+
+
+def test_sd_devices_dvm_config(all_vms):
+    """
+    Confirm that qvm-prefs match expectations for the sd-devices DispVM
+    """
+    # N.B. Don't use fixture, which is hardcoded for "sd-devices" VM.
+    dvm_qube = QubeWrapper("sd-devices-dvm")
+    vm = all_vms[dvm_qube.name]
+    nvm = vm.netvm
+    assert nvm is None
+    assert SD_TAG in vm.tags
+    assert vm.template_for_dispvms
+
+    assert "service.avahi" not in vm.features
+    # MIME handling (dvm does NOT setup mime, only its disposables do)
+    assert "service.securedrop-mime-handling" not in vm.features
+    assert not dvm_qube.service_is_active("securedrop-mime-handling")
