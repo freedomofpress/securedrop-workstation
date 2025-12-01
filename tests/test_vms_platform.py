@@ -7,14 +7,11 @@ import pytest
 
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
+    DEBIAN_VERSION,
     SD_TEMPLATE_LARGE,
     SD_TEMPLATE_SMALL,
     SD_VMS,
 )
-
-BOOKWORM_STRING = "Debian GNU/Linux 12 (bookworm)"
-
-SUPPORTED_SD_DEBIAN_DIST = "bookworm"
 
 IS_CI = os.environ.get("CI") == "true"
 
@@ -34,10 +31,10 @@ def _validate_vm_platform(vm):
     """
     Asserts that the given AppVM is based on an OS listed in the
     SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
-    All workstation-provisioned VMs should be SUPPORTED_SD_DEBIAN_DIST based.
+    All workstation-provisioned VMs should be based on DEBIAN_VERSION.
     """
     platform = _get_platform_info(vm)
-    assert SUPPORTED_SD_DEBIAN_DIST in platform
+    assert DEBIAN_VERSION in platform
 
 
 def _ensure_packages_up_to_date(vm, fedora=False):
@@ -63,14 +60,21 @@ def _ensure_packages_up_to_date(vm, fedora=False):
             stdout, stderr = vm.run(cmd)
         except subprocess.CalledProcessError:
             pytest.fail(fail_msg)
-        # 'stdout' will contain timestamped progress info; ignore it
-        results = stderr.rstrip().decode("utf-8")
-        stdout_lines = results.split("\n")
+        # 'stdout' will contain timestamped progress info; ignore it, and inspect stderr.
+        results = stderr.decode("utf-8")
+        stderr_lines = results.split("\n")
+
         # filter out gpgcheck warning present on all dnf operations
-        stdout_lines = [
-            x for x in stdout_lines if not x.startswith("Warning: Enforcing GPG signature check")
+        omit_lines = [
+            # ~F41 emitted warnings about GPG signature checks
+            "Warning: Enforcing GPG signature check",
+            # At least as recently as F42, repo loading messages were visible.
+            "Updating and loading repositories:",
+            "Repositories loaded.",
         ]
-        results = "".join(stdout_lines)
+        stderr_lines = [x for x in stderr_lines if x not in omit_lines]
+
+        results = "".join(stderr_lines)
         assert results == "", fail_msg
 
 
@@ -186,4 +190,4 @@ def assert_apt_source(vm, component, url, filename):
 
     assert f"Components: {component}\n" in contents, f"{vm.name} wrong component"
     assert f"URIs: {url}\n" in contents, f"{vm.name} wrong URL"
-    assert f"Suites: {SUPPORTED_SD_DEBIAN_DIST}\n" in contents, f"{vm.name} wrong suite/codename"
+    assert f"Suites: {DEBIAN_VERSION}\n" in contents, f"{vm.name} wrong suite/codename"
