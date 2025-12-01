@@ -2,6 +2,7 @@
 Integration tests for validating SecureDrop Workstation config,
 specifically for the "sd-log" VM and related functionality.
 """
+
 import secrets
 import string
 import subprocess

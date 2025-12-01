@@ -2,6 +2,7 @@
 Integration tests for validating SecureDrop Workstation config,
 specifically for the "sd-gpg" VM and related functionality.
 """
+
 import re
 import subprocess
 import tempfile
