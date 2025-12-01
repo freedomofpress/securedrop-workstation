@@ -1,6 +1,13 @@
+"""
+Integration tests for validating SecureDrop Workstation config,
+specifically for the "sd-app" VM and related functionality.
+"""
+
 import pytest
 
 from tests.base import (
+    SD_TAG,
+    SD_TEMPLATE_SMALL,
     QubeWrapper,
 )
 from tests.base import (
@@ -65,3 +72,29 @@ def test_sd_client_config(dom0_config, qube):
 
 def test_logging_configured(qube):
     qube.logging_configured()
+
+
+def test_sd_app_config(config, qube, all_vms):
+    vm = all_vms["sd-app"]
+    nvm = vm.netvm
+    assert nvm is None
+    assert vm.template.name == SD_TEMPLATE_SMALL
+    assert not vm.provides_network
+    assert not vm.template_for_dispvms
+    assert "service.securedrop-log-server" not in vm.features
+    assert SD_TAG in vm.tags
+    assert "sd-client" in vm.tags
+    # Check the size of the private volume
+    # Should be 10GB
+    # >>> 1024 * 1024 * 10 * 1024
+    size = config["vmsizes"]["sd_app"]
+    vol = vm.volumes["private"]
+    assert vol.size == size * 1024 * 1024 * 1024
+
+    # MIME handling
+    assert vm.features["service.securedrop-mime-handling"] == "1"
+    assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-app"
+    assert qube.service_is_active("securedrop-mime-handling")
+
+    # Arti should *not* be running
+    assert not qube.service_is_active("securedrop-arti")
