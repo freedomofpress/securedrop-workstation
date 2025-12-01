@@ -5,7 +5,7 @@ import subprocess
 import pytest
 
 from tests.base import (
-    CURRENT_DEBIAN_VERSION,
+    DEBIAN_VERSION,
     QubeWrapper,
 )
 from tests.base import (
@@ -54,7 +54,7 @@ def test_logs_are_flowing(qube, sdw_tagged_vms):
 
     # base template doesn't have sd-log configured
     # TODO: test a sd-viewer based dispVM
-    skip = [f"sd-base-{CURRENT_DEBIAN_VERSION}-template", "sd-viewer"]
+    skip = [f"sd-base-{DEBIAN_VERSION}-template", "sd-viewer"]
     # VMs we expect logs will not go to
     no_log_vms = ["sd-gpg", "sd-log"]
 

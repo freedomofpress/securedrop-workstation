@@ -7,14 +7,11 @@ import pytest
 
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
+    DEBIAN_VERSION,
     SD_TEMPLATE_LARGE,
     SD_TEMPLATE_SMALL,
     SD_VMS,
 )
-
-BOOKWORM_STRING = "Debian GNU/Linux 12 (bookworm)"
-
-SUPPORTED_SD_DEBIAN_DIST = "bookworm"
 
 IS_CI = os.environ.get("CI") == "true"
 
@@ -34,10 +31,10 @@ def _validate_vm_platform(vm):
     """
     Asserts that the given AppVM is based on an OS listed in the
     SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
-    All workstation-provisioned VMs should be SUPPORTED_SD_DEBIAN_DIST based.
+    All workstation-provisioned VMs should be based on DEBIAN_VERSION.
     """
     platform = _get_platform_info(vm)
-    assert SUPPORTED_SD_DEBIAN_DIST in platform
+    assert DEBIAN_VERSION in platform
 
 
 def _ensure_packages_up_to_date(vm, fedora=False):
@@ -186,4 +183,4 @@ def assert_apt_source(vm, component, url, filename):
 
     assert f"Components: {component}\n" in contents, f"{vm.name} wrong component"
     assert f"URIs: {url}\n" in contents, f"{vm.name} wrong URL"
-    assert f"Suites: {SUPPORTED_SD_DEBIAN_DIST}\n" in contents, f"{vm.name} wrong suite/codename"
+    assert f"Suites: {DEBIAN_VERSION}\n" in contents, f"{vm.name} wrong suite/codename"
