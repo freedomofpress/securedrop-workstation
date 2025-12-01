@@ -217,6 +217,22 @@ remotevm = sd-log
         # Ensure that the wildcard rule worked as expected.
         assert mailcap_result == f'logger "Mailcap is disabled." <{tmpfile_name}'
 
+    def check_service_running(self, service, running=True):
+        """
+        Ensures a given service is running inside a given VM.
+        Uses systemctl is-active to query the service state.
+        """
+        try:
+            cmd = f"systemctl is-active {service}"
+            stdout, stderr = self.run(cmd)
+            service_status = stdout.decode("utf-8").rstrip()
+        except subprocess.CalledProcessError as e:
+            if e.returncode == 3:
+                service_status = "inactive"
+            else:
+                raise e
+        assert service_status == "active" if running else "inactive"
+
 
 class Test_SD_VM_Common:
     def test_vm_config_keys(self, qube):

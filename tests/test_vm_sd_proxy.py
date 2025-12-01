@@ -70,3 +70,23 @@ def test_mimeapps(qube):
 
 def test_mailcap_hardened(qube):
     qube.mailcap_hardened()
+
+
+def test_sd_proxy_config(qube):
+    """
+    Confirm that qvm-prefs for the VM match expectations.
+    """
+    vm = qube
+    assert vm.template.name == "sd-proxy-dvm"
+    assert vm.klass == "DispVM"
+    assert vm.netvm.name == "sys-firewall"
+    assert vm.autostart
+    assert not vm.provides_network
+    assert vm.default_dispvm is None
+    assert SD_TAG in vm.tags
+    assert vm.features["service.securedrop-mime-handling"] == "1"
+    assert vm.features["service.securedrop-arti"] == "1"
+    assert vm.features["vm-config.SD_MIME_HANDLING"] == "default"
+    assert vm.check_service_running("securedrop-mime-handling")
+    assert vm.check_service_running("securedrop-proxy-onion-config")
+    assert vm.check_service_running("tor")
