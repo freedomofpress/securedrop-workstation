@@ -90,6 +90,27 @@ jobs:
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
           git push https://x-access-token:${GH_TOKEN}@github.com/${TARGET_REPO}.git main
 
-  openqa-nightly:
+  get-main-commit:
+    runs-on: ubuntu-latest
+    outputs:
+      main-commit: ${{ steps.get_main_sha.outputs.result }}
+    steps:
+      - name: Get SHA of main branch
+        id: get_main_sha
+        uses: actions/github-script@v8
+        with:
+          result-encoding: string
+          script: |
+            const { data: branch } = await github.rest.repos.getBranch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: 'main'
+            });
+            return branch.commit.sha;
+  openqa-nightly-dev:
     uses: ./.github/workflows/openqa.yml
     secrets: inherit
+    needs: ["get-main-commit"]
+    with:
+      environment: "dev"
+      git_ref: ${{ needs.jobs.get-main-commit.outputs.main-commit}}
