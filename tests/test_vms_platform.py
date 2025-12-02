@@ -1,7 +1,5 @@
 import os
-import re
 import subprocess
-import unittest
 
 import pytest
 
@@ -16,50 +14,34 @@ from tests.base import (
 IS_CI = os.environ.get("CI") == "true"
 
 
-def _get_platform_info(vm):
+def _check_packages_up_to_date(vm, fedora=False) -> bool:
     """
-    Retrieve PRETTY_NAME for an AppVM.
-    """
-    stdout, stderr = vm.run("cat /etc/os-release")
-    search = re.search(r'^PRETTY_NAME="(.*)"', stdout.decode())
-    if not search:
-        raise RuntimeError(f"Unable to determine platform for {vm.name}")
-    return search.group(1)
+    Checks that all available package updates are installed;
+    so upgrades pending. Assumes VM is Debian-based, so uses apt,
+    but supports `fedora=True` to use dnf instead.
 
-
-def _validate_vm_platform(vm):
+    Returns a boolean so that the calling test can before assertions,
+    and report errors with context.
     """
-    Asserts that the given AppVM is based on an OS listed in the
-    SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
-    All workstation-provisioned VMs should be based on DEBIAN_VERSION.
-    """
-    platform = _get_platform_info(vm)
-    assert DEBIAN_VERSION in platform
-
-
-def _ensure_packages_up_to_date(vm, fedora=False):
-    """
-    Asserts that all available packages are installed; no pending
-    updates. Assumes VM is Debian-based, so uses apt, but supports
-    `fedora=True` to use dnf instead.
-    """
-    # Create custom error message, so failing test cases display
-    # which VM caused the looped check to fail.
-    fail_msg = f"Unapplied updates for VM '{vm}'"
     if not fedora:
         cmd = "apt list --upgradable"
-        stdout, stderr = vm.run(cmd)
-        results = stdout.rstrip().decode("utf-8")
-        # `apt list` will always print "Listing..." to stdout,
-        # so expect only that string.
-        assert results == "Listing...", fail_msg
+        try:
+            stdout, stderr = vm.run(cmd)
+            results = stdout.rstrip().decode("utf-8")
+            # `apt list` will always print "Listing..." to stdout,
+            # so expect only that string.
+            return results == "Listing..."
+        # apt query should always return 0, so anything else is an error
+        except subprocess.CalledProcessError:
+            fail_msg = f"failed to check apt updates on VM: {vm}"
+            pytest.fail(fail_msg)
     else:
         cmd = "sudo dnf check-update"
         # Will raise CalledProcessError if updates available
         try:
             stdout, stderr = vm.run(cmd)
         except subprocess.CalledProcessError:
-            pytest.fail(fail_msg)
+            return False
         # 'stdout' will contain timestamped progress info; ignore it, and inspect stderr.
         results = stderr.decode("utf-8")
         stderr_lines = results.split("\n")
@@ -75,21 +57,30 @@ def _ensure_packages_up_to_date(vm, fedora=False):
         stderr_lines = [x for x in stderr_lines if x not in omit_lines]
 
         results = "".join(stderr_lines)
-        assert results == "", fail_msg
+        return results == ""
 
 
-@unittest.skipIf(IS_CI, "Skipping on CI")
-def test_all_sd_vms_uptodate(all_vms):
+@pytest.mark.skipif(IS_CI, reason="Skipping on CI")
+@pytest.mark.packages
+@pytest.mark.parametrize("vm_name", SD_VMS)
+def test_all_sd_vms_uptodate(vm_name, all_vms):
     """
     Asserts that all VMs have all available apt packages at the latest
     versions, with no updates pending.
     """
-    for vm_name in SD_VMS:
-        vm = all_vms[vm_name]
-        _ensure_packages_up_to_date(vm)
+    vm = all_vms[vm_name]
+    # We can't perform a live update check via package manager without a NetVM,
+    # e.g. for `sd-viewer`
+    if not vm.netvm and vm.klass != "TemplateVM":
+        pytest.skip(f"skipping package freshness check on net-less VM: '{vm.name}'")
+
+    # Create custom error message, so failing test cases display
+    # which VM caused the looped check to fail.
+    fail_msg = f"Unapplied updates for VM '{vm}'"
+    assert _check_packages_up_to_date(vm), fail_msg
 
 
-@unittest.skipIf(IS_CI, "Skipping on CI")
+@pytest.mark.skipif(IS_CI, reason="Skipping on CI")
 def test_all_fedora_vms_uptodate(all_vms):
     """
     Asserts that all Fedora-based templates, such as sys-net, have all
@@ -100,38 +91,9 @@ def test_all_fedora_vms_uptodate(all_vms):
     # AppVMs are based on the most recent Fedora version.
     vm_name = CURRENT_FEDORA_TEMPLATE
     vm = all_vms[vm_name]
-    _ensure_packages_up_to_date(vm, fedora=True)
+    fail_msg = f"Unapplied updates for VM '{vm}'"
+    assert _check_packages_up_to_date(vm, fedora=True), fail_msg
     vm.shutdown()
-
-
-def test_sd_proxy_template(all_vms):
-    """
-    Asserts that the 'sd-proxy' VM is using a supported base OS.
-    """
-    # This test is a single example of the method for testing: it would
-    # be ideal to use a loop construct (such as pytest.mark.parametrize),
-    # but doing so would introduce additional dependencies to dom0.
-    vm = all_vms["sd-proxy"]
-    _validate_vm_platform(vm)
-
-
-def test_all_sd_vm_platforms(all_vms):
-    """
-    Test all VM platforms iteratively.
-
-    Due to for-loop implementation, the first failure will stop the test.
-    Therefore, even if multiple VMs are NOT running a supported platform,
-    only a single failure will be reported.
-    """
-    # Would prefer to use a feature like pytest.mark.parametrize
-    # for better error output here, but not available in dom0.
-    for vm_name in SD_VMS:
-        if vm_name == "sd-viewer":
-            # sd-viewer is unable to start because of the securedrop-mime-handling
-            # systemd service failing, so skip it here.
-            continue
-        vm = all_vms[vm_name]
-        _validate_vm_platform(vm)
 
 
 def test_dispvm_default_platform():

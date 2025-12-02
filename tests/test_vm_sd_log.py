@@ -72,7 +72,10 @@ def test_logs_are_flowing(qube, sdw_tagged_vms):
         if vm.name in skip:
             continue
         # The sudo call will make it into syslog
-        subprocess.check_call(["qvm-run", vm.name, f"sudo echo {token}"])
+        try:
+            subprocess.check_call(["qvm-run", vm.name, f"sudo echo {token}"])
+        except subprocess.CalledProcessError:
+            raise RuntimeError(f"failed to insert token for logging check on VM '{vm.name}")
 
     for vm in sdw_tagged_vms:
         if vm.name in skip:

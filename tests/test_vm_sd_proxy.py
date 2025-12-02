@@ -93,7 +93,7 @@ def test_sd_proxy_config(all_vms, qube):
     assert qube.service_is_active("tor")
 
 
-def test_sd_proxy_dvm(all_vms):
+def test_sd_proxy_dvm(all_vms, config):
     """
     Confirm that qvm-prefs for the "sd-proxy" DispVM match expectations.
     """
@@ -107,3 +107,7 @@ def test_sd_proxy_dvm(all_vms):
     assert not vm.autostart
     assert "service.securedrop-mime-handling" not in vm.features
     assert not dvm_qube.service_is_active("securedrop-mime-handling")
+
+    # VM will be marked "internal" only in prod context.
+    if config["environment"] == "prod":
+        assert vm.features.get("internal") == "1"
