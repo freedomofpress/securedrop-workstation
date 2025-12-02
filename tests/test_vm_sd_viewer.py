@@ -133,7 +133,7 @@ def test_mimetypes_symlink(qube):
     assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
 
 
-def test_sd_viewer_config(all_vms):
+def test_sd_viewer_config(all_vms, config):
     """
     Confirm that qvm-prefs match expectations for the "sd-viewer" VM.
     """
@@ -148,3 +148,7 @@ def test_sd_viewer_config(all_vms):
     # MIME handling
     assert vm.features["service.securedrop-mime-handling"] == "1"
     assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-viewer"
+
+    # VM will be marked "internal" only in prod context.
+    if config["environment"] == "prod":
+        assert vm.features.get("internal") == "1"

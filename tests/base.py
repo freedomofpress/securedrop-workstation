@@ -4,9 +4,10 @@ Aims to provide a DRY configuration for the pytest suite.
 """
 
 import json
+import re
 import subprocess
-import unittest
 
+import pytest
 from qubesadmin import Qubes
 
 # Reusable constant for DRY import across tests
@@ -84,6 +85,9 @@ class QubeWrapper:
         self.enforced_apparmor_profiles = enforced_apparmor_profiles
 
     def run(self, cmd, user=""):
+        """
+        Wrapper for `Qube.run()` to make it a bit more ergonomic in tests.
+        """
         full_cmd = ["qvm-run", "-p"]
         if user:
             full_cmd += ["-u", user]
@@ -241,7 +245,45 @@ class Test_SD_VM_Common:
     def test_enforced_apparmor_profiles(self, qube):
         """Check the expected AppArmor profiles are enforced"""
         if not qube.enforced_apparmor_profiles:
-            raise unittest.SkipTest(f"No enforced AppArmor profiles in {qube.name}")
+            pytest.skip(f"No enforced AppArmor profiles in {qube.name}")
+
         results = json.loads(qube.run("sudo aa-status --json"))
         for profile in qube.enforced_apparmor_profiles:
             assert results["profiles"][profile] == "enforce"
+
+    def test_grsec_kernel(self, qube):
+        """
+        Confirms expected grsecurity-patched kernel is running.
+        """
+        # base doesn't have kernel configured
+        # TODO: test in sd-viewer based dispVM
+        exceptions = [SD_TEMPLATE_BASE, "sd-viewer", "sys-usb"]
+
+        if qube.vm.name in exceptions:
+            pytest.skip(f"Skipping grsec test on VM: '{qube.vm.name}'")
+
+        # Running custom kernel in PVH mode requires pvgrub2-pvh
+        assert qube.vm.virt_mode == "pvh"
+        assert qube.vm.kernel == "pvgrub2-pvh"
+
+        # Check running kernel is grsecurity-patched
+        stdout = qube.run("uname -r")
+        assert stdout.endswith("-grsec-workstation")
+        qube.service_is_active("paxctld")
+
+    def test_debian_platform_version(self, qube):
+        """
+        Asserts that the given AppVM is based on an OS listed in the
+        SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
+        All workstation-provisioned VMs should be based on DEBIAN_VERSION.
+        """
+
+        if qube.name.startswith("sys-"):
+            pytest.skip(f"skipping Debian platform check on QubesOS sys VM: {qube.name}")
+
+        stdout = qube.run("cat /etc/os-release")
+        search = re.search(r'^PRETTY_NAME="(.*)"', stdout)
+        if not search:
+            raise RuntimeError(f"Unable to determine platform for {qube.name}")
+        platform = search.group(1)
+        assert DEBIAN_VERSION in platform

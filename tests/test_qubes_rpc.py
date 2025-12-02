@@ -22,19 +22,34 @@ def test_policy_files_exist():
     assert os.path.exists("/etc/qubes/policy.d/32-securedrop-workstation.policy")
 
 
-# securedrop.Log from @tag:sd-workstation to sd-log should be allowed
 def test_sdlog_from_sdw_to_sdlog_allowed(sdw_tagged_vms):
-    for vm in sdw_tagged_vms:
-        if vm.name != "sd-log":
-            assert policy_exists(vm, "sd-log", "securedrop.Log")
+    """
+    All SDW VMs should be permitted to send logs to `sd-log`,
+    with the grant applying to all SDW VMs via `@tag:sd-workstation`.
+    """
+    for q in sdw_tagged_vms:
+        if q.vm.name != "sd-log":
+            assert policy_exists(
+                q.vm.name, "sd-log", "securedrop.Log"
+            ), f"Missing for logs from {q.vm.name} to sd-log"
 
 
 # securedrop.Log from anything else to sd-log should be denied
 def test_sdlog_from_other_to_sdlog_denied(all_vms, sdw_tagged_vms):
-    non_sd_workstation_vms = set(all_vms).difference(set(sdw_tagged_vms))
+    """
+    Only SDW VMs should be permitted to send logs to `sd-log`;
+    all other VMs on the system should not be able to.
+    """
+    # We exclude any VMs tagged with SDW. We're not using set differences
+    # here, because the SDW VMs in this test suite are wrapped with QubeWrapper,
+    # and "all_vms" entries are not.
+    non_sd_workstation_vms = [vm for vm in all_vms if SD_TAG not in vm.tags]
+
     for vm in non_sd_workstation_vms:
         if vm.name != "sd-log":
-            assert not policy_exists(vm, "sd-log", "securedrop.Log")
+            assert not policy_exists(
+                vm.name, "sd-log", "securedrop.Log"
+            ), f"Found unexpected policy for non-SDW {vm.name} to sd-log"
 
 
 # securedrop.Proxy from sd-app to sd-proxy should be allowed

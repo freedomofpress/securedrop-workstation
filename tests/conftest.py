@@ -25,7 +25,11 @@ def all_vms():
 @pytest.fixture
 def sdw_tagged_vms(all_vms):
     """Obtain all SecureDrop Workstation-exclusive qubes"""
-    return [vm for vm in all_vms if SD_TAG in vm.tags]
+
+    sdw_vms = [vm for vm in all_vms if SD_TAG in vm.tags]
+    # filter out the "sd-viewer-disposable" VM, which is an ephemeral DispVM,
+    # which will exist at certain points of the test suite
+    return [vm for vm in sdw_vms if vm.name != "sd-viewer-disposable"]
 
 
 @pytest.fixture

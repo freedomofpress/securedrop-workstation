@@ -1,3 +1,5 @@
+import pytest
+
 from tests.base import CURRENT_FEDORA_DVM, CURRENT_FEDORA_TEMPLATE
 
 """
@@ -6,26 +8,23 @@ sufficiently up to date.
 """
 
 
-def test_current_fedora_for_sys_vms(all_vms):
+@pytest.mark.parametrize(
+    ("sys_vm", "expected_templates"),
+    [
+        ("sys-firewall", [CURRENT_FEDORA_TEMPLATE, CURRENT_FEDORA_DVM]),
+        ("sys-net", [CURRENT_FEDORA_TEMPLATE]),
+        ("sys-usb", [CURRENT_FEDORA_TEMPLATE, f"sd-{CURRENT_FEDORA_DVM}"]),
+        ("default-mgmt-dvm", [CURRENT_FEDORA_TEMPLATE]),
+    ],
+)
+def test_current_fedora_for_sys_vms(sys_vm, expected_templates, all_vms):
     """
-    Checks that all sys-* VMs are configured to use
-    an up-to-date version of Fedora.
+    Checks that all sys-* VMs are configured to use an up-to-date version of Fedora.
     """
-    sys_vms = ["sys-firewall", "sys-net", "sys-usb", "default-mgmt-dvm"]
-    sys_vms_maybe_disp = ["sys-firewall", "sys-usb"]
-    sys_vms_custom_disp = ["sys-usb"]
+    vm = all_vms[sys_vm]
 
-    for sys_vm in sys_vms:
-        vm = all_vms[sys_vm]
-        wanted_templates = [CURRENT_FEDORA_TEMPLATE]
-        if sys_vm in sys_vms_maybe_disp:
-            if sys_vm in sys_vms_custom_disp:
-                wanted_templates.append(f"sd-{CURRENT_FEDORA_DVM}")
-            else:
-                wanted_templates.append(CURRENT_FEDORA_DVM)
-
-        assert vm.template.name in wanted_templates, (
-            f"Unexpected template for {sys_vm}\n"
-            + f"Current: {vm.template.name}\n"
-            + "Expected: {}".format(", ".join(wanted_templates))
-        )
+    assert vm.template.name in expected_templates, (
+        f"Unexpected template for {sys_vm}\n"
+        + f"Current: {vm.template.name}\n"
+        + "Expected: {}".format(", ".join(expected_templates))
+    )

@@ -87,7 +87,6 @@ build-rpm: ## Build RPM package
 reprotest: ## Check RPM package reproducibility
 	TERM=xterm-256color $(CONTAINER) bash -c "sudo ln -s $$PWD/scripts/fake-setarch.py /usr/local/bin/setarch && sudo reprotest 'make build-rpm' 'rpm-build/RPMS/noarch/*.rpm' --variations '+all,+kernel,-time,-fileordering,-domain_host'"
 
-
 .PHONY: build-deps
 build-deps: ## Install package dependencies to build RPMs
 # Note: build dependencies are specified in the spec file, not here
