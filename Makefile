@@ -112,7 +112,7 @@ clone-norpm: assert-dom0 ## As above, but skip creating RPM
 clean: assert-dom0 ## Destroys all SD VMs
 # Use the local script path, since system PATH location will be absent
 # if clean has already been run.
-	./scripts/sdw-admin.py --uninstall --force
+	./files/sdw-admin.py --uninstall --force
 
 .PHONY: test-prereqs
 test-prereqs: ## Checks that test prerequisites are satisfied
