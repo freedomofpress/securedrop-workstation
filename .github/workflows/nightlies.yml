@@ -113,4 +113,4 @@ jobs:
     needs: ["get-main-commit"]
     with:
       environment: "dev"
-      git_ref: ${{ needs.jobs.get-main-commit.outputs.main-commit}}
+      git_ref: ${{ needs.get-main-commit.outputs.main-commit}}
