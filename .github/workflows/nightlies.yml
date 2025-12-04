@@ -51,6 +51,10 @@ jobs:
     container: debian:bookworm
     needs:
       - build-rpm
+    matrix:
+      qubes_release:
+        - { fedora_ver: "37", qubes_ver: "4.2" }
+        - { fedora_ver: "41", qubes_ver: "4.3" }
     steps:
       - name: Install dependencies
         run: |
@@ -78,14 +82,15 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           TARGET_REPO: freedomofpress/securedrop-yum-test
+          FEDORA_REPO_DIR: workstation/dom0/f${{ matrix.qubes_release.fedora_ver }}-nightlies  # old repo structure
+          QUBES_REPO_DIR: workstation/dom0/r${{ matrix.qubes_release.qubes_ver }}-nightlies
         run: |
           git config --global user.email "securedrop@freedom.press"
           git config --global user.name "sdcibot-nightlies[bot]"
           cd securedrop-yum-test
-          mkdir -p workstation/dom0/f37-nightlies
-          cp -v ../rpm-build-37/*.rpm workstation/dom0/f37-nightlies/
-          mkdir -p workstation/dom0/f41-nightlies
-          cp -v ../rpm-build-41/*.rpm workstation/dom0/f41-nightlies/
+          mkdir -p $QUBES_REPO_DIR
+          [ ! -e $QUBES_REPO_DIR ] && ln -s $(basename $FEDORA_REPO_DIR) $QUBES_REPO_DIR  # Keep old structure
+          cp -v ../rpm-build-${{ matrix.qubes_release.fedora_ver }}/*.rpm $QUBES_REPO_DIR
           git add .
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
           git push https://x-access-token:${GH_TOKEN}@github.com/${TARGET_REPO}.git main
