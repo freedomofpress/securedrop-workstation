@@ -3,13 +3,13 @@ Integration tests for validating SecureDrop Workstation config,
 specifically for the "sd-devices" VM and related functionality.
 """
 
-import os
 
 import pytest
 
 from tests.base import (
     SD_TAG,
     QubeWrapper,
+    get_mimeapp_vars_for_vm,
 )
 from tests.base import (
     Test_SD_VM_Common as Test_SD_Devices_Common,  # noqa: F401 [HACK: import so base tests run]
@@ -37,18 +37,17 @@ def test_logging_configured(qube):
     qube.logging_configured()
 
 
-def test_mime_types(qube):
-    filepath = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "vars", "sd-devices.mimeapps"
-    )
-    with open(filepath) as f:
-        lines = f.readlines()
-        for line in lines:
-            if line != "[Default Applications]\n" and not line.startswith("#"):
-                mime_type = line.split("=")[0]
-                expected_app = line.split("=")[1].split(";")[0]
-                actual_app = qube.run(f"xdg-mime query default {mime_type}")
-                assert actual_app == expected_app
+SD_DEVICES_MIME_TYPE_VARS = get_mimeapp_vars_for_vm("sd-devices")
+
+
+@pytest.mark.parametrize(("mime_type", "expected_app"), SD_DEVICES_MIME_TYPE_VARS)
+def test_mime_types(mime_type, expected_app, qube):
+    """
+    Functionally verifies that the VM config handles specific filetypes correctly,
+    opening them with the appropriate program.
+    """
+    actual_app = qube.run(f"xdg-mime query default {mime_type}")
+    assert actual_app == expected_app
 
 
 def test_mailcap_hardened(qube):

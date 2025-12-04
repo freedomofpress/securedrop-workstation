@@ -4,6 +4,7 @@ Aims to provide a DRY configuration for the pytest suite.
 """
 
 import json
+import os
 import re
 import subprocess
 
@@ -53,6 +54,27 @@ def get_qubes_version():
     if not is_qubes:
         return None
     return version
+
+
+def get_mimeapp_vars_for_vm(vm_name):
+    """
+    Retrieve test fixture vars for inspecting MIME type handling for this VM.
+    Assumes that hardcoded vars file exists on disk, adjacent to the test, named as
+    `vars/{vm_name}.mimeapps`.
+
+    We do this via a helper function, rather than via pytest fixtures, in order
+    to leverage parametrization for parallel test execution.
+    """
+    filepath = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "vars", f"{vm_name}.mimeapps"
+    )
+    with open(filepath) as f:
+        lines = f.readlines()
+        for line in lines:
+            if line != "[Default Applications]\n" and not line.startswith("#"):
+                mime_type = line.split("=")[0]
+                expected_app = line.split("=")[1].rstrip().rstrip(";")
+                yield (mime_type, expected_app)
 
 
 class QubeWrapper:

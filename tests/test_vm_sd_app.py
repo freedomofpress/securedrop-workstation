@@ -9,6 +9,7 @@ from tests.base import (
     SD_TAG,
     SD_TEMPLATE_SMALL,
     QubeWrapper,
+    get_mimeapp_vars_for_vm,
 )
 from tests.base import (
     Test_SD_VM_Common as Test_SD_App_Common,  # noqa: F401 [HACK: import so base tests run]
@@ -40,17 +41,19 @@ def test_open_in_dvm_desktop(qube):
         assert line in contents
 
 
-def test_mimeapps(qube):
-    results = qube.run("cat /usr/share/applications/mimeapps.list")
-    for line in results.splitlines():
-        if line.startswith(("#", "[Default")):
-            # Skip comments and the leading [Default Applications]
-            continue
-        mime, target = line.split("=", 1)
-        assert target == "open-in-dvm.desktop;"
-        # Now functionally test it
-        actual_app = qube.run(f"xdg-mime query default {mime}")
-        assert actual_app == "open-in-dvm.desktop"
+SD_APP_MIME_TYPE_VARS = get_mimeapp_vars_for_vm("sd-app")
+
+
+@pytest.mark.parametrize(("mime_type", "expected_app"), SD_APP_MIME_TYPE_VARS)
+def test_mime_types(mime_type, expected_app, qube):
+    """
+    Functionally verifies that the VM config handles specific filetypes correctly,
+    opening them with the appropriate program.
+    """
+    actual_app = qube.run(f"xdg-mime query default {mime_type}")
+    # All associations should lead to open-in-dvm!
+    assert expected_app == "open-in-dvm.desktop"
+    assert actual_app == expected_app
 
 
 def test_mailcap_hardened(qube):
