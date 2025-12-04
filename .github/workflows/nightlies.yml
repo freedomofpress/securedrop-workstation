@@ -89,6 +89,7 @@ jobs:
           git config --global user.name "sdcibot-nightlies[bot]"
           cd securedrop-yum-test
           mkdir -p $QUBES_REPO_DIR
+          [ ! -e $QUBES_REPO_DIR ] && ln -s $(basename $FEDORA_REPO_DIR) $QUBES_REPO_DIR  # Keep old structure
           cp -v ../rpm-build-${{ matrix.qubes_release.fedora_ver }}/*.rpm $QUBES_REPO_DIR
           git add .
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
