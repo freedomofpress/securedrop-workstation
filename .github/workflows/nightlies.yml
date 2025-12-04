@@ -82,10 +82,10 @@ jobs:
           git config --global user.email "securedrop@freedom.press"
           git config --global user.name "sdcibot-nightlies[bot]"
           cd securedrop-yum-test
-          mkdir -p workstation/dom0/f37-nightlies
-          cp -v ../rpm-build-37/*.rpm workstation/dom0/f37-nightlies/
-          mkdir -p workstation/dom0/f41-nightlies
-          cp -v ../rpm-build-41/*.rpm workstation/dom0/f41-nightlies/
+          mkdir -p workstation/dom0/r4.2-nightlies
+          cp -v ../rpm-build-37/*.rpm workstation/dom0/r4.2-nightlies/
+          mkdir -p workstation/dom0/r4.3-nightlies
+          cp -v ../rpm-build-41/*.rpm workstation/dom0/r4.3-nightlies/
           git add .
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
           git push https://x-access-token:${GH_TOKEN}@github.com/${TARGET_REPO}.git main
