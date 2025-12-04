@@ -27,7 +27,8 @@ BASE_TEMPLATE = "debian-12-minimal"
 SUBMISSION_KEY = "sd-journalist.sec"
 TAILS_PATH = "/run/media/user/TailsData/"
 TAILS_GNUPG_PATH = TAILS_PATH + "gnupg/"
-TAILS_JOURNALIST_INTERFACE_CONFIG = (
+TAILS_PKG_JOURNALIST_INTERFACE_CONFIG = TAILS_PATH + "/securedrop-admin/app-journalist.auth_private"
+TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
     TAILS_PATH + "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
 
@@ -396,15 +397,34 @@ def import_journalist_interface_config():
     Assumes that USB drive is attached to vault VM and decrypted.
     Returns (hostname, key) of the journalist interface hidserv
     """
-    journalist_interface_config = subprocess.check_output(
-        [
-            "qvm-run",
-            "--pass-io",
-            "vault",
-            f"cat {TAILS_JOURNALIST_INTERFACE_CONFIG}",
-        ],
-        text=True,
-    )
+    journalist_interface_config = ""
+    try:
+        journalist_interface_config = subprocess.check_output(
+            [
+                "qvm-run",
+                "--pass-io",
+                "vault",
+                f"cat {TAILS_PKG_JOURNALIST_INTERFACE_CONFIG}",
+            ],
+            text=True,
+        )
+    except subprocess.CalledProcessError:
+        journalist_interface_config = subprocess.check_output(
+            [
+                "qvm-run",
+                "--pass-io",
+                "vault",
+                f"cat {TAILS_GIT_JOURNALIST_INTERFACE_CONFIG}",
+            ],
+            text=True,
+        )
+    except subprocess.CalledProcessError:
+        print(
+            "Failed to find a valid journalist interface config. Check the attached\n"
+            "USB key and try again."
+        )
+        sys.exit(1)
+
     fields = journalist_interface_config.strip().split(":")
     addr = fields[0]
     auth_token = fields[3]
