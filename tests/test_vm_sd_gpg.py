@@ -1,3 +1,8 @@
+"""
+Integration tests for validating SecureDrop Workstation config,
+specifically for the "sd-gpg" VM and related functionality.
+"""
+
 import re
 import subprocess
 import tempfile
@@ -5,6 +10,8 @@ import tempfile
 import pytest
 
 from tests.base import (
+    SD_TAG,
+    SD_TEMPLATE_SMALL,
     QubeWrapper,
 )
 from tests.base import (
@@ -81,3 +88,19 @@ def test_logging_disabled(qube):
     # Logging to sd-log should be disabled on sd-gpg
     assert not qube.fileExists("/etc/rsyslog.d/sdlog.conf")
     assert qube.fileExists("/var/run/qubes-service/securedrop-logging-disabled")
+
+
+def test_sd_gpg_config(all_vms):
+    """
+    Confirm that qvm-prefs match expectations for the sd-gpg VM.
+    """
+    vm = all_vms["sd-gpg"]
+    nvm = vm.netvm
+    assert nvm is None
+    # No sd-gpg-template, since keyring is managed in $HOME
+    assert vm.template.name == SD_TEMPLATE_SMALL
+    assert vm.autostart
+    assert not vm.provides_network
+    assert not vm.template_for_dispvms
+    assert vm.features["service.securedrop-logging-disabled"] == "1"
+    assert SD_TAG in vm.tags

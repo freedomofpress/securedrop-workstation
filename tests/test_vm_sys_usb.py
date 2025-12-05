@@ -1,3 +1,8 @@
+"""
+Integration tests for validating SecureDrop Workstation config,
+specifically for the "sys-usb" VM and related functionality.
+"""
+
 import pytest
 
 from tests.base import (
