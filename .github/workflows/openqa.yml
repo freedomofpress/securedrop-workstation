@@ -27,7 +27,8 @@ jobs:
       SECUREDROP_ENV: ${{ inputs.environment }}
       # The branch to clone on the FPF-managed remote OpenQA repo:
       # https://github.com/freedomofpress/openqa-tests-qubesos
-      SECUREDROP_OPENQA_REPO_BRANCH: "main"
+      # SECUREDROP_OPENQA_REPO_BRANCH: "main"
+      SECUREDROP_OPENQA_REPO_BRANCH: "python3-xdist-in-dom0"
       # The URL to clone the remote OpenQA repo from (useful for forks):
       SECUREDROP_OPENQA_REPO_URL: "https://github.com/freedomofpress/openqa-tests-qubesos"
     container:
