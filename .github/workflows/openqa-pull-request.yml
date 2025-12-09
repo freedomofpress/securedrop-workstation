@@ -1,0 +1,30 @@
+---
+run-name: "[Label] ${{ github.event.label.name }}"
+
+on:
+  pull_request:
+    types: [ labeled ]
+
+jobs:
+  check-openqa:
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.event.label.name, 'openqa-pending-') }}
+    outputs:
+      qubes-version: ${{ steps.check.outputs.qubes-version }}
+    steps:
+      - name: Set OpenQA Qubes version from label 'openqa-pending-<QUBES_VER>'
+        id: check
+        run: |
+          # Obtain Qubes version from label
+          QUBES_VER=$(sed 's/openqa-pending-//g' <<< ${{ github.event.label.name }})
+
+          echo "qubes-version=$QUBES_VER" >> $GITHUB_OUTPUT
+
+  openqa:
+    uses: ./.github/workflows/openqa.yml
+    with:
+      environment: "dev"
+      git_ref: ${{ github.event.head_commit.id }}
+      qubes_ver: ${{ needs.check-openqa.outputs.qubes-version }}
+    secrets: inherit
+    needs: [check-openqa]
