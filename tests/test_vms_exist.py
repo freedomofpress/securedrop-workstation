@@ -17,29 +17,29 @@ def test_all_sdw_vms_present(all_vms, sdw_tagged_vms):
     Seeks to detect errors in provisioning that result in VMs
     failing to be created. Compares to a hardcoded list in fixtures.
     """
-    sdw_tagged_vm_names = [vm.name for vm in sdw_tagged_vms]
-    expected_vms = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
-
     # This integration test suite will create an ephemeral "sd-viewer-disposable" VM,
     # and then destroy it, post-test-run. We can't assume the VM exists for general tests,
     # so we exclude it from the general shared-state fixture. The sd-viewer test suite
     # will handle targeting it with the appropriate tests, then clean up the DispVM.
     sdw_tagged_vm_names = [vm for vm in sdw_tagged_vms if vm != "sd-viewer-disposable"]
 
-    assert set(sdw_tagged_vm_names) == set(expected_vms)
+    expected_vm_names = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
+
+    assert set(sdw_tagged_vm_names) == set(expected_vm_names)
 
     # Check for untagged VMs
     for vm_name in SD_UNTAGGED_DEPRECATED_VMS:
         assert vm_name not in all_vms
 
 
-def test_default_dispvm(sdw_tagged_vms):
+def test_default_dispvm(all_vms, sdw_tagged_vms):
     """Verify the default DispVM is none for all except sd-app and sd-devices"""
-    for vm in sdw_tagged_vms:
-        if vm.name == "sd-app":
+    for vm_name in sdw_tagged_vms:
+        vm = all_vms[vm_name]
+        if vm_name == "sd-app":
             assert vm.default_dispvm.name == "sd-viewer"
         else:
-            assert vm.default_dispvm is None, f"{vm.name} has dispVM set"
+            assert vm.default_dispvm is None, f"{vm_name} has dispVM set"
 
 
 def test_sd_whonix_absent(all_vms):

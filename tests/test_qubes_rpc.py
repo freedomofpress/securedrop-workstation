@@ -1,7 +1,8 @@
 import functools
 import os
-import pytest
 import subprocess
+
+import pytest
 
 
 @functools.cache
@@ -28,11 +29,12 @@ def test_sdlog_from_sdw_to_sdlog_allowed(sdw_tagged_vms):
     All SDW VMs should be permitted to send logs to `sd-log`,
     with the grant applying to all SDW VMs via `@tag:sd-workstation`.
     """
-    for q in sdw_tagged_vms:
-        if q.vm.name != "sd-log":
-            assert policy_exists(
-                q.vm.name, "sd-log", "securedrop.Log"
-            ), f"Missing for logs from {q.vm.name} to sd-log"
+    for vm_name in sdw_tagged_vms:
+        if vm_name == "sd-log":
+            continue
+        assert policy_exists(
+            vm_name, "sd-log", "securedrop.Log"
+        ), f"Missing for logs from {vm_name} to sd-log"
 
 
 # securedrop.Log from anything else to sd-log should be denied
@@ -41,16 +43,14 @@ def test_sdlog_from_other_to_sdlog_denied(all_vms, sdw_tagged_vms):
     Only SDW VMs should be permitted to send logs to `sd-log`;
     all other VMs on the system should not be able to.
     """
-    # We exclude any VMs tagged with SDW. We're not using set differences
-    # here, because the SDW VMs in this test suite are wrapped with QubeWrapper,
-    # and "all_vms" entries are not.
-    non_sd_workstation_vms = [vm for vm in all_vms if SD_TAG not in vm.tags]
+    non_sd_workstation_vms = set(all_vms).difference(set(sdw_tagged_vms))
 
     for vm in non_sd_workstation_vms:
-        if vm.name != "sd-log":
-            assert not policy_exists(
-                vm.name, "sd-log", "securedrop.Log"
-            ), f"Found unexpected policy for non-SDW {vm.name} to sd-log"
+        if vm.name == "sd-log":
+            continue
+        assert not policy_exists(
+            vm.name, "sd-log", "securedrop.Log"
+        ), f"Found unexpected policy for non-SDW {vm.name} to sd-log"
 
 
 # securedrop.Proxy from sd-app to sd-proxy should be allowed
