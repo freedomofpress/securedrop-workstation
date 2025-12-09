@@ -60,9 +60,10 @@ def _check_packages_up_to_date(vm, fedora=False) -> bool:
         return results == ""
 
 
-@pytest.mark.skipif(IS_CI, reason="Skipping on CI")
+@pytest.mark.configuration
 @pytest.mark.packages
 @pytest.mark.parametrize("vm_name", SD_VMS)
+@pytest.mark.skipif(IS_CI, reason="Skipping on CI")
 def test_all_sd_vms_uptodate(vm_name, all_vms):
     """
     Asserts that all VMs have all available apt packages at the latest
@@ -81,6 +82,8 @@ def test_all_sd_vms_uptodate(vm_name, all_vms):
 
 
 @pytest.mark.skipif(IS_CI, reason="Skipping on CI")
+@pytest.mark.packages
+@pytest.mark.configuration
 def test_all_fedora_vms_uptodate(all_vms):
     """
     Asserts that all Fedora-based templates, such as sys-net, have all
@@ -96,6 +99,7 @@ def test_all_fedora_vms_uptodate(all_vms):
     vm.shutdown()
 
 
+@pytest.mark.provisioning
 def test_dispvm_default_platform():
     """
     Query dom0 Qubes preferences and confirm that new DispVMs
@@ -107,6 +111,8 @@ def test_dispvm_default_platform():
     assert result == "sd-viewer"
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def test_sd_vm_apt_sources(config, all_vms):
     """
     Test that the three templates we install our apt sources into are correct
@@ -146,6 +152,8 @@ def test_sd_vm_apt_sources(config, all_vms):
         )
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def assert_apt_source(vm, component, url, filename):
     stdout, stderr = vm.run(f"cat {filename}")
     contents = stdout.decode("utf-8").rstrip("\n")

@@ -8,6 +8,7 @@ sufficiently up to date.
 """
 
 
+@pytest.mark.provisioning
 @pytest.mark.parametrize(
     ("sys_vm", "expected_templates"),
     [

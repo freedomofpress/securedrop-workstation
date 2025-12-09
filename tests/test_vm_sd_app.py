@@ -31,6 +31,7 @@ def qube():
     )
 
 
+@pytest.mark.configuration
 def test_open_in_dvm_desktop(qube):
     contents = qube.get_file_contents("/usr/share/applications/open-in-dvm.desktop")
     expected_contents = [
@@ -45,6 +46,9 @@ SD_APP_MIME_TYPE_VARS = get_mimeapp_vars_for_vm("sd-app")
 
 
 @pytest.mark.parametrize(("mime_type", "expected_app"), SD_APP_MIME_TYPE_VARS)
+@pytest.mark.mime
+@pytest.mark.slow
+@pytest.mark.configuration
 def test_mime_types(mime_type, expected_app, qube):
     """
     Functionally verifies that the VM config handles specific filetypes correctly,
@@ -56,23 +60,28 @@ def test_mime_types(mime_type, expected_app, qube):
     assert actual_app == expected_app
 
 
+@pytest.mark.configuration
 def test_mailcap_hardened(qube):
     qube.mailcap_hardened()
 
 
+@pytest.mark.configuration
 def test_sd_client_package_installed(qube):
     assert qube.package_is_installed("securedrop-client")
 
 
+@pytest.mark.configuration
 def test_sd_client_dependencies_installed(qube):
     assert qube.package_is_installed("python3-pyqt5")
     assert qube.package_is_installed("python3-pyqt5.qtsvg")
 
 
+@pytest.mark.provisioning
 def test_sd_client_config(dom0_config, qube):
     assert dom0_config["submission_key_fpr"] == qube.vm_config_read("SD_SUBMISSION_KEY_FPR")
 
 
+@pytest.mark.provisioning
 def test_logging_configured(qube):
     qube.logging_configured()
 

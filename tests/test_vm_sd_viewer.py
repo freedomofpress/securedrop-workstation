@@ -78,24 +78,34 @@ def qube():
     _shutdown_test_qube(temp_qube_name)
 
 
+@pytest.mark.packages
+@pytest.mark.configuration
 def test_sd_viewer_metapackage_installed(qube):
     assert qube.package_is_installed("securedrop-workstation-viewer")
     assert not qube.package_is_installed("securedrop-workstation-svs-disp")
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def test_sd_viewer_evince_installed(qube):
     pkg = "evince"
     assert qube.package_is_installed(pkg)
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def test_sd_viewer_libreoffice_installed(qube):
     assert qube.package_is_installed("libreoffice")
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def test_logging_configured(qube):
     qube.logging_configured()
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def test_redis_packages_not_installed(qube):
     """
     Only the log collector, i.e. sd-log, needs redis, so redis will be
@@ -109,6 +119,9 @@ SD_VIEWER_MIME_TYPE_VARS = get_mimeapp_vars_for_vm("sd-viewer")
 
 
 @pytest.mark.parametrize(("mime_type", "expected_app"), SD_VIEWER_MIME_TYPE_VARS)
+@pytest.mark.mime
+@pytest.mark.slow
+@pytest.mark.configuration
 def test_mime_types(mime_type, expected_app, qube):
     """
     Functionally verifies that the VM config handles specific filetypes correctly,
@@ -118,20 +131,24 @@ def test_mime_types(mime_type, expected_app, qube):
     assert actual_app == expected_app
 
 
+@pytest.mark.configuration
 def test_mimetypes_service(qube):
     qube.service_is_active("securedrop-mime-handling")
 
 
+@pytest.mark.configuration
 def test_mailcap_hardened(qube):
     qube.mailcap_hardened()
 
 
+@pytest.mark.configuration
 def test_mimetypes_symlink(qube):
     assert qube.fileExists(".local/share/applications/mimeapps.list")
     symlink_location = qube.get_symlink_location(".local/share/applications/mimeapps.list")
     assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
 
 
+@pytest.mark.provisioning
 def test_sd_viewer_config(all_vms, config):
     """
     Confirm that qvm-prefs match expectations for the "sd-viewer" VM.
