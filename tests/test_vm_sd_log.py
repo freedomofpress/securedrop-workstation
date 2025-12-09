@@ -25,32 +25,39 @@ def qube():
     return QubeWrapper("sd-log")
 
 
+@pytest.mark.configuration
 def test_sd_log_package_installed(qube):
     assert qube.package_is_installed("securedrop-log")
 
 
+@pytest.mark.configuration
 def test_sd_log_redis_is_installed(qube):
     assert qube.package_is_installed("redis")
     assert qube.package_is_installed("redis-server")
 
 
+@pytest.mark.configuration
 def test_log_utility_installed(qube):
     assert qube.fileExists("/usr/sbin/securedrop-log-saver")
     assert qube.fileExists("/etc/qubes-rpc/securedrop.Log")
 
 
+@pytest.mark.configuration
 def test_sd_log_has_no_custom_rsyslog(qube):
     assert not qube.fileExists("/etc/rsyslog.d/sdlog.conf")
 
 
+@pytest.mark.configuration
 def test_sd_log_service_running(qube):
     assert qube.service_is_active("securedrop-log-server")
 
 
+@pytest.mark.configuration
 def test_redis_service_running(qube):
     assert qube.service_is_active("redis")
 
 
+@pytest.mark.configuration
 def test_logs_are_flowing(qube, sdw_tagged_vms):
     """
     To test that logs work, we run a unique command in each VM we care
@@ -87,6 +94,7 @@ def test_logs_are_flowing(qube, sdw_tagged_vms):
             assert token in qube.get_file_contents(syslog)
 
 
+@pytest.mark.configuration
 def test_log_dirs_properly_named(qube):
     cmd_output = qube.run("ls -1 /home/user/QubesIncomingLogs")
     log_dirs = cmd_output.split("\n")
@@ -94,6 +102,12 @@ def test_log_dirs_properly_named(qube):
     assert "host" not in log_dirs
 
 
+@pytest.mark.configuration
+def test_sd_log_service(qube):
+    assert qube.service_is_active("securedrop-log-server")
+
+
+@pytest.mark.provisioning
 def test_sd_log_config(qube, config, all_vms):
     """
     Confirm that qvm-prefs match expectations for the sd-log VM.
@@ -105,7 +119,6 @@ def test_sd_log_config(qube, config, all_vms):
     assert vm.autostart
     assert not vm.provides_network
     assert not vm.template_for_dispvms
-    assert qube.service_is_active("securedrop-log-server")
     assert vm.features["service.securedrop-log-server"] == "1"
     assert vm.features["service.securedrop-logging-disabled"] == "1"
     # See sd-log.sls "sd-install-epoch" feature

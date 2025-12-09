@@ -11,6 +11,7 @@ from tests.base import (
 )
 
 
+@pytest.mark.provisioning
 def test_all_sdw_vms_present(all_vms, sdw_tagged_vms):
     """
     Confirm that all SDW-managed VMs are present on the system.
@@ -32,6 +33,7 @@ def test_all_sdw_vms_present(all_vms, sdw_tagged_vms):
         assert vm_name not in all_vms
 
 
+@pytest.mark.provisioning
 def test_default_dispvm(all_vms, sdw_tagged_vms):
     """Verify the default DispVM is none for all except sd-app and sd-devices"""
     for vm_name in sdw_tagged_vms:
@@ -42,6 +44,7 @@ def test_default_dispvm(all_vms, sdw_tagged_vms):
             assert vm.default_dispvm is None, f"{vm_name} has dispVM set"
 
 
+@pytest.mark.provisioning
 def test_sd_whonix_absent(all_vms):
     """
     The sd-whonix once existed to proxy sd-proxy's traffic through Tor.
@@ -59,6 +62,7 @@ WHONIX_QUBES = [
 ]
 
 
+@pytest.mark.provisioning
 @pytest.mark.parametrize("whonix_vm_name", WHONIX_QUBES)
 def test_whonix_vms_reset(whonix_vm_name, all_vms):
     """
@@ -73,6 +77,7 @@ def test_whonix_vms_reset(whonix_vm_name, all_vms):
     assert qube.property_is_default("kernelopts")
 
 
+@pytest.mark.provisioning
 def test_sd_small_template(all_vms):
     """
     Confirm that the "small" version of the SDW TemplateVM is configured correctly.
@@ -82,6 +87,7 @@ def test_sd_small_template(all_vms):
     assert SD_TAG in vm.tags
 
 
+@pytest.mark.provisioning
 def test_sd_large_template(all_vms):
     """
     Confirm that the "large" version of the SDW TemplateVM is configured correctly.

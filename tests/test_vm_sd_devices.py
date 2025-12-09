@@ -40,6 +40,8 @@ SD_DEVICES_MIME_TYPE_VARS = get_mimeapp_vars_for_vm("sd-devices")
 
 
 @pytest.mark.parametrize(("mime_type", "expected_app"), SD_DEVICES_MIME_TYPE_VARS)
+@pytest.mark.mime
+@pytest.mark.slow
 def test_mime_types(mime_type, expected_app, qube):
     """
     Functionally verifies that the VM config handles specific filetypes correctly,
