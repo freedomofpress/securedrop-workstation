@@ -27,7 +27,8 @@ BASE_TEMPLATE = "debian-12-minimal"
 SUBMISSION_KEY = "sd-journalist.sec"
 TAILS_PATH = "/run/media/user/TailsData/"
 TAILS_GNUPG_PATH = TAILS_PATH + "gnupg/"
-TAILS_JOURNALIST_INTERFACE_CONFIG = (
+TAILS_PKG_JOURNALIST_INTERFACE_CONFIG = TAILS_PATH + "securedrop-admin/app-journalist.auth_private"
+TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
     TAILS_PATH + "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
 
@@ -396,15 +397,36 @@ def import_journalist_interface_config():
     Assumes that USB drive is attached to vault VM and decrypted.
     Returns (hostname, key) of the journalist interface hidserv
     """
-    journalist_interface_config = subprocess.check_output(
-        [
-            "qvm-run",
-            "--pass-io",
-            "vault",
-            f"cat {TAILS_JOURNALIST_INTERFACE_CONFIG}",
-        ],
-        text=True,
-    )
+    journalist_interface_config = ""
+    try:
+        # First, check for the 2.13.0+ location
+        journalist_interface_config = subprocess.check_output(
+            [
+                "qvm-run",
+                "--pass-io",
+                "vault",
+                f"cat {TAILS_PKG_JOURNALIST_INTERFACE_CONFIG}",
+            ],
+            text=True,
+        )
+    except subprocess.CalledProcessError:
+        try:
+            # Fall back to the legacy location
+            journalist_interface_config = subprocess.check_output(
+                [
+                    "qvm-run",
+                    "--pass-io",
+                    "vault",
+                    f"cat {TAILS_GIT_JOURNALIST_INTERFACE_CONFIG}",
+                ],
+                text=True,
+            )
+        except subprocess.CalledProcessError:
+            raise SDWAdminException(
+                "Failed to find a valid journalist interface config.\n"
+                "Check the attached USB key and try again."
+            )
+
     fields = journalist_interface_config.strip().split(":")
     addr = fields[0]
     auth_token = fields[3]
@@ -461,7 +483,12 @@ def import_config():
         if response.lower() != "y":
             print("Exiting.")
             return
-        ji_addr, ji_auth_token = import_journalist_interface_config()
+        try:
+            ji_addr, ji_auth_token = import_journalist_interface_config()
+        except SDWAdminException as e:
+            print(f"Error importing configuration: {e}")
+            sys.exit(1)
+
         print(
             "Journalist Interface details imported.\n\n"
             f"Onion address: {ji_addr}.onion\n"
