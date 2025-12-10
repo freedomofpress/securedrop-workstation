@@ -1,5 +1,9 @@
 # changelog
 
+# 1.5.1
+
+* Update sdw-admin configure action to check for packaged Tails config (#1506)
+
 ## 1.5.0
 
 This release introduced two key changes:
