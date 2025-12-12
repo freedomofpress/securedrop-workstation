@@ -1,3 +1,8 @@
+"""
+Integration tests for validating SecureDrop Workstation config,
+specifically for the "sd-log" VM and related functionality.
+"""
+
 import secrets
 import string
 import subprocess
@@ -5,7 +10,9 @@ import subprocess
 import pytest
 
 from tests.base import (
-    CURRENT_DEBIAN_VERSION,
+    DEBIAN_VERSION,
+    SD_TAG,
+    SD_TEMPLATE_SMALL,
     QubeWrapper,
 )
 from tests.base import (
@@ -54,7 +61,7 @@ def test_logs_are_flowing(qube, sdw_tagged_vms):
 
     # base template doesn't have sd-log configured
     # TODO: test a sd-viewer based dispVM
-    skip = [f"sd-base-{CURRENT_DEBIAN_VERSION}-template", "sd-viewer"]
+    skip = [f"sd-base-{DEBIAN_VERSION}-template", "sd-viewer"]
     # VMs we expect logs will not go to
     no_log_vms = ["sd-gpg", "sd-log"]
 
@@ -82,3 +89,30 @@ def test_log_dirs_properly_named(qube):
     log_dirs = cmd_output.split("\n")
     # Confirm we don't have 'host' entries from Whonix VMs
     assert "host" not in log_dirs
+
+
+def test_sd_log_config(qube, config, all_vms):
+    """
+    Confirm that qvm-prefs match expectations for the sd-log VM.
+    """
+    vm = all_vms["sd-log"]
+    nvm = vm.netvm
+    assert nvm is None
+    assert vm.template.name == SD_TEMPLATE_SMALL
+    assert vm.autostart
+    assert not vm.provides_network
+    assert not vm.template_for_dispvms
+    assert qube.service_is_active("securedrop-log-server")
+    assert vm.features["service.securedrop-log-server"] == "1"
+    assert vm.features["service.securedrop-logging-disabled"] == "1"
+    # See sd-log.sls "sd-install-epoch" feature
+    assert vm.features["sd-install-epoch"] == "1001"
+
+    assert not vm.template_for_dispvms
+    assert SD_TAG in vm.tags
+    # Check the size of the private volume
+    # Should be same of config.json
+    # >>> 1024 * 1024 * 5 * 1024
+    size = config["vmsizes"]["sd_log"]
+    vol = vm.volumes["private"]
+    assert vol.size == size * 1024 * 1024 * 1024
