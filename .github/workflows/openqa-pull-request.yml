@@ -1,0 +1,32 @@
+---
+name: OpenQA (Pull Request)
+
+on:
+  pull_request:
+    types: [ labeled ]
+
+# Only build for latest PR unless it's main or release/
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && !startsWith( github.ref, 'refs/heads/release/' ) && !startsWith( github.ref, 'refs/heads/gh-readonly-queue/' ) }}
+
+jobs:
+  check-openqa:
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(steps.github.event.label.name, 'openqa-pending-') }}
+    outputs:
+      qubes-version: ${{ steps.check.outputs.qubes-version }}
+    steps:
+      - name: Set OpenQA Qubes version
+        id: check
+        run: |
+          echo "${{ steps.github.event.label.name }}" | sed 's/openqa-pending-/qubes-version=/g' >> $GITHUB_OUTPUT
+
+  openqa:
+    uses: ./.github/workflows/openqa.yml
+    with:
+      environment: "dev"
+      git_ref: ${{ github.event.head_commit.id }}
+      qubes_ver: ${{ needs.check-openqa.outputs.qubes-version }}
+    secrets: inherit
+    needs: [check-openqa]
