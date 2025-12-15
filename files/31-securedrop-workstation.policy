@@ -20,6 +20,9 @@
 securedrop.Log          *           sd-log sd-log deny notify=no
 securedrop.Log          *           @tag:sd-workstation sd-log allow
 
+# Allow sd-gpg qube to get journalist secret keys from dom0
+securedrop.GetJournalistSecretKeys *	sd-gpg	dom0	allow
+
 securedrop.Proxy        *           sd-app sd-proxy allow
 
 qubes.Gpg               *           @tag:sd-client sd-gpg allow
