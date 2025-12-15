@@ -26,10 +26,6 @@ def test_all_sdw_vms_present(all_vms, sdw_tagged_vms):
     sdw_tagged_vm_names = [vm.name for vm in sdw_tagged_vms]
     expected_vms = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
 
-    # This integration test suite will create an ephemeral "sd-viewer-disposable" VM,
-    # and then destroy it, post-test-run.
-    sdw_tagged_vm_names = [vm for vm in sdw_tagged_vms if vm != "sd-viewer-disposable"]
-
     assert set(sdw_tagged_vm_names) == set(expected_vms)
 
     # Check for untagged VMs
