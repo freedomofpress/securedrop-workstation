@@ -51,7 +51,10 @@ def _shutdown_test_qube(qube_name):
 @pytest.fixture(scope="module")
 def qube():
     """
-    Handles the creation of disposable qubes based on the provided DVM template
+    Handles the creation of disposable qubes based on the provided DVM template.
+    Written as a fixture, so that the test suite handles both creation during
+    loading of the test module, via yield, and cleanup after the execution of
+    all tests in the module, via the post-yield teardown logic.
     """
     temp_qube_name = _create_test_qube("sd-viewer")
 

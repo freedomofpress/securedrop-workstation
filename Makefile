@@ -125,8 +125,20 @@ test-prereqs: ## Checks that test prerequisites are satisfied
 install-dom0-test-prereqs: assert-dom0 ## Installs pytest dependencies in dom0
 	@rpm -q python3-pytest python3-pytest-cov python3-pytest-xdist || sudo qubes-dom0-update -y python3-pytest python3-pytest-cov python3-pytest-xdist
 
-test: test-prereqs ## Runs all tests for the project
-	pytest -v
+test: test-prereqs ## Runs all application tests (no integration tests yet)
+	pytest -v tests -v launcher/tests -n auto --dist=loadfile --durations=5
+
+test-base: test-prereqs ## Runs tests for VMs layout
+	pytest -v tests/test_vms_exist.py
+
+test-app: test-prereqs ## Runs tests for SD APP VM config
+	pytest -v tests/test_app.py
+
+test-proxy: test-prereqs ## Runs tests for SD Proxy VM
+	pytest -v tests/test_proxy_vm.py
+
+test-gpg: test-prereqs ## Runs tests for SD GPG functionality
+	pytest -v tests/test_gpg.py
 
 # Client autologin variables
 XDOTOOL_PATH=$(shell command -v xdotool)
@@ -184,7 +196,7 @@ RUN_WRAPPERS=xvfb-run poetry run
 endif
 .PHONY: test-launcher
 test-launcher: ## Runs launcher tests
-	$(RUN_WRAPPERS) python3 -m pytest launcher/tests/
+	$(RUN_WRAPPERS) python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater/ --cov=sdw_util -v launcher/tests/
 
 .PHONY: check-ruff
 check-ruff: ## Check Python source code formatting with ruff

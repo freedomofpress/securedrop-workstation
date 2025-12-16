@@ -16,13 +16,13 @@ def dom0_config():
         return json.load(config_file)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture
 def all_vms():
     """Obtain all qubes present in the system"""
     return Qubes().domains
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture
 def sdw_tagged_vms(all_vms):
     """Obtain all SecureDrop Workstation-exclusive qubes"""
     return [vm for vm in all_vms if SD_TAG in vm.tags]

@@ -123,7 +123,5 @@ exclude = [
     "tests/",
 ]
 
-# We avoid setting pytest options in pyproject.toml, instead using per-suite pytest.ini files in subdirectories.
-# Doing so allows us to separate the test suites' notion of fixtures.
-# [tool.pytest.ini_options] p
-# addopts = "--cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util --junitxml=test-data.xml -n auto --dist=loadfile --durations=5"
+[tool.pytest.ini_options]
+addopts = "--cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util --junitxml=test-data.xml"
