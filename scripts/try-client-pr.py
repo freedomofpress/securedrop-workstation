@@ -163,7 +163,8 @@ def main():
     ).splitlines()
     subprocess.check_call(["qvm-shutdown", "--wait"] + all_vms)
     print(f"\n\nYour workstation is provisioned with PR #{args.pr_id}.")
-    print("\n\nYou can start the client with `make run-client`.")
+    target = "app" if args.app else "client"
+    print(f"\n\nYou can start the {target} with `make run-{target}`.")
 
 
 if __name__ == "__main__":
