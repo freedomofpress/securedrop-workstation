@@ -36,6 +36,7 @@ sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator, ValidationError  # noqa: E402
 
 DEBIAN_VERSION = "bookworm"
+SD_TAG = "sd-workstation"
 
 
 def parse_args():
@@ -75,6 +76,13 @@ def parse_args():
         action="store_true",
         help="Configure SecureDrop Workstation",
     )
+    parser.add_argument(
+        "--reconcile",
+        default=False,
+        required=False,
+        action="store_true",
+        help="Set default running state for all SDW VMs, e.g. shutting down TemplateVMs",
+    )
     return parser.parse_args()
 
 
@@ -101,7 +109,7 @@ def provision_and_configure():
     provision_all()
     configure(
         "Configure all SecureDrop Workstation VMs with service-specific configs",
-        [q.name for q in Qubes().domains if "sd-workstation" in q.tags],
+        [q.name for q in Qubes().domains if SD_TAG in q.tags],
     )
 
     if "whonix-gateway-17" in Qubes().domains:
@@ -534,6 +542,42 @@ def import_config():
     return
 
 
+def perform_reconcile():
+    """
+    Enforce the default state for the Workstation VMs:
+
+    - Those with autostart=true should be running
+    - Any other VMs are powered off
+    """
+    # Get all VMs tagged with sd-workstation
+    sdw_vms = [vm for vm in Qubes().domains if SD_TAG in vm.tags]
+
+    if not sdw_vms:
+        msg = f"No VMs found with tag: {SD_TAG}; install the SecureDrop Workstation first."
+        raise RuntimeError(msg)
+
+    vms_to_shutdown = [vm.name for vm in sdw_vms if vm.is_running() and not vm.autostart]
+    if vms_to_shutdown:
+        print(f"Shutting down SDW VMs: {vms_to_shutdown}")
+        # Shelling out to use parallel arg-parsing;
+        # TODO: look up python api for parallel shutdowns
+        cmd = ["qvm-shutdown", "--wait"]
+        cmd += vms_to_shutdown
+        subprocess.run(
+            cmd,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    vms_to_start = [vm.name for vm in sdw_vms if not vm.is_running() and vm.autostart]
+    if vms_to_shutdown:
+        print(f"Starting SDW VMs: {vms_to_start}")
+        # Shelling out to use parallel arg-parsing;
+        cmd = ["qvm-start"] + vms_to_shutdown
+
+    print("Finished: all SecureDrop Workstation components are running")
+
+
 def main():
     if os.geteuid() == 0:
         print("Please do not run this script as root.")
@@ -591,6 +635,8 @@ def main():
             print("Valid configuration found, configuration complete")
         except SDWAdminException:
             import_config()
+    elif args.reconcile:
+        perform_reconcile()
     else:
         sys.exit(0)
 
