@@ -37,6 +37,8 @@ sd-gpg:
     - features:
       - enable:
         - service.securedrop-logging-disabled
+        - service.securedrop-gpg-dismiss-prompt
+        - service.securedrop-get-secret-keys
       - set:
         - internal: ""
     - tags:

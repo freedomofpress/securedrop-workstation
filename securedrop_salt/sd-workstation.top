@@ -30,12 +30,11 @@ base:
     - securedrop_salt.sd-logging-setup
     - securedrop_salt.sd-app-files
     - securedrop_salt.sd-proxy-template-files
+    - securedrop_salt.sd-gpg-template-files
   sd-large-bookworm-template:
     - securedrop_salt.sd-logging-setup
     - securedrop_salt.sd-devices-files
     - securedrop_salt.sd-viewer-files
-  sd-gpg:
-    - securedrop_salt.sd-gpg-files
   'sd-fedora-42-dvm,sys-usb':
     - match: list
     - securedrop_salt.sd-usb-autoattach-add
