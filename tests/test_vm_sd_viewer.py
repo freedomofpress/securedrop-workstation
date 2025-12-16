@@ -1,3 +1,8 @@
+"""
+Integration tests for validating SecureDrop Workstation config,
+specifically for the "sd-viewer" VM and related functionality.
+"""
+
 import os
 import subprocess
 
@@ -5,6 +10,8 @@ import pytest
 from qubesadmin import Qubes
 
 from tests.base import (
+    SD_TAG,
+    SD_TEMPLATE_LARGE,
     QubeWrapper,
 )
 from tests.base import (
@@ -13,9 +20,15 @@ from tests.base import (
 
 
 def _create_test_qube(dispvm_template_name):
+    """
+    Provision and boot a DispVM to target with integration tests.
+    We don't want to test `sd-viewer`, because that's an AppVM;
+    rather, we want to ensure that a DispVM based on that AppVM
+    is configured correctly.
+    """
     # VM was running and needs a restart to test on the latest version
     if dispvm_template_name in Qubes().domains:
-        _kill_test_qube(dispvm_template_name)
+        _shutdown_test_qube(dispvm_template_name)
 
     # Create disposable based on specified template
     qube_name = f"{dispvm_template_name}-disposable"
@@ -28,14 +41,20 @@ def _create_test_qube(dispvm_template_name):
     return qube_name
 
 
-def _kill_test_qube(qube_name):
-    subprocess.run(["qvm-kill", qube_name], check=True)
+def _shutdown_test_qube(qube_name):
+    """
+    Gracefully power off the DispVM created for testing.
+    """
+    subprocess.run(["qvm-shutdown", "--wait", qube_name], check=True)
 
 
 @pytest.fixture(scope="module")
 def qube():
     """
-    Handles the creation of disposable qubes based on the provided DVM template
+    Handles the creation of disposable qubes based on the provided DVM template.
+    Written as a fixture, so that the test suite handles both creation during
+    loading of the test module, via yield, and cleanup after the execution of
+    all tests in the module, via the post-yield teardown logic.
     """
     temp_qube_name = _create_test_qube("sd-viewer")
 
@@ -56,7 +75,7 @@ def qube():
     )
 
     # Tear Down
-    _kill_test_qube(temp_qube_name)
+    _shutdown_test_qube(temp_qube_name)
 
 
 def test_sd_viewer_metapackage_installed(qube):
@@ -112,3 +131,20 @@ def test_mimetypes_symlink(qube):
     assert qube.fileExists(".local/share/applications/mimeapps.list")
     symlink_location = qube.get_symlink_location(".local/share/applications/mimeapps.list")
     assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
+
+
+def test_sd_viewer_config(all_vms):
+    """
+    Confirm that qvm-prefs match expectations for the "sd-viewer" VM.
+    """
+    vm = all_vms["sd-viewer"]
+    nvm = vm.netvm
+    assert nvm is None
+    assert vm.template.name == SD_TEMPLATE_LARGE
+    assert not vm.provides_network
+    assert vm.template_for_dispvms
+    assert SD_TAG in vm.tags
+
+    # MIME handling
+    assert vm.features["service.securedrop-mime-handling"] == "1"
+    assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-viewer"

@@ -17,9 +17,21 @@ with open("config.json") as f:
     CONFIG = json.load(f)
 
 
-def test_expected(all_vms, sdw_tagged_vms):
+def test_all_sdw_vms_present(all_vms, sdw_tagged_vms):
+    """
+    Confirm that all SDW-managed VMs are present on the system.
+    Seeks to detect errors in provisioning that result in VMs
+    failing to be created. Compares to a hardcoded list in fixtures.
+    """
     sdw_tagged_vm_names = [vm.name for vm in sdw_tagged_vms]
     expected_vms = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
+
+    # This integration test suite will create an ephemeral "sd-viewer-disposable" VM,
+    # and then destroy it, post-test-run. We can't assume the VM exists for general tests,
+    # so we exclude it from the general shared-state fixture. The sd-viewer test suite
+    # will handle targeting it with the appropriate tests, then clean up the DispVM.
+    sdw_tagged_vm_names = [vm for vm in sdw_tagged_vms if vm != "sd-viewer-disposable"]
+
     assert set(sdw_tagged_vm_names) == set(expected_vms)
 
     # Check for untagged VMs
@@ -107,141 +119,6 @@ def test_whonix_vms_reset(all_vms):
             continue
         qube = all_vms[qube_name]
         assert qube.property_is_default("kernelopts")
-
-
-def test_sd_proxy_config(all_vms):
-    vm = all_vms["sd-proxy"]
-    assert vm.template.name == "sd-proxy-dvm"
-    assert vm.klass == "DispVM"
-    assert vm.netvm.name == "sys-firewall"
-    assert vm.autostart
-    assert not vm.provides_network
-    assert vm.default_dispvm is None
-    assert SD_TAG in vm.tags
-    assert vm.features["service.securedrop-mime-handling"] == "1"
-    assert vm.features["service.securedrop-arti"] == "1"
-    assert vm.features["vm-config.SD_MIME_HANDLING"] == "default"
-    check_service_running(vm, "securedrop-mime-handling")
-    check_service_running(vm, "securedrop-proxy-onion-config")
-    check_service_running(vm, "tor")
-
-
-def test_sd_proxy_dvm(all_vms):
-    vm = all_vms["sd-proxy-dvm"]
-    assert vm.template_for_dispvms
-    assert vm.netvm.name == "sys-firewall"
-    assert vm.template.name == SD_TEMPLATE_SMALL
-    assert vm.default_dispvm is None
-    assert SD_TAG in vm.tags
-    assert not vm.autostart
-    assert "service.securedrop-mime-handling" not in vm.features
-    check_service_running(vm, "securedrop-mime-handling", running=False)
-
-
-def test_sd_app_config(config, all_vms):
-    vm = all_vms["sd-app"]
-    nvm = vm.netvm
-    assert nvm is None
-    assert vm.template.name == SD_TEMPLATE_SMALL
-    assert not vm.provides_network
-    assert not vm.template_for_dispvms
-    assert "service.securedrop-log-server" not in vm.features
-    assert SD_TAG in vm.tags
-    assert "sd-client" in vm.tags
-    # Check the size of the private volume
-    # Should be 10GB
-    # >>> 1024 * 1024 * 10 * 1024
-    size = config["vmsizes"]["sd_app"]
-    vol = vm.volumes["private"]
-    assert vol.size == size * 1024 * 1024 * 1024
-
-    # MIME handling
-    assert vm.features["service.securedrop-mime-handling"] == "1"
-    assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-app"
-    check_service_running(vm, "securedrop-mime-handling")
-
-    # Arti should *not* be running
-    check_service_running(vm, "securedrop-arti", running=False)
-
-
-def test_sd_viewer_config(all_vms):
-    vm = all_vms["sd-viewer"]
-    nvm = vm.netvm
-    assert nvm is None
-    assert vm.template.name == SD_TEMPLATE_LARGE
-    assert not vm.provides_network
-    assert vm.template_for_dispvms
-    assert SD_TAG in vm.tags
-
-    # MIME handling
-    assert vm.features["service.securedrop-mime-handling"] == "1"
-    assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-viewer"
-
-
-def test_sd_gpg_config(all_vms):
-    vm = all_vms["sd-gpg"]
-    nvm = vm.netvm
-    assert nvm is None
-    # No sd-gpg-template, since keyring is managed in $HOME
-    assert vm.template.name == SD_TEMPLATE_SMALL
-    assert vm.autostart
-    assert not vm.provides_network
-    assert not vm.template_for_dispvms
-    assert vm.features["service.securedrop-logging-disabled"] == "1"
-    assert SD_TAG in vm.tags
-
-
-def test_sd_log_config(config, all_vms):
-    vm = all_vms["sd-log"]
-    nvm = vm.netvm
-    assert nvm is None
-    assert vm.template.name == SD_TEMPLATE_SMALL
-    assert vm.autostart
-    assert not vm.provides_network
-    assert not vm.template_for_dispvms
-    check_service_running(vm, "securedrop-log-server")
-    assert vm.features["service.securedrop-log-server"] == "1"
-    assert vm.features["service.securedrop-logging-disabled"] == "1"
-    # See sd-log.sls "sd-install-epoch" feature
-    assert vm.features["sd-install-epoch"] == "1001"
-
-    assert not vm.template_for_dispvms
-    assert SD_TAG in vm.tags
-    # Check the size of the private volume
-    # Should be same of config.json
-    # >>> 1024 * 1024 * 5 * 1024
-    size = config["vmsizes"]["sd_log"]
-    vol = vm.volumes["private"]
-    assert vol.size == size * 1024 * 1024 * 1024
-
-
-def test_sd_export_dvm(all_vms):
-    vm = all_vms["sd-devices-dvm"]
-    nvm = vm.netvm
-    assert nvm is None
-    assert SD_TAG in vm.tags
-    assert vm.template_for_dispvms
-
-    assert "service.avahi" not in vm.features
-    # MIME handling (dvm does NOT setup mime, only its disposables do)
-    assert "service.securedrop-mime-handling" not in vm.features
-    check_service_running(vm, "securedrop-mime-handling", running=False)
-
-
-def test_sd_export(all_vms):
-    vm = all_vms["sd-devices"]
-    nvm = vm.netvm
-    assert nvm is None
-    vm_type = vm.klass
-    assert vm_type == "DispVM"
-    assert SD_TAG in vm.tags
-
-    assert vm.features["service.avahi"] == "1"
-
-    # MIME handling
-    assert vm.features["service.securedrop-mime-handling"] == "1"
-    assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-devices"
-    check_service_running(vm, "securedrop-mime-handling")
 
 
 def test_sd_small_template(all_vms):
