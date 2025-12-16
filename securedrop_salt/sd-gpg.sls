@@ -39,6 +39,10 @@ sd-gpg:
         - service.securedrop-logging-disabled
       - set:
         - internal: ""
+        - vm-config.run.on_boot: >-
+          qrexec-client-vm dom0 securedrop.GetJournalistSecretKeys |
+          /usr/bin/gpg --import -
+
     - tags:
       - add:
         - sd-workstation
