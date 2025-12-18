@@ -69,11 +69,13 @@ def vm_fingerprint(qube):
     return _extract_fingerprints(remote_results)
 
 
+@pytest.mark.configuration
 def test_sd_gpg_timeout(qube):
     line = "export QUBES_GPG_AUTOACCEPT=2147483647"
     qube.assertFileHasLine("/home/user/.profile", line)
 
 
+@pytest.mark.configuration
 def test_local_key_in_remote_keyring(config_fingerprint, dom0_fingerprint, vm_fingerprint):
     """
     Verify the key present in dom0 and sd-gpg matches what's configured in config.json
@@ -84,12 +86,14 @@ def test_local_key_in_remote_keyring(config_fingerprint, dom0_fingerprint, vm_fi
     assert vm_fingerprint == [config_fingerprint]
 
 
+@pytest.mark.configuration
 def test_logging_disabled(qube):
     # Logging to sd-log should be disabled on sd-gpg
     assert not qube.fileExists("/etc/rsyslog.d/sdlog.conf")
     assert qube.fileExists("/var/run/qubes-service/securedrop-logging-disabled")
 
 
+@pytest.mark.provisioning
 def test_sd_gpg_config(all_vms):
     """
     Confirm that qvm-prefs match expectations for the sd-gpg VM.
