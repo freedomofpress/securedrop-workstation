@@ -143,8 +143,8 @@ test-gpg: test-prereqs ## Runs tests for SD GPG functionality
 # Client autologin variables
 XDOTOOL_PATH=$(shell command -v xdotool)
 OATHTOOL_PATH=$(shell command -v oathtool)
-PHONY: run-client
-run-client: assert-dom0 ## Run client application (automatic login)
+.PHONY: run-deps
+run-deps:
 ifeq ($(XDOTOOL_PATH),)
 	@echo $(XDOTOOL_PATH)
 	@echo 'please install xdotool with "sudo qubes-dom0-update xdotool"'
@@ -154,12 +154,26 @@ ifeq ($(OATHTOOL_PATH),)
 	@echo 'please install oathtool with "sudo qubes-dom0-update oathtool"'
 	@false
 endif
+
+PHONY: run-client
+run-client: assert-dom0 run-deps ## Run client application (automatic login)
 	qvm-run --service sd-app qubes.StartApp+press.freedom.SecureDropClient
 	@sleep 3
 	@xdotool type "journalist"
 	@xdotool key Tab
 	@xdotool type "correct horse battery staple profanity oil chewy"
 	@xdotool key Tab
+	@xdotool key Tab
+	@xdotool type $(shell oathtool --totp --base32 JHCOGO7VCER3EJ4L)
+	@xdotool key Return
+
+PHONY: run-app
+run-app: assert-dom0 run-deps ## Run SecureDrop App (automatic login)
+	qvm-run --service sd-app qubes.StartApp+press.freedom.SecureDropApp
+	@sleep 5
+	@xdotool type "journalist"
+	@xdotool key Tab
+	@xdotool type "correct horse battery staple profanity oil chewy"
 	@xdotool key Tab
 	@xdotool type $(shell oathtool --totp --base32 JHCOGO7VCER3EJ4L)
 	@xdotool key Return
