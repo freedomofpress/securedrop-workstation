@@ -88,6 +88,8 @@ jobs:
           cp -v ../rpm-build-41/*.rpm workstation/dom0/f41-nightlies/
           git add .
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
+          # Sleep before we push so the token will have propagated across GitHub infra 
+          sleep 5
           git push https://x-access-token:${GH_TOKEN}@github.com/${TARGET_REPO}.git main
 
   get-main-commit:
