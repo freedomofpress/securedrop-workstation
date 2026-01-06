@@ -47,7 +47,7 @@ jobs:
     uses: ./.github/workflows/openqa.yml
     with:
       environment: "dev"
-      git_ref: ${{ github.event.head_commit.id }}
+      git_ref: ${{ github.event.pull_request.head.sha }}
       qubes_ver: ${{ needs.check-openqa.outputs.qubes-version }}
     secrets: inherit
     needs: [check-openqa]
