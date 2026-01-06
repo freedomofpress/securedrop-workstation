@@ -3,17 +3,23 @@ run-name: "[Label] ${{ github.event.label.name }}"
 
 on:
   pull_request:
-    types: [ labeled ]
+    types: [ labeled, unlabeled ]
+
+# Only build for latest PR unless, but separate Qubes version testing
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.label.name }}
+  cancel-in-progress: true
 
 jobs:
   check-openqa:
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.event.label.name, 'openqa-pending-') }}
+    if: ${{ startsWith(github.event.label.name, 'openqa-pending-') && github.event.action == 'labeled' }}
     outputs:
       qubes-version: ${{ steps.check.outputs.qubes-version }}
     steps:
       - name: Set OpenQA Qubes version from label 'openqa-pending-<QUBES_VER>' # zizmor: ignore[template-injection]
         id: check
+        if: github.event.action == 'labeled'
         run: |
           # Obtain Qubes version from label
           QUBES_VER=$(sed 's/openqa-pending-//g' <<< ${{ github.event.label.name }})
@@ -25,6 +31,16 @@ jobs:
           fi
 
           echo "qubes-version=$QUBES_VER" >> $GITHUB_OUTPUT
+
+  cancel-openqa-pending:
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.event.label.name, 'openqa-pending-') && github.event.action == 'unlabeled' }}
+    steps:
+      - name: Cancel job on removal of label 'openqa-pending-<QUBES_VER>
+        run: |
+          # NOTE: Nothing needs to happen here. By simply letting the entire job
+          # run when unlabeled, the 'concurrency' directive above will make sure
+          # to cancel any previously openqa-pending-X.Y job
 
   openqa:
     uses: ./.github/workflows/openqa.yml
