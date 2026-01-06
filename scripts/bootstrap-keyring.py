@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+"""
+This is a developer script to handle establishing signing key prerequisites for dom0,
+so that developer machines running a "dev" environment of the SecureDrop Workstation
+can install packages from remote sources, both prod and testing.
+
+This script configures a yum repo in dom0 and pulls in the necessary keyring packages
+to unblock use of the standard "sdw-admin" install flow. The script is necessary to encapsulate
+full config coverage within the "make dev" target; otherwise, developers would need
+to set up qubes-contrib and install packages manually, for prod packages, and then
+do the same for yum-test repos, which is an unpleasant and tedious workflow.
+"""
+
 import argparse
 import subprocess
 import sys
@@ -9,6 +21,7 @@ from pathlib import Path
 TEST_KEY_FILENAME = "test_key.asc"
 YUM_REPOS_DIR = "/etc/yum.repos.d"
 KEYRING_PACKAGENAME = "securedrop-workstation-keyring"
+YUM_REPO_BASENAME = "securedrop-workstation-dom0"
 
 # Test key: ID is deterministic and based on fpr + key creation timestamp
 TEST_KEY_RPMID = "gpg-pubkey-3fab65ab-660f2beb"
@@ -17,19 +30,17 @@ TEST_KEY_RPMID = "gpg-pubkey-3fab65ab-660f2beb"
 BASEURL = "https://yum-test.securedrop.org"
 
 
-def get_fedora_version():
-    return subprocess.check_output(["rpm", "--eval", "%{fedora}"]).decode().strip()
-
-
-def create_repo_file(env: str, repo_file_path: str, ver: str):
+def create_repo_file(env: str, repo_file_path: str):
     """Create .repo file based on environment."""
     repo_content = f"""
-[{KEYRING_PACKAGENAME}-{env}]
-enabled=0
+[{YUM_REPO_BASENAME}-{env}]
 gpgcheck=1
-baseurl={BASEURL}/workstation/dom0/f{ver}{'-nightlies' if env == 'dev' else ''}
-name=SecureDrop Workstation Keyring ({env})
-"""
+skip_if_unavailable=False
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test
+enabled=0
+baseurl=https://yum-test.securedrop.org/workstation/dom0/r$releasever{'-nightlies' if env == 'dev' else ''}
+name=SecureDrop Workstation Qubes dom0 repo ({env})
+"""  # noqa: E501
     with open(repo_file_path, "w") as repo_file:
         repo_file.write(repo_content.lstrip())
 
@@ -48,15 +59,12 @@ def is_key_imported(rpm_id: str):
         return False
 
 
-def dom0_install_keyring(env: str | None = None):
+def dom0_install_keyring(env: str):
     """Use qubes-dom0-update to install keyring package."""
     args = ["sudo", "qubes-dom0-update", "--clean", "-y"]
 
-    if env:
-        package_name = f"{KEYRING_PACKAGENAME}-{env}"
-        args.append(f"--enablerepo={package_name}")
-    else:
-        package_name = KEYRING_PACKAGENAME
+    package_name = f"{KEYRING_PACKAGENAME}-{env}"
+    args.append(f"--enablerepo={YUM_REPO_BASENAME}-{env}")
     args.append(package_name)
     subprocess.check_call(args)
 
@@ -80,16 +88,14 @@ def main():
         print(f"'{key_file}' not found.")
         sys.exit(1)
 
-    fedora_version = get_fedora_version()
-
     # Build .repo file, then install with correct permissions in /etc/yum.repos.d (owned by root)
     with tempfile.TemporaryDirectory() as temp_dir:
-        repo_file_path = Path(temp_dir) / f"{KEYRING_PACKAGENAME}-{args.env}.repo"
+        repo_src_path = Path(temp_dir) / f"{YUM_REPO_BASENAME}-{args.env}.repo"
 
-        create_repo_file(args.env, repo_file_path, fedora_version)
-        repo_dest_path = Path(YUM_REPOS_DIR) / f"{KEYRING_PACKAGENAME}-{args.env}.repo"
+        create_repo_file(args.env, repo_src_path)
+        repo_dest_path = Path(YUM_REPOS_DIR) / f"{YUM_REPO_BASENAME}-{args.env}.repo"
         subprocess.check_call(
-            ["sudo", "install", "-m", "0644", str(repo_file_path), str(repo_dest_path)]
+            ["sudo", "install", "-m", "0644", str(repo_src_path), str(repo_dest_path)]
         )
 
     # Install environment-specific keyring package

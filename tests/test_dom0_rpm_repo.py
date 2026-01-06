@@ -9,16 +9,19 @@ REPO_CONFIG = {
         "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation",
         "repo_file_name": "securedrop-workstation-dom0.repo",
         "yum_repo_url": "https://yum.securedrop.org/workstation/dom0/r$releasever",
+        "enabled": "1",
     },
     "dev": {
         "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",
         "repo_file_name": "securedrop-workstation-dom0-dev.repo",
         "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/r$releasever-nightlies",
+        "enabled": "0",
     },
     "staging": {
         "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",
         "repo_file_name": "securedrop-workstation-dom0-staging.repo",
         "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/r$releasever",
+        "enabled": "0",
     },
 }
 
@@ -41,16 +44,18 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
 
     def test_rpm_repo_config(self):
         repo = self.config["repo_file_name"]
+        env = self.env
         baseurl = self.config["yum_repo_url"]
+        enabled = self.config["enabled"]
         repo_file = f"/etc/yum.repos.d/{repo}"
         wanted_lines = [
-            "[securedrop-workstation-dom0]",
+            f"[securedrop-workstation-dom0-{env}]",
             "gpgcheck=1",
             "skip_if_unavailable=False",
             "gpgkey=file://{}".format(self.config.get("signing_key")),
-            "enabled=1",
+            f"enabled={enabled}",
             f"baseurl={baseurl}",
-            "name=SecureDrop Workstation Qubes dom0 repo",
+            f"name=SecureDrop Workstation Qubes dom0 repo ({env})",
         ]
         with open(repo_file) as f:
             found_lines = [x.strip() for x in f.readlines()]
