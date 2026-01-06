@@ -12,11 +12,17 @@ jobs:
     outputs:
       qubes-version: ${{ steps.check.outputs.qubes-version }}
     steps:
-      - name: Set OpenQA Qubes version from label 'openqa-pending-<QUBES_VER>'
+      - name: Set OpenQA Qubes version from label 'openqa-pending-<QUBES_VER>' # zizmor: ignore[template-injection]
         id: check
         run: |
           # Obtain Qubes version from label
           QUBES_VER=$(sed 's/openqa-pending-//g' <<< ${{ github.event.label.name }})
+
+          # Validate version format (also prevent injection attacks)
+          if [[ ! $QUBES_VER =~ ^([0-9]+)\.([0-9]+)$ ]]; then
+            echo "Invalid version 'openqa-pending' label. Expected major.minor."
+            exit 1
+          fi
 
           echo "qubes-version=$QUBES_VER" >> $GITHUB_OUTPUT
 
