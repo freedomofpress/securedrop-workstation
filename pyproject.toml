@@ -125,3 +125,12 @@ exclude = [
 
 [tool.pytest.ini_options]
 addopts = "--cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util --junitxml=test-data.xml"
+
+# Registering custom pytest markers for tests. Allows selecting or skipping by marked groups.
+markers = [
+  "mime: checks for filetype/application associations; requires shell access",
+  "slow: long-running tests, longer than 1m in runtime",
+  "packages: checks that all packages are up to date; quite slow, generally",
+  "provisioning: checks that VMs exist and their extra-VM prefs are set correctly",
+  "configuration: assumes that VMs exist inspects their intra-VM files and folders",
+]

@@ -18,6 +18,8 @@ def qube():
     return QubeWrapper("sys-usb", linux_security_modules="selinux")
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def test_files_are_properly_copied(qube):
     assert qube.fileExists("/etc/udev/rules.d/99-sd-devices.rules")
     assert qube.fileExists("/usr/local/bin/sd-attach-export-device")
