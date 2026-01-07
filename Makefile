@@ -109,10 +109,13 @@ clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 clone-norpm: assert-dom0 ## As above, but skip creating RPM
 	@BUILD_RPM=false ./scripts/clone-to-dom0
 
+.PHONY: clean
 clean: assert-dom0 ## Destroys all SD VMs
 # Use the local script path, since system PATH location will be absent
 # if clean has already been run.
 	./files/sdw-admin.py --uninstall --force
+	rpm -qa | grep '^securedrop-workstation' | xargs -r sudo dnf remove -y
+	find /etc/yum.repos.d -type f -iname 'securedrop-workstation*.repo' -exec sudo rm -v {} +
 
 .PHONY: test-prereqs
 test-prereqs: ## Checks that test prerequisites are satisfied
