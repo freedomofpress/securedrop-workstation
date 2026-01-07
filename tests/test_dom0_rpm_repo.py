@@ -1,25 +1,24 @@
 import json
 import subprocess
 import unittest
-from string import Template
 
-FEDORA_VERSION = "f37"
+import dnf  # Implicit dom0 dependency
 
 REPO_CONFIG = {
     "prod": {
         "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation",
         "repo_file_name": "securedrop-workstation-dom0.repo",
-        "yum_repo_url": "https://yum.securedrop.org/workstation/dom0/$FEDORA_VERSION/",
+        "yum_repo_url": "https://yum.securedrop.org/workstation/dom0/r$releasever",
     },
     "dev": {
         "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",
         "repo_file_name": "securedrop-workstation-dom0-dev.repo",
-        "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/$FEDORA_VERSION-nightlies/",
+        "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/r$releasever-nightlies",
     },
     "staging": {
         "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation-test",
         "repo_file_name": "securedrop-workstation-dom0-staging.repo",
-        "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/$FEDORA_VERSION/",
+        "yum_repo_url": "https://yum-test.securedrop.org/workstation/dom0/r$releasever",
     },
 }
 
@@ -38,12 +37,7 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
             if not self.env:
                 self.env = self._get_env_by_package()
 
-        self.config = REPO_CONFIG[self.env].copy()
-
-        # Fedora version is a placeholder, so fix that
-        self.config["yum_repo_url"] = Template(self.config["yum_repo_url"]).safe_substitute(
-            {"FEDORA_VERSION": FEDORA_VERSION}
-        )
+        self.config = REPO_CONFIG[self.env]
 
     # Temporarily disabling this test pending backend fixes:
     # https://github.com/freedomofpress/securedrop-workstation/issue/1530
@@ -64,6 +58,14 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
             found_lines = [x.strip() for x in f.readlines()]
 
         assert found_lines == wanted_lines
+
+    def test_rpm_releasever_substitution(self):
+        """
+        Ensure DNF is understanding $releasever as we expect in the repository
+        URL structure.
+        """
+        qubes_version = dnf.rpm.detect_releasever("/")
+        assert qubes_version in ["4.2", "4.3"]
 
     def _get_env_by_package(self):
         """
