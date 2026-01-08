@@ -90,7 +90,7 @@ install -m 755 -d %{buildroot}/%{_userunitdir}/
 install -m 755 -d %{buildroot}/%{_unitdir}
 install -m 755 -d %{buildroot}/%{_userpresetdir}/
 install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
-install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/salt/securedrop_salt/press.freedom.SecureDropUpdater.desktop
+install -m 644 files/press.freedom.SecureDropUpdaterClient.desktop %{buildroot}/%{_datadir}/applications/
 install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 install -m 755 files/sdw-updater.py %{buildroot}/%{_bindir}/sdw-updater
@@ -124,6 +124,7 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/sdw-updater
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
+%attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdaterClient.desktop
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
