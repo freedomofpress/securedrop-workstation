@@ -20,16 +20,17 @@ def parse_argv(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument("--skip-delta", type=int)
     parser.add_argument("--skip-netcheck", action="store_true")
+    parser.add_argument("--launch-app", action="store_true")
     return parser.parse_args(argv)
 
 
-def launch_updater(should_skip_netcheck: bool = False):
+def launch_updater(should_skip_netcheck: bool = False, launch_app: bool = False):
     """
     Start the updater GUI.
     """
 
     app = QApplication(sys.argv)
-    form = UpdaterApp(should_skip_netcheck)
+    form = UpdaterApp(should_skip_netcheck, launch_app)
     form.show()
     sys.exit(app.exec())
 
@@ -58,9 +59,9 @@ def main(argv):
     interval = int(args.skip_delta)
 
     if should_launch_updater(interval):
-        launch_updater(args.skip_netcheck)
+        launch_updater(args.skip_netcheck, args.launch_app)
     else:
-        launch_securedrop_client()
+        launch_securedrop_client(app=args.launch_app)
 
 
 if __name__ == "__main__":

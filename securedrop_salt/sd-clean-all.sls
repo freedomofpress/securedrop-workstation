@@ -55,6 +55,7 @@ remove-dom0-sdw-config-files:
     - names:
       - /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
+      - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdaterApp.desktop
       - /home/{{ gui_user }}/.securedrop_updater
       - /var/lib/securedrop-workstation
 

@@ -12,6 +12,7 @@ dom0-install-debian-minimal-template:
     - name: debian-12-minimal
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
+{% import_json "securedrop_salt/config.json" as d %}
 
 dom0-login-autostart-directory:
   file.directory:
@@ -29,7 +30,7 @@ dom0-login-autostart-desktop-file:
     - context:
         desktop_name: SDWLogin
         desktop_comment: Updates SecureDrop Workstation DispVMs at login
-        desktop_exec: /usr/bin/sdw-login
+        desktop_exec: /usr/bin/sdw-login{% if d.app %} --launch-app{% endif %}
     - user: {{ gui_user }}
     - group: {{ gui_user }}
     - mode: 664
@@ -44,7 +45,20 @@ dom0-securedrop-launcher-desktop-shortcut:
     - group: {{ gui_user }}
     - mode: 755
 
-{% import_json "securedrop_salt/config.json" as d %}
+dom0-securedrop-app-launcher-desktop-shortcut:
+{% if d.app %}
+  file.managed:
+    - name: /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdaterApp.desktop
+    - source: "salt://securedrop_salt/press.freedom.SecureDropUpdaterApp.desktop"
+    - user: {{ gui_user }}
+    - group: {{ gui_user }}
+    - mode: 755
+{% else %}
+  file.absent:
+    - names:
+      - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdaterApp.desktop
+{% endif %}
+
 dom0-environment-directory:
   file.directory:
     - name: /var/lib/securedrop-workstation/
