@@ -10,6 +10,10 @@ on:
       git_ref:
         required: true
         type: string
+      qubes_ver:
+        required: true
+        type: string
+
 jobs:
   openqa:
     runs-on: ubuntu-latest
@@ -30,6 +34,7 @@ jobs:
       SECUREDROP_OPENQA_REPO_BRANCH: "main"
       # The URL to clone the remote OpenQA repo from (useful for forks):
       SECUREDROP_OPENQA_REPO_URL: "https://github.com/freedomofpress/openqa-tests-qubesos"
+      QUBES_VER: ${{ inputs.qubes_ver }}
     container:
       image: debian:trixie
     steps:
@@ -48,8 +53,8 @@ jobs:
             --apikey "$OPENQA_KEY" \
             --apisecret "$OPENQA_SECRET" \
             isos -X post \
-            VERSION=4.2 \
-            BUILD=$(date +%Y%m%d%H%M)-4.2 \
+            VERSION=${QUBES_VER} \
+            BUILD=$(date +%Y%m%d%H%M)-${QUBES_VER} \
             DISTRI=qubesos ARCH=x86_64 \
             GIT_REF="$GIT_REF" \
             SECUREDROP_ENV="$SECUREDROP_ENV" \
