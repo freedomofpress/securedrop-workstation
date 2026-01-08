@@ -7,6 +7,14 @@ description_introduction = (
     "the Workstation.</b></span> Please cancel and return later if you are pressed "
     "for time.</p>"
 )
+description_introduction_app = (
+    "<p>To keep your Workstation safe, daily software updates are required.</p> "
+    "<p>This typically takes between 10 and 30 minutes. You cannot use the SecureDrop "
+    "App or any of its VMs while the updater is running.</p>"
+    "<p><span style='color:#E62354;'><b>Interrupting software updates may break "
+    "the Workstation.</b></span> Please cancel and return later if you are pressed "
+    "for time.</p>"
+)
 
 headline_applying_updates = "Updates in progress…"
 description_status_applying_updates = (
@@ -21,11 +29,18 @@ headline_status_updates_complete = "All updates complete!"
 description_status_updates_complete = (
     "Click <em>Continue</em> to launch the SecureDrop Client. No reboot is necessary."
 )
+description_status_updates_complete_app = (
+    "Click <em>Continue</em> to launch the SecureDrop App. No reboot is necessary."
+)
 
 headline_status_updates_failed = "Security updates failed"
 description_status_updates_failed = (
     "There was an error downloading or installing updates for your workstation. "
     "The SecureDrop Client cannot be started at this time. Please contact your administrator."
+)
+description_status_updates_failed_app = (
+    "There was an error downloading or installing updates for your workstation. "
+    "The SecureDrop App cannot be started at this time. Please contact your administrator."
 )
 # Post-update actions (launching client, reboot)
 headline_status_reboot_required = "All updates complete!"

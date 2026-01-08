@@ -12,11 +12,16 @@ include:
   - securedrop_salt.fpf-apt-repo
   - securedrop_salt.sd-logging-setup
 
+{% import_json "securedrop_salt/config.json" as d %}
+
 # FPF repo is setup in "securedrop-workstation-$sdvars.distribution" template,
 # and then cloned as "sd-small-$sdvars.distribution-template"
 install-securedrop-client-package:
   pkg.installed:
     - pkgs:
       - securedrop-client
+      {% if d.app %}
+      - securedrop-app
+      {% endif %}
     - require:
       - sls: securedrop_salt.fpf-apt-repo
