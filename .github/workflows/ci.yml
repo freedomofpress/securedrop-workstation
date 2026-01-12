@@ -16,12 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        fedora_version:
-          - 37  # Qubes 4.2
-          - 41  # Qubes 4.3
+      matrix: &qubes_release
+        qubes_release:
+          - { name: "Qubes 4.2", fedora_ver: "37", python_ver: "3.11" }
+          - { name: "Qubes 4.3", fedora_ver: "41", python_ver: "3.13" }
+
     container:
-      image: quay.io/fedora/fedora:${{ matrix.fedora_version }}
+      image: quay.io/fedora/fedora:${{ matrix.qubes_release.fedora_ver }}
     steps:
       - run: dnf install -y git make
       - uses: actions/checkout@v6
@@ -40,12 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        fedora_version:
-          - 37  # Qubes 4.2
-          - 41  # Qubes 4.3
+      matrix: *qubes_release
     container:
-      image: quay.io/fedora/fedora:${{ matrix.fedora_version }}
+      image: quay.io/fedora/fedora:${{ matrix.qubes_release.fedora_ver }}
     steps:
       - run: dnf install -y git make
       - uses: actions/checkout@v6
@@ -65,10 +63,7 @@ jobs:
   launcher-tests:
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        qubes_release:
-          - { fedora_ver: "37", python_ver: "python3.11" }  # Qubes 4.2
-          - { fedora_ver: "41", python_ver: "python3.13" }  # Qubes 4.3
+      matrix: *qubes_release
     container:
       image: quay.io/fedora/fedora:${{ matrix.qubes_release.fedora_ver }}
     steps:
@@ -80,7 +75,7 @@ jobs:
         run: |
           make test-deps
           pip install poetry==2.1.1
-          poetry env use ${{ matrix.qubes_release.python_ver }}
+          poetry env use python${{ matrix.qubes_release.python_ver }}
           poetry install --no-ansi
       - name: Run launcher tests
         run: |
