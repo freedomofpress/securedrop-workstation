@@ -1,53 +1,55 @@
 ---
-name: OpenQA (label)
-run-name: "[Label] ${{ github.event.label.name }}"
+name: OpenQA
+run-name: "[OpenQA] ${{ github.event.action == 'synchronize' && 'synchronize' || github.event.label.name }}"
 
 on:
   pull_request:
-    types: [ labeled, unlabeled ]
-
-# Only build for latest PR unless, but separate Qubes version testing
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.label.name }}
-  cancel-in-progress: true
+    types:
+      - labeled  # Trigger immediately when label added
+      - synchronize
 
 jobs:
   check:
+    name: 'Check OpenQA triggers'
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.event.label.name, 'openqa-pending-') && github.event.action == 'labeled' }}
     outputs:
-      qubes-version: ${{ steps.check.outputs.qubes-version }}
+      qubes-versions: ${{ steps.find_labels.outputs.qubes-versions }}
     steps:
-      - name: Set OpenQA Qubes version from label 'openqa-pending-<QUBES_VER>' # zizmor: ignore[template-injection]
-        id: check
-        if: github.event.action == 'labeled'
-        run: |
-          # Obtain Qubes version from label
-          QUBES_VER=$(sed 's/openqa-pending-//g' <<< ${{ github.event.label.name }})
+      - name: Find all openqa-pending labels on this PR  # zizmor: ignore[template-injection]
+        id: find_labels
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const labels = context.payload.pull_request.labels;
 
-          # Validate version format (also prevent injection attacks)
-          if [[ ! $QUBES_VER =~ ^([0-9]+)\.([0-9]+)$ ]]; then
-            echo "Invalid version 'openqa-pending' label. Expected major.minor."
-            exit 1
-          fi
+            // Find all openqa-pending-* labels
+            const openqaLabels = labels.filter(label =>
+              label.name && label.name.match(/^openqa-pending-[0-9]+\.[0-9]+$/)
+            );
 
-          echo "qubes-version=$QUBES_VER" >> $GITHUB_OUTPUT
+            if (openqaLabels.length === 0) {
+              console.log('No valid openqa-pending-* labels found');
+              return;
+            }
 
-  cancel:
-    runs-on: ubuntu-latest
-    if: ${{ startsWith(github.event.label.name, 'openqa-pending-') && github.event.action == 'unlabeled' }}
-    steps:
-      - name: Cancel job on removal of label 'openqa-pending-<QUBES_VER>
-        run: |
-          # NOTE: Nothing needs to happen here. By simply letting the entire job
-          # run when unlabeled, the 'concurrency' directive above will make sure
-          # to cancel any previously openqa-pending-X.Y job
+            // Extract Qubes versions
+            const qubesVersions = openqaLabels.map(label =>
+              label.name.replace('openqa-pending-', '')
+            );
 
+            console.log(`Found openqa-pending labels for versions: ${qubesVersions.join(', ')}`);
+            core.setOutput('qubes-versions', JSON.stringify(qubesVersions));
+
+  # Runs OpenQA job for each Qubes version found in labels
   openqa:
+    needs: [check]
+    if: ${{ needs.check.outputs.qubes-versions != '' }}
+    strategy:
+      matrix:
+        qubes_version: ${{ fromJSON(needs.check.outputs.qubes-versions) }}
     uses: ./.github/workflows/openqa.yml
+    secrets: inherit
     with:
       environment: "dev"
       git_ref: ${{ github.event.pull_request.head.sha }}
-      qubes_ver: ${{ needs.check.outputs.qubes-version }}
-    secrets: inherit
-    needs: [check]
+      qubes_ver: ${{ matrix.qubes_version }}
