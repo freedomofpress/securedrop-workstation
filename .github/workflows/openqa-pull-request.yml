@@ -5,7 +5,8 @@ run-name: "[OpenQA] ${{ github.event.action == 'synchronize' && 'synchronize' ||
 on:
   pull_request:
     types:
-      - labeled  # Trigger immediately when label added
+      - labeled    # Trigger immediately when label added
+      - unlabeled  # Detect label removal in order to cancel previous runs
       - synchronize
 
 jobs:
@@ -20,7 +21,23 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const labels = context.payload.pull_request.labels;
+            let labels;
+
+            switch (context.payload.action) {
+              case 'synchronize':
+                console.log('Code was pushed: checking all valid OpenQA-triggering labels');
+                labels = context.payload.pull_request.labels;
+                break;
+              case 'labeled':
+                // break; <- intentionally missed to group with 'unlabeled'
+              case 'unlabeled':
+                console.log('Specific label changed: OpenQA run only for changed label');
+                labels = [context.payload.label];
+                break;
+              default:
+                console.error(`Unhandled event action: ${context.payload.action}`);
+                process.exit(1);
+            }
 
             // Find all openqa-pending-* labels
             const openqaLabels = labels.filter(label =>
@@ -40,7 +57,7 @@ jobs:
             console.log(`Found openqa-pending labels for versions: ${qubesVersions.join(', ')}`);
             core.setOutput('qubes-versions', JSON.stringify(qubesVersions));
 
-  # Runs OpenQA job for each Qubes version found in labels
+  # Runs/Cancels OpenQA job for each Qubes version found in labels
   openqa:
     needs: [check]
     if: ${{ needs.check.outputs.qubes-versions != '' }}
@@ -53,3 +70,10 @@ jobs:
       environment: "dev"
       git_ref: ${{ github.event.pull_request.head.sha }}
       qubes_ver: ${{ matrix.qubes_version }}
+
+      # NOTE: cancellation is done through concurrency: by starting another job
+      # with the same conditions as the one we want to cancel, it necessarily
+      # cancels the previous one. The trick is to trigger a no-op on the callee
+      # (this is done through 'cancel=true'). This avoids the need for complex
+      # "run-id"-tracking logic in order to cancel previous runs.
+      cancel: ${{ github.event.action == 'unlabeled' }}

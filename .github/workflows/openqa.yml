@@ -13,15 +13,32 @@ on:
       qubes_ver:
         required: true
         type: string
+      cancel:
+        required: false
+        type: boolean
+
+# NOTE Concurrency serves two purposes:
+#   1. When starting a new OpenQA job
+#   2. When cancelling entirely: when trigger conditions no longer met, the
+#      calling workflow is the best vantage point to cancel the workflow, so it
+#      triggers a new workflow, except with 'cancel=true' as input. This results
+#      in a no-op, but importantly, the previous OpenQA job is cancelled since
+#      through concurrency there can only be one
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.environment }}-${{ inputs.qubes_ver }}
+  cancel-in-progress: true
 
 jobs:
+  openqa-cancel:
+    if: ${{ inputs.cancel }}  # Concurrency does the actual cancellation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel OpenQA job # zizmor: ignore[template-injection]
+        run: |
+          echo "Canceling previous OpenQA job for Qubes ${{ inputs.qubes_ver }}"
   openqa:
     runs-on: ubuntu-latest
-    # Run only if:
-    # 1. This is a push (not pull_request)
-    # 2. We're not on main
-    # 3. We're not on a merge queue branch
-    # 4. The "openqa" string is present
+    if: ${{ ! inputs.cancel }}  # Concurrency does the actual cancellation
     env:
       OPENQA_HOST: "https://openqa.qubes-os.org/"
       OPENQA_KEY: ${{ secrets.OPENQA_KEY }}
