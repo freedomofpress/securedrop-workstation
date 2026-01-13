@@ -96,7 +96,7 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
-            -d "{\"state\": \"pending\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / $TEST_NAME\"}"
+            -d "{\"state\": \"pending\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / ${QUBES_VER} / $TEST_NAME\"}"
 
           done
       - name: Wait for openQA
@@ -147,7 +147,7 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
-            -d "{\"state\": \"$github_state\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / $TEST_NAME\"}"
+            -d "{\"state\": \"$github_state\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / ${QUBES_VER} / $TEST_NAME\"}"
 
           done
           exit $workflow_exit_status
@@ -169,5 +169,5 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
-            -d "{\"state\": \"error\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / $TEST_NAME\"}" ||:
+            -d "{\"state\": \"error\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / ${QUBES_VER} / $TEST_NAME\"}" ||:
           done
