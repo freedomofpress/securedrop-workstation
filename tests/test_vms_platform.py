@@ -1,5 +1,6 @@
 import os
 import subprocess
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -17,7 +18,7 @@ IS_CI = os.environ.get("CI") == "true"
 def _check_packages_up_to_date(vm, fedora=False) -> bool:
     """
     Checks that all available package updates are installed;
-    so upgrades pending. Assumes VM is Debian-based, so uses apt,
+    no upgrades pending. Assumes VM is Debian-based, so uses apt,
     but supports `fedora=True` to use dnf instead.
 
     Returns a boolean so that the calling test can before assertions,
@@ -97,6 +98,43 @@ def test_all_fedora_vms_uptodate(all_vms):
     fail_msg = f"Unapplied updates for VM '{vm}'"
     assert _check_packages_up_to_date(vm, fedora=True), fail_msg
     vm.shutdown()
+
+
+@pytest.mark.provisioning
+@pytest.mark.parametrize(
+    "vm_name",
+    [
+        CURRENT_FEDORA_TEMPLATE,
+        SD_TEMPLATE_LARGE,
+        SD_TEMPLATE_SMALL,
+    ],
+)
+def test_os_eol(vm_name, all_vms):
+    """
+    Ensures the VM's OS is not approaching end-of-life.
+    The os-eol qvm feature should contain a date in YYYY-MM-DD format.
+    """
+    # number of days prior to EOL date that constitutes a test failure
+    OS_EOL_BUFFER_DAYS = 30
+    qube = all_vms[vm_name]
+    eol_str = qube.features.get("os-eol")
+    if eol_str is None:
+        pytest.skip(f"No os-eol feature set for {qube.name}")
+
+    # Parse the date string
+    try:
+        eol_date = datetime.strptime(eol_str, "%Y-%m-%d").date()
+    except ValueError as e:
+        raise AssertionError(f"Invalid os-eol date format '{eol_str}': {e}")
+
+    # Ensure current date is before EOL minus buffer
+    today = datetime.now().date()
+    buffer_date = eol_date - timedelta(days=OS_EOL_BUFFER_DAYS)
+
+    assert today < buffer_date, (
+        f"OS end-of-life approaching for {qube.name}: "
+        f"EOL is {eol_date}, within {OS_EOL_BUFFER_DAYS} day buffer"
+    )
 
 
 @pytest.mark.provisioning

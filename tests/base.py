@@ -278,8 +278,7 @@ class Test_SD_VM_Common:
         Confirms expected grsecurity-patched kernel is running.
         """
         # base doesn't have kernel configured
-        # TODO: test in sd-viewer based dispVM
-        exceptions = [SD_TEMPLATE_BASE, "sd-viewer", "sys-usb"]
+        exceptions = [SD_TEMPLATE_BASE, "sys-usb"]
 
         if qube.vm.name in exceptions:
             pytest.skip(f"Skipping grsec test on VM: '{qube.vm.name}'")
