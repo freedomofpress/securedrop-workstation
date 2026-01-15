@@ -45,9 +45,7 @@ class SD_Dom0_Rpm_Repo_Tests(unittest.TestCase):
             {"FEDORA_VERSION": FEDORA_VERSION}
         )
 
-    # Temporarily disabling this test pending backend fixes:
-    # https://github.com/freedomofpress/securedrop-workstation/issue/1530
-    def _test_rpm_repo_config(self):
+    def test_rpm_repo_config(self):
         repo = self.config["repo_file_name"]
         baseurl = self.config["yum_repo_url"]
         repo_file = f"/etc/yum.repos.d/{repo}"
