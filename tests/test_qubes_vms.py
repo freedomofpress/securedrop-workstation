@@ -22,9 +22,8 @@ def test_current_fedora_for_sys_vms(sys_vm_name, all_vms):
     """
     Checks that all sys-* VMs are configured to use an up-to-date version of Fedora.
     """
-    # Look up all VMs that use the current Fedora as their TemplateVM.
-    fedora_based_vms = all_vms[CURRENT_FEDORA_TEMPLATE].derived_vms
     sys_vm = all_vms[sys_vm_name]
-    assert (
-        sys_vm in fedora_based_vms
-    ), f"VM {sys_vm_name} should have {CURRENT_FEDORA_TEMPLATE} as TemplateVM"
+    if sys_vm.klass == "DispVM":
+        assert sys_vm.template.template.name == CURRENT_FEDORA_TEMPLATE
+    else:
+        assert sys_vm.template.name == CURRENT_FEDORA_TEMPLATE
