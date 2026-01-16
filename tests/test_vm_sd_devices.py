@@ -8,7 +8,6 @@ import pytest
 from tests.base import (
     SD_TAG,
     QubeWrapper,
-    get_mimeapp_vars_for_vm,
 )
 from tests.base import (
     Test_SD_VM_Common as Test_SD_Devices_Common,  # noqa: F401 [HACK: import so base tests run]
@@ -17,7 +16,11 @@ from tests.base import (
 
 @pytest.fixture(scope="module")
 def qube():
-    return QubeWrapper("sd-devices", expected_config_keys={"SD_MIME_HANDLING"})
+    return QubeWrapper(
+        "sd-devices",
+        expected_config_keys={"SD_MIME_HANDLING"},
+        mime_types_handling=True,
+    )
 
 
 def test_files_are_properly_copied(qube):
@@ -34,21 +37,6 @@ def test_sd_export_package_installed(qube):
 
 def test_logging_configured(qube):
     qube.logging_configured()
-
-
-SD_DEVICES_MIME_TYPE_VARS = get_mimeapp_vars_for_vm("sd-devices")
-
-
-@pytest.mark.parametrize(("mime_type", "expected_app"), SD_DEVICES_MIME_TYPE_VARS)
-@pytest.mark.mime
-@pytest.mark.slow
-def test_mime_types(mime_type, expected_app, qube):
-    """
-    Functionally verifies that the VM config handles specific filetypes correctly,
-    opening them with the appropriate program.
-    """
-    actual_app = qube.run(f"xdg-mime query default {mime_type}")
-    assert actual_app == expected_app
 
 
 def test_mailcap_hardened(qube):

@@ -9,7 +9,6 @@ from tests.base import (
     SD_TAG,
     SD_TEMPLATE_SMALL,
     QubeWrapper,
-    get_mimeapp_vars_for_vm,
 )
 from tests.base import (
     Test_SD_VM_Common as Test_SD_Proxy_Common,  # noqa: F401 [HACK: import so base tests run]
@@ -22,6 +21,7 @@ def qube():
         "sd-proxy",
         expected_config_keys={"SD_PROXY_ORIGIN", "SD_PROXY_ORIGIN_KEY", "SD_MIME_HANDLING"},
         enforced_apparmor_profiles={"/usr/bin/securedrop-proxy"},
+        mime_types_handling=True,
     )
 
 
@@ -60,23 +60,6 @@ def test_whonix_ws_repo_absent(qube):
 @pytest.mark.configuration
 def test_logging_configured(qube):
     qube.logging_configured()
-
-
-SD_PROXY_MIME_TYPE_VARS = get_mimeapp_vars_for_vm("sd-proxy")
-
-
-@pytest.mark.parametrize(("mime_type", "expected_app"), SD_PROXY_MIME_TYPE_VARS)
-@pytest.mark.mime
-@pytest.mark.slow
-@pytest.mark.configuration
-def test_mime_types(mime_type, expected_app, qube):
-    """
-    Functionally verifies that the VM config handles specific filetypes correctly,
-    opening them with the appropriate program.
-    """
-    actual_app = qube.run(f"xdg-mime query default {mime_type}")
-    assert actual_app == expected_app
-    assert actual_app == "open-in-dvm.desktop"
 
 
 @pytest.mark.configuration

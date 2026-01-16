@@ -12,7 +12,6 @@ from tests.base import (
     SD_TAG,
     SD_TEMPLATE_LARGE,
     QubeWrapper,
-    get_mimeapp_vars_for_vm,
 )
 from tests.base import (
     Test_SD_VM_Common as Test_SD_Viewer_Common,  # noqa: F401 [HACK: import so base tests run]
@@ -72,6 +71,8 @@ def qube():
             "/usr/bin/totem-video-thumbnailer",
             "/usr/bin/totem//sanitized_helper",
         },
+        mime_types_handling=True,
+        mime_vars_vm_name="sd-viewer",
     )
 
     # Tear Down
@@ -113,22 +114,6 @@ def test_redis_packages_not_installed(qube):
     """
     assert not qube.package_is_installed("redis")
     assert not qube.package_is_installed("redis-server")
-
-
-SD_VIEWER_MIME_TYPE_VARS = get_mimeapp_vars_for_vm("sd-viewer")
-
-
-@pytest.mark.parametrize(("mime_type", "expected_app"), SD_VIEWER_MIME_TYPE_VARS)
-@pytest.mark.mime
-@pytest.mark.slow
-@pytest.mark.configuration
-def test_mime_types(mime_type, expected_app, qube):
-    """
-    Functionally verifies that the VM config handles specific filetypes correctly,
-    opening them with the appropriate program.
-    """
-    actual_app = qube.run(f"xdg-mime query default {mime_type}")
-    assert actual_app == expected_app
 
 
 @pytest.mark.configuration

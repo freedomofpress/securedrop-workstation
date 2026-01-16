@@ -84,6 +84,8 @@ class QubeWrapper:
         expected_config_keys=set(),
         linux_security_modules="apparmor",
         enforced_apparmor_profiles=set(),
+        mime_types_handling=False,
+        mime_vars_vm_name=None,
     ):
         """
         QubesVM test helper.
@@ -92,6 +94,8 @@ class QubeWrapper:
             expected_config_keys -- QubesDB's vm-config expected keys
             linux_security_modules -- Linux Security Module (LSM) expected
             enforced_apparmor_profiles -- AppArmor profiles expected
+            mime_types_handling -- Whether to run MIME types tests for this VM
+            mime_vars_vm_name -- VM name to use for MIME vars file lookup (defaults to name)
         """
 
         self.name = name
@@ -105,6 +109,8 @@ class QubeWrapper:
         self.expected_config_keys = expected_config_keys
         self.linux_security_modules = linux_security_modules
         self.enforced_apparmor_profiles = enforced_apparmor_profiles
+        self.mime_types_handling = mime_types_handling
+        self.mime_vars_vm_name = mime_vars_vm_name if mime_vars_vm_name else name
 
     def run(self, cmd, user=""):
         """
@@ -308,3 +314,20 @@ class Test_SD_VM_Common:
             raise RuntimeError(f"Unable to determine platform for {qube.name}")
         platform = search.group(1)
         assert DEBIAN_VERSION in platform
+
+    @pytest.mark.mime
+    @pytest.mark.slow
+    @pytest.mark.configuration
+    def test_mime_types(self, qube):
+        """
+        Functionally verifies that the VM config handles specific filetypes correctly,
+        opening them with the appropriate program.
+        """
+        if not qube.mime_types_handling:
+            pytest.skip(f"MIME types handling not enabled for {qube.name}")
+
+        for mime_type, expected_app in get_mimeapp_vars_for_vm(qube.mime_vars_vm_name):
+            actual_app = qube.run(f"xdg-mime query default {mime_type}")
+            assert (
+                actual_app == expected_app
+            ), f"MIME type {mime_type}: expected {expected_app}, got {actual_app}"

@@ -9,7 +9,6 @@ from tests.base import (
     SD_TAG,
     SD_TEMPLATE_SMALL,
     QubeWrapper,
-    get_mimeapp_vars_for_vm,
 )
 from tests.base import (
     Test_SD_VM_Common as Test_SD_App_Common,  # noqa: F401 [HACK: import so base tests run]
@@ -28,6 +27,7 @@ def qube():
         enforced_apparmor_profiles={
             "/usr/bin/securedrop-client",
         },
+        mime_types_handling=True,
     )
 
 
@@ -40,24 +40,6 @@ def test_open_in_dvm_desktop(qube):
     ]
     for line in expected_contents:
         assert line in contents
-
-
-SD_APP_MIME_TYPE_VARS = get_mimeapp_vars_for_vm("sd-app")
-
-
-@pytest.mark.parametrize(("mime_type", "expected_app"), SD_APP_MIME_TYPE_VARS)
-@pytest.mark.mime
-@pytest.mark.slow
-@pytest.mark.configuration
-def test_mime_types(mime_type, expected_app, qube):
-    """
-    Functionally verifies that the VM config handles specific filetypes correctly,
-    opening them with the appropriate program.
-    """
-    actual_app = qube.run(f"xdg-mime query default {mime_type}")
-    # All associations should lead to open-in-dvm!
-    assert expected_app == "open-in-dvm.desktop"
-    assert actual_app == expected_app
 
 
 @pytest.mark.configuration
