@@ -27,9 +27,11 @@ def qube():
         enforced_apparmor_profiles={
             "/usr/bin/securedrop-client",
         },
+        mime_types_handling=True,
     )
 
 
+@pytest.mark.configuration
 def test_open_in_dvm_desktop(qube):
     contents = qube.get_file_contents("/usr/share/applications/open-in-dvm.desktop")
     expected_contents = [
@@ -40,36 +42,28 @@ def test_open_in_dvm_desktop(qube):
         assert line in contents
 
 
-def test_mimeapps(qube):
-    results = qube.run("cat /usr/share/applications/mimeapps.list")
-    for line in results.splitlines():
-        if line.startswith(("#", "[Default")):
-            # Skip comments and the leading [Default Applications]
-            continue
-        mime, target = line.split("=", 1)
-        assert target == "open-in-dvm.desktop;"
-        # Now functionally test it
-        actual_app = qube.run(f"xdg-mime query default {mime}")
-        assert actual_app == "open-in-dvm.desktop"
-
-
+@pytest.mark.configuration
 def test_mailcap_hardened(qube):
     qube.mailcap_hardened()
 
 
+@pytest.mark.configuration
 def test_sd_client_package_installed(qube):
     assert qube.package_is_installed("securedrop-client")
 
 
+@pytest.mark.configuration
 def test_sd_client_dependencies_installed(qube):
     assert qube.package_is_installed("python3-pyqt5")
     assert qube.package_is_installed("python3-pyqt5.qtsvg")
 
 
+@pytest.mark.provisioning
 def test_sd_client_config(dom0_config, qube):
     assert dom0_config["submission_key_fpr"] == qube.vm_config_read("SD_SUBMISSION_KEY_FPR")
 
 
+@pytest.mark.provisioning
 def test_logging_configured(qube):
     qube.logging_configured()
 

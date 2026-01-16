@@ -3,7 +3,6 @@ Integration tests for validating SecureDrop Workstation config,
 specifically for the "sd-viewer" VM and related functionality.
 """
 
-import os
 import subprocess
 
 import pytest
@@ -72,30 +71,42 @@ def qube():
             "/usr/bin/totem-video-thumbnailer",
             "/usr/bin/totem//sanitized_helper",
         },
+        mime_types_handling=True,
+        mime_vars_vm_name="sd-viewer",
     )
 
     # Tear Down
     _shutdown_test_qube(temp_qube_name)
 
 
+@pytest.mark.packages
+@pytest.mark.configuration
 def test_sd_viewer_metapackage_installed(qube):
     assert qube.package_is_installed("securedrop-workstation-viewer")
     assert not qube.package_is_installed("securedrop-workstation-svs-disp")
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def test_sd_viewer_evince_installed(qube):
     pkg = "evince"
     assert qube.package_is_installed(pkg)
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def test_sd_viewer_libreoffice_installed(qube):
     assert qube.package_is_installed("libreoffice")
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def test_logging_configured(qube):
     qube.logging_configured()
 
 
+@pytest.mark.configuration
+@pytest.mark.packages
 def test_redis_packages_not_installed(qube):
     """
     Only the log collector, i.e. sd-log, needs redis, so redis will be
@@ -105,35 +116,25 @@ def test_redis_packages_not_installed(qube):
     assert not qube.package_is_installed("redis-server")
 
 
-def test_mime_types(qube):
-    filepath = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "vars", "sd-viewer.mimeapps"
-    )
-    with open(filepath) as f:
-        lines = f.readlines()
-        for line in lines:
-            if line != "[Default Applications]\n" and not line.startswith("#"):
-                mime_type = line.split("=")[0]
-                expected_app = line.split("=")[1].rstrip()
-                actual_app = qube.run(f"xdg-mime query default {mime_type}")
-                assert actual_app == expected_app
-
-
+@pytest.mark.configuration
 def test_mimetypes_service(qube):
     qube.service_is_active("securedrop-mime-handling")
 
 
+@pytest.mark.configuration
 def test_mailcap_hardened(qube):
     qube.mailcap_hardened()
 
 
+@pytest.mark.configuration
 def test_mimetypes_symlink(qube):
     assert qube.fileExists(".local/share/applications/mimeapps.list")
     symlink_location = qube.get_symlink_location(".local/share/applications/mimeapps.list")
     assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
 
 
-def test_sd_viewer_config(all_vms):
+@pytest.mark.provisioning
+def test_sd_viewer_config(all_vms, config):
     """
     Confirm that qvm-prefs match expectations for the "sd-viewer" VM.
     """
@@ -148,3 +149,7 @@ def test_sd_viewer_config(all_vms):
     # MIME handling
     assert vm.features["service.securedrop-mime-handling"] == "1"
     assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-viewer"
+
+    # VM will be marked "internal" only in prod context.
+    if config["environment"] == "prod":
+        assert vm.features.get("internal") == "1"

@@ -21,9 +21,11 @@ def qube():
         "sd-proxy",
         expected_config_keys={"SD_PROXY_ORIGIN", "SD_PROXY_ORIGIN_KEY", "SD_MIME_HANDLING"},
         enforced_apparmor_profiles={"/usr/bin/securedrop-proxy"},
+        mime_types_handling=True,
     )
 
 
+@pytest.mark.configuration
 def test_do_not_open_here(qube):
     """
     The do-not-open here script has been removed from sd-proxy.
@@ -32,14 +34,17 @@ def test_do_not_open_here(qube):
     assert not qube.fileExists("/usr/bin/do-not-open-here")
 
 
+@pytest.mark.configuration
 def test_sd_proxy_package_installed(qube):
     assert qube.package_is_installed("securedrop-proxy")
 
 
+@pytest.mark.configuration
 def test_tor_hidserv_auth_url(qube, dom0_config):
     assert f"http://{dom0_config['hidserv']['hostname']}" == qube.vm_config_read("SD_PROXY_ORIGIN")
 
 
+@pytest.mark.configuration
 def test_whonix_ws_repo_absent(qube):
     """
     The sd-proxy VM was previously based on Whonix Workstation,
@@ -52,27 +57,24 @@ def test_whonix_ws_repo_absent(qube):
     assert not qube.fileExists("/etc/apt/sources.list.d/derivative.list")
 
 
+@pytest.mark.configuration
 def test_logging_configured(qube):
     qube.logging_configured()
 
 
-def test_mimeapps(qube):
-    results = qube.run("cat /usr/share/applications/mimeapps.list")
-    for line in results.splitlines():
-        if line.startswith(("#", "[Default")):
-            # Skip comments and the leading [Default Applications]
-            continue
-        mime, target = line.split("=", 1)
-        assert target == "open-in-dvm.desktop;"
-        # Now functionally test it
-        actual_app = qube.run(f"xdg-mime query default {mime}")
-        assert actual_app == "open-in-dvm.desktop"
-
-
+@pytest.mark.configuration
 def test_mailcap_hardened(qube):
     qube.mailcap_hardened()
 
 
+@pytest.mark.configuration
+def test_sd_proxy_services(qube):
+    assert qube.service_is_active("securedrop-mime-handling")
+    assert qube.service_is_active("securedrop-proxy-onion-config")
+    assert qube.service_is_active("tor")
+
+
+@pytest.mark.provisioning
 def test_sd_proxy_config(all_vms, qube):
     """
     Confirm that qvm-prefs for the VM match expectations.
@@ -88,12 +90,17 @@ def test_sd_proxy_config(all_vms, qube):
     assert vm.features["service.securedrop-mime-handling"] == "1"
     assert vm.features["service.securedrop-arti"] == "1"
     assert vm.features["vm-config.SD_MIME_HANDLING"] == "default"
-    assert qube.service_is_active("securedrop-mime-handling")
-    assert qube.service_is_active("securedrop-proxy-onion-config")
-    assert qube.service_is_active("tor")
 
 
-def test_sd_proxy_dvm(all_vms):
+def test_sd_proxy_dvm_services(qube, all_vms):
+    """
+    Confirm that systemd services for the sd-proxy DispVM are running.
+    """
+    dvm_qube = QubeWrapper("sd-proxy-dvm")
+    assert not dvm_qube.service_is_active("securedrop-mime-handling")
+
+
+def test_sd_proxy_dvm_config(all_vms, config):
     """
     Confirm that qvm-prefs for the "sd-proxy" DispVM match expectations.
     """
@@ -106,4 +113,7 @@ def test_sd_proxy_dvm(all_vms):
     assert SD_TAG in vm.tags
     assert not vm.autostart
     assert "service.securedrop-mime-handling" not in vm.features
-    assert not dvm_qube.service_is_active("securedrop-mime-handling")
+
+    # VM will be marked "internal" only in prod context.
+    if config["environment"] == "prod":
+        assert vm.features.get("internal") == "1"
