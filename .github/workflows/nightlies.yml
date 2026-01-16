@@ -109,10 +109,15 @@ jobs:
               branch: 'main'
             });
             return branch.commit.sha;
+
   openqa-nightly-dev:
     uses: ./.github/workflows/openqa.yml
     secrets: inherit
     needs: ["get-main-commit"]
+    strategy:
+      matrix:
+        qubes_verson: ["4.2", "4.3"]
     with:
       environment: "dev"
       git_ref: ${{ needs.get-main-commit.outputs.main-commit}}
+      qubes_ver: ${{ matrix.qubes_version }}

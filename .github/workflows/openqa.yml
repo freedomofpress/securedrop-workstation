@@ -10,14 +10,35 @@ on:
       git_ref:
         required: true
         type: string
+      qubes_ver:
+        required: true
+        type: string
+      cancel:
+        required: false
+        type: boolean
+
+# NOTE Concurrency serves two purposes:
+#   1. When starting a new OpenQA job
+#   2. When cancelling entirely: when trigger conditions no longer met, the
+#      calling workflow is the best vantage point to cancel the workflow, so it
+#      triggers a new workflow, except with 'cancel=true' as input. This results
+#      in a no-op, but importantly, the previous OpenQA job is cancelled since
+#      through concurrency there can only be one
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.environment }}-${{ inputs.qubes_ver }}
+  cancel-in-progress: true
+
 jobs:
+  openqa-cancel:
+    if: ${{ inputs.cancel }}  # Concurrency does the actual cancellation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel OpenQA job # zizmor: ignore[template-injection]
+        run: |
+          echo "Canceling previous OpenQA job for Qubes ${{ inputs.qubes_ver }}"
   openqa:
     runs-on: ubuntu-latest
-    # Run only if:
-    # 1. This is a push (not pull_request)
-    # 2. We're not on main
-    # 3. We're not on a merge queue branch
-    # 4. The "openqa" string is present
+    if: ${{ ! inputs.cancel }}  # Concurrency does the actual cancellation
     env:
       OPENQA_HOST: "https://openqa.qubes-os.org/"
       OPENQA_KEY: ${{ secrets.OPENQA_KEY }}
@@ -30,6 +51,7 @@ jobs:
       SECUREDROP_OPENQA_REPO_BRANCH: "main"
       # The URL to clone the remote OpenQA repo from (useful for forks):
       SECUREDROP_OPENQA_REPO_URL: "https://github.com/freedomofpress/openqa-tests-qubesos"
+      QUBES_VER: ${{ inputs.qubes_ver }}
     container:
       image: debian:trixie
     steps:
@@ -48,8 +70,8 @@ jobs:
             --apikey "$OPENQA_KEY" \
             --apisecret "$OPENQA_SECRET" \
             isos -X post \
-            VERSION=4.2 \
-            BUILD=$(date +%Y%m%d%H%M)-4.2 \
+            VERSION=${QUBES_VER} \
+            BUILD=$(date +%Y%m%d%H%M)-${QUBES_VER} \
             DISTRI=qubesos ARCH=x86_64 \
             GIT_REF="$GIT_REF" \
             SECUREDROP_ENV="$SECUREDROP_ENV" \
@@ -74,7 +96,7 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
-            -d "{\"state\": \"pending\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / $TEST_NAME\"}"
+            -d "{\"state\": \"pending\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / ${QUBES_VER} / $TEST_NAME\"}"
 
           done
       - name: Wait for openQA
@@ -125,7 +147,7 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
-            -d "{\"state\": \"$github_state\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / $TEST_NAME\"}"
+            -d "{\"state\": \"$github_state\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / ${QUBES_VER} / $TEST_NAME\"}"
 
           done
           exit $workflow_exit_status
@@ -147,5 +169,5 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
-            -d "{\"state\": \"error\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / $TEST_NAME\"}" ||:
+            -d "{\"state\": \"error\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / ${QUBES_VER} / $TEST_NAME\"}" ||:
           done

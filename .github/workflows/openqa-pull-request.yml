@@ -1,0 +1,79 @@
+---
+name: OpenQA
+run-name: "[OpenQA] ${{ github.event.action == 'synchronize' && 'synchronize' || github.event.label.name }}"
+
+on:
+  pull_request:
+    types:
+      - labeled    # Trigger immediately when label added
+      - unlabeled  # Detect label removal in order to cancel previous runs
+      - synchronize
+
+jobs:
+  check:
+    name: 'Check OpenQA triggers'
+    runs-on: ubuntu-latest
+    outputs:
+      qubes-versions: ${{ steps.find_labels.outputs.qubes-versions }}
+    steps:
+      - name: Find all openqa-pending labels on this PR  # zizmor: ignore[template-injection]
+        id: find_labels
+        uses: actions/github-script@v8
+        with:
+          script: |
+            let labels;
+
+            switch (context.payload.action) {
+              case 'synchronize':
+                console.log('Code was pushed: checking all valid OpenQA-triggering labels');
+                labels = context.payload.pull_request.labels;
+                break;
+              case 'labeled':
+                // break; <- intentionally missed to group with 'unlabeled'
+              case 'unlabeled':
+                console.log('Specific label changed: OpenQA run only for changed label');
+                labels = [context.payload.label];
+                break;
+              default:
+                console.error(`Unhandled event action: ${context.payload.action}`);
+                process.exit(1);
+            }
+
+            // Find all openqa-pending-* labels
+            const openqaLabels = labels.filter(label =>
+              label.name && label.name.match(/^openqa-pending-[0-9]+\.[0-9]+$/)
+            );
+
+            if (openqaLabels.length === 0) {
+              console.log('No valid openqa-pending-* labels found');
+              return;
+            }
+
+            // Extract Qubes versions
+            const qubesVersions = openqaLabels.map(label =>
+              label.name.replace('openqa-pending-', '')
+            );
+
+            console.log(`Found openqa-pending labels for versions: ${qubesVersions.join(', ')}`);
+            core.setOutput('qubes-versions', JSON.stringify(qubesVersions));
+
+  # Runs/Cancels OpenQA job for each Qubes version found in labels
+  openqa:
+    needs: [check]
+    if: ${{ needs.check.outputs.qubes-versions != '' }}
+    strategy:
+      matrix:
+        qubes_version: ${{ fromJSON(needs.check.outputs.qubes-versions) }}
+    uses: ./.github/workflows/openqa.yml
+    secrets: inherit
+    with:
+      environment: "dev"
+      git_ref: ${{ github.event.pull_request.head.sha }}
+      qubes_ver: ${{ matrix.qubes_version }}
+
+      # NOTE: cancellation is done through concurrency: by starting another job
+      # with the same conditions as the one we want to cancel, it necessarily
+      # cancels the previous one. The trick is to trigger a no-op on the callee
+      # (this is done through 'cancel=true'). This avoids the need for complex
+      # "run-id"-tracking logic in order to cancel previous runs.
+      cancel: ${{ github.event.action == 'unlabeled' }}
