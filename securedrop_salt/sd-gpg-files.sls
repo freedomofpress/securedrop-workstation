@@ -18,28 +18,3 @@ sd-gpg-increase-keyring-access-timeout:
     - content: |
         # hides GPG prompt (max epoch)
         export QUBES_GPG_AUTOACCEPT=2147483647
-
-sd-gpg-create-keyring-directory:
-  file.directory:
-    - name: /home/user/.gnupg
-    - user: user
-    - group: user
-    - mode: 700
-
-sd-gpg-import-submission-key:
-  file.managed:
-    - name: /home/user/.gnupg/sd-journalist.sec
-    - source: salt://securedrop_salt/sd-journalist.sec
-    - user: user
-    - group: user
-    - mode: 600
-    # Don't print private key to stdout
-    - show_changes: False
-    - require:
-      - file: sd-gpg-create-keyring-directory
-  cmd.run:
-    - name: sudo -u user gpg --import /home/user/.gnupg/sd-journalist.sec
-    - require:
-      - file: sd-gpg-import-submission-key
-    - onchanges:
-      - file: sd-gpg-import-submission-key

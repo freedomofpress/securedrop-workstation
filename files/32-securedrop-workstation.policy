@@ -22,6 +22,7 @@
 securedrop.Log          *           @anyvm @anyvm deny
 
 securedrop.Proxy        *           @anyvm @anyvm deny
+securedrop.GetJournalistSecretKeys      *       @anyvm	@anyvm	deny
 
 qubes.GpgImportKey      *           @anyvm @tag:sd-workstation deny
 qubes.GpgImportKey      *           @tag:sd-workstation @anyvm deny
