@@ -1,19 +1,15 @@
 import subprocess
-import unittest
+
+import pytest
 
 
-class SD_Dom0_Salt_Config_Tests(unittest.TestCase):
-    def setUp(self):
-        # Enable full diff output in test report, to aid in debugging
-        self.maxDiff = None
+def test_is_topfile_enabled():
+    cmd = ["sudo", "qubesctl", "top.enabled"]
+    wanted = "securedrop_salt.sd-workstation.top"
 
-    def test_is_topfile_enabled(self):
-        cmd = ["sudo", "qubesctl", "top.enabled"]
-        wanted = "securedrop_salt.sd-workstation.top"
+    try:
+        all_topfiles = subprocess.check_output(cmd).decode("utf-8")
+        assert wanted in all_topfiles
 
-        try:
-            all_topfiles = subprocess.check_output(cmd).decode("utf-8")
-            assert wanted in all_topfiles
-
-        except subprocess.CalledProcessError:
-            self.fail("Error checking topfiles")
+    except subprocess.CalledProcessError:
+        pytest.fail("Error checking topfiles")

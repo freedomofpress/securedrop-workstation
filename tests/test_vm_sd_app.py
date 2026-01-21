@@ -68,7 +68,7 @@ def test_logging_configured(qube):
     qube.logging_configured()
 
 
-def test_sd_app_config(config, qube, all_vms):
+def test_sd_app_config(dom0_config, qube, all_vms):
     vm = all_vms["sd-app"]
     nvm = vm.netvm
     assert nvm is None
@@ -81,7 +81,7 @@ def test_sd_app_config(config, qube, all_vms):
     # Check the size of the private volume
     # Should be 10GB
     # >>> 1024 * 1024 * 10 * 1024
-    size = config["vmsizes"]["sd_app"]
+    size = dom0_config["vmsizes"]["sd_app"]
     vol = vm.volumes["private"]
     assert vol.size == size * 1024 * 1024 * 1024
 

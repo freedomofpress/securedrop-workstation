@@ -134,7 +134,7 @@ def test_mimetypes_symlink(qube):
 
 
 @pytest.mark.provisioning
-def test_sd_viewer_config(all_vms, config):
+def test_sd_viewer_config(all_vms, dom0_config):
     """
     Confirm that qvm-prefs match expectations for the "sd-viewer" VM.
     """
@@ -151,5 +151,5 @@ def test_sd_viewer_config(all_vms, config):
     assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-viewer"
 
     # VM will be marked "internal" only in prod context.
-    if config["environment"] == "prod":
+    if dom0_config["environment"] == "prod":
         assert vm.features.get("internal") == "1"
