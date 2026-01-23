@@ -116,7 +116,7 @@ jobs:
     needs: ["get-main-commit"]
     strategy:
       matrix:
-        qubes_verson: ["4.2", "4.3"]
+        qubes_version: ["4.2", "4.3"]
     with:
       environment: "dev"
       git_ref: ${{ needs.get-main-commit.outputs.main-commit}}
