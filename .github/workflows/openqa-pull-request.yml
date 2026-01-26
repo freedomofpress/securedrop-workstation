@@ -39,19 +39,19 @@ jobs:
                 process.exit(1);
             }
 
-            // Find all openqa-pending-* labels
+            // Find all '*-openqa-pending' labels
             const openqaLabels = labels.filter(label =>
-              label.name && label.name.match(/^openqa-pending-[0-9]+\.[0-9]+$/)
+              label.name && label.name.match(/^[0-9]+\.[0-9]+-openqa-pending$/)
             );
 
             if (openqaLabels.length === 0) {
-              console.log('No valid openqa-pending-* labels found');
+              console.log('No valid *-openqa-pending labels found');
               return;
             }
 
             // Extract Qubes versions
             const qubesVersions = openqaLabels.map(label =>
-              label.name.replace('openqa-pending-', '')
+              label.name.replace('-openqa-pending', '')
             );
 
             console.log(`Found openqa-pending labels for versions: ${qubesVersions.join(', ')}`);
