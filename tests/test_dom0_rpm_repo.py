@@ -35,18 +35,6 @@ def _is_installed(pkg: str) -> bool:
         return False
 
 
-def _get_env_by_package():
-    """
-    Check which environment we are using by checking keyring package.
-    The order matters; due to package versioning, an installed dev package
-    means a dev setup, so check dev, staging, then prod.
-    """
-    for env, suffix in [("dev", "-dev"), ("staging", "-staging"), ("prod", "")]:
-        if _is_installed(f"securedrop-workstation-keyring{suffix}"):
-            return env
-    pytest.fail("No keyring package")
-
-
 def test_rpm_releasever_substitution():
     """
     Ensure DNF is understanding $releasever as we expect in the repository
@@ -56,15 +44,13 @@ def test_rpm_releasever_substitution():
     assert qubes_version in ["4.2", "4.3"]
 
 
-def get_repo_config(dom0_config):
+@pytest.fixture(scope="session")
+def repo_config(dom0_config):
     """
     Look up the appropriate Yum repo configuration, based on config.json.
-
-    We avoid declaring this function as a pytest fixture, because we want
-    to make use of the existing fixture for the dom0 config.json, and pytest
-    fixtures cannot depend on other fixtures.
+    Depends on the `dom0_config` fixture, for lookup on the environment,
+    which determines the rpm config.
     """
-
     # The dom0 fixture defaults to "dev" for the environment key.
     # It's possible that we can fall back to inferring the env based on
     # which keyring RPM packages are installed in dom0.
@@ -72,13 +58,12 @@ def get_repo_config(dom0_config):
     return REPO_CONFIG[env].copy()
 
 
-def test_rpm_repo_config(dom0_config):
+def test_rpm_repo_config(repo_config):
     """
     Inspect the dom0 yum repo config for the SecureDrop Workstation RPM repository,
     and verify the settings are what we expect. Some of the attributes vary
     by env; see top-level REPO_CONFIG.
     """
-    repo_config = get_repo_config(dom0_config)
     repo = repo_config["repo_file_name"]
     baseurl = repo_config["yum_repo_url"]
     repo_file = f"/etc/yum.repos.d/{repo}"

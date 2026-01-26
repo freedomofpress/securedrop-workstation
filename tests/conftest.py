@@ -22,11 +22,11 @@ def dom0_config():
     with open(os.path.join(PROJ_ROOT, "config.json")) as c:
         config = json.load(c)
         # TODO: in the future, when "config.json" does not include an env declaration,
-        # we should either assume "prod" or else infer the env from the keyring
-        # packages that are installed. See the `_get_env_by_package` function
-        # elsewhere in this test suite for details.
+        # If the "environment" key is absent from the "config.json" file, assume prod,
+        # as a sane default. Dev environments will have it set explicitly.
         if "environment" not in config:
-            config["environment"] = "dev"
+            pytest.warn("no 'environment' detected in config.json, assuming prod")
+            config["environment"] = "prod"
     return config
 
 
