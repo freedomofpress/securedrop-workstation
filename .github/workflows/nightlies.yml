@@ -5,11 +5,14 @@ on:
   push:
     branches:
       - main
+  pull_request:  # To test changes in this workflow
+    paths:
+      - '.github/workflows/nightlies.yml'
 
 # Only allow one job to run at a time because we're pushing to git repos;
 # the string value doesn't matter, just that it's a fixed string.
 concurrency:
-  group: "just-one-please"
+  group: "just-one-please-${{ github.ref }}"
 
 defaults:
   run:
@@ -47,6 +50,7 @@ jobs:
           if-no-files-found: error
 
   commit-and-push:
+    if: ${{ github.ref == 'refs/heads/main' }} # Skip when testing workflow
     runs-on: ubuntu-latest
     container: debian:bookworm
     needs:
