@@ -20,7 +20,7 @@ install-securedrop-client-package:
   pkg.installed:
     - pkgs:
       - securedrop-client
-      {% if d.app %}
+      {% if d.get('app', false) %}
       - securedrop-app
       {% endif %}
     - require:

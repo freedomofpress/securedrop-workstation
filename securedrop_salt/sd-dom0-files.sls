@@ -30,7 +30,7 @@ dom0-login-autostart-desktop-file:
     - context:
         desktop_name: SDWLogin
         desktop_comment: Updates SecureDrop Workstation DispVMs at login
-        desktop_exec: /usr/bin/sdw-login{% if d.app %} --launch-app{% endif %}
+        desktop_exec: /usr/bin/sdw-login{% if d.get('app', false) %} --launch-app{% endif %}
     - user: {{ gui_user }}
     - group: {{ gui_user }}
     - mode: 664
@@ -43,7 +43,7 @@ dom0-securedrop-launcher-desktop-shortcut:
     - source: "salt://securedrop_salt/press.freedom.SecureDropUpdater.desktop.j2"
     - template: jinja
     - context:
-        desktop_exec: sdw-updater{% if d.app %} --launch-app{% endif %}
+        desktop_exec: sdw-updater{% if d.get('app', false) %} --launch-app{% endif %}
     - user: {{ gui_user }}
     - group: {{ gui_user }}
     - mode: 755
