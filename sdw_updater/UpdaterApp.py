@@ -16,26 +16,34 @@ from sdw_util import Util
 logger = Util.get_logger(module=__name__)
 
 
-def launch_securedrop_client():
+def launch_securedrop_client(app: bool = False):
     """
-    Helper function to launch the SecureDrop Client
+    Helper function to launch the SecureDrop Client or App
     """
+    if app:
+        desktop_file = "press.freedom.SecureDropApp"
+        app_name = "SecureDrop app"
+    else:
+        desktop_file = "press.freedom.SecureDropClient"
+        app_name = "SecureDrop client"
+
     try:
-        logger.info("Launching SecureDrop client")
+        logger.info(f"Launching {app_name}")
         subprocess.Popen(["qvm-start", "sd-proxy"])
-        subprocess.Popen(["qvm-run", "sd-app", "gtk-launch press.freedom.SecureDropClient"])
+        subprocess.Popen(["qvm-run", "sd-app", f"gtk-launch {desktop_file}"])
     except subprocess.CalledProcessError as e:
-        logger.error("Error while launching SecureDrop client")
+        logger.error(f"Error while launching {app_name}")
         logger.error(str(e))
     sys.exit(0)
 
 
 class UpdaterApp(QDialog, Ui_UpdaterDialog):
-    def __init__(self, should_skip_netcheck: bool = False, parent=None):
+    def __init__(self, should_skip_netcheck: bool = False, launch_app: bool = False, parent=None):
         super().__init__(parent)
 
         self.progress = 0
         self._skip_netcheck = should_skip_netcheck
+        self._launch_app = launch_app
         self.setupUi(self)
 
         # We use a single dialog with button visibility toggled at different
@@ -52,7 +60,10 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
 
         self.clientOpenButton.setEnabled(False)
         self.clientOpenButton.hide()
-        self.clientOpenButton.clicked.connect(launch_securedrop_client)
+        # Connect button to launch either client or app based on launch_app flag
+        self.clientOpenButton.clicked.connect(
+            lambda: launch_securedrop_client(app=self._launch_app)
+        )
 
         self.rebootButton.setEnabled(False)
         self.rebootButton.hide()
@@ -61,7 +72,10 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self.show()
 
         self.headline.setText(strings.headline_introduction)
-        self.proposedActionDescription.setText(strings.description_introduction)
+        if self._launch_app:
+            self.proposedActionDescription.setText(strings.description_introduction_app)
+        else:
+            self.proposedActionDescription.setText(strings.description_introduction)
 
         self.progress += 1
         self.progressBar.setProperty("value", self.progress)
@@ -92,13 +106,23 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
             self.headline.setText(strings.headline_status_updates_complete)
-            self.proposedActionDescription.setText(strings.description_status_updates_complete)
+            if self._launch_app:
+                self.proposedActionDescription.setText(
+                    strings.description_status_updates_complete_app
+                )
+            else:
+                self.proposedActionDescription.setText(strings.description_status_updates_complete)
         else:
             logger.info("Error upgrading VMs")
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
             self.headline.setText(strings.headline_status_updates_failed)
-            self.proposedActionDescription.setText(strings.description_status_updates_failed)
+            if self._launch_app:
+                self.proposedActionDescription.setText(
+                    strings.description_status_updates_failed_app
+                )
+            else:
+                self.proposedActionDescription.setText(strings.description_status_updates_failed)
 
     @pyqtSlot(int)
     def update_progress_bar(self, value):
