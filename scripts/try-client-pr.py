@@ -162,6 +162,8 @@ def main():
         ["qvm-ls", "--tags", "sd-workstation", "--raw-list", "--running"]
     ).splitlines()
     subprocess.check_call(["qvm-shutdown", "--wait"] + all_vms)
+    # Manually start sd-proxy so Tor can start up early
+    subprocess.check_call(["qvm-start", "sd-proxy"])
     print(f"\n\nYour workstation is provisioned with PR #{args.pr_id}.")
     target = "app" if args.app else "client"
     print(f"\n\nYou can start the {target} with `make run-{target}`.")
