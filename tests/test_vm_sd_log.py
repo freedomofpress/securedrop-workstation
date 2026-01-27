@@ -108,7 +108,7 @@ def test_sd_log_service(qube):
 
 
 @pytest.mark.provisioning
-def test_sd_log_config(qube, config, all_vms):
+def test_sd_log_config(qube, dom0_config, all_vms):
     """
     Confirm that qvm-prefs match expectations for the sd-log VM.
     """
@@ -129,6 +129,6 @@ def test_sd_log_config(qube, config, all_vms):
     # Check the size of the private volume
     # Should be same of config.json
     # >>> 1024 * 1024 * 5 * 1024
-    size = config["vmsizes"]["sd_log"]
+    size = dom0_config["vmsizes"]["sd_log"]
     vol = vm.volumes["private"]
     assert vol.size == size * 1024 * 1024 * 1024

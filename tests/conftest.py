@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -18,8 +19,15 @@ PROJ_ROOT = Path(__file__).parent.parent
 @pytest.fixture(scope="session")
 def dom0_config():
     """Make the dom0 "config.json" available to tests."""
-    with open(PROJ_ROOT / "config.json") as config_file:
-        return json.load(config_file)
+    with open(os.path.join(PROJ_ROOT, "config.json")) as c:
+        config = json.load(c)
+        # TODO: in the future, when "config.json" does not include an env declaration,
+        # If the "environment" key is absent from the "config.json" file, assume prod,
+        # as a sane default. Dev environments will have it set explicitly.
+        if "environment" not in config:
+            pytest.warn("no 'environment' detected in config.json, assuming prod")
+            config["environment"] = "prod"
+    return config
 
 
 @pytest.fixture(scope="session")
@@ -36,15 +44,6 @@ def sdw_tagged_vms(all_vms):
     # filter out the "sd-viewer-disposable" VM, which is an ephemeral DispVM,
     # which will exist at certain points of the test suite
     return [vm for vm in sdw_vms if vm.name != "sd-viewer-disposable"]
-
-
-@pytest.fixture(scope="session")
-def config():
-    with open("config.json") as c:
-        config = json.load(c)
-    if "environment" not in config:
-        config["environment"] = "dev"
-    return config
 
 
 @pytest.fixture(scope="session", autouse=True)

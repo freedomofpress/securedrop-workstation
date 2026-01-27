@@ -128,7 +128,8 @@ install-dom0-test-prereqs: assert-dom0 ## Installs pytest dependencies in dom0
 	@rpm -q python3-pytest python3-pytest-cov python3-pytest-xdist || sudo qubes-dom0-update -y python3-pytest python3-pytest-cov python3-pytest-xdist
 
 test: test-prereqs ## Runs all application tests (no integration tests yet)
-	pytest -v tests -v launcher/tests -n auto --dist=loadfile --durations=5
+	# N.B. make sure to use "-vv" for max-length diffs on test failures
+	pytest -vv tests launcher/tests -n auto --dist=loadfile --durations=5
 
 test-base: test-prereqs ## Runs tests for VMs layout
 	pytest -v tests/test_vms_exist.py

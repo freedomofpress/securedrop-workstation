@@ -162,11 +162,10 @@ class QubeWrapper:
         msg = f"File {remote_path} does not contain expected line {wanted_line}"
         raise AssertionError(msg)
 
-    def fileExists(self, remote_path):
-        # ls will return non-zero if the file doesn't exists
-        # and error will be propagated to the unittest
-        # ls will return non-zero and an exception will be thrown if the file
-        # does not exist, so we return false in that case.
+    def fileExists(self, remote_path) -> bool:
+        # ls will return non-zero if the file doesn't exist
+        # and error will be propagated to the test runner,
+        # so we catch that case and return false.
         try:
             subprocess.check_call(["qvm-run", "-a", "-q", self.name, f"ls {remote_path}"])
         except subprocess.CalledProcessError:

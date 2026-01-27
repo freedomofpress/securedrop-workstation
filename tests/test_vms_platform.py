@@ -151,7 +151,7 @@ def test_dispvm_default_platform():
 
 @pytest.mark.configuration
 @pytest.mark.packages
-def test_sd_vm_apt_sources(config, all_vms):
+def test_sd_vm_apt_sources(dom0_config, all_vms):
     """
     Test that the three templates we install our apt sources into are correct
     """
@@ -170,7 +170,7 @@ def test_sd_vm_apt_sources(config, all_vms):
             "/etc/apt/sources.list.d/apt_freedom_press.sources",
         )
 
-        if config["environment"] == "prod":
+        if dom0_config["environment"] == "prod":
             # No test sources should be present
             stdout, stderr = vm.run("ls /etc/apt/sources.list.d/")
             sources_list = stdout.decode("utf-8").rstrip("\n")
@@ -179,7 +179,7 @@ def test_sd_vm_apt_sources(config, all_vms):
 
         # we're in staging or dev, so check for that file
         components = ["main"]
-        if config["environment"] == "dev":
+        if dom0_config["environment"] == "dev":
             components.append("nightlies")
 
         assert_apt_source(
