@@ -45,3 +45,7 @@ sd-gpg:
     - require:
       - sls: securedrop_salt.sd-workstation-template
       - sls: securedrop_salt.sd-upgrade-templates
+
+sd-gpg-deny-all-devices:
+  cmd.run:
+    - name: qvm-prefs sd-gpg devices_denied '*******'
