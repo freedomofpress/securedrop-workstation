@@ -7,10 +7,10 @@ from qubesadmin import Qubes
 
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
-    SD_TAG,
     SD_TEMPLATE_BASE,
     SD_TEMPLATE_LARGE,
     SD_TEMPLATE_SMALL,
+    is_workstation_qube,
 )
 
 PROJ_ROOT = Path(__file__).parent.parent
@@ -39,11 +39,7 @@ def all_vms():
 @pytest.fixture(scope="session")
 def sdw_tagged_vms(all_vms):
     """Obtain all SecureDrop Workstation-exclusive qubes"""
-
-    sdw_vms = [vm for vm in all_vms if SD_TAG in vm.tags]
-    # filter out the "sd-viewer-disposable" VM, which is an ephemeral DispVM,
-    # which will exist at certain points of the test suite
-    return [vm for vm in sdw_vms if vm.name != "sd-viewer-disposable"]
+    return list(filter(is_workstation_qube, all_vms))
 
 
 @pytest.fixture(scope="session", autouse=True)
