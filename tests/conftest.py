@@ -14,11 +14,10 @@ from tests.base import (
 )
 
 PROJ_ROOT = Path(__file__).parent.parent
-MOCK_DEVICE_PATH = "/tmp/some.img"
 
 
 @pytest.fixture(scope="session")
-def mock_block_device(all_vms):
+def mock_block_device(all_vms, worker_id, testrun_uid):
     """
     Creates a block device, exposed by sys-usb
 
@@ -26,18 +25,20 @@ def mock_block_device(all_vms):
     """
     backend_qube = all_vms["sys-usb"]
 
-    # Obtain looback device name for later removing it
-    dev_path = backend_qube.run("sudo losetup -f")[0].decode().strip()
+    # Create file-backed device unique to workers to avoid xdist conflicts
+    mock_device_path = f"/tmp/{worker_id}-{testrun_uid}.img"
+    backend_qube.run(f"touch {mock_device_path}")
+    backend_qube.run(f"sudo losetup -f {mock_device_path}")
 
-    # Create mock block device
-    backend_qube.run(f"touch {MOCK_DEVICE_PATH}")
-    backend_qube.run(f"sudo losetup -f {MOCK_DEVICE_PATH}")
+    # Obtain path of newly created device
+    cmd_get_device_path = f"losetup --associated {mock_device_path} --output NAME --noheadings"
+    device_path = backend_qube.run(cmd_get_device_path)[0].decode().strip()  # format: /dev/loopX
 
     # Return qvm-block format: BACKEND:DEVID
-    yield f"{backend_qube}:{dev_path.strip('/dev/')}"
+    yield f"{backend_qube.name}:{device_path.strip('/dev/')}"
 
     # Remove device
-    backend_qube.run(f"sudo losetup -d {dev_path}")
+    backend_qube.run(f"sudo losetup -d {device_path}")
 
 
 @pytest.fixture(scope="session")
