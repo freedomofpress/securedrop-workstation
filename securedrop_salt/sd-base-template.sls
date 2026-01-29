@@ -25,3 +25,7 @@ sd-base-template:
         - service.paxctld
     - require:
       - qvm: dom0-install-debian-minimal-template
+
+sd-base-template-deny-all-devices:
+  cmd.run:
+    - name: qvm-prefs sd-base-{{ sdvars.distribution }}-template devices_denied '*******'

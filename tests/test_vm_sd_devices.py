@@ -20,6 +20,7 @@ def qube():
         "sd-devices",
         expected_config_keys={"SD_MIME_HANDLING"},
         mime_types_handling=True,
+        devices_attachable=True,
     )
 
 

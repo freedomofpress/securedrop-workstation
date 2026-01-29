@@ -54,6 +54,10 @@ sd-viewer:
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
 
+sd-viewer-deny-all-devices:
+  cmd.run:
+    - name: qvm-prefs sd-viewer devices_denied '*******'
+
 # Set sd-viewer as the global default_dispvm
 # While all of our VMs have explit default_dispvm set, this is a better default
 # than the stock fedora-XX-dvm in case someone creates their own VMs.

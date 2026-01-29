@@ -42,6 +42,10 @@ sd-proxy-dvm:
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
+sd-proxy-dvm-deny-all-devices:
+  cmd.run:
+    - name: qvm-prefs sd-proxy-dvm devices_denied '*******'
+
 sd-proxy-create-named-dispvm:
   qvm.vm:
     - name: sd-proxy
@@ -77,3 +81,7 @@ sd-proxy-config:
         - vm-config.SD_PROXY_ORIGIN_KEY: {{ d.hidserv.key }}
     - require:
       - qvm: sd-proxy-create-named-dispvm
+
+sd-proxy-deny-all-devices:
+  cmd.run:
+    - name: qvm-prefs sd-proxy devices_denied '*******'

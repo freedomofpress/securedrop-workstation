@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 
+import dnf
 import pytest
 from qubesadmin import Qubes
 
@@ -108,6 +109,7 @@ class QubeWrapper:
         enforced_apparmor_profiles=set(),
         mime_types_handling=False,
         mime_vars_vm_name=None,
+        devices_attachable=False,
     ):
         """
         QubesVM test helper.
@@ -118,6 +120,7 @@ class QubeWrapper:
             enforced_apparmor_profiles -- AppArmor profiles expected
             mime_types_handling -- Whether to run MIME types tests for this VM
             mime_vars_vm_name -- VM name to use for MIME vars file lookup (defaults to name)
+            devices_attachable -- VM can have devices attached to it
         """
 
         self.name = name
@@ -133,6 +136,7 @@ class QubeWrapper:
         self.enforced_apparmor_profiles = enforced_apparmor_profiles
         self.mime_types_handling = mime_types_handling
         self.mime_vars_vm_name = mime_vars_vm_name if mime_vars_vm_name else name
+        self.devices_attachable = devices_attachable
 
     def run(self, cmd, user=""):
         """
@@ -352,3 +356,22 @@ class Test_SD_VM_Common:
             assert (
                 actual_app == expected_app
             ), f"MIME type {mime_type}: expected {expected_app}, got {actual_app}"
+
+    @pytest.mark.skipif(
+        dnf.rpm.detect_releasever("/") == "4.2", reason="Feature only available in Qubes >= 4.3"
+    )
+    def test_mock_device_attach_deny(self, qube, mock_block_device):
+        if qube.name == "sys-usb":
+            pytest.skip("Test does not run on 'sys-usb' (no need to attach devices to itself)")
+        if qube.devices_attachable:
+            pytest.skip("On this qube device attachment is not denied")
+
+        # Device attachment expected to fail (generic qubes)
+        with pytest.raises(subprocess.CalledProcessError) as exc_info:
+            subprocess.check_output(
+                ["qvm-block", "attach", qube.name, mock_block_device],
+                stderr=subprocess.STDOUT,  # Capture qubesd error message
+                text=True,
+            )
+
+        assert "Error: Got empty response from qubesd" in exc_info.value.stdout
