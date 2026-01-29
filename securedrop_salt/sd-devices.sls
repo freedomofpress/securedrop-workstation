@@ -38,6 +38,11 @@ sd-devices-dvm:
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
 
+# Prevent device attachment (on the actual disposable attachments are expected)
+sd-devices-dvm-deny-all-devices:
+  cmd.run:
+    - name: qvm-prefs sd-devices-dvm devices_denied '*******'
+
 sd-devices-create-named-dispvm:
   qvm.vm:
     - name: sd-devices

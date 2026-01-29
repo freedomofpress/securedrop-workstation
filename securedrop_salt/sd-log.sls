@@ -72,6 +72,10 @@ install-sd-log:
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
+sd-log-deny-all-devices:
+  cmd.run:
+    - name: qvm-prefs sd-log devices_denied '*******'
+
 # The private volume size should be set in config.json
 sd-log-private-volume-size:
   cmd.run:

@@ -33,6 +33,10 @@ sd-small-{{ sdvars.distribution }}-template:
     - require:
       - sls: securedrop_salt.sd-base-template
 
+sd-small-template-deny-all-devices:
+  cmd.run:
+    - name: qvm-prefs sd-small-{{ sdvars.distribution }}-template devices_denied '*******'
+
 sd-large-{{ sdvars.distribution }}-template:
   qvm.vm:
     - name: sd-large-{{ sdvars.distribution }}-template
@@ -52,3 +56,7 @@ sd-large-{{ sdvars.distribution }}-template:
         - service.paxctld
     - require:
       - sls: securedrop_salt.sd-base-template
+
+sd-large-template-deny-all-devices:
+  cmd.run:
+    - name: qvm-prefs sd-large-{{ sdvars.distribution }}-template devices_denied '*******'

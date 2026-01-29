@@ -45,6 +45,10 @@ sd-app:
       - qvm: sd-small-{{ sdvars.distribution }}-template
       - sls: securedrop_salt.sd-viewer
 
+sd-app-deny-all-devices:
+  cmd.run:
+    - name: qvm-prefs sd-app devices_denied '*******'
+
 sd-app-config:
   qvm.features:
     - name: sd-app
