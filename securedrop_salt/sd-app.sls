@@ -45,6 +45,18 @@ sd-app:
       - qvm: sd-small-{{ sdvars.distribution }}-template
       - sls: securedrop_salt.sd-viewer
 
+{% if grains['osrelease'] != '4.2' %}
+sd-app-custom-persist:
+  qvm.features:
+    - name: sd-app
+    - enable:
+      - service.custom-persist
+    - set:
+      - custom-persist.client_dir: /home/user/.securedrop_client/
+      - custom-persist.app_db: /home/user/.config/SecureDrop/db.sqlite
+      - custom-persist.app_downloaded_files: /home/user/.config/SecureDrop/files/
+{% endif %}
+
 sd-app-config:
   qvm.features:
     - name: sd-app
