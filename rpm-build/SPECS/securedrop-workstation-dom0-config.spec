@@ -52,6 +52,13 @@ SecureDrop Workstation project. The package should be installed
 in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
 
+%package -n securedrop-admin-dom0-config
+Summary: SecureDrop Admin
+%description -n securedrop-admin-dom0-config
+This package contains VM configuration files for the Qubes-based
+SecureDrop Admin project. The package should be installed
+in dom0, or AdminVM, context, in order to manage updates to the VM
+configuration over time.
 
 %prep
 %setup -q -n %{name}-%{version}
@@ -60,7 +67,7 @@ configuration over time.
 %build
 # No building necessary here, but this soothes rpmlint
 
-
+# single install directive for files for all packages
 %install
 %{python3} -m pip install --no-compile --no-index --no-build-isolation --root %{buildroot} .
 # direct_url.json is is not reproducible and not strictly needed
@@ -69,6 +76,9 @@ sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}/%{python3_sitelib}/*%{ve
 
 install -m 755 -d %{buildroot}/srv/salt/
 cp -a securedrop_salt %{buildroot}/srv/salt/
+
+# test admin directory install
+cp -a admin_salt %{buildroot}/srv/salt/admin_salt
 
 install -m 755 -d %{buildroot}/%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}/%{_bindir}
@@ -151,6 +161,10 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %attr(755, root, root) /usr/bin/securedrop/update-xfce-settings
 
 %doc README.md
+%license LICENSE
+
+%files -n securedrop-admin-dom0-config
+/srv/salt/admin_salt/*
 %license LICENSE
 
 %post
