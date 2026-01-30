@@ -24,4 +24,4 @@ rpmbuild \
 python3 scripts/verify_rpm_mtime.py
 
 printf '\nBuild complete! RPMs and their checksums are:\n\n'
-find rpm-build/ -type f -iname "${PROJECT}-$(cat "${TOPLEVEL}/VERSION")*.rpm" -print0 | sort -zV | xargs -0 sha256sum
+find rpm-build/ -type f -iname "securedrop-*-$(cat "${TOPLEVEL}/VERSION")*.rpm" -print0 | sort -zV | xargs -0 sha256sum
