@@ -532,6 +532,17 @@ files = [
 chardet = "*"
 
 [[package]]
+name = "python-systemd"
+version = "0.0.9"
+description = "Systemd interfaces wrapper"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "python-systemd-0.0.9.tar.gz", hash = "sha256:c01352a24518a6d89f90ceb94e384b0ef0385ea5b3b2d6963f8262d9c00f2fc7"},
+]
+
+[[package]]
 name = "ruff"
 version = "0.8.5"
 description = "An extremely fast Python linter and code formatter, written in Rust."
@@ -610,4 +621,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "90553ed71b02298ebf2d2a2ff2f052488d1915368feaebfecc904cac81271941"
+content-hash = "d087e7da80520a5087c1f15860cc25081703007235e28c44e9c36641ca360d56"

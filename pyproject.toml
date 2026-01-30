@@ -22,6 +22,7 @@ ruff = "^0.8.5"
 python-debian = "^0.1.49"
 pysequoia = "^0.1.25"
 zizmor = "*"
+python-systemd = "^0.0.9"
 
 [tool.poetry.group.system-package-equivalents.dependencies]
 # In production these are installed as a system package so match the
