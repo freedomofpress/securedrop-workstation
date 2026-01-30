@@ -360,7 +360,7 @@ class Test_SD_VM_Common:
     @pytest.mark.skipif(
         dnf.rpm.detect_releasever("/") == "4.2", reason="Feature only available in Qubes >= 4.3"
     )
-    def test_mock_device_attach_deny(self, qube, mock_block_device):
+    def test_mock_device_attach_deny(self, qube, mock_block_device, qubesd_log):
         if qube.name == "sys-usb":
             pytest.skip("Test does not run on 'sys-usb' (no need to attach devices to itself)")
         if qube.devices_attachable:
@@ -375,3 +375,16 @@ class Test_SD_VM_Common:
             )
 
         assert "Error: Got empty response from qubesd" in exc_info.value.stdout
+
+        # Previous error too generic: Dig into journal logs to confirm attachment denial
+        expected_re = re.compile(
+            (
+                r"WARNING: permission denied for call "
+                r"b'admin.vm.device.block.Attach'\+b'{device_id}\+\+\d+' "
+                r"\(b'dom0' → b'{target_qube}'\)"
+            ).format(device_id=mock_block_device.replace(":", r"\+"), target_qube=qube.name)
+        )
+
+        # Exactly one policy denial match
+        matching_entries = list(filter(expected_re.match, qubesd_log))
+        assert len(matching_entries) == 1
