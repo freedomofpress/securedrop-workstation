@@ -1,8 +1,10 @@
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 
 import pytest
+import systemd.journal
 from qubesadmin import Qubes
 
 from tests.base import (
@@ -90,3 +92,17 @@ def cleanup(request, sdw_tagged_vms):
                 vm.shutdown()
         except KeyError:
             pass
+
+
+@pytest.fixture
+def qubesd_log():
+    # Obtain journal entries to dig down into expected Qubes-daemon error
+    journal = systemd.journal.Reader()
+    journal.add_match(_SYSTEMD_UNIT="qubesd.service")
+    journal.seek_realtime(datetime.now())
+
+    def _entry_generator(journal):
+        for entry in journal:
+            yield entry.get("MESSAGE")
+
+    return _entry_generator(journal)
