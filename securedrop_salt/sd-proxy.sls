@@ -42,9 +42,11 @@ sd-proxy-dvm:
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
+{% if grains['osrelease'] != '4.2' %}
 sd-proxy-dvm-deny-all-devices:
   cmd.run:
     - name: qvm-prefs sd-proxy-dvm devices_denied '*******'
+{% endif %}
 
 sd-proxy-create-named-dispvm:
   qvm.vm:
@@ -82,6 +84,8 @@ sd-proxy-config:
     - require:
       - qvm: sd-proxy-create-named-dispvm
 
+{% if grains['osrelease'] != '4.2' %}
 sd-proxy-deny-all-devices:
   cmd.run:
     - name: qvm-prefs sd-proxy devices_denied '*******'
+{% endif %}

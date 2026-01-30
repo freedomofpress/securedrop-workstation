@@ -38,10 +38,12 @@ sd-devices-dvm:
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
 
+{% if grains['osrelease'] != '4.2' %}
 # Prevent device attachment (on the actual disposable attachments are expected)
 sd-devices-dvm-deny-all-devices:
   cmd.run:
     - name: qvm-prefs sd-devices-dvm devices_denied '*******'
+{% endif %}
 
 sd-devices-create-named-dispvm:
   qvm.vm:

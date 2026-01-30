@@ -46,6 +46,8 @@ sd-gpg:
       - sls: securedrop_salt.sd-workstation-template
       - sls: securedrop_salt.sd-upgrade-templates
 
+{% if grains['osrelease'] != '4.2' %}
 sd-gpg-deny-all-devices:
   cmd.run:
     - name: qvm-prefs sd-gpg devices_denied '*******'
+{% endif %}
