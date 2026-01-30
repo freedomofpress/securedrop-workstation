@@ -54,9 +54,11 @@ sd-viewer:
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
 
+{% if grains['osrelease'] != '4.2' %}
 sd-viewer-deny-all-devices:
   cmd.run:
     - name: qvm-prefs sd-viewer devices_denied '*******'
+{% endif %}
 
 # Set sd-viewer as the global default_dispvm
 # While all of our VMs have explit default_dispvm set, this is a better default
