@@ -1,6 +1,30 @@
 # changelog
 
-# 1.5.1
+## 1.6.0rc1
+
+* Suppress GPG prompt (#1466)
+* Enable SecureDrop App if `app: true` set in config.json (#1534)
+* Qubes 4.3 support:
+  * Start building Qubes 4.3 (Fedora 41) nightlies (#1485, #1489)
+  * PyQt6 compatibility (#1495)
+* Internal and development:
+  * Add switch-apt-source script to flip between APT repos (#1449)
+  * Add missing `qubes-dom0-update --clean` calls in dev setup (#1468)
+  * Improvements to OpenQA jobs (#1472, #1473, #1483, #1491, #1493, #1504, #1509, #1515, #1524, #1544, #1546, #1548)
+  * Migrate tests to pytest (#1487, #1512, #1525, #1537, #1542)
+  * Bump actions/checkout from 5 to 6 (#1496)
+  * Bump actions/download-artifact from 4 to 7 (#1462, #1518)
+  * Bump actions/upload-artifact from 4 to 6 (#1463, #1519)
+  * Fix clock skew on `make dev` RPM build (#1501)
+  * Fix first-run `make dev` via dom0 keyring (#1500)
+  * Improve `try-client-pr` (#1497, #1551, #1560)
+  * Add `make run-app` (#1520)
+  * Sleep before pushing nightlies (#1529)
+  * Add architecture decision records (ADR) (#1527)
+  * Have a deeper `make clean` (#1531)
+  * Update tests for repo baseurl including `$releasever` (#1533)
+
+## 1.5.1
 
 * Update sdw-admin configure action to check for packaged Tails config (#1506)
 
