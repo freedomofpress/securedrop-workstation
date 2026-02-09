@@ -14,13 +14,13 @@ package-mode = false
 requires-poetry = ">=2.1.0,<3.0.0"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.14.1"
-pytest = "^8.3.4"
-pytest-cov = "^6.0.0"
-types-setuptools = "^75.6.0"
-ruff = "^0.8.5"
-python-debian = "^0.1.49"
-pysequoia = "^0.1.25"
+mypy = "^1.19.1"
+pytest = "^9.0.2"
+pytest-cov = "^7.0.0"
+types-setuptools = "^81.0.0"
+ruff = "^0.15.0"
+python-debian = "^1.1.0"
+pysequoia = "^0.1.29"
 zizmor = "*"
 
 [tool.poetry.group.system-package-equivalents.dependencies]
