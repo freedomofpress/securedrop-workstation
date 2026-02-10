@@ -5,7 +5,9 @@ PYTHON3 := $(if $(shell bash -c "command -v python3.11"), python3.11, python3)
 # manually prepend ./scripts/container.sh to commands you want to execute
 CONTAINER := $(if $(shell grep -E "(Thirty Seven|Forty One)" /etc/fedora-release),,./scripts/container.sh)
 
-HOST=$(shell hostname)
+# Several targets check for "dom0" hostname; we can't assume the CLI
+# "hostname" is present in containers, though, so default to "unknown".
+HOST := $(or $(shell hostname 2>/dev/null),unknown)
 
 SPEC_FILE="rpm-build/SPECS/securedrop-workstation-dom0-config.spec"
 
