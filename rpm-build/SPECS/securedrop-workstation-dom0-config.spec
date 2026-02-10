@@ -32,9 +32,6 @@ Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
 
 BuildArch:		noarch
 BuildRequires:	python3-devel
-BuildRequires:	python3-pip
-BuildRequires:	python3-setuptools
-BuildRequires:	python3-wheel
 BuildRequires:	systemd-rpm-macros
 
 # This package installs all standard VMs in Qubes
@@ -53,19 +50,17 @@ in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
 
 
-%prep
-%setup -q -n %{name}-%{version}
-
-
 %build
-# No building necessary here, but this soothes rpmlint
+# Nothing to build; rpmbuild is invoked with --build-in-place
 
 
 %install
-%{python3} -m pip install --no-compile --no-index --no-build-isolation --root %{buildroot} .
-# direct_url.json is is not reproducible and not strictly needed
-rm %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/direct_url.json
-sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/RECORD
+install -m 755 -d %{buildroot}/%{python3_sitelib}/sdw_notify
+install -m 755 -d %{buildroot}/%{python3_sitelib}/sdw_updater
+install -m 755 -d %{buildroot}/%{python3_sitelib}/sdw_util
+install -m 644 sdw_notify/*.py %{buildroot}/%{python3_sitelib}/sdw_notify/
+install -m 644 sdw_updater/*.py %{buildroot}/%{python3_sitelib}/sdw_updater/
+install -m 644 sdw_util/*.py %{buildroot}/%{python3_sitelib}/sdw_util/
 
 install -m 755 -d %{buildroot}/srv/salt/
 cp -a securedrop_salt %{buildroot}/srv/salt/
@@ -128,8 +123,6 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
-# The name of the dist-info dir uses _ instead of -, so we use wildcards
-%{python3_sitelib}/*%{version}.dist-info/*
 %{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %{_userunitdir}/sdw-notify.service
