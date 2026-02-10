@@ -1,9 +1,0 @@
-include securedrop_salt/*
-include README.md
-include LICENSE
-include VERSION
-include sdw_updater/*.py
-include sdw_notify/*.py
-include sdw_util/*.py
-include files/*
-include setup.py

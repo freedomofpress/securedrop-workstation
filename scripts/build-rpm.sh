@@ -6,9 +6,7 @@ set -o pipefail
 
 source "$(dirname "$0")/common.sh"
 
-# Prepare tarball, rpmbuild will use it
-mkdir -p dist/
-git clean -fdX rpm-build/ dist/
+git clean -fdX rpm-build/
 # touch everything to a date in the future, so that way
 # rpm will clamp the mtimes down to the SOURCE_DATE_EPOCH
 find . -type f -exec touch -m -d "+1 day" {} \;
@@ -17,14 +15,10 @@ find . -type f -exec touch -m -d "+1 day" {} \;
 # the `make clone` operation will spew tar errors about timestamps from the future.
 trap 'find . -type f -exec touch -m {} \;' EXIT
 
-/usr/bin/python3 setup.py sdist
-
-# Place tarball where rpmbuild will find it
-cp dist/*.tar.gz rpm-build/SOURCES/
-
 rpmbuild \
+    --build-in-place \
     --define "_topdir $PWD/rpm-build" \
-    -bb --clean "rpm-build/SPECS/${PROJECT}.spec"
+    -bb "rpm-build/SPECS/${PROJECT}.spec"
 
 # Check reproducibility
 python3 scripts/verify_rpm_mtime.py
