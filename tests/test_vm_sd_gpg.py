@@ -113,7 +113,7 @@ def test_local_key_in_remote_keyring_clean(qube, config_fingerprint):
     Confirm key presence in sd-gpg, but simulate clean environment.
 
     This test exists because until sd-gpg is disposable or we run the test in a
-    perfectly new deployment, there is now way to tell if the key was already
+    perfectly new deployment, there is no way to tell if the key was already
     there from before or if it was in fact placed there by the workstation version
     under testing.
     """
