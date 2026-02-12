@@ -41,6 +41,7 @@ BuildRequires:	systemd-rpm-macros
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
 Requires:       securedrop-workstation-keyring
 Requires:       grub2-xen-pvh
+Requires:       qubes-gpg-split-dom0
 # Qubes 4.3 dependencies:
 %{?fc41:Requires: python3-pyqt6}
 # Qubes 4.2 dependencies:
