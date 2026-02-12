@@ -59,14 +59,8 @@ def vm_fingerprint(qube):
     """
     Obtain fingerprints for all keys actually present in GPG VM
     """
-    cmd = [
-        "qvm-run",
-        "-p",
-        qube.name,
-        "/usr/bin/gpg --list-secret-keys",
-    ]
-    remote_results = subprocess.check_output(cmd)
-    return _extract_fingerprints(remote_results.decode())
+    remote_results = qube.run("/usr/bin/gpg --list-secret-keys")
+    return _extract_fingerprints(remote_results)
 
 
 @pytest.mark.configuration
