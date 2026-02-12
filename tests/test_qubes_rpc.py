@@ -3,8 +3,9 @@ import os
 import subprocess
 
 import pytest
+from qubesadmin import Qubes
 
-from tests.base import is_managed_qube
+from tests.base import SD_TAG, is_managed_qube
 
 
 @functools.cache
@@ -85,3 +86,18 @@ def test_qubesgpg_from_other_to_sdgpg_denied():
     assert not policy_exists("sys-firewall", "sd-gpg", "qubes.GpgImportKey")
     assert not policy_exists("sys-net", "sd-gpg", "qubes.Gpg2")
     assert not policy_exists("sys-firewall", "sd-gpg", "qubes.Gpg2")
+
+
+# securedrop.GetJournalistSecretKeys only allowed in: sd-gpg -> dom0
+@pytest.mark.parametrize(
+    "src_qube_name",
+    [vm.name for vm in Qubes().domains if SD_TAG in vm.tags],
+)
+@pytest.mark.provisioning
+def test_policy_from_sdgpg_to_dom0_allowed(self, src_qube_name):
+    allowed = policy_exists(src_qube_name, "@adminvm", "securedrop.GetJournalistSecretKeys")
+
+    if src_qube_name == "sd-gpg":
+        assert allowed
+    else:
+        assert not allowed
