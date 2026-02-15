@@ -104,6 +104,16 @@ test-deps: build-deps ## Install package dependencies for running tests
 	@echo "Installing python package dependencies (e.g. PyQt)"
 	dnf install -y `rpmspec --parse $(SPEC_FILE) | sed -n "s/^Requires:.*python3/python3/p"`
 
+.PHONY: sd-admin
+sd-admin: assert-dom0 ## Provision sd-admin VM and install securedrop-admin
+	sudo rm -rf /var/cache/salt
+	sudo qubesctl saltutil.sync_all refresh=true
+	@echo "Creating sd-admin template and AppVM..."
+	sudo qubesctl --show-output -- state.sls admin_salt.sd-admin
+	@echo "Installing packages inside sd-admin-trixie-template..."
+	sudo qubesctl --show-output --skip-dom0 --targets sd-admin-trixie-template -- state.sls admin_salt.sd-admin-packages
+	qvm-shutdown --wait -- sd-admin-trixie-template
+
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
 
