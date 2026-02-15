@@ -72,8 +72,13 @@ install -m 644 sdw_util/*.py %{buildroot}/%{python3_sitelib}/sdw_util/
 install -m 755 -d %{buildroot}/srv/salt/
 cp -a securedrop_salt %{buildroot}/srv/salt/
 
-# test admin directory install
 cp -a admin_salt %{buildroot}/srv/salt/admin_salt
+
+# Install shared apt source templates into admin_salt so the admin package
+# can reference them via salt://admin_salt/ without depending on the
+# workstation package at runtime.
+install -m 644 securedrop_salt/apt_freedom_press.sources.j2 %{buildroot}/srv/salt/admin_salt/
+install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/srv/salt/admin_salt/
 
 install -m 755 -d %{buildroot}/%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}/%{_bindir}
