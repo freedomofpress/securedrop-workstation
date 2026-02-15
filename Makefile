@@ -83,6 +83,18 @@ build-rpm: ## Build RPM package
 	@echo
 	@echo "Build log available at $(OUT)"
 
+.PHONY: build-admin-rpm
+build-admin-rpm: OUT:=build-log/securedrop-admin-$(shell date +%Y%m%d).log
+build-admin-rpm: ## Build admin RPM package (opt-in)
+	@mkdir -p build-log
+	@echo "Building SecureDrop Admin RPM..."
+	@export TERM=dumb
+	@USE_BUILD_CONTAINER=true script \
+		--command "$(CONTAINER) ./scripts/build-admin-rpm.sh" \
+		--return $(OUT)
+	@echo
+	@echo "Build log available at $(OUT)"
+
 # FIXME: the time variations have been temporarily removed from reprotest
 # Suspecting upstream issues in rpm land is causing issues with 1 file\'s modification time not being clamped correctly only in a reprotest environment
 .PHONY: reprotest
@@ -103,6 +115,21 @@ test-deps: build-deps ## Install package dependencies for running tests
 
 	@echo "Installing python package dependencies (e.g. PyQt)"
 	dnf install -y `rpmspec --parse $(SPEC_FILE) | sed -n "s/^Requires:.*python3/python3/p"`
+
+.PHONY: install-admin-rpm
+install-admin-rpm: assert-dom0 ## Install locally-built admin RPM (opt-in)
+	@echo "Installing securedrop-admin-dom0-config RPM..."
+	@scripts/install-admin-rpm
+
+.PHONY: sd-admin
+sd-admin: assert-dom0 ## Provision sd-admin VM and install securedrop-admin
+	sudo rm -rf /var/cache/salt
+	sudo qubesctl saltutil.sync_all refresh=true
+	@echo "Creating sd-admin template and AppVM..."
+	sudo qubesctl --show-output -- state.sls admin_salt.sd-admin
+	@echo "Installing packages inside sd-admin-trixie-template..."
+	sudo qubesctl --show-output --skip-dom0 --targets sd-admin-trixie-template -- state.sls admin_salt.sd-admin-packages
+	qvm-shutdown --wait -- sd-admin-trixie-template
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0

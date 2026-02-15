@@ -3,6 +3,10 @@ Version:	1.6.0rc1
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
+# Build the admin subpackage only when explicitly requested:
+#   rpmbuild --with admin ...
+%bcond_with admin
+
 # For reproducible builds:
 #
 #   * Ensure that SOURCE_DATE_EPOCH env is honored and inherited from the
@@ -49,18 +53,21 @@ SecureDrop Workstation project. The package should be installed
 in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
 
+%if %{with admin}
 %package -n securedrop-admin-dom0-config
 Summary: SecureDrop Admin
+Requires: qubes-mgmt-salt-dom0-virtual-machines
 %description -n securedrop-admin-dom0-config
 This package contains VM configuration files for the Qubes-based
 SecureDrop Admin project. The package should be installed
 in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
+%endif
 
 %build
 # Nothing to build; rpmbuild is invoked with --build-in-place
 
-# single install directive for files for all packages
+
 %install
 install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_notify
 install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_updater
@@ -74,12 +81,6 @@ cp -a securedrop_salt %{buildroot}/srv/salt/
 
 install -m 755 -d %{buildroot}%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}%{_bindir}
-
-# test admin directory install
-cp -a admin_salt %{buildroot}/srv/salt/admin_salt
-
-install -m 755 -d %{buildroot}/%{_datadir}/%{name}/scripts
-install -m 755 -d %{buildroot}/%{_bindir}
 install -m 755 -d %{buildroot}/opt/securedrop
 install -m 755 -d %{buildroot}/usr/bin/securedrop
 install -m 755 files/update-xfce-settings %{buildroot}/usr/bin/securedrop/
@@ -121,6 +122,16 @@ install -m 644 files/10-securedrop-logind_override.conf %{buildroot}/etc/systemd
 install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}%{_userunitdir}/
 install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}%{_userunitdir}/
 
+%if %{with admin}
+cp -a admin_salt %{buildroot}/srv/salt/admin_salt
+
+# Install shared apt source templates into admin_salt so the admin package
+# can reference them via salt://admin_salt/ without depending on the
+# workstation package at runtime.
+install -m 644 securedrop_salt/apt_freedom_press.sources.j2 %{buildroot}/srv/salt/admin_salt/
+install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/srv/salt/admin_salt/
+%endif
+
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
 %attr(755, root, root) %{_datadir}/%{name}/scripts/destroy-vm
@@ -159,9 +170,11 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}%{_useru
 %doc README.md
 %license LICENSE
 
+%if %{with admin}
 %files -n securedrop-admin-dom0-config
 /srv/salt/admin_salt/*
 %license LICENSE
+%endif
 
 %post
 # Update Salt Configuration
