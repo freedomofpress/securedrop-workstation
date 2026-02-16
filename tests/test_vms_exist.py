@@ -30,7 +30,7 @@ def test_all_sdw_vms_present(all_vms, sdw_tagged_vms):
 
     # Check for untagged VMs
     for vm_name in SD_UNTAGGED_DEPRECATED_VMS:
-        assert vm_name not in all_vms
+        assert all_vms.get(vm_name) is None, f"Qube '{vm_name}' expected"
 
 
 @pytest.mark.provisioning
