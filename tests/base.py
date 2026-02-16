@@ -83,7 +83,7 @@ def is_managed_qube(qube):
 
     Currently excluded qubes:
     - preloaded qubes: they are restarted when changes are
-    applied to tempaltes and do no need explicit management.
+    applied to templates and do no need explicit management.
     """
     return not getattr(qube, "is_preload", False)
 
