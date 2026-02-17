@@ -1,0 +1,6 @@
+# Ignore everything by default; the Dockerfile only COPYs
+# Makefile and rpm-build/SPECS/. All other repo content is
+# provided at runtime via bind-mount in container.sh.
+**
+!Makefile
+!rpm-build/SPECS/

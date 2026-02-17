@@ -1,43 +1,79 @@
-#!/usr/bin/bash
-# Developer-oriented utility script for deploying Saltstack config
-# files for the SecureDrop Workstation dev env. Installs the latest
-# locally built RPM in order to deploy the Salt config.
-set -e
-set -u
-set -o pipefail
+#!/usr/bin/python3
+"""Install locally-built RPMs for SecureDrop Workstation dev environment."""
+import subprocess
+import sys
+from pathlib import Path
 
-
-# The dest directory in dom0 is not customizable.
-dom0_dev_dir="$HOME/securedrop-workstation"
-
-function find_latest_rpm() {
-    # Look up which version of dom0 we're using.
-    # Qubes 4.1 is fedora-32, Qubes 4.2 fedora-37.
-    fedora_version="$(rpm --eval '%{fedora}')"
-    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
+EXPECTED_PACKAGES = {
+    "securedrop-workstation-dom0-config",
+    "securedrop-admin-dom0-config",
 }
 
-function find_any_rpm() {
-    # Fallback for CI, which renames rpms. Try installing
-    # any rpm present in the RPMS directory.
-    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "*.rpm" -print0 | xargs -r -0 ls -t | head -n 1
-}
+RPM_DIR = Path.home() / "securedrop-workstation" / "rpm-build" / "RPMS"
 
 
-latest_rpm="$(find_latest_rpm)"
-if [[ -z "$latest_rpm" ]]; then
-    echo "No exact match, try any rpm in build directory"
-fi
+def fedora_version():
+    """Return the Fedora version of the running system (e.g. '37', '41')."""
+    return subprocess.check_output(
+        ["rpm", "--eval", "%{fedora}"], text=True
+    ).strip()
 
-latest_rpm="$(find_any_rpm)"
-if [[ -z "$latest_rpm" ]]; then
-    echo "Could not find RPM!"
-    exit 1
-fi
 
-echo "Deploying Salt config..."
-echo "Uninstalling any previous RPM versions..."
-sudo dnf clean all
-sudo dnf remove -y securedrop-workstation-dom0-config || true
-echo "Installing RPM at $latest_rpm ..."
-sudo dnf install -y "$latest_rpm"
+def discover_rpms():
+    """Map package name -> file path for each built RPM matching EXPECTED_PACKAGES.
+
+    Prefers RPMs matching the running Fedora version; falls back to any RPM
+    (for CI environments that rename build artifacts).
+    """
+    fc = fedora_version()
+
+    # First pass: match this Fedora version exactly
+    rpms = _collect_rpms(RPM_DIR.rglob(f"*fc{fc}.noarch.rpm"))
+    if rpms.keys() >= EXPECTED_PACKAGES:
+        return rpms
+
+    # Fallback: try any .rpm in the build directory
+    print(f"No exact match for fc{fc}, trying any rpm in build directory")
+    rpms = _collect_rpms(RPM_DIR.rglob("*.rpm"))
+
+    missing = EXPECTED_PACKAGES - rpms.keys()
+    if missing:
+        print(f"Missing RPMs for: {', '.join(sorted(missing))}", file=sys.stderr)
+        sys.exit(1)
+    return rpms
+
+
+def _collect_rpms(rpm_files):
+    """Query each RPM file for its package name, return those in EXPECTED_PACKAGES."""
+    rpms = {}
+    for rpm_file in rpm_files:
+        name = subprocess.check_output(
+            ["rpm", "-qp", "--queryformat", "%{NAME}", str(rpm_file)],
+            stderr=subprocess.DEVNULL,
+        ).decode()
+        if name in EXPECTED_PACKAGES:
+            rpms[name] = rpm_file
+    return rpms
+
+
+def is_installed(package_name):
+    return subprocess.run(["rpm", "-q", package_name], capture_output=True).returncode == 0
+
+
+def install_rpms(rpms):
+    subprocess.check_call(["sudo", "dnf", "clean", "all"])
+    for name, path in sorted(rpms.items()):
+        action = "reinstall" if is_installed(name) else "install"
+        print(f">> dnf {action} {path.name}")
+        subprocess.check_call(["sudo", "dnf", action, "-y", str(path)])
+
+
+def main():
+    rpms = discover_rpms()
+    if len(rpms) != 2:
+        raise RuntimeError("failed to find the expected 2 RPMs")
+    install_rpms(rpms)
+
+
+if __name__ == "__main__":
+    main()
