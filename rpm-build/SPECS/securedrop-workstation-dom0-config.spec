@@ -108,7 +108,7 @@ install -m 644 files/32-securedrop-workstation.policy %{buildroot}/etc/qubes/pol
 
 # Install qrexec service for journalist secret keys
 install -m 755 -d %{buildroot}/etc/qubes-rpc/
-install -m 755 files/securedrop.GetJournalistSecretKeys %{buildroot}/etc/qubes-rpc/securedrop.GetJournalistSecretKeys
+install -m 755 files/securedrop.GetJournalistSecretKeys.py %{buildroot}/etc/qubes-rpc/securedrop.GetJournalistSecretKeys
 
 install -m 755 -d %{buildroot}/usr/share/securedrop/icons
 install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/icons/sd-logo.png
