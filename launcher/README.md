@@ -29,8 +29,6 @@ virtual environment.
 
 ## Running the Updater
 
-Qubes 4.1.1 uses an end-of-life Fedora template in dom0 (fedora-32). See rationale here: https://www.qubes-os.org/doc/supported-releases/#note-on-dom0-and-eol.
-
 If you installed SecureDrop Updater on your Qubes machine's `dom0`, you can run the updater like this:
 1. Open a `dom0` terminal
 2. Run `sdw-updater --skip-delta 0`

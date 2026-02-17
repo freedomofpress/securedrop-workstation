@@ -151,10 +151,14 @@ def provision_all():
     )
 
 
-def configure(step_description: str, targets: list[str], restart: list[str] | None = None):
+def configure(step_description: str, targets: list[str], restart: list[str] = []):
     """
     Apply configuration to a list of qubes
     """
+
+    # Ignore qubes that are not inteded to be managed directly
+    filtered_targets = list(filter(is_managed, targets))
+    filtered_restart = list(filter(is_managed, restart))
 
     qubesctl_call(
         step_description,
@@ -163,17 +167,17 @@ def configure(step_description: str, targets: list[str], restart: list[str] | No
             "--max-concurrency",
             str(MAX_CONCURRENCY),
             "--targets",
-            ",".join(targets),
+            ",".join(filtered_targets),
             "state.highstate",
         ],
     )
 
     # Save new configuration to disk by shutting down
-    run_cmd(["qvm-shutdown", "--wait", "--"] + targets)
+    run_cmd(["qvm-shutdown", "--wait", "--"] + filtered_targets)
 
-    if restart:
-        run_cmd(["qvm-shutdown", "--wait", "--"] + restart)
-        run_cmd(["qvm-start", "--"] + restart)
+    if filtered_restart:
+        run_cmd(["qvm-shutdown", "--wait", "--"] + filtered_restart)
+        run_cmd(["qvm-start", "--"] + filtered_restart)
 
 
 def qubesctl_call(step_description: str, args: list[str]):
@@ -271,6 +275,17 @@ def perform_uninstall():
         "Instance secrets (Journalist Interface token and Submission private key) are still "
         "present on disk. You can delete them in /usr/share/securedrop-workstation-dom0-config"
     )
+
+
+def is_managed(qube_name: str) -> bool:
+    """
+    Help assess if qube is to be managed directly
+
+    Currently excluded qubes:
+    - preloaded qubes: they are restarted when changes are
+    applied to templates and do no need explicit management.
+    """
+    return not getattr(Qubes().domains[qube_name], "is_preload", False)
 
 
 def extract_secret_key_fingerprints(gpg_output):

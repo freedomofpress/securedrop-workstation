@@ -77,6 +77,28 @@ def get_mimeapp_vars_for_vm(vm_name):
                 yield (mime_type, expected_app)
 
 
+def is_managed_qube(qube):
+    """
+    Help assess if qube is to be managed directly
+
+    Currently excluded qubes:
+    - preloaded qubes: they are restarted when changes are
+    applied to templates and do no need explicit management.
+    """
+    return not getattr(qube, "is_preload", False)
+
+
+def is_workstation_qube(qube):
+    """
+    Is the qube a managed, workstation-tagged qube?
+
+    NOTE: filter out the "sd-viewer-disposable" qube, which is an ephemeral
+    DispVM, which will exist at certain points of the test suite
+    """
+
+    return is_managed_qube(qube) and SD_TAG in qube.tags and qube.name != "sd-viewer-disposable"
+
+
 class QubeWrapper:
     def __init__(
         self,
