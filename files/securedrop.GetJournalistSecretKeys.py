@@ -3,18 +3,31 @@
 # This service returns the journalist secret keys from the dom0 configuration
 
 import logging
+import os
 import sys
 from pathlib import Path
 
 from systemd.journal import JournalHandler
 
+# Logging set up
 rpc_policy_name = Path(__name__).name
 log = logging.getLogger(rpc_policy_name)
 log.setLevel(logging.INFO)
+
+# Make log available in dom0 for auditing (via systemd journal)
 log.addHandler(JournalHandler(SYSLOG_IDENTIFIER=rpc_policy_name))
+
+# Also log to stderr so error is visible on calling qube
+log.addHandler(logging.StreamHandler(sys.stdout))
 
 
 def main():
+    source_qube = os.getenv("QREXEC_REMOTE_DOMAIN")
+    if source_qube != "sd-gpg":
+        # Extra due-dilligence in case there is a policy misconfiguration
+        log.error(f"Security violation: attempted call from qube {source_qube}")
+        sys.exit(1)
+
     # TODO: add support for multiple keys
     secret_key_path = Path("/usr/share/securedrop-workstation-dom0-config/sd-journalist.sec")
 
