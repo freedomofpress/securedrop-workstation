@@ -45,3 +45,13 @@ sd-gpg:
     - require:
       - sls: securedrop_salt.sd-workstation-template
       - sls: securedrop_salt.sd-upgrade-templates
+
+{% if grains['osrelease'] != '4.2' %}
+sd-gpg-custom-persist:
+  qvm.features:
+    - name: sd-gpg
+    - enable:
+      - service.custom-persist
+    - set:
+      - custom-persist.gnupg_dir: /home/user/.gnupg
+{% endif %}
