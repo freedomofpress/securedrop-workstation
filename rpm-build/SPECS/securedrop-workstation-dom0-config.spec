@@ -64,42 +64,42 @@ configuration over time.
 %install
 %{python3} -m pip install --no-compile --no-index --no-build-isolation --root %{buildroot} .
 # direct_url.json is is not reproducible and not strictly needed
-rm %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/direct_url.json
-sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}/%{python3_sitelib}/*%{version}.dist-info/RECORD
+rm %{buildroot}%{python3_sitelib}/*%{version}.dist-info/direct_url.json
+sed -i "/\.dist-info\/direct_url\.json,/d" %{buildroot}%{python3_sitelib}/*%{version}.dist-info/RECORD
 
 install -m 755 -d %{buildroot}/srv/salt/
 cp -a securedrop_salt %{buildroot}/srv/salt/
 
-install -m 755 -d %{buildroot}/%{_datadir}/%{name}/scripts
-install -m 755 -d %{buildroot}/%{_bindir}
+install -m 755 -d %{buildroot}%{_datadir}/%{name}/scripts
+install -m 755 -d %{buildroot}%{_bindir}
 install -m 755 -d %{buildroot}/opt/securedrop
 install -m 755 -d %{buildroot}/usr/bin/securedrop
 install -m 755 files/update-xfce-settings %{buildroot}/usr/bin/securedrop/
-install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 755 files/destroy-vm.py %{buildroot}/%{_datadir}/%{name}/scripts/destroy-vm
-install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
-install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
-install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
+install -m 755 files/clean-salt %{buildroot}%{_datadir}/%{name}/scripts/
+install -m 755 files/destroy-vm.py %{buildroot}%{_datadir}/%{name}/scripts/destroy-vm
+install -m 755 files/validate_config.py %{buildroot}%{_datadir}/%{name}/scripts/
+install -m 755 files/sdw-admin.py %{buildroot}%{_bindir}/sdw-admin
+install -m 644 files/config.json.example %{buildroot}%{_datadir}/%{name}/
 
-install -m 755 -d %{buildroot}/%{_bindir}
-install -m 755 -d %{buildroot}/%{_datadir}/applications/
-install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/
-install -m 755 -d %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/
-install -m 755 -d %{buildroot}/%{_sharedstatedir}/%{name}/
-install -m 755 -d %{buildroot}/%{_userunitdir}/
-install -m 755 -d %{buildroot}/%{_unitdir}
-install -m 755 -d %{buildroot}/%{_userpresetdir}/
-install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
-install -m 644 files/press.freedom.SecureDropUpdaterClient.desktop %{buildroot}/%{_datadir}/applications/
-install -m 644 files/securedrop-128x128.png %{buildroot}/%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
-install -m 644 files/securedrop-scalable.svg %{buildroot}/%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
-install -m 755 files/sdw-updater.py %{buildroot}/%{_bindir}/sdw-updater
-install -m 755 files/sdw-notify.py %{buildroot}/%{_bindir}/sdw-notify
-install -m 755 files/sdw-login.py %{buildroot}/%{_bindir}/sdw-login
-install -m 644 files/sdw-notify.service %{buildroot}/%{_userunitdir}/
-install -m 644 files/sdw-notify.timer %{buildroot}/%{_userunitdir}/
-install -m 644 files/securedrop-logind-override-disable.service %{buildroot}/%{_unitdir}/
-install -m 644 files/95-securedrop-systemd-user.preset %{buildroot}/%{_userpresetdir}/
+install -m 755 -d %{buildroot}%{_bindir}
+install -m 755 -d %{buildroot}%{_datadir}/applications/
+install -m 755 -d %{buildroot}%{_datadir}/icons/hicolor/128x128/apps/
+install -m 755 -d %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/
+install -m 755 -d %{buildroot}%{_sharedstatedir}/%{name}/
+install -m 755 -d %{buildroot}%{_userunitdir}/
+install -m 755 -d %{buildroot}%{_unitdir}
+install -m 755 -d %{buildroot}%{_userpresetdir}/
+install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}%{_datadir}/applications/
+install -m 644 files/press.freedom.SecureDropUpdaterClient.desktop %{buildroot}%{_datadir}/applications/
+install -m 644 files/securedrop-128x128.png %{buildroot}%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
+install -m 644 files/securedrop-scalable.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
+install -m 755 files/sdw-updater.py %{buildroot}%{_bindir}/sdw-updater
+install -m 755 files/sdw-notify.py %{buildroot}%{_bindir}/sdw-notify
+install -m 755 files/sdw-login.py %{buildroot}%{_bindir}/sdw-login
+install -m 644 files/sdw-notify.service %{buildroot}%{_userunitdir}/
+install -m 644 files/sdw-notify.timer %{buildroot}%{_userunitdir}/
+install -m 644 files/securedrop-logind-override-disable.service %{buildroot}%{_unitdir}/
+install -m 644 files/95-securedrop-systemd-user.preset %{buildroot}%{_userpresetdir}/
 
 install -m 755 -d %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
@@ -110,8 +110,8 @@ install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/ic
 
 install -m 755 -d %{buildroot}/etc/systemd/logind.conf.d/
 install -m 644 files/10-securedrop-logind_override.conf %{buildroot}/etc/systemd/logind.conf.d/
-install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}/%{_userunitdir}/
-install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_userunitdir}/
+install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}%{_userunitdir}/
+install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}%{_userunitdir}/
 
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
