@@ -5,6 +5,7 @@ specifically for the "sd-viewer" VM and related functionality.
 
 import subprocess
 
+import dnf
 import pytest
 from qubesadmin import Qubes
 
@@ -15,6 +16,15 @@ from tests.base import (
 )
 from tests.base import (
     Test_SD_VM_Common as Test_SD_Viewer_Common,  # noqa: F401 [HACK: import so base tests run]
+)
+
+EXPECTED_N_PRELOADED_VMS = [
+    1,  # 16GB system (less than recommended)
+    2,  # 32GB+ system
+]
+
+skip_on_qubes_4_2 = pytest.mark.skipif(
+    dnf.rpm.detect_releasever("/") == "4.2", reason="Feature only available in Qubes >= 4.3"
 )
 
 
@@ -153,3 +163,28 @@ def test_sd_viewer_config(all_vms, dom0_config):
     # VM will be marked "internal" only in prod context.
     if dom0_config["environment"] == "prod":
         assert vm.features.get("internal") == "1"
+
+
+@skip_on_qubes_4_2
+@pytest.mark.provisioning
+def test_preloading_assumptions(all_vms):
+    # sd-viewer as default_dispvm is makes it preload implicitly
+    assert Qubes().default_dispvm.name == "sd-viewer"
+
+    # Confirm expected number of preloaded qubes
+    preload_dispvm_max = int(all_vms["dom0"].features["preload-dispvm-max"])
+    assert preload_dispvm_max in EXPECTED_N_PRELOADED_VMS
+
+
+@skip_on_qubes_4_2
+@pytest.mark.provisioning
+def test_preloading_enabled(all_vms, qube):
+    """
+    Ensures sd-viewer qubes are being preloaded to make document viewing faster
+    """
+    preloaded_qubes = [
+        qube.name for qube in all_vms["sd-viewer"].derived_vms if getattr(qube, "is_preload", False)
+    ]
+
+    # Check default number of preloaded qubes
+    assert len(preloaded_qubes) in EXPECTED_N_PRELOADED_VMS
