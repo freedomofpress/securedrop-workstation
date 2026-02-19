@@ -16,6 +16,9 @@ sd-base-template:
       - label: red
     - prefs:
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - tags:
       - add:
         - sd-workstation

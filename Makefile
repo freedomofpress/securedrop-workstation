@@ -125,7 +125,8 @@ test-prereqs: ## Checks that test prerequisites are satisfied
 
 .PHONY: install-dom0-test-prereqs
 install-dom0-test-prereqs: assert-dom0 ## Installs pytest dependencies in dom0
-	@rpm -q python3-pytest python3-pytest-cov python3-pytest-xdist || sudo qubes-dom0-update -y python3-pytest python3-pytest-cov python3-pytest-xdist
+	@rpm -q python3-pytest python3-pytest-cov python3-pytest-xdist python3-systemd || \
+		sudo qubes-dom0-update -y python3-pytest python3-pytest-cov python3-pytest-xdist python3-systemd
 
 test: test-prereqs ## Runs all application tests (no integration tests yet)
 	# N.B. make sure to use "-vv" for max-length diffs on test failures

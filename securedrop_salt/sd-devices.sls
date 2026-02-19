@@ -27,6 +27,10 @@ sd-devices-dvm:
       - netvm: ""
       - template_for_dispvms: True
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      # Prevent device attachment (on the actual disposable attachments are expected)
+      - devices_denied: '*******'
+      {% endif %}
     - tags:
       - add:
         - sd-workstation

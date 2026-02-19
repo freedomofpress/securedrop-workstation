@@ -23,6 +23,9 @@ sd-small-{{ sdvars.distribution }}-template:
       - virt-mode: pvh
       - kernel: 'pvgrub2-pvh'
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - tags:
       - add:
         - sd-workstation
@@ -43,6 +46,9 @@ sd-large-{{ sdvars.distribution }}-template:
       - virt-mode: pvh
       - kernel: 'pvgrub2-pvh'
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - tags:
       - add:
         - sd-workstation

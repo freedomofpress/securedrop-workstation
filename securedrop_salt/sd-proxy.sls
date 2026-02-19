@@ -28,6 +28,9 @@ sd-proxy-dvm:
       - netvm: sys-firewall
       - template_for_dispvms: True
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - features:
       - set:
         {% if d.environment == "prod" %}
@@ -54,6 +57,9 @@ sd-proxy-create-named-dispvm:
       - netvm: sys-firewall
       - autostart: true
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - features:
       - enable:
         - service.securedrop-mime-handling
