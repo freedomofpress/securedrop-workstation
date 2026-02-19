@@ -28,6 +28,9 @@ sd-proxy-dvm:
       - netvm: sys-firewall
       - template_for_dispvms: True
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - features:
       - set:
         {% if d.environment == "prod" %}
@@ -42,12 +45,6 @@ sd-proxy-dvm:
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
-{% if grains['osrelease'] != '4.2' %}
-sd-proxy-dvm-deny-all-devices:
-  cmd.run:
-    - name: qvm-prefs sd-proxy-dvm devices_denied '*******'
-{% endif %}
-
 sd-proxy-create-named-dispvm:
   qvm.vm:
     - name: sd-proxy
@@ -60,6 +57,9 @@ sd-proxy-create-named-dispvm:
       - netvm: sys-firewall
       - autostart: true
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - features:
       - enable:
         - service.securedrop-mime-handling
@@ -83,9 +83,3 @@ sd-proxy-config:
         - vm-config.SD_PROXY_ORIGIN_KEY: {{ d.hidserv.key }}
     - require:
       - qvm: sd-proxy-create-named-dispvm
-
-{% if grains['osrelease'] != '4.2' %}
-sd-proxy-deny-all-devices:
-  cmd.run:
-    - name: qvm-prefs sd-proxy devices_denied '*******'
-{% endif %}

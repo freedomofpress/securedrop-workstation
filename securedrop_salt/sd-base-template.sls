@@ -16,6 +16,9 @@ sd-base-template:
       - label: red
     - prefs:
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - tags:
       - add:
         - sd-workstation
@@ -25,9 +28,3 @@ sd-base-template:
         - service.paxctld
     - require:
       - qvm: dom0-install-debian-minimal-template
-
-{% if grains['osrelease'] != '4.2' %}
-sd-base-template-deny-all-devices:
-  cmd.run:
-    - name: qvm-prefs sd-base-{{ sdvars.distribution }}-template devices_denied '*******'
-{% endif %}

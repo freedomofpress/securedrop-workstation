@@ -57,6 +57,9 @@ install-sd-log:
       - netvm: ""
       - autostart: true
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - tags:
       - add:
         - sd-workstation
@@ -71,12 +74,6 @@ install-sd-log:
         - menu-items: "org.gnome.Nautilus.desktop"
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
-
-{% if grains['osrelease'] != '4.2' %}
-sd-log-deny-all-devices:
-  cmd.run:
-    - name: qvm-prefs sd-log devices_denied '*******'
-{% endif %}
 
 # The private volume size should be set in config.json
 sd-log-private-volume-size:
