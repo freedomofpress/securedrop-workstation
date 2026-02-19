@@ -23,6 +23,9 @@ sd-small-{{ sdvars.distribution }}-template:
       - virt-mode: pvh
       - kernel: 'pvgrub2-pvh'
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - tags:
       - add:
         - sd-workstation
@@ -32,12 +35,6 @@ sd-small-{{ sdvars.distribution }}-template:
         - service.paxctld
     - require:
       - sls: securedrop_salt.sd-base-template
-
-{% if grains['osrelease'] != '4.2' %}
-sd-small-template-deny-all-devices:
-  cmd.run:
-    - name: qvm-prefs sd-small-{{ sdvars.distribution }}-template devices_denied '*******'
-{% endif %}
 
 sd-large-{{ sdvars.distribution }}-template:
   qvm.vm:
@@ -49,6 +46,9 @@ sd-large-{{ sdvars.distribution }}-template:
       - virt-mode: pvh
       - kernel: 'pvgrub2-pvh'
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - tags:
       - add:
         - sd-workstation
@@ -58,9 +58,3 @@ sd-large-{{ sdvars.distribution }}-template:
         - service.paxctld
     - require:
       - sls: securedrop_salt.sd-base-template
-
-{% if grains['osrelease'] != '4.2' %}
-sd-large-template-deny-all-devices:
-  cmd.run:
-    - name: qvm-prefs sd-large-{{ sdvars.distribution }}-template devices_denied '*******'
-{% endif %}

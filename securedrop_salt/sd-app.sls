@@ -30,6 +30,9 @@ sd-app:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""
       - default_dispvm: "sd-viewer"
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - tags:
       - add:
         - sd-client
@@ -44,12 +47,6 @@ sd-app:
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
       - sls: securedrop_salt.sd-viewer
-
-{% if grains['osrelease'] != '4.2' %}
-sd-app-deny-all-devices:
-  cmd.run:
-    - name: qvm-prefs sd-app devices_denied '*******'
-{% endif %}
 
 sd-app-config:
   qvm.features:
