@@ -70,6 +70,7 @@ jobs:
       environment: "dev"
       git_ref: ${{ github.event.pull_request.head.sha }}
       qubes_ver: ${{ matrix.qubes_version }}
+      extra_params: "KEY1=value1 KEY2=value2"
 
       # NOTE: cancellation is done through concurrency: by starting another job
       # with the same conditions as the one we want to cancel, it necessarily
