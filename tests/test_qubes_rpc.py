@@ -7,9 +7,7 @@ import pytest
 import systemd.journal  # Available in dom0 by default
 from qubesadmin import Qubes
 
-from tests.base import SD_TAG
-
-from tests.base import is_managed_qube
+from tests.base import SD_TAG, is_managed_qube
 
 
 @functools.cache
