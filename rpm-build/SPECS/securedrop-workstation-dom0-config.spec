@@ -41,6 +41,7 @@ BuildRequires:	systemd-rpm-macros
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
 Requires:       securedrop-workstation-keyring
 Requires:       grub2-xen-pvh
+Requires:       qubes-gpg-split-dom0
 # Qubes 4.3 dependencies:
 %{?fc41:Requires: python3-pyqt6}
 # Qubes 4.2 dependencies:
@@ -105,6 +106,10 @@ install -m 755 -d %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/32-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
 
+# Install qrexec service for journalist secret keys
+install -m 755 -d %{buildroot}/etc/qubes-rpc/
+install -m 755 files/securedrop.GetJournalistSecretKeys.py %{buildroot}/etc/qubes-rpc/securedrop.GetJournalistSecretKeys
+
 install -m 755 -d %{buildroot}/usr/share/securedrop/icons
 install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/icons/sd-logo.png
 
@@ -141,6 +146,9 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-workstation.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-workstation.policy
+
+# qrexec service for journalist secret keys
+%attr(755, root, root) /etc/qubes-rpc/securedrop.GetJournalistSecretKeys
 
 # Override systemd-logind settings on staging and prod systems
 /etc/systemd/logind.conf.d/10-securedrop-logind_override.conf
