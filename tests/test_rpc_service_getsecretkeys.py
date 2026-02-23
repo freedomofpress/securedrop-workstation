@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Tests for securedrop.GetJournalistSecretKeys qrexec service.
+Tests for securedrop.GetSecretKeys qrexec service.
 """
 
 import importlib.machinery
@@ -9,8 +9,8 @@ import logging
 
 import pytest
 
-MODULE_PATH = "/etc/qubes-rpc/securedrop.GetJournalistSecretKeys"
-MODULE_NAME = "securedrop_GetJournalistSecretKeys"
+MODULE_PATH = "/etc/qubes-rpc/securedrop.GetSecretKeys"
+MODULE_NAME = "securedrop_GetSecretKeys"
 
 
 @pytest.fixture
