@@ -76,27 +76,6 @@ def test_sd_gpg_timeout_not_in_home_profile(qube):
 
 
 @pytest.mark.configuration
-def test_dot_profile_was_reset(qube):
-    """
-    Past state is getting cleaned
-
-    Previously .profile was edited with Salt. This tests that past state is
-    getting cleaned.
-    """
-
-    if qube.vm.klass == "DispVM":
-        pytest.fail("Test may no longer be needed")
-
-    # $HOME/.profile is successfully getting reset
-    assert qube.run("diff /etc/skel/.profile /home/user/.profile") == ""
-
-    # Reset in current run (in practice this gets reset when a shell opened)
-    time_in_vm = int(qube.run("date +%s"))
-    profile_modif_time = int(qube.run("stat --format %Y /home/user/.profile"))
-    assert -30 < time_in_vm - profile_modif_time < 30
-
-
-@pytest.mark.configuration
 def test_local_key_in_remote_keyring(config_fingerprint, dom0_fingerprint, vm_fingerprint):
     """
     Verify the key present in dom0 and sd-gpg matches what's configured in config.json
