@@ -34,6 +34,9 @@ sd-gpg:
       - netvm: ""
       - autostart: true
       - default_dispvm: ""
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - features:
       - enable:
         - service.securedrop-logging-disabled

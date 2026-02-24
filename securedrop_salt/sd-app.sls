@@ -30,6 +30,9 @@ sd-app:
       - template: sd-small-{{ sdvars.distribution }}-template
       - netvm: ""
       - default_dispvm: "sd-viewer"
+      {% if grains['osrelease'] != '4.2' %}
+      - devices_denied: '*******'
+      {% endif %}
     - tags:
       - add:
         - sd-client
