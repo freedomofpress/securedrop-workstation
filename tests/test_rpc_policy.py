@@ -94,7 +94,7 @@ def test_qubesgpg_from_other_to_sdgpg_denied():
     [vm.name for vm in Qubes().domains if SD_TAG in vm.tags],
 )
 @pytest.mark.provisioning
-def test_policy_from_sdgpg_to_dom0_allowed(self, src_qube_name):
+def test_policy_from_sdgpg_to_dom0_allowed(src_qube_name):
     allowed = policy_exists(src_qube_name, "@adminvm", "securedrop.GetSecretKeys")
 
     if src_qube_name == "sd-gpg":
