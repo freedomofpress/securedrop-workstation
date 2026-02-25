@@ -9,6 +9,7 @@ from tests.base import (
     SD_UNTAGGED_DEPRECATED_VMS,
     SD_VMS,
 )
+from tests.conftest import skip_on_qubes_4_2
 
 
 @pytest.mark.provisioning
@@ -31,6 +32,35 @@ def test_all_sdw_vms_present(all_vms, sdw_tagged_vms):
     # Check for untagged VMs
     for vm_name in SD_UNTAGGED_DEPRECATED_VMS:
         assert all_vms.get(vm_name) is None, f"Qube '{vm_name}' expected"
+
+
+@skip_on_qubes_4_2
+@pytest.mark.provisioning
+def test_expected_persistence(sdw_tagged_vms):
+    """Make sure SD qubes are either disposable or have custom-persist enabled"""
+    for qube in sdw_tagged_vms:
+        if qube.klass == "DispVM":
+            continue
+
+        elif qube.klass == "AppVM" and qube.template_for_dispvms:
+            # Persistence is acceptable because disposable templates are not
+            # expected to be used directly. We could explore setting custom-persist,
+            # just to ensure no state is kept.
+            continue
+
+        elif qube.klass == "AppVM" and not qube.template_for_dispvms:
+            # 1. Custom persist must be enabled
+            assert qube.features.get("service.custom-persist", False)
+
+            # 2. Must have at least one entry, setting which files/dirs to persist
+            assert any(feat.startswith("custom-persist.") for feat in qube.features)
+
+        elif qube.klass == "TemplateVM":
+            # Everything in a template is expected to persist
+            continue
+
+        else:
+            pytest.fail(f"Qube of unexpected type: {qube.name}")
 
 
 @pytest.mark.provisioning

@@ -5,7 +5,6 @@ specifically for the "sd-viewer" VM and related functionality.
 
 import subprocess
 
-import dnf
 import pytest
 from qubesadmin import Qubes
 
@@ -17,15 +16,12 @@ from tests.base import (
 from tests.base import (
     Test_SD_VM_Common as Test_SD_Viewer_Common,  # noqa: F401 [HACK: import so base tests run]
 )
+from tests.conftest import skip_on_qubes_4_2
 
 EXPECTED_N_PRELOADED_VMS = [
     1,  # 16GB system (less than recommended)
     2,  # 32GB+ system
 ]
-
-skip_on_qubes_4_2 = pytest.mark.skipif(
-    dnf.rpm.detect_releasever("/") == "4.2", reason="Feature only available in Qubes >= 4.3"
-)
 
 
 def _create_test_qube(dispvm_template_name):
