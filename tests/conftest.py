@@ -18,6 +18,10 @@ from tests.base import (
 
 PROJ_ROOT = Path(__file__).parent.parent
 
+skip_on_qubes_4_2 = pytest.mark.skipif(
+    dnf.rpm.detect_releasever("/") == "4.2", reason="Feature only available in Qubes >= 4.3"
+)
+
 
 @pytest.fixture
 def qubes_ver():

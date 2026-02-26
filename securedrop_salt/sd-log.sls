@@ -75,6 +75,16 @@ install-sd-log:
     - require:
       - qvm: sd-small-{{ sdvars.distribution }}-template
 
+{% if grains['osrelease'] != '4.2' %}
+sd-log-custom-persist:
+  qvm.features:
+    - name: sd-log
+    - enable:
+      - service.custom-persist
+    - set:
+      - custom-persist.logs: /home/user/QubesIncomingLogs/
+{% endif %}
+
 # The private volume size should be set in config.json
 sd-log-private-volume-size:
   cmd.run:
