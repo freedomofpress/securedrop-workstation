@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 
+import dnf
 import pytest
 from qubesadmin import Qubes
 
@@ -14,6 +15,11 @@ from tests.base import (
 )
 
 PROJ_ROOT = Path(__file__).parent.parent
+
+
+@pytest.fixture
+def qubes_ver():
+    return dnf.rpm.detect_releasever("/")
 
 
 @pytest.fixture(scope="session")
