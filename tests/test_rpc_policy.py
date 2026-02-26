@@ -85,3 +85,17 @@ def test_qubesgpg_from_other_to_sdgpg_denied():
     assert not policy_exists("sys-firewall", "sd-gpg", "qubes.GpgImportKey")
     assert not policy_exists("sys-net", "sd-gpg", "qubes.Gpg2")
     assert not policy_exists("sys-firewall", "sd-gpg", "qubes.Gpg2")
+
+
+@pytest.mark.provisioning
+def test_policy_from_sdgpg_to_dom0_allowed(sdw_tagged_vms, qubes_ver):
+    """Securedrop.GetSecretKeys only allowed in: sd-gpg -> dom0"""
+
+    for qube in sdw_tagged_vms:
+        dom0 = "@adminvm" if qubes_ver == "4.2" else "dom0"
+
+        allowed = policy_exists(qube.name, dom0, "securedrop.GetSecretKeys")
+        if qube.name == "sd-gpg":
+            assert allowed
+        else:
+            assert not allowed
