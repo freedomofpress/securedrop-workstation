@@ -119,6 +119,7 @@ jobs:
     secrets: inherit
     needs: ["get-main-commit"]
     strategy:
+      fail-fast: false
       matrix:
         qubes_version: ["4.2", "4.3"]
     with:
