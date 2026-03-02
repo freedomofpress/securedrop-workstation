@@ -48,6 +48,16 @@ dom0-securedrop-launcher-desktop-shortcut:
     - group: {{ gui_user }}
     - mode: 755
 
+{% if grains['osrelease'] != '4.2' %}
+dom0-securedrop-launcher-desktop-shortcut-trust:
+  cmd.run:
+    - name: /usr/bin/securedrop/sdw-desktop-trust
+    - runas: {{ gui_user }}
+    - unless: /usr/bin/securedrop/sdw-desktop-trust --check
+    - require:
+      - file: dom0-securedrop-launcher-desktop-shortcut
+{% endif %}
+
 dom0-environment-directory:
   file.directory:
     - name: /var/lib/securedrop-workstation/

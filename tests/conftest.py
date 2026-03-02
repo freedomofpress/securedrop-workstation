@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -116,3 +117,12 @@ def qubesd_log():
             yield entry.get("MESSAGE")
 
     return _entry_generator(journal)
+
+
+@pytest.fixture
+def run_as_gui_user():
+    if os.geteuid() != 0:
+        return []
+
+    gui_user = subprocess.check_output(["groupmems", "-l", "-g", "qubes"], text=True).strip()
+    return ["sudo", "-u", gui_user]
