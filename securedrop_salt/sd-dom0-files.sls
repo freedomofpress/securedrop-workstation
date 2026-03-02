@@ -6,11 +6,6 @@
 # over time. These scripts should be ported to an RPM package.
 ##
 
-# Ensure debian-12-minimal is present for use as base template
-dom0-install-debian-minimal-template:
-  qvm.template_installed:
-    - name: debian-12-minimal
-
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
 {% import_json "securedrop_salt/config.json" as d %}
 
