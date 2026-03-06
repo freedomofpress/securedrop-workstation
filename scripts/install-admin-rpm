@@ -1,41 +1,32 @@
 #!/usr/bin/bash
-# Developer-oriented utility script for deploying Saltstack config
-# files for the SecureDrop Workstation dev env. Installs the latest
-# locally built RPM in order to deploy the Salt config.
+# Install the locally-built securedrop-admin-dom0-config RPM.
+# This is opt-in and separate from the main prep-dev workflow.
 set -euo pipefail
 
-
-# The dest directory in dom0 is not customizable.
 dom0_dev_dir="$HOME/securedrop-workstation"
-
-# Substring to ensure that the primary dom0 config RPM is selected;
-# used to differentiate between the the default RPM and the WIP sd-admin RPM.
-rpm_name="securedrop-workstation-dom0-config"
+rpm_name="securedrop-admin-dom0-config"
 
 function find_latest_rpm() {
-    # Look up which version of dom0 we're using.
     fedora_version="$(rpm --eval '%{fedora}')"
     find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "${rpm_name}*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
 }
 
 function find_any_rpm() {
-    # Fallback for CI, which renames rpms. Try installing
-    # any rpm present in the RPMS directory.
     find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "${rpm_name}*.rpm" -print0 | xargs -r -0 ls -t | head -n 1
 }
 
 latest_rpm="$(find_latest_rpm)"
 if [[ -z "$latest_rpm" ]]; then
-    echo "No exact match, try any rpm in build directory"
+    echo "No exact match for current Fedora version, trying any admin rpm in build directory"
+    latest_rpm="$(find_any_rpm)"
 fi
 
-latest_rpm="$(find_any_rpm)"
 if [[ -z "$latest_rpm" ]]; then
-    echo "Could not find RPM!"
+    echo "Could not find admin RPM! Run 'make build-admin-rpm' first."
     exit 1
 fi
 
-echo "Deploying Salt config..."
+echo "Installing admin RPM..."
 sudo dnf clean all
 if rpm -q "$rpm_name" > /dev/null 2>&1; then
     echo "Reinstalling $latest_rpm ..."
