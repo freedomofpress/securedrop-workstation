@@ -85,6 +85,7 @@ install -m 755 -d %{buildroot}%{_bindir}
 install -m 755 -d %{buildroot}/opt/securedrop
 install -m 755 -d %{buildroot}/usr/bin/securedrop
 install -m 755 files/update-xfce-settings %{buildroot}/usr/bin/securedrop/
+install -m 755 files/sdw-desktop-trust.py %{buildroot}/usr/bin/securedrop/sdw-desktop-trust
 install -m 755 files/clean-salt %{buildroot}%{_datadir}/%{name}/scripts/
 install -m 755 files/destroy-vm.py %{buildroot}%{_datadir}/%{name}/scripts/destroy-vm
 install -m 755 files/validate_config.py %{buildroot}%{_datadir}/%{name}/scripts/
@@ -174,6 +175,7 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 /usr/share/securedrop/icons/sd-logo.png
 
 %attr(755, root, root) /usr/bin/securedrop/update-xfce-settings
+%attr(755, root, root) /usr/bin/securedrop/sdw-desktop-trust
 
 %doc README.md
 %license LICENSE
