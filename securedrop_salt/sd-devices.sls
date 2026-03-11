@@ -34,6 +34,7 @@ sd-devices-dvm:
     - features:
       - enable:
         - service.paxctld
+      - default:  # Explictly remove (it had been enabled in past)
         - service.cups
     - require:
       - qvm: sd-large-{{ sdvars.distribution }}-template
@@ -54,10 +55,13 @@ sd-devices-create-named-dispvm:
     - tags:
       - add:
         - sd-workstation
+        - sd-export-target
     - features:
       - enable:
         - service.securedrop-mime-handling
-        - service.avahi
+      - default:  # Explictly remove (it had been enabled in past)
+        - service.avahi  # This was once enabled
+        - service.cups   # This was once enabled in dvm template (and inherited)
       - set:
         - vm-config.SD_MIME_HANDLING: sd-devices
         - menu-items: "org.gnome.Nautilus.desktop org.gnome.DiskUtility.desktop"
