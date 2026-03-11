@@ -75,11 +75,11 @@ def run_full_install():
     except subprocess.CalledProcessError as e:
         sdlog.error(f"Failed to apply full system state. Please review {DETAIL_LOG_FILE}.")
         sdlog.error(str(e))
-        clean_output = Util.strip_ansi_colors(e.output.decode("utf-8").strip())
+        clean_output = Util.text_log_format(e.output.decode("utf-8").strip())
         detail_log.error(f"Output from failed command: {apply_cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_FAILED
 
-    clean_output = Util.strip_ansi_colors(output.decode("utf-8").strip())
+    clean_output = Util.text_log_format(output.decode("utf-8").strip())
     detail_log.info(f"Output from command: {apply_cmd_for_log}\n{clean_output}")
 
     # Clean up flag requesting migration. Shell out since root created it.
@@ -184,7 +184,7 @@ def _qubes_updater_parse_stdout(stream):
         if len(untrusted_line) == 0:
             break
 
-        line = Util.strip_ansi_colors(untrusted_line.decode("utf-8"))
+        line = Util.text_log_format(line)
         line = line.rstrip()
         detail_log.info(f"[Qubes updater] {line}")
 
@@ -200,7 +200,7 @@ def _qubes_updater_parse_progress(stream, result, templates, progress_callback=N
         if len(untrusted_line) == 0:
             break
 
-        line = Util.strip_ansi_colors(untrusted_line.decode("utf-8").rstrip())
+        line = Util.text_log_format(untrusted_line.decode("utf-8").rstrip())
         try:
             vm, status, info = line.split()
         except ValueError:
@@ -437,13 +437,13 @@ def apply_dom0_state():
     try:
         output = subprocess.check_output(cmd)
         sdlog.info("Dom0 state applied")
-        clean_output = Util.strip_ansi_colors(output.decode("utf-8").strip())
+        clean_output = Util.text_log_format(output.decode("utf-8").strip())
         detail_log.info(f"Output from command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_OK
     except subprocess.CalledProcessError as e:
         sdlog.error(f"Failed to apply dom0 state. See {DETAIL_LOG_FILE} for details.")
         sdlog.error(str(e))
-        clean_output = Util.strip_ansi_colors(e.output.decode("utf-8").strip())
+        clean_output = Util.text_log_format(e.output.decode("utf-8").strip())
         detail_log.error(f"Output from failed command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_FAILED
 
