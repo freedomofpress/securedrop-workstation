@@ -1,6 +1,8 @@
 #!/usr/bin/bash
 
-# udev action for attaching USB export devices to sd-devices
+# udev action for attaching USB export devices sd-devices or sd-printers
+
+ATTACH_TARGET_QUBE="$1"
 
 QDEVNAME="$(basename "$DEVPATH")"
-echo sys-usb "$QDEVNAME" | qrexec-client-vm sd-devices qubes.USBAttach
+echo sys-usb "$QDEVNAME" | qrexec-client-vm "$ATTACH_TARGET_QUBE" qubes.USBAttach

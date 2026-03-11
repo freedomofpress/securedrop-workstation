@@ -31,10 +31,10 @@ qubes.GpgImportKey      *           @tag:sd-client sd-gpg allow
 # Future: qubes-app-linux-split-gpg2
 qubes.Gpg2              *           @tag:sd-client sd-gpg allow target=sd-gpg
 
-qubes.USBAttach         *           sys-usb sd-devices allow  user=root
+qubes.USBAttach         *           sys-usb @tag:sd-export-target allow  user=root
 qubes.USBAttach         *           @anyvm @anyvm ask
 
-qubes.USB               *           sd-devices sys-usb allow
+qubes.USB               *           @tag:sd-export-target sys-usb allow
 
 # TODO: should this be handled with the new Global Config UI instead?
 qubes.ClipboardPaste    *           @tag:sd-send-app-clipboard sd-app ask
@@ -44,5 +44,7 @@ qubes.Filecopy          *           sd-log @default ask
 qubes.Filecopy          *           sd-log @tag:sd-receive-logs ask
 
 qubes.OpenInVM          *           @tag:sd-client @dispvm:sd-viewer allow
-qubes.OpenInVM          *           @tag:sd-client sd-devices allow
+
+# Export / Print
+qubes.OpenInVM          *           @tag:sd-client @tag:sd-export-target allow
 qubes.OpenInVM          *           sd-devices @dispvm:sd-viewer allow
