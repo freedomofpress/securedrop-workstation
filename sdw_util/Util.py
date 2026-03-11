@@ -155,12 +155,13 @@ def get_logger(prefix=SD_LOGGER_PREFIX, module=None):
     return logging.getLogger(prefix + "." + module)
 
 
-def text_log_format(str):
+def cleanup_for_log(str):
     """
-    Aesthetics-only formats of log lines presentation text files:
-      - removes ANSI formatting
+    Aesthetics-only formatting of log lines for text files:
+        - removes ANSI formatting
 
-    NOTE: this should not be assumed as a security hardening
+    NOTE: this should not be assumed as a security hardening measure; input
+    should already be sanitized.
     """
     return re.sub(r"\u001b\[.*?[@-~]", "", str)
 

@@ -75,11 +75,11 @@ def run_full_install():
     except subprocess.CalledProcessError as e:
         sdlog.error(f"Failed to apply full system state. Please review {DETAIL_LOG_FILE}.")
         sdlog.error(str(e))
-        clean_output = Util.text_log_format(e.output.decode("utf-8").strip())
+        clean_output = Util.cleanup_for_log(e.output.decode("utf-8").strip())
         detail_log.error(f"Output from failed command: {apply_cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_FAILED
 
-    clean_output = Util.text_log_format(output.decode("utf-8").strip())
+    clean_output = Util.cleanup_for_log(output.decode("utf-8").strip())
     detail_log.info(f"Output from command: {apply_cmd_for_log}\n{clean_output}")
 
     # Clean up flag requesting migration. Shell out since root created it.
@@ -175,16 +175,21 @@ def _start_qubes_updater_proc(templates):
         update_cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        encoding="ascii",  # Output should be ascii-enforced and pre-sanitized
+        errors="replace",  # if 'ascii' encoding assumption wrong, replace with '?'
+        text=True,
     )
 
 
 def _qubes_updater_parse_stdout(stream):
     while True:
-        untrusted_line = stream.readline()
-        if len(untrusted_line) == 0:
+        # Already sanitized for terminal output by Qubes Updater
+        line = stream.readline()
+        if len(line) == 0:
+            # Reached EOF
             break
 
-        line = Util.text_log_format(line)
+        line = Util.cleanup_for_log(line.decode("ascii")).rstrip()
         line = line.rstrip()
         detail_log.info(f"[Qubes updater] {line}")
 
@@ -196,11 +201,13 @@ def _qubes_updater_parse_progress(stream, result, templates, progress_callback=N
         result[template] = UpdateStatus.UPDATES_IN_PROGRESS
 
     while True:
-        untrusted_line = stream.readline()
-        if len(untrusted_line) == 0:
+        # Already sanitized for terminal output by Qubes Updater
+        line = stream.readline()
+        if len(line) == 0:
+            # Reached EOF
             break
 
-        line = Util.text_log_format(untrusted_line.decode("utf-8").rstrip())
+        line = Util.cleanup_for_log(line.decode("ascii")).rstrip()
         try:
             vm, status, info = line.split()
         except ValueError:
@@ -437,13 +444,13 @@ def apply_dom0_state():
     try:
         output = subprocess.check_output(cmd)
         sdlog.info("Dom0 state applied")
-        clean_output = Util.text_log_format(output.decode("utf-8").strip())
+        clean_output = Util.cleanup_for_log(output.decode("utf-8").strip())
         detail_log.info(f"Output from command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_OK
     except subprocess.CalledProcessError as e:
         sdlog.error(f"Failed to apply dom0 state. See {DETAIL_LOG_FILE} for details.")
         sdlog.error(str(e))
-        clean_output = Util.text_log_format(e.output.decode("utf-8").strip())
+        clean_output = Util.cleanup_for_log(e.output.decode("utf-8").strip())
         detail_log.error(f"Output from failed command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_FAILED
 
