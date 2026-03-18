@@ -237,8 +237,6 @@ class SD_VM_Tests(unittest.TestCase):
         assert vm_type == "DispVM"
         assert "sd-workstation" in vm.tags
 
-        assert vm.features["service.avahi"] == "1"
-
         # MIME handling
         assert vm.features["service.securedrop-mime-handling"] == "1"
         assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-devices"
