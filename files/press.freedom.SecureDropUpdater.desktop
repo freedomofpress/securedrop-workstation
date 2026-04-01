@@ -3,5 +3,5 @@ Version=1.0
 Type=Application
 Terminal=false
 Icon=securedrop
-Name=SecureDrop
+Name=SecureDrop Inbox
 Exec=sdw-updater --launch-app

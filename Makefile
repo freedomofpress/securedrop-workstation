@@ -201,7 +201,7 @@ run-client: assert-dom0 run-deps ## Run client application (automatic login)
 	@xdotool key Return
 
 PHONY: run-app
-run-app: assert-dom0 run-deps ## Run SecureDrop App (automatic login)
+run-app: assert-dom0 run-deps ## Run SecureDrop Inbox (automatic login)
 	qvm-run --service sd-app qubes.StartApp+press.freedom.SecureDropApp
 	@sleep 5
 	@xdotool type "journalist"
