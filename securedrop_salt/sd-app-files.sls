@@ -20,8 +20,6 @@ install-securedrop-client-package:
   pkg.installed:
     - pkgs:
       - securedrop-client
-      {% if d.get('app', false) %}
       - securedrop-app
-      {% endif %}
     - require:
       - sls: securedrop_salt.fpf-apt-repo
