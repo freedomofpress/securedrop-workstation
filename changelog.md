@@ -24,6 +24,13 @@
   * Have a deeper `make clean` (#1531)
   * Update tests for repo baseurl including `$releasever` (#1533)
 
+## 1.5.2
+
+This release contains a low-priority security fix. We are not aware of any
+exploitation in the wild.
+
+* Move printers out of sd-devices into a dedicated sd-printers VM
+
 ## 1.5.1
 
 * Update sdw-admin configure action to check for packaged Tails config (#1506)
