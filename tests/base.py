@@ -9,8 +9,10 @@ DEBIAN_VERSION = "bookworm"
 SD_TEMPLATE_BASE = f"sd-base-{DEBIAN_VERSION}-template"
 SD_TEMPLATE_LARGE = f"sd-large-{DEBIAN_VERSION}-template"
 SD_TEMPLATE_SMALL = f"sd-small-{DEBIAN_VERSION}-template"
+SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
 
-SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-devices"]
+# Expectations regarding VMs' existence and versions
+SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-devices", "sd-printers"]
 SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
 SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_TEMPLATE_LARGE, SD_TEMPLATE_SMALL]
 SD_UNTAGGED_DEPRECATED_VMS = ["sd-retain-logvm"]
