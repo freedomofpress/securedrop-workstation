@@ -155,9 +155,13 @@ def get_logger(prefix=SD_LOGGER_PREFIX, module=None):
     return logging.getLogger(prefix + "." + module)
 
 
-def strip_ansi_colors(str):
+def cleanup_for_log(str):
     """
-    Strip ANSI colors from command output
+    Aesthetics-only formatting of log lines for text files:
+        - removes ANSI formatting
+
+    NOTE: this should not be assumed as a security hardening measure; input
+    should already be sanitized.
     """
     return re.sub(r"\u001b\[.*?[@-~]", "", str)
 
