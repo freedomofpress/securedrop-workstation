@@ -18,11 +18,11 @@ logger = Util.get_logger(module=__name__)
 
 def launch_securedrop_client(app: bool = False):
     """
-    Helper function to launch the SecureDrop Client or App
+    Helper function to launch the SecureDrop Client or Inbox ("app")
     """
     if app:
         desktop_file = "press.freedom.SecureDropApp"
-        app_name = "SecureDrop app"
+        app_name = "SecureDrop Inbox"
     else:
         desktop_file = "press.freedom.SecureDropClient"
         app_name = "SecureDrop client"
