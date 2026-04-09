@@ -1,5 +1,15 @@
 # changelog
 
+## 1.6.0rc2
+
+This release switches to using the [new SecureDrop Inbox](https://securedrop.org/news/securedrop-inbox-is-coming/)
+by default, which is a rewrite of the SecureDrop Client using a new framework
+(Electron), a more efficient sync system, plus many UX improvements and
+[new features](https://securedrop.org/news/new-features-in-securedrop-inbox/).
+
+* Always provision the Inbox
+* Use "SecureDrop Inbox" name in user-facing strings
+
 ## 1.6.0rc1
 
 * Suppress GPG prompt (#1466)
