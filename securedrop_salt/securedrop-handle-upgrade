@@ -46,8 +46,10 @@ if [[ $TASK == "prepare" ]]; then
     if qvm-check --quiet sd-devices; then
         BASE_TEMPLATE=$(qvm-prefs sd-devices-dvm template)
         if [[ ! $BASE_TEMPLATE =~ "large-bookworm" ]]; then
+            shutdown_if_running "sd-printers"
             shutdown_if_running "sd-devices"
             shutdown_if_running "sd-devices-dvm"
+            qvm-remove -f sd-printers
             qvm-remove -f sd-devices
             qvm-remove -f sd-devices-dvm
         fi

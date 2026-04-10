@@ -49,10 +49,10 @@ def _get_current_vms():
         "sd-app": f"sd-small-{debian_version}-template",
         "sd-log": f"sd-small-{debian_version}-template",
         "sd-devices": f"sd-large-{debian_version}-template",
+        "sd-printers": f"sd-large-{debian_version}-template",
         "sd-proxy": f"sd-small-{debian_version}-template",
         "sd-gpg": f"sd-small-{debian_version}-template",
     }
-
 
 def _get_current_templates():
     return set([val for key, val in _get_current_vms().items() if key != "dom0"])
