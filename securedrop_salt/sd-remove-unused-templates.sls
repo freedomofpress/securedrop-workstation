@@ -8,6 +8,7 @@ include:
   - securedrop_salt.sd-upgrade-templates
   - securedrop_salt.sd-log
   - securedrop_salt.sd-devices
+  - securedrop_salt.sd-printers
   - securedrop_salt.sd-gpg
   - securedrop_salt.sd-proxy
   - securedrop_salt.sd-viewer
@@ -20,6 +21,7 @@ run-remove-upgrade-scripts:
       - sls: securedrop_salt.sd-upgrade-templates
       - sls: securedrop_salt.sd-log
       - sls: securedrop_salt.sd-devices
+      - sls: securedrop_salt.sd-printers
       - sls: securedrop_salt.sd-gpg
       - sls: securedrop_salt.sd-proxy
       - sls: securedrop_salt.sd-viewer
