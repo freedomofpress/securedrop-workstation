@@ -62,7 +62,7 @@ set-fedora-default-template-version:
 # automatically.
 # sys-usb is also disposable by default but a special case as we want to
 # customize the underlying DispVM template for usability purposes: we want to
-# consistently auto-attach USB devices to our sd-devices qube
+# consistently auto-attach USB devices to our sd-devices and sd-printers qube
 #
 {% set required_dispvms = [ sd_supported_fedora_version + '-dvm' ] %}
 {% if salt['pillar.get']('qvm:sys-usb:disposable', true) %}
