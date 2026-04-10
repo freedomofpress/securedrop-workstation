@@ -93,7 +93,7 @@ SecureDrop Workstation has a companion repository, [SecureDrop Client](https://g
 that contains component code for all of the packages we ship in individual VMs once they have been provisioned:
 - The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client/tree/main/client#readme) is installed in `sd-app` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
 - The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-client/tree/main/proxy#readme) is installed in `sd-proxy` to communicate to the SecureDrop server *Journalist Interface* via Tor.
-- [SecureDrop Export](https://github.com/freedomofpress/securedrop-client/tree/main/export#readme) is installed in `sd-devices` and is used to manage printing and exporting files.
+- [SecureDrop Export](https://github.com/freedomofpress/securedrop-client/tree/main/export#readme) is installed in `sd-devices` and `sd-printers`. They are used to exporting files and manage printing.
 - The *SecureDrop Client* opens all submissions in the networkless, disposable `sd-viewer` VM
 - A logging VM, `sd-log`, is provisioned to capture logs locally from various parts of the system
 
