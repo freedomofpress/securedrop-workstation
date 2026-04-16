@@ -9,7 +9,7 @@ except ImportError:
 
 
 from sdw_updater import Updater
-from sdw_updater.Updater import should_launch_updater
+from sdw_updater.Updater import is_qubes_mid_upgrade, should_launch_updater
 from sdw_updater.UpdaterApp import UpdaterApp, launch_securedrop_client
 from sdw_util import Util
 
@@ -39,11 +39,17 @@ def main(argv):
     Util.configure_logging(Updater.LOG_FILE)
     Util.configure_logging(Updater.DETAIL_LOG_FILE, Updater.DETAIL_LOGGER_PREFIX, backup_count=10)
     sdlog = Util.get_logger()
+
     lock_handle = Util.obtain_lock(Updater.LOCK_FILE)
     if lock_handle is None:
         # Preflight updater already running or problems accessing lockfile.
         # Logged.
         sys.exit(1)
+
+    if is_qubes_mid_upgrade():
+        sdlog.info("Detected inplace upgrade in process. Exiting!")
+        sys.exit(0)
+
     sdlog.info("Starting SecureDrop Launcher")
 
     args = parse_argv(argv)
