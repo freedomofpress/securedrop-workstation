@@ -145,17 +145,18 @@ clean: assert-dom0 ## Destroys all SD VMs
 	rpm -qa | grep '^securedrop-workstation' | xargs -r sudo dnf remove -y
 	find /etc/yum.repos.d -type f -iname 'securedrop-workstation*.repo' -exec sudo rm -v {} +
 
+DOM0_TEST_PREREQS = python3-pytest python3-pytest-cov python3-pytest-xdist python3-systemd
 .PHONY: test-prereqs
 test-prereqs: ## Checks that test prerequisites are satisfied
 	@echo "Checking prerequisites before running test suite..."
 	@test -e config.json || (echo "Ensure config.json is in this directory" && exit 1)
 	@test -e sd-journalist.sec || (echo "Ensure sd-journalist.sec is in this directory" && exit 1)
-	@rpm -q python3-pytest python3-pytest-cov python3-pytest-xdist || (echo 'please install test dependencies with "make install-dom0-test-prereqs"' && exit 1)
+	@rpm -q $(DOM0_TEST_PREREQS) || (echo 'please install test dependencies with "make install-dom0-test-prereqs"' && exit 1)
 
 .PHONY: install-dom0-test-prereqs
 install-dom0-test-prereqs: assert-dom0 ## Installs pytest dependencies in dom0
-	@rpm -q python3-pytest python3-pytest-cov python3-pytest-xdist python3-systemd || \
-		sudo qubes-dom0-update -y python3-pytest python3-pytest-cov python3-pytest-xdist python3-systemd
+	rpm -q $(DOM0_TEST_PREREQS) || \
+		sudo qubes-dom0-update -y $(DOM0_TEST_PREREQS)
 
 test: test-prereqs ## Runs all application tests (no integration tests yet)
 	# N.B. make sure to use "-vv" for max-length diffs on test failures
