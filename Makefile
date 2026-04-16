@@ -145,7 +145,7 @@ clean: assert-dom0 ## Destroys all SD VMs
 	rpm -qa | grep '^securedrop-workstation' | xargs -r sudo dnf remove -y
 	find /etc/yum.repos.d -type f -iname 'securedrop-workstation*.repo' -exec sudo rm -v {} +
 
-DOM0_TEST_PREREQS = python3-pytest python3-pytest-cov python3-pytest-xdist python3-systemd
+DOM0_TEST_PREREQS = python3-pytest python3-pytest-cov python3-pytest-xdist python3-pytest-mock python3-systemd
 .PHONY: test-prereqs
 test-prereqs: ## Checks that test prerequisites are satisfied
 	@echo "Checking prerequisites before running test suite..."
