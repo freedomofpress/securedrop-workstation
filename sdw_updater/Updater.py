@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 import dnf
-from qubesadmin import Qubes
+import qubesadmin
 
 from sdw_util import Util
 
@@ -469,7 +469,7 @@ def is_qubes_mid_upgrade():
     qubes_ver = dnf.rpm.detect_releasever("/")
 
     # But before stage 4, templates are still targetting the old qubes agent
-    all_qubes = Qubes().domains
+    all_qubes = qubesadmin.Qubes().domains
     templates = [all_qubes[q_name] for q_name in _get_current_templates()]
     qube_agent_versions = [t.features.get("qubes-agent-version") for t in templates]
 
