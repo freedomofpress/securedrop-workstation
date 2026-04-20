@@ -14,9 +14,6 @@ import time
 from datetime import datetime, timedelta
 from enum import Enum
 
-import dnf
-import qubesadmin
-
 from sdw_util import Util
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -464,6 +461,9 @@ def is_qubes_mid_upgrade():
 
     This detects if STAGE 4 of qubes-dist-upgrade has not yet started.
     """
+    # Lazy imports: these are dom0-only system packages, not available in CI venv
+    import dnf
+    import qubesadmin
 
     # If already past stages 1, 2 and 3 this should be the next Qubes version
     qubes_ver = dnf.rpm.detect_releasever("/")
