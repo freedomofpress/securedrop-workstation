@@ -57,6 +57,14 @@ elif [[ $TASK == "adjust-icon-size" ]]; then
   echo "update-xfce-settings: Adjusting icon size for user $USER to $ICONSIZE px"
   xfconf-query -c xfce4-desktop -np '/desktop-icons/icon-size' -t 'int' -s $ICONSIZE
 
+elif [[ $TASK == "dismiss-desktop-icon-prompt" ]]; then
+  # Dismiss "security warning" when opening any desktop icons
+  # as it is not a true security mitigation in Qubes. See #1582
+  for f in "/home/${USER:?}/Desktop/"*.desktop; do
+    chmod +x "$f";
+    gio set -t string "$f" metadata::xfce-exe-checksum "$(sha256sum "$f" | awk '{print $1}')";
+  done
+
 elif [[ $TASK == "reset-power-management" ]]; then
   echo "update-xfce-settings: Resetting power management options for user $USER"
 
@@ -86,8 +94,9 @@ else
   echo
   echo "Task must be one of:"
   echo
-  echo " disable-unsafe-power-management   Disable suspend and hibernation buttons"
   echo " adjust-icon-size                  Increase the default desktop icon size"
-  echo " reset-power-management            Reset power management settings to default"
+  echo " disable-unsafe-power-management   Disable suspend and hibernation buttons"
+  echo " dismiss-desktop-icon-prompt       Mark the desktop icon for SDW as trusted"
   echo " reset-icon-size                   Reset icon size to default"
+  echo " reset-power-management            Reset power management settings to default"
 fi
