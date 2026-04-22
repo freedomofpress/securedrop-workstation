@@ -197,7 +197,7 @@ def _qubes_updater_parse_stdout(stream: IO[str]) -> None:
             # Reached EOF
             break
 
-        line = Util.cleanup_for_log(line).rstrip()
+        line = Util.cleanup_for_log(line.decode("ascii")).rstrip()
         line = line.rstrip()
         detail_log.info(f"[Qubes updater] {line}")
 
@@ -220,7 +220,7 @@ def _qubes_updater_parse_progress(
             # Reached EOF
             break
 
-        line = Util.cleanup_for_log(line).rstrip()
+        line = Util.cleanup_for_log(line.decode("ascii")).rstrip()
         try:
             vm, status, info = line.split()
         except ValueError:
