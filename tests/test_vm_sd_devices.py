@@ -44,7 +44,7 @@ def qube_sd_printers():
 
 
 # Parameterize: tests calling this fixture will run for each qube
-@pytest.fixture(scope="module", params=_qubes.values(), ids=_qubes.keys())
+@pytest.fixture(scope="module", params=list(_qubes.values()), ids=list(_qubes.keys()))
 def qube(request):
     return request.param  # returns a fixture for each qube
 

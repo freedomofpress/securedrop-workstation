@@ -13,7 +13,7 @@ q = qubesadmin.Qubes()
 TAGS_TO_REMOVE = ["sd-send-app-clipboard", "sd-receive-app-clipboard", "sd-receive-logs"]
 
 
-def main():
+def main() -> None:
     tags_removed = False
     for vm in q.domains:
         for tag in TAGS_TO_REMOVE:

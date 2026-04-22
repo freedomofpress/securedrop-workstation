@@ -17,11 +17,11 @@ TEST_KEY_RPMID = "gpg-pubkey-3fab65ab-660f2beb"
 BASEURL = "https://yum-test.securedrop.org"
 
 
-def get_fedora_version():
+def get_fedora_version() -> str:
     return subprocess.check_output(["rpm", "--eval", "%{fedora}"]).decode().strip()
 
 
-def create_repo_file(env: str, repo_file_path: str, ver: str):
+def create_repo_file(env: str, repo_file_path: Path, ver: str) -> None:
     """Create .repo file based on environment."""
     repo_content = f"""
 [{KEYRING_PACKAGENAME}-{env}]
@@ -34,12 +34,12 @@ name=SecureDrop Workstation Keyring ({env})
         repo_file.write(repo_content.lstrip())
 
 
-def rpm_import(key_file: Path):
+def rpm_import(key_file: Path) -> None:
     """Import GPG key into rpmdb."""
     subprocess.check_call(["sudo", "rpm", "--import", str(key_file)])
 
 
-def is_key_imported(rpm_id: str):
+def is_key_imported(rpm_id: str) -> bool:
     """Check rpmdb for key with givem rpm_id."""
     try:
         subprocess.check_call(["rpm", "-q", rpm_id])
@@ -48,7 +48,7 @@ def is_key_imported(rpm_id: str):
         return False
 
 
-def dom0_install_keyring(env: str | None = None):
+def dom0_install_keyring(env: str | None = None) -> None:
     """Use qubes-dom0-update to install keyring package."""
     args = ["sudo", "qubes-dom0-update", "--clean", "-y"]
 
@@ -61,7 +61,7 @@ def dom0_install_keyring(env: str | None = None):
     subprocess.check_call(args)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Bootstrap SecureDrop Workstation keyring on QubesOS"
     )

@@ -7,13 +7,14 @@ salt config, for use in repeated builds during development.
 import argparse
 import subprocess
 import sys
+from typing import Any
 
 import qubesadmin
 
 SDW_DEFAULT_TAG = "sd-workstation"
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--all-tagged",
@@ -34,7 +35,7 @@ def parse_args():
     return args
 
 
-def destroy_vm(vm):
+def destroy_vm(vm: Any) -> None:
     """
     Destroys a single VM instance. Requires arg to be
     QubesVM object.
@@ -48,7 +49,7 @@ def destroy_vm(vm):
     print("OK")
 
 
-def destroy_all_tagged():
+def destroy_all_tagged() -> None:
     """
     Destroys all VMs marked with the 'sd-workstation' tag, in the following order:
     DispVMs, AppVMs, then TemplateVMs. Excludes VMs for which
