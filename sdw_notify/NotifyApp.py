@@ -43,7 +43,7 @@ class NotifyDialog(QMessageBox):
 
     def _ui(self):
         self.setWindowTitle(strings.headline_notify_updates)
-        self.setIcon(QMessageBox.StandardButton.Warning)
+        self.setIcon(QMessageBox.Icon.Warning)
         self.setStandardButtons(QMessageBox.StandardButton.No | QMessageBox.StandardButton.Ok)
         self.setDefaultButton(QMessageBox.StandardButton.Ok)
         self.setEscapeButton(QMessageBox.StandardButton.No)
