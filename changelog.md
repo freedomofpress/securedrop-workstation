@@ -1,5 +1,10 @@
 # changelog
 
+## 1.6.0rc3
+
+* Add full salt migration to 1.6.0 (#1619)
+* Fix sdw-notify Qt5 compat; always launch Inbox (#1622)
+
 ## 1.6.0rc2
 
 This release switches to using the [new SecureDrop Inbox](https://securedrop.org/news/securedrop-inbox-is-coming/)
