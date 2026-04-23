@@ -67,7 +67,7 @@ def show_update_warning():
     # has opted to check for updates.
     if result == NotifyApp.NotifyStatus.CHECK_UPDATES:
         log.info("Launching Preflight Updater")
-        updater = UpdaterApp.UpdaterApp()
+        updater = UpdaterApp.UpdaterApp(launch_app=True)
         updater.show()
         sys.exit(app.exec())
     elif result == NotifyApp.NotifyStatus.DEFER_UPDATES:
