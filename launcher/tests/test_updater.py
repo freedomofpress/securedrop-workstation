@@ -131,7 +131,7 @@ def test_apply_templates_success(
     ],
 )
 def test_apply_templates(
-    templates, qubes_upd_stderr, qubes_upd_retcode, expected, mocked_qubes_vm_update, mocker
+    templates, qubes_upd_stderr, qubes_upd_retcode, expected, mocked_qubes_vm_update
 ):
     mocked_qubes_vm_update(stderr=qubes_upd_stderr, retcode=qubes_upd_retcode)
     with (

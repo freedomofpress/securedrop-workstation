@@ -33,7 +33,7 @@ def mocked_qubes_vm_update(tmp_path, monkeypatch):
         script.chmod(0o755)
 
     # Prepend script to path, so it get called instead of the real one
-    monkeypatch.setenv("PATH", tmp_path, prepend=os.pathsep)
+    monkeypatch.setenv("PATH", str(tmp_path), prepend=os.pathsep)
 
     return _mocked_qubes_vm_update
 
