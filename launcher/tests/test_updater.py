@@ -108,40 +108,38 @@ def test_apply_templates_success(
 
 
 @pytest.mark.parametrize(
-    ("templates", "stderr", "expected"),
+    ("templates", "qubes_upd_stderr", "qubes_upd_retcode", "expected"),
     [
         (
             ["template"],
             "template updating 0\ntemplate done success",
+            0,
             UpdateStatus.UPDATES_OK,
         ),
         (
             ["template"],
             "template updating 0\nunknown_keyword",
+            1,
             UpdateStatus.UPDATES_FAILED,
         ),
         (
             ["tpl1", "tpl2"],
             "tpl1 updating 0\ntpl2 updating 0\tpl1 done success\ntpl2 done error",
+            1,
             UpdateStatus.UPDATES_FAILED,
         ),
     ],
 )
-def test_apply_templates(templates, stderr, expected):
+def test_apply_templates(
+    templates, qubes_upd_stderr, qubes_upd_retcode, expected, mocked_qubes_vm_update
+):
+    mocked_qubes_vm_update(stderr=qubes_upd_stderr, retcode=qubes_upd_retcode)
     with (
-        mock.patch(
-            "sdw_updater.Updater._start_qubes_updater_proc",
-            return_value=subprocess.Popen(  # noqa: S602
-                f"echo '{stderr}' >> /dev/stderr",
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            ),
-        ),
+        mock.patch("time.sleep"),  # skip time.sleep in polling to speed up test
         mock.patch("sdw_updater.Updater._get_current_templates", return_value=templates),
     ):
         result = Updater.apply_updates_templates()
-        assert result == expected
+    assert result == expected
 
 
 @pytest.mark.parametrize("status", UpdateStatus)
