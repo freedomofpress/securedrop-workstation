@@ -401,6 +401,33 @@ def test_read_dom0_update_flag_from_disk_fails(
         mocked_info.assert_has_calls(info_calls)
 
 
+@pytest.mark.parametrize(
+    ("qubes_ver", "agent_ver", "is_mid_upgrade"),
+    [
+        ("4.2", "4.2", False),  # Regular 4.2 system
+        ("4.3", "4.2", True),  # System in middle of 4.2 -> 4.3 upgrade
+        ("4.3", "4.3", False),  # Regular 4.3 system
+        ("4.4", "4.3", True),  # System in middle of 4.3 -> 4.4 upgrade
+    ],
+)
+@pytest.mark.skipif(
+    os.environ.get("CI") == "true", reason="Skipping on CI (should only run in Qubes)"
+)
+def test_is_qubes_mid_upgrade(qubes_ver, agent_ver, is_mid_upgrade, mocker, mocked_qubes_app):
+    # Overrding "dnf.rpm.detect_releasever" to simulate being on particular Qubes version
+    mocker.patch("dnf.rpm").detect_releasever.return_value = qubes_ver
+
+    # Make templates return the version set by the test (MockQubes is just a mock)
+    for qube in mocked_qubes_app.domains:
+        if qube.klass == "TemplateVM":
+            mocked_qubes_app.expected_calls[
+                (qube.name, "admin.vm.feature.Get", "qubes-agent-version", None)
+            ] = b"0\x00" + agent_ver.encode()
+
+    # Actual test
+    assert Updater.is_qubes_mid_upgrade() == is_mid_upgrade
+
+
 @mock.patch(
     "sdw_updater.Updater.read_dom0_update_flag_from_disk",
     return_value={

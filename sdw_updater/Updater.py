@@ -454,6 +454,29 @@ def apply_dom0_state():
         return UpdateStatus.UPDATES_FAILED
 
 
+def is_qubes_mid_upgrade():
+    """
+    Detects if the system is in the middle of a dist. upgrade (e.g. 4.2 -> 4.3)
+
+    This detects if STAGE 4 of qubes-dist-upgrade has not yet started.
+    """
+    # Lazy imports: these are dom0-only system packages, not available in CI venv
+    import dnf
+    import qubesadmin
+
+    # If already past stages 1, 2 and 3 this should be the next Qubes version
+    qubes_ver = dnf.rpm.detect_releasever("/")
+
+    # But before stage 4, templates are still targetting the old qubes agent
+    all_qubes = qubesadmin.Qubes().domains
+    templates = [all_qubes[q_name] for q_name in _get_current_templates()]
+    qube_agent_versions = [t.features.get("qubes-agent-version") for t in templates]
+
+    # Any mismatch between dom0's version and the templates' agent version
+    # is indicative of not yet having gone through STAGE 4 of the upgrade
+    return any([qubes_ver != agent_ver for agent_ver in qube_agent_versions])
+
+
 def should_launch_updater(interval):
     status = read_dom0_update_flag_from_disk(with_timestamp=True)
 
