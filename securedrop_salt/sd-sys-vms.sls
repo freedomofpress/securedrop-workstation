@@ -126,19 +126,6 @@ sd-{{ sys_vm }}-fedora-version-update:
       - qvm: create-{{ sd_supported_fedora_template }}
 {% endif %}
 
-# Finally, remove the old supported fedora DVM we created. We won't uninstall
-# the template, in case it's being used elsewhere, but the `sd-` VMs we can
-# reasonably manage (remove) ourselves.
-{% if sys_vm == "sys-usb" %}
-
-{% set previous_fedora_version = 'fedora-' ~ (sd_supported_fedora_version_num - 1) %}
-remove-sd-fedora-{{ previous_fedora_version }}-dvm:
-  qvm.absent:
-    - name: sd-fedora-{{ previous_fedora_version }}-dvm
-    - require:
-      - qvm: sd-sys-usb-fedora-version-update
-{% endif %}
-
 sd-{{ sys_vm }}-fedora-version-start:
   qvm.start:
     - name: {{ sys_vm }}
@@ -147,3 +134,17 @@ sd-{{ sys_vm }}-fedora-version-start:
 {% endif %}
 {% endfor %}
 
+
+# Finally, remove the old supported fedora DVMs we created. We won't uninstall
+# the template, in case it's being used elsewhere, but the `sd-` VMs we can
+# reasonably manage (remove) ourselves.
+{% set curr_fedora = sd_supported_fedora_version_num|string %}
+{% set prev_fedora = (sd_supported_fedora_version_num - 1)|string %}
+{% for curr_dispvm_template in required_dispvms %}
+  {% set prev_dispvm_template = curr_dispvm_template | replace(curr_fedora, prev_fedora) %}
+remove-{{ prev_dispvm_template }}:
+  qvm.absent:
+    - name: {{ prev_dispvm_template }}
+    - require:
+      - qvm: create-{{ curr_dispvm_template }}
+{% endfor %}
