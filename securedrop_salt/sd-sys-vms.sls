@@ -11,7 +11,8 @@ include:
 
 # 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to
 # follow simple - like sd-fedora-NN-dvm
-{% set sd_supported_fedora_version = 'fedora-43' %}
+{% set sd_supported_fedora_version_num = 43 %}
+{% set sd_supported_fedora_version = 'fedora-' ~ sd_supported_fedora_version_num %}
 {% set sd_fedora_base_template = sd_supported_fedora_version + '-xfce' %}
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
@@ -129,9 +130,11 @@ sd-{{ sys_vm }}-fedora-version-update:
 # the template, in case it's being used elsewhere, but the `sd-` VMs we can
 # reasonably manage (remove) ourselves.
 {% if sys_vm == "sys-usb" %}
-remove-sd-fedora-42-dvm:
+
+{% set previous_fedora_version = 'fedora-' ~ (sd_supported_fedora_version_num - 1) %}
+remove-sd-fedora-{{ previous_fedora_version }}-dvm:
   qvm.absent:
-    - name: sd-fedora-42-dvm
+    - name: sd-fedora-{{ previous_fedora_version }}-dvm
     - require:
       - qvm: sd-sys-usb-fedora-version-update
 {% endif %}
