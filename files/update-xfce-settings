@@ -60,7 +60,7 @@ elif [[ $TASK == "adjust-icon-size" ]]; then
 elif [[ $TASK == "dismiss-desktop-icon-prompt" ]]; then
   # Dismiss "security warning" when opening any desktop icons
   # as it is not a true security mitigation in Qubes. See #1582
-  for f in /home/$USER/Desktop/*.desktop; do
+  for f in "/home/${USER:?}/Desktop/"*.desktop; do
     chmod +x "$f";
     gio set -t string "$f" metadata::xfce-exe-checksum "$(sha256sum "$f" | awk '{print $1}')";
   done
