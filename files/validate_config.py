@@ -10,6 +10,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from typing import Any
 
 from qubesadmin import Qubes
 
@@ -26,7 +27,7 @@ class ValidationError(Exception):
 
 
 class SDWConfigValidator:
-    def __init__(self, config_base_dir=None):
+    def __init__(self, config_base_dir: str | os.PathLike[str] | None = None) -> None:
         if config_base_dir:
             self.config_filepath = os.path.join(config_base_dir, CONFIG_FILEPATH)
             self.secret_key_filepath = os.path.join(config_base_dir, SECRET_KEY_FILEPATH)
@@ -41,14 +42,14 @@ class SDWConfigValidator:
         self.confirm_environment_valid()
         self.validate_existing_size()
 
-    def confirm_config_file_exists(self):
+    def confirm_config_file_exists(self) -> None:
         if not os.path.exists(self.config_filepath):
             raise ValidationError(
                 f"Config file does not exist: {self.config_filepath}. "
                 "Create from config.json.example"
             )
 
-    def confirm_environment_valid(self):
+    def confirm_environment_valid(self) -> None:
         """
         The 'environment' config item is required to determine
         whether prod or dev URLs are used for installing packages.
@@ -58,7 +59,7 @@ class SDWConfigValidator:
         if self.config["environment"] not in ("prod", "dev", "staging"):
             raise ValidationError(f"Invalid environment: {self.config['environment']}")
 
-    def confirm_onion_config_valid(self):
+    def confirm_onion_config_valid(self) -> None:
         """
         Only v3 onion services are supported.
         """
@@ -77,7 +78,7 @@ class SDWConfigValidator:
         if not re.match(TOR_V3_AUTH_REGEX, self.config["hidserv"]["key"]):
             raise ValidationError("Invalid hidden service key specified")
 
-    def confirm_submission_privkey_file(self):
+    def confirm_submission_privkey_file(self) -> None:
         """
         Import privkey into temporary keyring, to validate.
         """
@@ -112,7 +113,7 @@ class SDWConfigValidator:
         if not result:
             raise ValidationError(f"PGP secret key is not valid: {self.secret_key_filepath}")
 
-    def confirm_submission_privkey_fingerprint(self):
+    def confirm_submission_privkey_fingerprint(self) -> None:
         if "submission_key_fpr" not in self.config:
             raise ValidationError('"submission_key_fpr" is not defined in config.json')
         if not re.match("^[a-fA-F0-9]{40}$", self.config["submission_key_fpr"]):
@@ -129,11 +130,11 @@ class SDWConfigValidator:
         except subprocess.CalledProcessError as e:
             raise ValidationError(f"Key validation failed: {e.output.decode(sys.stdout.encoding)}")
 
-    def read_config_file(self):
+    def read_config_file(self) -> dict[str, Any]:
         with open(self.config_filepath) as f:
             return json.load(f)
 
-    def validate_existing_size(self):
+    def validate_existing_size(self) -> None:
         """This method checks for existing private volume size and new
         values in the config.json"""
         if "vmsizes" not in self.config:

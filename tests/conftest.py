@@ -1,12 +1,17 @@
 import json
 import os
+import warnings
+from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import dnf
 import pytest
 import systemd.journal
 from qubesadmin import Qubes
+from qubesadmin.app import VMCollection
+from qubesadmin.vm import QubesVM
 
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
@@ -24,12 +29,12 @@ skip_on_qubes_4_2 = pytest.mark.skipif(
 
 
 @pytest.fixture
-def qubes_ver():
+def qubes_ver() -> str:
     return dnf.rpm.detect_releasever("/")
 
 
 @pytest.fixture(scope="session")
-def mock_block_device(all_vms, worker_id, testrun_uid):
+def mock_block_device(all_vms: VMCollection, worker_id: str, testrun_uid: str) -> Iterator[str]:
     """
     Creates a block device, exposed by sys-usb
 
@@ -42,19 +47,20 @@ def mock_block_device(all_vms, worker_id, testrun_uid):
     backend_qube.run(f"touch {mock_device_path}")
     backend_qube.run(f"sudo losetup -f {mock_device_path}")
 
-    # Obtain path of newly created device
+    # Obtain path of newly created device. QubesVM.run() returns (stdout, stderr)
+    # as bytes, so unwrap to str. Format of stdout: "/dev/loopX\n".
     cmd_get_device_path = f"losetup --associated {mock_device_path} --output NAME --noheadings"
-    device_path = backend_qube.run(cmd_get_device_path)[0].decode().strip()  # format: /dev/loopX
+    device_path = backend_qube.run(cmd_get_device_path)[0].decode().strip()
 
     # Return qvm-block format: BACKEND:DEVID
-    yield f"{backend_qube.name}:{device_path.strip('/dev/')}"
+    yield f"{backend_qube.name}:{device_path.removeprefix('/dev/')}"
 
     # Remove device
     backend_qube.run(f"sudo losetup -d {device_path}")
 
 
 @pytest.fixture(scope="session")
-def dom0_config():
+def dom0_config() -> dict[str, Any]:
     """Make the dom0 "config.json" available to tests."""
     with open(os.path.join(PROJ_ROOT, "config.json")) as c:
         config = json.load(c)
@@ -62,25 +68,25 @@ def dom0_config():
         # If the "environment" key is absent from the "config.json" file, assume prod,
         # as a sane default. Dev environments will have it set explicitly.
         if "environment" not in config:
-            pytest.warn("no 'environment' detected in config.json, assuming prod")
+            warnings.warn("no 'environment' detected in config.json, assuming prod", stacklevel=2)
             config["environment"] = "prod"
     return config
 
 
 @pytest.fixture(scope="session")
-def all_vms():
+def all_vms() -> VMCollection:
     """Obtain all qubes present in the system"""
     return Qubes().domains
 
 
 @pytest.fixture(scope="session")
-def sdw_tagged_vms(all_vms):
+def sdw_tagged_vms(all_vms: VMCollection) -> list[QubesVM]:
     """Obtain all SecureDrop Workstation-exclusive qubes"""
     return list(filter(is_workstation_qube, all_vms))
 
 
 @pytest.fixture(scope="session", autouse=True)
-def cleanup(request, sdw_tagged_vms):
+def cleanup(request: pytest.FixtureRequest, sdw_tagged_vms: list[QubesVM]) -> Iterator[None]:
     """
     Handles all post-test teardown logic. Mostly that's just shutting down TemplateVMs
     that may have been booted to inspect package state.
@@ -105,13 +111,13 @@ def cleanup(request, sdw_tagged_vms):
 
 
 @pytest.fixture
-def qubesd_log():
+def qubesd_log() -> Iterator[str]:
     # Obtain journal entries to dig down into expected Qubes-daemon error
     journal = systemd.journal.Reader()
     journal.add_match(_SYSTEMD_UNIT="qubesd.service")
     journal.seek_realtime(datetime.now())
 
-    def _entry_generator(journal):
+    def _entry_generator(journal: systemd.journal.Reader) -> Iterator[str]:
         for entry in journal:
             yield entry.get("MESSAGE")
 

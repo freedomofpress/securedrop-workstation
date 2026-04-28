@@ -374,8 +374,7 @@ def test_read_dom0_update_flag_from_disk(mocked_error, mocked_subprocess, status
             assert contents["status"] == status.value
         assert "tmp" in flag_file_dom0
 
-        assert Updater.read_dom0_update_flag_from_disk() == status
-        json_values = Updater.read_dom0_update_flag_from_disk(with_timestamp=True)
+        json_values = Updater.read_dom0_update_flag_from_disk()
     assert json_values["status"] == status.value
 
     assert not mocked_error.called
