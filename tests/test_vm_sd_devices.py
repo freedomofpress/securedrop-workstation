@@ -4,6 +4,7 @@ specifically for the "sd-devices" VM and related functionality.
 """
 
 import pytest
+from qubesadmin.app import VMCollection
 
 from tests.base import (
     SD_TAG,
@@ -34,42 +35,42 @@ _qubes = {
 
 
 @pytest.fixture(scope="module")
-def qube_sd_devices():
+def qube_sd_devices() -> QubeWrapper:
     return _qubes["sd-devices"]
 
 
 @pytest.fixture(scope="module")
-def qube_sd_printers():
+def qube_sd_printers() -> QubeWrapper:
     return _qubes["sd-printers"]
 
 
 # Parameterize: tests calling this fixture will run for each qube
-@pytest.fixture(scope="module", params=_qubes.values(), ids=_qubes.keys())
-def qube(request):
+@pytest.fixture(scope="module", params=list(_qubes.values()), ids=list(_qubes.keys()))
+def qube(request: pytest.FixtureRequest) -> QubeWrapper:
     return request.param  # returns a fixture for each qube
 
 
-def test_files_are_properly_copied(qube):
+def test_files_are_properly_copied(qube: QubeWrapper) -> None:
     assert qube.fileExists("/usr/bin/send-to-usb")
     assert qube.fileExists("/usr/share/applications/send-to-usb.desktop")
     assert qube.fileExists("/usr/share/mime/packages/application-x-sd-export.xml")
 
 
-def test_sd_export_package_installed(qube_sd_devices):
+def test_sd_export_package_installed(qube_sd_devices: QubeWrapper) -> None:
     assert qube_sd_devices.package_is_installed("udisks2")
     assert qube_sd_devices.package_is_installed("securedrop-export")
     assert qube_sd_devices.package_is_installed("gnome-disk-utility")
 
 
-def test_logging_configured(qube):
+def test_logging_configured(qube: QubeWrapper) -> None:
     qube.logging_configured()
 
 
-def test_mailcap_hardened(qube):
+def test_mailcap_hardened(qube: QubeWrapper) -> None:
     qube.mailcap_hardened()
 
 
-def test_open_in_dvm_desktop(qube_sd_devices):
+def test_open_in_dvm_desktop(qube_sd_devices: QubeWrapper) -> None:
     contents = qube_sd_devices.get_file_contents("/usr/share/applications/open-in-dvm.desktop")
     expected_contents = [
         "TryExec=/usr/bin/qvm-open-in-vm",
@@ -79,7 +80,7 @@ def test_open_in_dvm_desktop(qube_sd_devices):
         assert line in contents
 
 
-def test_sd_printers_config(qube_sd_printers):
+def test_sd_printers_config(qube_sd_printers: QubeWrapper) -> None:
     """
     Confirm that qvm-prefs match expectations for this VM.
     """
@@ -99,7 +100,7 @@ def test_sd_printers_config(qube_sd_printers):
     assert qube_sd_printers.service_is_active("securedrop-mime-handling")
 
 
-def test_sd_devices_config(qube_sd_devices):
+def test_sd_devices_config(qube_sd_devices: QubeWrapper) -> None:
     """
     Confirm that qvm-prefs match expectations for this VM.
     """
@@ -119,7 +120,7 @@ def test_sd_devices_config(qube_sd_devices):
     assert qube_sd_devices.service_is_active("securedrop-mime-handling")
 
 
-def test_sd_devices_dvm_config(all_vms):
+def test_sd_devices_dvm_config(all_vms: VMCollection) -> None:
     """
     Confirm that qvm-prefs match expectations for the sd-devices DispVM
     """

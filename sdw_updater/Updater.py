@@ -6,13 +6,17 @@ is opened by the user when clicking on the desktop, opening
 /usr/bin/sdw-updater.
 """
 
+from __future__ import annotations
+
 import json
 import os
 import subprocess
 import threading
 import time
+from collections.abc import Callable, Collection
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import IO, Any, TypeGuard
 
 from sdw_util import Util
 
@@ -37,7 +41,7 @@ sdlog = Util.get_logger(module=__name__)
 detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 
 
-def _get_current_vms():
+def _get_current_vms() -> dict[str, str]:
     debian_version = "bookworm"
 
     # The are the TemplateVMs that require full patch level at boot in order to start the client,
@@ -55,15 +59,15 @@ def _get_current_vms():
     }
 
 
-def _get_current_templates():
+def _get_current_templates() -> set[str]:
     return set([val for key, val in _get_current_vms().items() if key != "dom0"])
 
 
-def get_dom0_path(folder):
+def get_dom0_path(folder: str) -> str:
     return os.path.join(os.path.expanduser("~"), folder)
 
 
-def run_full_install():
+def run_full_install() -> UpdateStatus:
     """
     Re-apply the entire Salt config via sdw-admin. Required to enforce
     VM state during major migrations, such as template consolidation.
@@ -96,7 +100,7 @@ def run_full_install():
     return UpdateStatus.UPDATES_OK
 
 
-def migration_is_required():
+def migration_is_required() -> bool:
     """
     Check whether a full run of the Salt config via sdw-admin is required.
     """
@@ -107,7 +111,7 @@ def migration_is_required():
     return result
 
 
-def apply_updates_dom0():
+def apply_updates_dom0() -> UpdateStatus:
     """
     Apply updates to dom0
     """
@@ -121,7 +125,9 @@ def apply_updates_dom0():
     return upgrade_results
 
 
-def apply_updates_templates(progress_callback=None):
+def apply_updates_templates(
+    progress_callback: Callable[[int], None] | None = None,
+) -> UpdateStatus:
     """
     Apply updates to all TemplateVMs.
     """
@@ -129,7 +135,9 @@ def apply_updates_templates(progress_callback=None):
     sdlog.info(f"Applying all updates to VMs: {', '.join(templates)}")
     try:
         proc = _start_qubes_updater_proc(templates)
-        result_update_status = {}
+        assert proc.stdout is not None  # noqa: S101
+        assert proc.stderr is not None  # noqa: S101
+        result_update_status: dict[str, UpdateStatus] = {}
         stderr_thread = threading.Thread(
             target=_qubes_updater_parse_progress,
             args=(proc.stderr, result_update_status, templates, progress_callback),
@@ -161,7 +169,7 @@ def apply_updates_templates(progress_callback=None):
         return UpdateStatus.UPDATES_FAILED
 
 
-def _start_qubes_updater_proc(templates):
+def _start_qubes_updater_proc(templates: Collection[str]) -> subprocess.Popen[str]:
     update_cmd = [
         "qubes-vm-update",
         "--apply-to-all",  # Enforce app qube restarts
@@ -182,7 +190,7 @@ def _start_qubes_updater_proc(templates):
     )
 
 
-def _qubes_updater_parse_stdout(stream):
+def _qubes_updater_parse_stdout(stream: IO[str]) -> None:
     while True:
         # Already sanitized for terminal output by Qubes Updater
         line = stream.readline()
@@ -194,8 +202,13 @@ def _qubes_updater_parse_stdout(stream):
         detail_log.info(f"[Qubes updater] {line}")
 
 
-def _qubes_updater_parse_progress(stream, result, templates, progress_callback=None):
-    update_progress = {}
+def _qubes_updater_parse_progress(
+    stream: IO[str],
+    result: dict[str, UpdateStatus],
+    templates: Collection[str],
+    progress_callback: Callable[[int], None] | None = None,
+) -> None:
+    update_progress: dict[str, int] = {}
 
     for template in templates:
         result[template] = UpdateStatus.UPDATES_IN_PROGRESS
@@ -234,7 +247,7 @@ def _qubes_updater_parse_progress(stream, result, templates, progress_callback=N
                 sdlog.error(f"Update failed for template: '{vm}'")
 
 
-def _check_updates_dom0():
+def _check_updates_dom0() -> UpdateStatus:
     """
     We need to reboot the system after every dom0 update. The update
     script does not tell us through its exit code whether updates were applied,
@@ -254,7 +267,7 @@ def _check_updates_dom0():
     return UpdateStatus.UPDATES_OK
 
 
-def _apply_updates_dom0():
+def _apply_updates_dom0() -> UpdateStatus:
     """
     Apply updates to dom0. Any update to dom0 will require a reboot after
     the upgrade.
@@ -271,7 +284,7 @@ def _apply_updates_dom0():
     return UpdateStatus.REBOOT_REQUIRED
 
 
-def _write_last_updated_flags_to_disk():
+def _write_last_updated_flags_to_disk() -> None:
     """
     Writes the time of last successful upgrade to dom0 and sd-app
     """
@@ -304,7 +317,7 @@ def _write_last_updated_flags_to_disk():
         sdlog.error(str(e))
 
 
-def _write_updates_status_flag_to_disk(status):
+def _write_updates_status_flag_to_disk(status: UpdateStatus) -> None:
     """
     Writes the latest SecureDrop Workstation update status to disk, on both
     dom0 and sd-app for futher processing in the future.
@@ -336,14 +349,14 @@ def _write_updates_status_flag_to_disk(status):
         sdlog.error(str(e))
 
 
-def last_required_reboot_performed():
+def last_required_reboot_performed() -> bool:
     """
     Checks if the dom0 flag file indicates that a reboot is required, and
     if so, will check current uptime with the data at which the reboot
     was requested. This will be used by the _write_updates_status_flag_to_disk
     function to preserve the status UPDATES_REQUIRED instead of updating.
     """
-    flag_contents = read_dom0_update_flag_from_disk(with_timestamp=True)
+    flag_contents = read_dom0_update_flag_from_disk()
 
     # No flag exists on disk (yet)
     if flag_contents is None:
@@ -360,14 +373,13 @@ def last_required_reboot_performed():
     return True
 
 
-def _get_uptime():
+def _get_uptime() -> timedelta:
     """
     Returns timedelta containing system (dom0) uptime.
     """
-    uptime = None
     with open("/proc/uptime") as f:
-        uptime = f.read().split(" ")[0].strip()
-    uptime = int(float(uptime))
+        uptime_str = f.read().split(" ")[0].strip()
+    uptime = int(float(uptime_str))
     uptime_hours = uptime // 3600
     uptime_minutes = (uptime % 3600) // 60
     uptime_seconds = uptime % 60
@@ -375,11 +387,11 @@ def _get_uptime():
     return timedelta(hours=uptime_hours, minutes=uptime_minutes, seconds=uptime_seconds)
 
 
-def read_dom0_update_flag_from_disk(with_timestamp=False):
+def read_dom0_update_flag_from_disk() -> dict[str, Any] | None:
     """
-    Read the last updated SecureDrop Workstation update status from disk
-    in dom0, and returns the corresponding UpdateStatus. If ivoked the
-    parameter `with_timestamp=True`, this function will return the full json.
+    Read the SecureDrop Workstation update flag from disk in dom0. Returns
+    the parsed JSON (with `status` and `last_status_update` keys) when the
+    file exists and contains a recognized status, otherwise None.
     """
     flag_file_path_dom0 = get_dom0_path(FLAG_FILE_STATUS_DOM0)
 
@@ -388,16 +400,15 @@ def read_dom0_update_flag_from_disk(with_timestamp=False):
             contents = json.load(f)
             for status in UpdateStatus:
                 if int(contents["status"]) == int(status.value):
-                    if with_timestamp:
-                        return contents
-
-                    return status
+                    return contents
     except Exception:
         sdlog.info("Cannot read dom0 status flag, assuming first run")
         return None
 
+    return None
 
-def overall_update_status(results):
+
+def overall_update_status(results: dict[str, UpdateStatus]) -> UpdateStatus:
     """
     Helper method that returns the worst-case status
     For now, simple logic for reboot required: If dom0 or fedora updates, a
@@ -431,7 +442,7 @@ def overall_update_status(results):
     return UpdateStatus.UPDATES_OK
 
 
-def apply_dom0_state():
+def apply_dom0_state() -> UpdateStatus:
     """
     Applies the dom0 state to ensure dom0 and AppVMs are properly
     Configured. This will *not* enforce configuration inside the AppVMs.
@@ -455,7 +466,7 @@ def apply_dom0_state():
         return UpdateStatus.UPDATES_FAILED
 
 
-def is_qubes_mid_upgrade():
+def is_qubes_mid_upgrade() -> bool:
     """
     Detects if the system is in the middle of a dist. upgrade (e.g. 4.2 -> 4.3)
 
@@ -478,8 +489,8 @@ def is_qubes_mid_upgrade():
     return any([qubes_ver != agent_ver for agent_ver in qube_agent_versions])
 
 
-def should_launch_updater(interval):
-    status = read_dom0_update_flag_from_disk(with_timestamp=True)
+def should_launch_updater(interval: int) -> bool:
+    status = read_dom0_update_flag_from_disk()
 
     if _valid_status(status):
         if _interval_expired(interval, status):
@@ -510,14 +521,14 @@ def should_launch_updater(interval):
     return True
 
 
-def _valid_status(status):
+def _valid_status(status: dict[str, Any] | None) -> TypeGuard[dict[str, Any]]:
     """
     status should contain 2 items, the update flag and a timestamp.
     """
-    return isinstance(status, dict) and len(status) == 2
+    return status is not None and len(status) == 2
 
 
-def _interval_expired(interval, status):
+def _interval_expired(interval: int, status: dict[str, Any]) -> bool:
     """
     Check if specified update interval has expired.
     """
@@ -542,7 +553,7 @@ class UpdateStatus(Enum):
     UPDATES_IN_PROGRESS = "4"
 
     @classmethod
-    def from_qubes_updater_name(cls, name):
+    def from_qubes_updater_name(cls, name: str) -> UpdateStatus:
         """
         Maps qubes updater's terminology to SDW Updater one. Upstream code found in:
         https://github.com/QubesOS/qubes-desktop-linux-manager/blob/4afc35/qui/updater/utils.py#L199C25-L204C27

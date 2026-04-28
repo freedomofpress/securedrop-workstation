@@ -6,6 +6,8 @@ Tests for securedrop.GetSecretKeys qrexec service.
 import importlib.machinery
 import importlib.util
 import logging
+from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -14,7 +16,7 @@ MODULE_NAME = "securedrop_GetSecretKeys"
 
 
 @pytest.fixture
-def rpc_service():
+def rpc_service() -> Any:
     """Load the python RPC server module from its non-standard path"""
 
     # NOTE: loader needed since 'importlib.util.spec_from_file_location' only
@@ -22,13 +24,15 @@ def rpc_service():
     loader = importlib.machinery.SourceFileLoader(MODULE_NAME, MODULE_PATH)
 
     spec = importlib.util.spec_from_loader(MODULE_NAME, loader)
+    assert spec is not None
+    assert spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
 
 
 @pytest.fixture(autouse=True)
-def sd_gpg_env(monkeypatch):
+def sd_gpg_env(monkeypatch: pytest.MonkeyPatch) -> None:
     """
     Set calling qrexec domain as sd-gpg by default
 
@@ -37,7 +41,12 @@ def sd_gpg_env(monkeypatch):
     monkeypatch.setenv("QREXEC_REMOTE_DOMAIN", "sd-gpg")
 
 
-def test_failure_unexpected_calling_qube(rpc_service, monkeypatch, caplog, capsys):
+def test_failure_unexpected_calling_qube(
+    rpc_service: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """
     Simulate an RPC call from unexpected qube
 
@@ -56,7 +65,9 @@ def test_failure_unexpected_calling_qube(rpc_service, monkeypatch, caplog, capsy
     assert capsys.readouterr().out == ""
 
 
-def test_key_file_missing(rpc_service, tmp_path, caplog):
+def test_key_file_missing(
+    rpc_service: Any, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
     rpc_service.SECRET_KEY_PATH = tmp_path / "does-not-exist.sec"
 
     with caplog.at_level(logging.ERROR), pytest.raises(SystemExit) as exc_info:
@@ -65,7 +76,12 @@ def test_key_file_missing(rpc_service, tmp_path, caplog):
     assert any("secret key file not found" in r.message for r in caplog.records)
 
 
-def test_prints_key_contents(rpc_service, tmp_path, sd_gpg_env, capsys):
+def test_prints_key_contents(
+    rpc_service: Any,
+    tmp_path: Path,
+    sd_gpg_env: None,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     # Key exists
     key_text = (
         "-----BEGIN PGP PRIVATE KEY BLOCK-----" "fakekey" "-----END PGP PRIVATE KEY BLOCK-----"

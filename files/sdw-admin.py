@@ -38,7 +38,7 @@ from validate_config import SDWConfigValidator, ValidationError  # noqa: E402
 DEBIAN_VERSION = "bookworm"
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--apply",
@@ -78,7 +78,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def copy_config():
+def copy_config() -> None:
     """
     Copies config.json and sd-journalist.sec to /srv/salt/securedrop_salt
     """
@@ -91,7 +91,7 @@ def copy_config():
         raise SDWAdminException("Error copying configuration")
 
 
-def provision_and_configure():
+def provision_and_configure() -> None:
     """
     Applies the salt state.highstate on dom0 and all VMs
     """
@@ -126,7 +126,7 @@ def provision_and_configure():
     print("Provisioning complete. Please reboot to complete the installation.")
 
 
-def run_cmd(args):
+def run_cmd(args: list[str]) -> None:
     print(f"Running \"{' '.join(args)}\"")
     try:
         subprocess.check_call(args)
@@ -134,7 +134,7 @@ def run_cmd(args):
         raise SDWAdminException(f"Error while running {' '.join(args)}")
 
 
-def provision(step_description: str, salt_state: str):
+def provision(step_description: str, salt_state: str) -> None:
     """
     Create, change or delete qubes
     """
@@ -142,7 +142,7 @@ def provision(step_description: str, salt_state: str):
     qubesctl_call(step_description, ["--", "state.sls", salt_state])
 
 
-def provision_all():
+def provision_all() -> None:
     """
     Provision all enabled salt states
     """
@@ -151,7 +151,7 @@ def provision_all():
     )
 
 
-def configure(step_description: str, targets: list[str], restart: list[str] = []):
+def configure(step_description: str, targets: list[str], restart: list[str] = []) -> None:
     """
     Apply configuration to a list of qubes
     """
@@ -180,7 +180,7 @@ def configure(step_description: str, targets: list[str], restart: list[str] = []
         run_cmd(["qvm-start", "--"] + filtered_restart)
 
 
-def qubesctl_call(step_description: str, args: list[str]):
+def qubesctl_call(step_description: str, args: list[str]) -> None:
     qubesctl_cmd = ["sudo", "qubesctl", "--show-output"] + args
     print("\n..........................................................................")
     print(step_description)
@@ -192,7 +192,7 @@ def qubesctl_call(step_description: str, args: list[str]):
         raise SDWAdminException(f"Error in step {step_description}")
 
 
-def sync_appmenus():
+def sync_appmenus() -> None:
     """
     Sync appmenus now that all packages are installed
     TODO: this should be done by salt or debs, but we do it manually here because it's
@@ -213,7 +213,7 @@ def sync_appmenus():
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-log"])
 
 
-def validate_config(path):
+def validate_config(path: str) -> None:
     """
     Calls the validate_config script to validate the config present in the staging/prod directory
     """
@@ -237,7 +237,7 @@ def get_appvms_for_template(vm_name: str) -> list[str]:
     return [x.name for x in list(template_vm.appvms)]
 
 
-def refresh_salt():
+def refresh_salt() -> None:
     """
     Cleans the Salt cache and synchronizes Salt to ensure we are applying states
     from the currently installed version
@@ -253,7 +253,7 @@ def refresh_salt():
         raise SDWAdminException("Error while synchronizing Salt")
 
 
-def perform_uninstall():
+def perform_uninstall() -> None:
     try:
         subprocess.check_call(
             ["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-default-dispvm"]
@@ -288,7 +288,7 @@ def is_managed(qube_name: str) -> bool:
     return not getattr(Qubes().domains[qube_name], "is_preload", False)
 
 
-def extract_secret_key_fingerprints(gpg_output):
+def extract_secret_key_fingerprints(gpg_output: str) -> list[str]:
     """
     Parses gpg output to return fingerprints for all secret keys in the keyring.
     """
@@ -314,7 +314,7 @@ def extract_secret_key_fingerprints(gpg_output):
     return fingerprints
 
 
-def _try_read_submission_key():
+def _try_read_submission_key() -> str | None:
     """
     Checks if SecureDrop submission key is written to dom0. If so, returns
     submission key fingerprint
@@ -339,7 +339,7 @@ def _try_read_submission_key():
         return fingerprints[0]
 
 
-def _prompt_choose_submission_key(fingerprints):
+def _prompt_choose_submission_key(fingerprints: list[str]) -> str | None:
     print(
         "Multiple eligible secret keys found in the keyring.\n"
         "Please select which secret key to use as the SecureDrop submission key.\n\n"
@@ -360,7 +360,7 @@ def _prompt_choose_submission_key(fingerprints):
         return None
 
 
-def import_submission_key():
+def import_submission_key() -> str:
     """
     Imports SecureDrop submission key from USB drive to dom0. Assumes that the USB drive
     is successfully attached to vault VM and decrypted.
@@ -406,7 +406,7 @@ def import_submission_key():
     return fingerprint
 
 
-def import_journalist_interface_config():
+def import_journalist_interface_config() -> tuple[str, str]:
     """
     Imports Journalist Interface address and authentication info from USB drive to dom0.
     Assumes that USB drive is attached to vault VM and decrypted.
@@ -448,7 +448,7 @@ def import_journalist_interface_config():
     return addr, auth_token
 
 
-def import_config():
+def import_config() -> None:
     submission_key_fingerprint = _try_read_submission_key()
     if not submission_key_fingerprint:
         subprocess.Popen(
@@ -514,17 +514,15 @@ def import_config():
             print("Exiting.")
             return
 
-        # Configure private volume sizes
-        sd_app_gb = input(
+        # Configure private volume sizes. Validator requires int; cast user input.
+        sd_app_input = input(
             f"Enter desired size for sd-app private volume in GiB (default: {DEFAULT_SD_APP_GB}GiB)"
         )
-        if not sd_app_gb:
-            sd_app_gb = DEFAULT_SD_APP_GB
-        sd_log_gb = input(
+        sd_app_gb = int(sd_app_input) if sd_app_input else DEFAULT_SD_APP_GB
+        sd_log_input = input(
             f"Enter desired size for sd-log private volume in GiB (default: {DEFAULT_SD_LOG_GB}GiB)"
         )
-        if not sd_log_gb:
-            sd_log_gb = DEFAULT_SD_LOG_GB
+        sd_log_gb = int(sd_log_input) if sd_log_input else DEFAULT_SD_LOG_GB
 
         config = {
             "submission_key_fpr": submission_key_fingerprint,
@@ -549,7 +547,7 @@ def import_config():
     return
 
 
-def main():
+def main() -> None:
     if os.geteuid() == 0:
         print("Please do not run this script as root.")
         sys.exit(0)

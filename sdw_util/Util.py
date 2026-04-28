@@ -7,7 +7,9 @@ import logging
 import os
 import re
 import subprocess
+from collections.abc import Iterable
 from logging.handlers import TimedRotatingFileHandler
+from typing import IO
 
 # The directory where status files and logs are stored
 BASE_DIRECTORY = os.path.join(os.path.expanduser("~"), ".securedrop_updater")
@@ -33,7 +35,9 @@ SD_LOGGER_PREFIX = "sd"
 sdlog = logging.getLogger(SD_LOGGER_PREFIX + "." + __name__)
 
 
-def configure_logging(log_file, logger_namespace=SD_LOGGER_PREFIX, backup_count=0):
+def configure_logging(
+    log_file: str, logger_namespace: str = SD_LOGGER_PREFIX, backup_count: int = 0
+) -> None:
     """
     All logging related settings are set up by this function.
 
@@ -58,7 +62,7 @@ def configure_logging(log_file, logger_namespace=SD_LOGGER_PREFIX, backup_count=
     log.addHandler(handler)
 
 
-def obtain_lock(basename):
+def obtain_lock(basename: str) -> IO[str] | None:
     """
     Obtain an exclusive lock during the execution of this process.
     """
@@ -81,7 +85,7 @@ def obtain_lock(basename):
     return lh
 
 
-def can_obtain_lock(basename):
+def can_obtain_lock(basename: str) -> bool:
     """
     We temporarily obtain a shared, nonblocking lock to a lockfile to determine
     whether the associated process is currently running. Returns True if it is
@@ -106,12 +110,12 @@ def can_obtain_lock(basename):
     return True
 
 
-def is_conflicting_process_running(list):
+def is_conflicting_process_running(names: Iterable[str]) -> bool:
     """
     Check if any process of the given name is currently running. Aborts on the
     first match.
     """
-    for name in list:
+    for name in names:
         result = subprocess.run(
             args=["pgrep", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False
         )
@@ -121,7 +125,7 @@ def is_conflicting_process_running(list):
     return False
 
 
-def get_qubes_version():
+def get_qubes_version() -> str | None:
     """
     Helper function for checking the Qubes version. Returns None if not on Qubes.
     """
@@ -148,14 +152,14 @@ def get_qubes_version():
     return version
 
 
-def get_logger(prefix=SD_LOGGER_PREFIX, module=None):
+def get_logger(prefix: str = SD_LOGGER_PREFIX, module: str | None = None) -> logging.Logger:
     if module is None:
         return logging.getLogger(prefix)
 
     return logging.getLogger(prefix + "." + module)
 
 
-def cleanup_for_log(str):
+def cleanup_for_log(text: str) -> str:
     """
     Aesthetics-only formatting of log lines for text files:
         - removes ANSI formatting
@@ -163,7 +167,7 @@ def cleanup_for_log(str):
     NOTE: this should not be assumed as a security hardening measure; input
     should already be sanitized.
     """
-    return re.sub(r"\u001b\[.*?[@-~]", "", str)
+    return re.sub(r"\u001b\[.*?[@-~]", "", text)
 
 
 def is_sdapp_halted() -> bool:
