@@ -1,4 +1,5 @@
 import subprocess
+from typing import Any
 
 import dnf  # Implicit dom0 dependency
 import pytest
@@ -35,7 +36,7 @@ def _is_installed(pkg: str) -> bool:
         return False
 
 
-def test_rpm_releasever_substitution():
+def test_rpm_releasever_substitution() -> None:
     """
     Ensure DNF is understanding $releasever as we expect in the repository
     URL structure.
@@ -45,7 +46,7 @@ def test_rpm_releasever_substitution():
 
 
 @pytest.fixture(scope="session")
-def repo_config(dom0_config):
+def repo_config(dom0_config: dict[str, Any]) -> dict[str, str]:
     """
     Look up the appropriate Yum repo configuration, based on config.json.
     Depends on the `dom0_config` fixture, for lookup on the environment,
@@ -58,7 +59,7 @@ def repo_config(dom0_config):
     return REPO_CONFIG[env].copy()
 
 
-def test_rpm_repo_config(repo_config):
+def test_rpm_repo_config(repo_config: dict[str, str]) -> None:
     """
     Inspect the dom0 yum repo config for the SecureDrop Workstation RPM repository,
     and verify the settings are what we expect. Some of the attributes vary
@@ -82,7 +83,7 @@ def test_rpm_repo_config(repo_config):
     assert found_lines == wanted_lines
 
 
-def test_dom0_has_keyring_package(dom0_config):
+def test_dom0_has_keyring_package(dom0_config: dict[str, Any]) -> None:
     """
     Confirm that the "securedrop-workstation-keyring" package is installed in dom0,
     and that the variant of the package is appropriate for the configured env,

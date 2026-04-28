@@ -1,5 +1,7 @@
 import subprocess
 import sys
+from collections.abc import Callable
+from typing import Any
 
 try:
     from PyQt6.QtCore import QThread, pyqtSignal, pyqtSlot
@@ -16,7 +18,7 @@ from sdw_util import Util
 logger = Util.get_logger(module=__name__)
 
 
-def launch_securedrop_client(app: bool = False):
+def launch_securedrop_client(app: bool = False) -> None:
     """
     Helper function to launch the SecureDrop Client or Inbox ("app")
     """
@@ -38,7 +40,12 @@ def launch_securedrop_client(app: bool = False):
 
 
 class UpdaterApp(QDialog, Ui_UpdaterDialog):
-    def __init__(self, should_skip_netcheck: bool = False, launch_app: bool = False, parent=None):
+    def __init__(
+        self,
+        should_skip_netcheck: bool = False,
+        launch_app: bool = False,
+        parent: Any = None,
+    ) -> None:
         super().__init__(parent)
 
         self.progress = 0
@@ -82,7 +89,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self.progressBar.hide()
 
     @pyqtSlot(dict)
-    def upgrade_status(self, result):
+    def upgrade_status(self, result: dict[str, Any]) -> None:
         """
         This slot will receive update signals from UpgradeThread, thread which
         is used to check for TemplateVM upgrades
@@ -125,7 +132,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
                 self.proposedActionDescription.setText(strings.description_status_updates_failed)
 
     @pyqtSlot(int)
-    def update_progress_bar(self, value):
+    def update_progress_bar(self, value: int) -> None:
         """
         This slot will receive updates from UpgradeThread which will provide a
         int representing the percentage of the progressBar. This slot will
@@ -140,7 +147,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self.progress = current_progress
         self.progressBar.setProperty("value", self.progress)
 
-    def _check_network_and_update(self):
+    def _check_network_and_update(self) -> None:
         """
         Wrapper for `apply_all_updates` that ensures network connectivity
         before updating, else stops the update and shows a connectivity error
@@ -161,7 +168,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
             logger.error("Network connectivity check failed; cannot check for updates.")
             self._show_network_error()
 
-    def _show_network_error(self):
+    def _show_network_error(self) -> None:
         """
         Show the network error dialog state.
         """
@@ -170,7 +177,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self.cancelButton.setEnabled(True)
         self.applyUpdatesButton.hide()
 
-    def apply_all_updates(self):
+    def apply_all_updates(self) -> None:
         """
         Method used by the applyUpdatesButton that will create and start an
         UpgradeThread to apply updates to TemplateVMs
@@ -189,7 +196,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self.upgrade_thread.upgrade_signal.connect(self.upgrade_status)
         self.upgrade_thread.progress_signal.connect(self.update_progress_bar)
 
-    def reboot_workstation(self):
+    def reboot_workstation(self) -> None:
         """
         Helper method to reboot the Workstation
         """
@@ -199,12 +206,12 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
             self.headline.setText(strings.headline_status_rebooting)
             self.proposedActionDescription.setText(strings.description_status_rebooting)
         except subprocess.CalledProcessError as e:
-            self.headline.setText(strings.headline_error_reboot)
+            self.headline.setText(strings.headline_status_error_reboot)
             self.proposedActionDescription.setText(strings.description_error_reboot)
             logger.error("Error while rebooting the workstation")
             logger.error(str(e))
 
-    def exit_updater(self):
+    def exit_updater(self) -> None:
         """
         Exits the updater if the user clicks cancel
         """
@@ -246,10 +253,10 @@ class UpgradeThread(QThread):
     upgrade_signal = pyqtSignal("PyQt_PyObject")
     progress_signal = pyqtSignal("int")
 
-    def __init__(self):
+    def __init__(self) -> None:
         QThread.__init__(self)
 
-    def run(self):
+    def run(self) -> None:
         results = self.run_full_update()
 
         # write flags to disk
@@ -264,7 +271,7 @@ class UpgradeThread(QThread):
         message["recommended_action"] = run_results
         self.upgrade_signal.emit(message)
 
-    def run_full_update(self):
+    def run_full_update(self) -> dict[str, Any]:
         # Pre-populate results with all available steps for early exits
         results = {
             "dom0": UpdateStatus.UPDATES_REQUIRED,
@@ -316,8 +323,10 @@ class UpgradeThread(QThread):
 
         return results
 
-    def templates_progress_callback_factory(self, progress_start, progress_end):
-        def bump_progress(templates_total_progress):
+    def templates_progress_callback_factory(
+        self, progress_start: int, progress_end: int
+    ) -> Callable[[int], None]:
+        def bump_progress(templates_total_progress: int) -> None:
             """
             Figure out how much the progress bar should be bumped
             """
@@ -326,6 +335,6 @@ class UpgradeThread(QThread):
                 progress_start + template_prog_percentage * templates_total_progress
             )
 
-            return self.progress_signal.emit(total_progress)
+            self.progress_signal.emit(total_progress)
 
         return bump_progress

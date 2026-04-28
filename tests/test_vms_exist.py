@@ -1,4 +1,6 @@
 import pytest
+from qubesadmin.app import VMCollection
+from qubesadmin.vm import QubesVM
 
 from tests.base import (
     SD_DVM_TEMPLATES,
@@ -13,7 +15,7 @@ from tests.conftest import skip_on_qubes_4_2
 
 
 @pytest.mark.provisioning
-def test_all_sdw_vms_present(all_vms, sdw_tagged_vms):
+def test_all_sdw_vms_present(all_vms: VMCollection, sdw_tagged_vms: list[QubesVM]) -> None:
     """
     Confirm that all SDW-managed VMs are present on the system.
     Seeks to detect errors in provisioning that result in VMs
@@ -36,7 +38,7 @@ def test_all_sdw_vms_present(all_vms, sdw_tagged_vms):
 
 @skip_on_qubes_4_2
 @pytest.mark.provisioning
-def test_expected_persistence(sdw_tagged_vms):
+def test_expected_persistence(sdw_tagged_vms: list[QubesVM]) -> None:
     """Make sure SD qubes are either disposable or have custom-persist enabled"""
     for qube in sdw_tagged_vms:
         if qube.klass == "DispVM":
@@ -64,18 +66,19 @@ def test_expected_persistence(sdw_tagged_vms):
 
 
 @pytest.mark.provisioning
-def test_default_dispvm(all_vms, sdw_tagged_vms):
+def test_default_dispvm(all_vms: VMCollection, sdw_tagged_vms: list[QubesVM]) -> None:
     """Verify the default DispVM is none for all except sd-app and sd-devices"""
     for vm_name in sdw_tagged_vms:
         vm = all_vms[vm_name]
         if vm_name == "sd-app":
+            assert vm.default_dispvm is not None
             assert vm.default_dispvm.name == "sd-viewer"
         else:
             assert vm.default_dispvm is None, f"{vm_name} has dispVM set"
 
 
 @pytest.mark.provisioning
-def test_sd_whonix_absent(all_vms):
+def test_sd_whonix_absent(all_vms: VMCollection) -> None:
     """
     The sd-whonix once existed to proxy sd-proxy's traffic through Tor.
     But we've since removed it and included a Tor proxy in sd-proxy.
@@ -94,7 +97,7 @@ WHONIX_QUBES = [
 
 @pytest.mark.provisioning
 @pytest.mark.parametrize("whonix_vm_name", WHONIX_QUBES)
-def test_whonix_vms_reset(whonix_vm_name, all_vms):
+def test_whonix_vms_reset(whonix_vm_name: str, all_vms: VMCollection) -> None:
     """
     Whonix templates used to be modified by the workstation (<=1.4.0).
     Ensure they were properly reset.
@@ -108,7 +111,7 @@ def test_whonix_vms_reset(whonix_vm_name, all_vms):
 
 
 @pytest.mark.provisioning
-def test_sd_small_template(all_vms):
+def test_sd_small_template(all_vms: VMCollection) -> None:
     """
     Confirm that the "small" version of the SDW TemplateVM is configured correctly.
     """
@@ -118,7 +121,7 @@ def test_sd_small_template(all_vms):
 
 
 @pytest.mark.provisioning
-def test_sd_large_template(all_vms):
+def test_sd_large_template(all_vms: VMCollection) -> None:
     """
     Confirm that the "large" version of the SDW TemplateVM is configured correctly.
     """

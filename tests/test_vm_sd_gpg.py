@@ -6,8 +6,10 @@ specifically for the "sd-gpg" VM and related functionality.
 import re
 import subprocess
 import tempfile
+from typing import Any
 
 import pytest
+from qubesadmin.app import VMCollection
 
 from tests.base import (
     SD_TAG,
@@ -20,17 +22,17 @@ from tests.base import (
 
 
 @pytest.fixture(scope="module")
-def qube():
+def qube() -> QubeWrapper:
     return QubeWrapper("sd-gpg")
 
 
-def _extract_fingerprints(gpg_output):
+def _extract_fingerprints(gpg_output: str) -> list[str]:
     """Helper method to extract fingerprints from GPG command output"""
     return re.findall(r"[A-F0-9]{40}", gpg_output)
 
 
 @pytest.fixture
-def config_fingerprint(dom0_config):
+def config_fingerprint(dom0_config: dict[str, Any]) -> str:
     """
     Obtain the fingerprint explicitly configured in dom0 and injected into VMs.
     """
@@ -38,7 +40,7 @@ def config_fingerprint(dom0_config):
 
 
 @pytest.fixture
-def dom0_fingerprint():
+def dom0_fingerprint() -> list[str]:
     """
     Obtain the fingerprint of the key actually present in dom0.
     """
@@ -55,7 +57,7 @@ def dom0_fingerprint():
 
 
 @pytest.fixture
-def vm_fingerprint(qube):
+def vm_fingerprint(qube: QubeWrapper) -> list[str]:
     """
     Obtain fingerprints for all keys actually present in GPG VM
     """
@@ -64,11 +66,11 @@ def vm_fingerprint(qube):
 
 
 @pytest.mark.configuration
-def test_sd_gpg_timeout(qube):
+def test_sd_gpg_timeout(qube: QubeWrapper) -> None:
     assert "QUBES_GPG_AUTOACCEPT=2147483647" in qube.run("env")
 
 
-def test_sd_gpg_timeout_not_in_home_profile(qube):
+def test_sd_gpg_timeout_not_in_home_profile(qube: QubeWrapper) -> None:
     """This is mostly a test against lingering state"""
     if qube.vm.klass == "DispVM":
         pytest.fail("Test may no longer be needed")
@@ -76,7 +78,9 @@ def test_sd_gpg_timeout_not_in_home_profile(qube):
 
 
 @pytest.mark.configuration
-def test_local_key_in_remote_keyring(config_fingerprint, dom0_fingerprint, vm_fingerprint):
+def test_local_key_in_remote_keyring(
+    config_fingerprint: str, dom0_fingerprint: list[str], vm_fingerprint: list[str]
+) -> None:
     """
     Verify the key present in dom0 and sd-gpg matches what's configured in config.json
 
@@ -87,7 +91,7 @@ def test_local_key_in_remote_keyring(config_fingerprint, dom0_fingerprint, vm_fi
 
 
 @pytest.mark.configuration
-def test_local_key_in_remote_keyring_clean(qube, config_fingerprint):
+def test_local_key_in_remote_keyring_clean(qube: QubeWrapper, config_fingerprint: str) -> None:
     """
     Confirm key presence in sd-gpg, but simulate clean environment.
 
@@ -109,19 +113,19 @@ def test_local_key_in_remote_keyring_clean(qube, config_fingerprint):
 
 
 @pytest.mark.configuration
-def test_logging_disabled(qube):
+def test_logging_disabled(qube: QubeWrapper) -> None:
     # Logging to sd-log should be disabled on sd-gpg
     assert not qube.fileExists("/etc/rsyslog.d/sdlog.conf")
     assert qube.fileExists("/var/run/qubes-service/securedrop-logging-disabled")
 
 
 @pytest.mark.configuration
-def test_sd_proxy_services(qube):
+def test_sd_proxy_services(qube: QubeWrapper) -> None:
     assert qube.service_is_active("securedrop-get-secret-keys")
 
 
 @pytest.mark.provisioning
-def test_sd_gpg_config(all_vms):
+def test_sd_gpg_config(all_vms: VMCollection) -> None:
     """
     Confirm that qvm-prefs match expectations for the sd-gpg VM.
     """
