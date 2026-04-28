@@ -1,27 +1,17 @@
 # changelog
 
-## 1.6.0rc3
-
-* Add full salt migration to 1.6.0 (#1619)
-* Fix sdw-notify Qt5 compat; always launch Inbox (#1622)
-
-## 1.6.0rc2
+## 1.6.0
 
 This release switches to using the [new SecureDrop Inbox](https://securedrop.org/news/securedrop-inbox-is-coming/)
 by default, which is a rewrite of the SecureDrop Client using a new framework
 (Electron), a more efficient sync system, plus many UX improvements and
 [new features](https://securedrop.org/news/new-features-in-securedrop-inbox/).
 
-* Always provision the Inbox
-* Use "SecureDrop Inbox" name in user-facing strings
-
-## 1.6.0rc1
-
+* Install and default to SecureDrop Inbox (#1534, #1619, #1622)
 * Suppress GPG prompt (#1466)
-* Enable SecureDrop App if `app: true` set in config.json (#1534)
 * Qubes 4.3 support:
   * Start building Qubes 4.3 (Fedora 41) nightlies (#1485, #1489)
-  * PyQt6 compatibility (#1495)
+  * PyQt6 compatibility (#1495, #1622)
 * Internal and development:
   * Add switch-apt-source script to flip between APT repos (#1449)
   * Add missing `qubes-dom0-update --clean` calls in dev setup (#1468)
