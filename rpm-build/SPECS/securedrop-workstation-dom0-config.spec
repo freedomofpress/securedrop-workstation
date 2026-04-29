@@ -193,7 +193,7 @@ qubesctl top.enable securedrop_salt.sd-workstation > /dev/null ||:
 
 # Force full run of all Salt states - uncomment in release branch
 # mkdir -p /tmp/sdw-migrations
-# touch /tmp/sdw-migrations/fedora-selinux-fix
+# touch /tmp/sdw-migrations/fedora-43-bump
 
 # Enable service that conditionally removes our systemd-logind customizations
 # on dev machines only.
