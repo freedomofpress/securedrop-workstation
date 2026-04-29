@@ -62,6 +62,7 @@ jobs:
     needs: [check]
     if: ${{ needs.check.outputs.qubes-versions != '' }}
     strategy:
+      fail-fast: false
       matrix:
         qubes_version: ${{ fromJSON(needs.check.outputs.qubes-versions) }}
     uses: ./.github/workflows/openqa.yml
