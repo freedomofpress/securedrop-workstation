@@ -1,8 +1,9 @@
 import subprocess
-from typing import Any
 
 import dnf  # Implicit dom0 dependency
 import pytest
+
+from sdw_util.config_types import Dom0Config
 
 REPO_CONFIG = {
     "prod": {
@@ -46,7 +47,7 @@ def test_rpm_releasever_substitution() -> None:
 
 
 @pytest.fixture(scope="session")
-def repo_config(dom0_config: dict[str, Any]) -> dict[str, str]:
+def repo_config(dom0_config: Dom0Config) -> dict[str, str]:
     """
     Look up the appropriate Yum repo configuration, based on config.json.
     Depends on the `dom0_config` fixture, for lookup on the environment,
@@ -83,7 +84,7 @@ def test_rpm_repo_config(repo_config: dict[str, str]) -> None:
     assert found_lines == wanted_lines
 
 
-def test_dom0_has_keyring_package(dom0_config: dict[str, Any]) -> None:
+def test_dom0_has_keyring_package(dom0_config: Dom0Config) -> None:
     """
     Confirm that the "securedrop-workstation-keyring" package is installed in dom0,
     and that the variant of the package is appropriate for the configured env,

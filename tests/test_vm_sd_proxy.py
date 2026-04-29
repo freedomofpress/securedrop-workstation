@@ -3,11 +3,10 @@ Integration tests for validating SecureDrop Workstation config,
 specifically for the "sd-proxy" VM and related functionality.
 """
 
-from typing import Any
-
 import pytest
 from qubesadmin.app import VMCollection
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     SD_TAG,
     SD_TEMPLATE_SMALL,
@@ -43,7 +42,7 @@ def test_sd_proxy_package_installed(qube: QubeWrapper) -> None:
 
 
 @pytest.mark.configuration
-def test_tor_hidserv_auth_url(qube: QubeWrapper, dom0_config: dict[str, Any]) -> None:
+def test_tor_hidserv_auth_url(qube: QubeWrapper, dom0_config: Dom0Config) -> None:
     assert f"http://{dom0_config['hidserv']['hostname']}" == qube.vm_config_read("SD_PROXY_ORIGIN")
 
 
@@ -104,7 +103,7 @@ def test_sd_proxy_dvm_services(qube: QubeWrapper, all_vms: VMCollection) -> None
     assert not dvm_qube.service_is_active("securedrop-mime-handling")
 
 
-def test_sd_proxy_dvm_config(all_vms: VMCollection, dom0_config: dict[str, Any]) -> None:
+def test_sd_proxy_dvm_config(all_vms: VMCollection, dom0_config: Dom0Config) -> None:
     """
     Confirm that qvm-prefs for the "sd-proxy" DispVM match expectations.
     """

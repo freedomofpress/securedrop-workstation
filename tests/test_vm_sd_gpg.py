@@ -6,11 +6,11 @@ specifically for the "sd-gpg" VM and related functionality.
 import re
 import subprocess
 import tempfile
-from typing import Any
 
 import pytest
 from qubesadmin.app import VMCollection
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     SD_TAG,
     SD_TEMPLATE_SMALL,
@@ -32,7 +32,7 @@ def _extract_fingerprints(gpg_output: str) -> list[str]:
 
 
 @pytest.fixture
-def config_fingerprint(dom0_config: dict[str, Any]) -> str:
+def config_fingerprint(dom0_config: Dom0Config) -> str:
     """
     Obtain the fingerprint explicitly configured in dom0 and injected into VMs.
     """
