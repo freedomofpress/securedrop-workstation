@@ -4,7 +4,7 @@ import warnings
 from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import cast
 
 import dnf
 import pytest
@@ -13,6 +13,7 @@ from qubesadmin import Qubes
 from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     SD_TEMPLATE_BASE,
@@ -60,7 +61,7 @@ def mock_block_device(all_vms: VMCollection, worker_id: str, testrun_uid: str) -
 
 
 @pytest.fixture(scope="session")
-def dom0_config() -> dict[str, Any]:
+def dom0_config() -> Dom0Config:
     """Make the dom0 "config.json" available to tests."""
     with open(os.path.join(PROJ_ROOT, "config.json")) as c:
         config = json.load(c)
@@ -70,7 +71,8 @@ def dom0_config() -> dict[str, Any]:
         if "environment" not in config:
             warnings.warn("no 'environment' detected in config.json, assuming prod", stacklevel=2)
             config["environment"] = "prod"
-    return config
+    # Trust validate_config.py to have rejected malformed configs upstream of test runs.
+    return cast(Dom0Config, config)
 
 
 @pytest.fixture(scope="session")

@@ -6,12 +6,12 @@ specifically for the "sd-log" VM and related functionality.
 import secrets
 import string
 import subprocess
-from typing import Any
 
 import pytest
 from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     DEBIAN_VERSION,
     SD_TAG,
@@ -111,9 +111,7 @@ def test_sd_log_service(qube: QubeWrapper) -> None:
 
 
 @pytest.mark.provisioning
-def test_sd_log_config(
-    qube: QubeWrapper, dom0_config: dict[str, Any], all_vms: VMCollection
-) -> None:
+def test_sd_log_config(qube: QubeWrapper, dom0_config: Dom0Config, all_vms: VMCollection) -> None:
     """
     Confirm that qvm-prefs match expectations for the sd-log VM.
     """
