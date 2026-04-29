@@ -3,7 +3,10 @@ import subprocess
 from datetime import datetime, timedelta
 
 import pytest
+from qubesadmin.app import VMCollection
+from qubesadmin.vm import QubesVM
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     DEBIAN_VERSION,
@@ -15,7 +18,7 @@ from tests.base import (
 IS_CI = os.environ.get("CI") == "true"
 
 
-def _check_packages_up_to_date(vm, fedora=False) -> bool:
+def _check_packages_up_to_date(vm: QubesVM, fedora: bool = False) -> bool:
     """
     Checks that all available package updates are installed;
     no upgrades pending. Assumes VM is Debian-based, so uses apt,
@@ -65,7 +68,7 @@ def _check_packages_up_to_date(vm, fedora=False) -> bool:
 @pytest.mark.packages
 @pytest.mark.parametrize("vm_name", SD_VMS)
 @pytest.mark.skipif(IS_CI, reason="Skipping on CI")
-def test_all_sd_vms_uptodate(vm_name, all_vms):
+def test_all_sd_vms_uptodate(vm_name: str, all_vms: VMCollection) -> None:
     """
     Asserts that all VMs have all available apt packages at the latest
     versions, with no updates pending.
@@ -85,7 +88,7 @@ def test_all_sd_vms_uptodate(vm_name, all_vms):
 @pytest.mark.skipif(IS_CI, reason="Skipping on CI")
 @pytest.mark.packages
 @pytest.mark.configuration
-def test_all_fedora_vms_uptodate(all_vms):
+def test_all_fedora_vms_uptodate(all_vms: VMCollection) -> None:
     """
     Asserts that all Fedora-based templates, such as sys-net, have all
     available packages at the latest versions, with no updates pending.
@@ -109,7 +112,7 @@ def test_all_fedora_vms_uptodate(all_vms):
         SD_TEMPLATE_SMALL,
     ],
 )
-def test_os_eol(vm_name, all_vms):
+def test_os_eol(vm_name: str, all_vms: VMCollection) -> None:
     """
     Ensures the VM's OS is not approaching end-of-life.
     The os-eol qvm feature should contain a date in YYYY-MM-DD format.
@@ -138,7 +141,7 @@ def test_os_eol(vm_name, all_vms):
 
 
 @pytest.mark.provisioning
-def test_dispvm_default_platform():
+def test_dispvm_default_platform() -> None:
     """
     Query dom0 Qubes preferences and confirm that new DispVMs
     will be created under a supported OS. Requires a separate
@@ -151,7 +154,7 @@ def test_dispvm_default_platform():
 
 @pytest.mark.configuration
 @pytest.mark.packages
-def test_sd_vm_apt_sources(dom0_config, all_vms):
+def test_sd_vm_apt_sources(dom0_config: Dom0Config, all_vms: VMCollection) -> None:
     """
     Test that the three templates we install our apt sources into are correct
     """
@@ -192,7 +195,7 @@ def test_sd_vm_apt_sources(dom0_config, all_vms):
 
 @pytest.mark.configuration
 @pytest.mark.packages
-def assert_apt_source(vm, component, url, filename):
+def assert_apt_source(vm: QubesVM, component: str, url: str, filename: str) -> None:
     stdout, stderr = vm.run(f"cat {filename}")
     contents = stdout.decode("utf-8").rstrip("\n")
 

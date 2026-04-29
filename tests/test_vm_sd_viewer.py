@@ -4,10 +4,13 @@ specifically for the "sd-viewer" VM and related functionality.
 """
 
 import subprocess
+from collections.abc import Iterator
 
 import pytest
 from qubesadmin import Qubes
+from qubesadmin.app import VMCollection
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     SD_TAG,
     SD_TEMPLATE_LARGE,
@@ -24,7 +27,7 @@ EXPECTED_N_PRELOADED_VMS = [
 ]
 
 
-def _create_test_qube(dispvm_template_name):
+def _create_test_qube(dispvm_template_name: str) -> str:
     """
     Provision and boot a DispVM to target with integration tests.
     We don't want to test `sd-viewer`, because that's an AppVM;
@@ -46,7 +49,7 @@ def _create_test_qube(dispvm_template_name):
     return qube_name
 
 
-def _shutdown_test_qube(qube_name):
+def _shutdown_test_qube(qube_name: str) -> None:
     """
     Gracefully power off the DispVM created for testing.
     """
@@ -54,7 +57,7 @@ def _shutdown_test_qube(qube_name):
 
 
 @pytest.fixture(scope="module")
-def qube():
+def qube() -> Iterator[QubeWrapper]:
     """
     Handles the creation of disposable qubes based on the provided DVM template.
     Written as a fixture, so that the test suite handles both creation during
@@ -87,33 +90,33 @@ def qube():
 
 @pytest.mark.packages
 @pytest.mark.configuration
-def test_sd_viewer_metapackage_installed(qube):
+def test_sd_viewer_metapackage_installed(qube: QubeWrapper) -> None:
     assert qube.package_is_installed("securedrop-workstation-viewer")
     assert not qube.package_is_installed("securedrop-workstation-svs-disp")
 
 
 @pytest.mark.configuration
 @pytest.mark.packages
-def test_sd_viewer_evince_installed(qube):
+def test_sd_viewer_evince_installed(qube: QubeWrapper) -> None:
     pkg = "evince"
     assert qube.package_is_installed(pkg)
 
 
 @pytest.mark.configuration
 @pytest.mark.packages
-def test_sd_viewer_libreoffice_installed(qube):
+def test_sd_viewer_libreoffice_installed(qube: QubeWrapper) -> None:
     assert qube.package_is_installed("libreoffice")
 
 
 @pytest.mark.configuration
 @pytest.mark.packages
-def test_logging_configured(qube):
+def test_logging_configured(qube: QubeWrapper) -> None:
     qube.logging_configured()
 
 
 @pytest.mark.configuration
 @pytest.mark.packages
-def test_redis_packages_not_installed(qube):
+def test_redis_packages_not_installed(qube: QubeWrapper) -> None:
     """
     Only the log collector, i.e. sd-log, needs redis, so redis will be
     present in small template, but not in large.
@@ -123,24 +126,24 @@ def test_redis_packages_not_installed(qube):
 
 
 @pytest.mark.configuration
-def test_mimetypes_service(qube):
+def test_mimetypes_service(qube: QubeWrapper) -> None:
     qube.service_is_active("securedrop-mime-handling")
 
 
 @pytest.mark.configuration
-def test_mailcap_hardened(qube):
+def test_mailcap_hardened(qube: QubeWrapper) -> None:
     qube.mailcap_hardened()
 
 
 @pytest.mark.configuration
-def test_mimetypes_symlink(qube):
+def test_mimetypes_symlink(qube: QubeWrapper) -> None:
     assert qube.fileExists(".local/share/applications/mimeapps.list")
     symlink_location = qube.get_symlink_location(".local/share/applications/mimeapps.list")
     assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
 
 
 @pytest.mark.provisioning
-def test_sd_viewer_config(all_vms, dom0_config):
+def test_sd_viewer_config(all_vms: VMCollection, dom0_config: Dom0Config) -> None:
     """
     Confirm that qvm-prefs match expectations for the "sd-viewer" VM.
     """
@@ -163,7 +166,7 @@ def test_sd_viewer_config(all_vms, dom0_config):
 
 @skip_on_qubes_4_2
 @pytest.mark.provisioning
-def test_preloading_assumptions(all_vms):
+def test_preloading_assumptions(all_vms: VMCollection) -> None:
     # sd-viewer as default_dispvm is makes it preload implicitly
     assert Qubes().default_dispvm.name == "sd-viewer"
 
@@ -174,7 +177,7 @@ def test_preloading_assumptions(all_vms):
 
 @skip_on_qubes_4_2
 @pytest.mark.provisioning
-def test_preloading_enabled(all_vms, qube):
+def test_preloading_enabled(all_vms: VMCollection, qube: QubeWrapper) -> None:
     """
     Ensures sd-viewer qubes are being preloaded to make document viewing faster
     """

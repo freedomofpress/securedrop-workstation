@@ -20,7 +20,7 @@ Util.configure_logging(Notify.LOG_FILE)
 log = Util.get_logger(Notify.LOG_FILE)
 
 
-def main():
+def main() -> None:
     """
     Show security warning, if and only if a warning is not already displayed,
     the preflight updater is running, and certain checks suggest that the
@@ -49,7 +49,7 @@ def main():
         show_update_warning()
 
 
-def show_update_warning():
+def show_update_warning() -> None:
     """
     Show a graphical warning reminding the user to check for security updates
     using the Preflight Updater.
@@ -86,7 +86,7 @@ def show_update_warning():
             "Unexpected result from NotifyDialog. sdw-notify will run "
             "again at the next scheduled interval."
         )
-        sys.exit(result)
+        sys.exit(int(result.value))
 
 
 if __name__ == "__main__":

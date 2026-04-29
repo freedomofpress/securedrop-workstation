@@ -41,15 +41,17 @@ class NotifyDialog(QMessageBox):
         self._is_sdapp_stopped = is_sdapp_stopped
         self._ui()
 
-    def _ui(self):
+    def _ui(self) -> None:
         self.setWindowTitle(strings.headline_notify_updates)
         self.setIcon(QMessageBox.Icon.Warning)
         self.setStandardButtons(QMessageBox.StandardButton.No | QMessageBox.StandardButton.Ok)
         self.setDefaultButton(QMessageBox.StandardButton.Ok)
         self.setEscapeButton(QMessageBox.StandardButton.No)
         button_check_now = self.button(QMessageBox.StandardButton.Ok)
+        assert button_check_now is not None  # noqa: S101
         button_check_now.setText(strings.button_check_for_updates)
         button_defer = self.button(QMessageBox.StandardButton.No)
+        assert button_defer is not None  # noqa: S101
         button_defer.setText(strings.button_defer_check)
 
         if self._is_sdapp_stopped:

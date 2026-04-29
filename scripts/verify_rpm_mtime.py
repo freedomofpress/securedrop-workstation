@@ -5,7 +5,7 @@ from pathlib import Path
 import rpm
 
 
-def check_rpm(filename: Path):
+def check_rpm(filename: Path) -> tuple[datetime, list[tuple[str, datetime]]]:
     """verify every file in the RPM has the same mtime as changelog/build date"""
     with filename.open("rb") as f:
         ts = rpm.TransactionSet()
@@ -31,7 +31,7 @@ def check_rpm(filename: Path):
     return changelog_date, result
 
 
-def main():
+def main() -> None:
     exit_code = 0
     for filename in Path("rpm-build/RPMS/noarch").glob("*.rpm"):
         changelog_date, result = check_rpm(filename)

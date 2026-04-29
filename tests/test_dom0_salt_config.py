@@ -3,7 +3,7 @@ import subprocess
 import pytest
 
 
-def test_is_topfile_enabled():
+def test_is_topfile_enabled() -> None:
     cmd = ["sudo", "qubesctl", "top.enabled"]
     wanted = "securedrop_salt.sd-workstation.top"
 

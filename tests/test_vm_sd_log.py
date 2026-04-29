@@ -8,7 +8,10 @@ import string
 import subprocess
 
 import pytest
+from qubesadmin.app import VMCollection
+from qubesadmin.vm import QubesVM
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     DEBIAN_VERSION,
     SD_TAG,
@@ -21,44 +24,44 @@ from tests.base import (
 
 
 @pytest.fixture(scope="module")
-def qube():
+def qube() -> QubeWrapper:
     return QubeWrapper("sd-log")
 
 
 @pytest.mark.configuration
-def test_sd_log_package_installed(qube):
+def test_sd_log_package_installed(qube: QubeWrapper) -> None:
     assert qube.package_is_installed("securedrop-log")
 
 
 @pytest.mark.configuration
-def test_sd_log_redis_is_installed(qube):
+def test_sd_log_redis_is_installed(qube: QubeWrapper) -> None:
     assert qube.package_is_installed("redis")
     assert qube.package_is_installed("redis-server")
 
 
 @pytest.mark.configuration
-def test_log_utility_installed(qube):
+def test_log_utility_installed(qube: QubeWrapper) -> None:
     assert qube.fileExists("/usr/sbin/securedrop-log-saver")
     assert qube.fileExists("/etc/qubes-rpc/securedrop.Log")
 
 
 @pytest.mark.configuration
-def test_sd_log_has_no_custom_rsyslog(qube):
+def test_sd_log_has_no_custom_rsyslog(qube: QubeWrapper) -> None:
     assert not qube.fileExists("/etc/rsyslog.d/sdlog.conf")
 
 
 @pytest.mark.configuration
-def test_sd_log_service_running(qube):
+def test_sd_log_service_running(qube: QubeWrapper) -> None:
     assert qube.service_is_active("securedrop-log-server")
 
 
 @pytest.mark.configuration
-def test_redis_service_running(qube):
+def test_redis_service_running(qube: QubeWrapper) -> None:
     assert qube.service_is_active("redis")
 
 
 @pytest.mark.configuration
-def test_logs_are_flowing(qube, sdw_tagged_vms):
+def test_logs_are_flowing(qube: QubeWrapper, sdw_tagged_vms: list[QubesVM]) -> None:
     """
     To test that logs work, we run a unique command in each VM we care
     about that gets logged, and then check for that string in the logs.
@@ -95,7 +98,7 @@ def test_logs_are_flowing(qube, sdw_tagged_vms):
 
 
 @pytest.mark.configuration
-def test_log_dirs_properly_named(qube):
+def test_log_dirs_properly_named(qube: QubeWrapper) -> None:
     cmd_output = qube.run("ls -1 /home/user/QubesIncomingLogs")
     log_dirs = cmd_output.split("\n")
     # Confirm we don't have 'host' entries from Whonix VMs
@@ -103,12 +106,12 @@ def test_log_dirs_properly_named(qube):
 
 
 @pytest.mark.configuration
-def test_sd_log_service(qube):
+def test_sd_log_service(qube: QubeWrapper) -> None:
     assert qube.service_is_active("securedrop-log-server")
 
 
 @pytest.mark.provisioning
-def test_sd_log_config(qube, dom0_config, all_vms):
+def test_sd_log_config(qube: QubeWrapper, dom0_config: Dom0Config, all_vms: VMCollection) -> None:
     """
     Confirm that qvm-prefs match expectations for the sd-log VM.
     """
