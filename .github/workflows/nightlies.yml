@@ -71,7 +71,7 @@ jobs:
           lfs: true
           persist-credentials: false
 
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ vars.FPF_BRANCH_UPDATER_APP_ID }}
