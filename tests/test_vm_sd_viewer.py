@@ -5,12 +5,12 @@ specifically for the "sd-viewer" VM and related functionality.
 
 import subprocess
 from collections.abc import Iterator
-from typing import Any
 
 import pytest
 from qubesadmin import Qubes
 from qubesadmin.app import VMCollection
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     SD_TAG,
     SD_TEMPLATE_LARGE,
@@ -143,7 +143,7 @@ def test_mimetypes_symlink(qube: QubeWrapper) -> None:
 
 
 @pytest.mark.provisioning
-def test_sd_viewer_config(all_vms: VMCollection, dom0_config: dict[str, Any]) -> None:
+def test_sd_viewer_config(all_vms: VMCollection, dom0_config: Dom0Config) -> None:
     """
     Confirm that qvm-prefs match expectations for the "sd-viewer" VM.
     """

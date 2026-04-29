@@ -3,11 +3,10 @@ Integration tests for validating SecureDrop Workstation config,
 specifically for the "sd-app" VM and related functionality.
 """
 
-from typing import Any
-
 import pytest
 from qubesadmin.app import VMCollection
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     SD_TAG,
     SD_TEMPLATE_SMALL,
@@ -62,7 +61,7 @@ def test_sd_client_dependencies_installed(qube: QubeWrapper) -> None:
 
 
 @pytest.mark.provisioning
-def test_sd_client_config(dom0_config: dict[str, Any], qube: QubeWrapper) -> None:
+def test_sd_client_config(dom0_config: Dom0Config, qube: QubeWrapper) -> None:
     assert dom0_config["submission_key_fpr"] == qube.vm_config_read("SD_SUBMISSION_KEY_FPR")
 
 
@@ -71,9 +70,7 @@ def test_logging_configured(qube: QubeWrapper) -> None:
     qube.logging_configured()
 
 
-def test_sd_app_config(
-    dom0_config: dict[str, Any], qube: QubeWrapper, all_vms: VMCollection
-) -> None:
+def test_sd_app_config(dom0_config: Dom0Config, qube: QubeWrapper, all_vms: VMCollection) -> None:
     vm = all_vms["sd-app"]
     nvm = vm.netvm
     assert nvm is None

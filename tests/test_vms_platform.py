@@ -1,12 +1,12 @@
 import os
 import subprocess
 from datetime import datetime, timedelta
-from typing import Any
 
 import pytest
 from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     DEBIAN_VERSION,
@@ -154,7 +154,7 @@ def test_dispvm_default_platform() -> None:
 
 @pytest.mark.configuration
 @pytest.mark.packages
-def test_sd_vm_apt_sources(dom0_config: dict[str, Any], all_vms: VMCollection) -> None:
+def test_sd_vm_apt_sources(dom0_config: Dom0Config, all_vms: VMCollection) -> None:
     """
     Test that the three templates we install our apt sources into are correct
     """
