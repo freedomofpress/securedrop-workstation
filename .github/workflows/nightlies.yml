@@ -60,7 +60,7 @@ jobs:
         run: |
           apt-get update && apt-get install --yes git git-lfs
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: "*"
 
