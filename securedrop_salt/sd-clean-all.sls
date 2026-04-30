@@ -73,16 +73,14 @@ sd-cleanup-sys-firewall:
 
 # Reset desktop icon size to its original value
 dom0-reset-icon-size-xfce:
-  cmd.script:
-    - name: /usr/bin/securedrop/update-xfce-settings
-    - args: reset-icon-size
+  cmd.run:
+    - name: /usr/bin/securedrop/update-xfce-settings reset-icon-size
     - runas: {{ gui_user }}
 
 # Reset power management options to their original values
 {% if d.environment == "prod" or d.environment == "staging" %}
 dom0-reset-power-management-xfce:
-  cmd.script:
-    - name: /usr/bin/securedrop/update-xfce-settings
-    - args: reset-power-management
+  cmd.run:
+    - name: /usr/bin/securedrop/update-xfce-settings reset-power-management
     - runas: {{ gui_user }}
 {% endif %}
