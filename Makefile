@@ -236,7 +236,7 @@ venv: ## Provision a Python 3 virtualenv for development (ensure to also install
 check: lint test ## Runs linters and tests
 
 .PHONY: lint
-lint: check-ruff mypy rpmlint shellcheck zizmor ## Runs all linters
+lint: check-ruff mypy rpmlint shellcheck zizmor semgrep ## Runs all linters
 
 
 ifneq ($(HOST),dom0)  # Not necessary in dom0
@@ -271,6 +271,17 @@ shellcheck: ## Runs shellcheck on all shell scripts
 .PHONY: zizmor
 zizmor: ## Lint GitHub Actions workflows
 	poetry run zizmor .
+
+.PHONY: semgrep
+semgrep: ## Run Semgrep custom rules
+	@poetry run semgrep scan --metrics=off \
+		--error \
+		--strict \
+		--verbose \
+		--config .semgrep/ \
+		--exclude "launcher/tests/" \
+		--exclude "tests/" \
+		.
 
 # Explanation of the below shell command should it ever break.
 # 1. Set the field separator to ": ##" to parse lines for make targets.
