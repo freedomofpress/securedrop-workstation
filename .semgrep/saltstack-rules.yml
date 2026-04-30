@@ -1,0 +1,16 @@
+rules:
+  - id: saltstack-cmd-script-args-qubes-4-3
+    patterns:
+      - pattern: |
+          cmd.script:
+            ...
+            - args: ...
+    message: |
+      SaltStack cmd.script silently ignores args
+      (Regression test for issue 1499)
+    languages:
+      - generic
+    severity: ERROR
+    paths:
+      include:
+        - "*.sls"
