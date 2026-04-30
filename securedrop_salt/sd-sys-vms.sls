@@ -31,21 +31,24 @@ set-fedora-template-as-default-mgmt-dvm:
     - require:
       - qvm: dom0-install-fedora-template
 
-# If the VM has just been installed via qvm-template, update it immediately.
-# This is to ensure management VMs are up-to-date. When this state is run via
-# the GUI updater (as part of its routine dom0 highstate run), it ensures that
-# updates are applied to a new template even if the running updater has a stale list
-# (see https://github.com/freedomofpress/securedrop-workstation/issues/758).
+# Newly template is up to date before proceeding with VM configuration:
+#  1. VM configuration via salt uses management qubes. Any bugs in the official
+#     template, especially salt-related could brick VM configuration completely
+#     (e.g. https://github.com/freedomofpress/securedrop-workstation/pull/1638#issuecomment-4350992151)
+#  2. This state is run via the GUI updater (as part of its routine dom0 highstate
+#     run), it ensures that updates are applied to a new template even if the
+#     running updater has a stale list
+#     (see https://github.com/freedomofpress/securedrop-workstation/issues/758)
 update-fedora-template-if-new:
-  cmd.wait:
+  cmd.run:
     - name: qubes-vm-update --quiet --force-update --targets {{ sd_fedora_base_template }}
     - runas: {{ gui_user }}
     - require:
-      - qvm: dom0-install-fedora-template
       # Update the mgmt-dvm setting first, to avoid problems during first update
       - cmd: set-fedora-template-as-default-mgmt-dvm
-    - onchanges:
-      - qvm: dom0-install-fedora-template
+    - unless:
+      # Run if never updated (likely a clean install or just downloaded template)
+      - qvm-features {{ sd_fedora_base_template }} last-update
 
 # qvm.default-dispvm is not strictly required here, but we want it to be
 # updated as soon as possible to ensure make clean completes successfully, as
