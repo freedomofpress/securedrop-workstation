@@ -27,7 +27,7 @@ def test_is_topfile_enabled():
 
 @skip_on_qubes_4_2
 @pytest.mark.provisioning
-def test_trust_desktop_launcher():
+def test_trust_desktop_launcher() -> None:
     desktop_file = Path.home() / "Desktop" / DESKTOP_FILE_NAME
 
     # salt should have already provisioned the correct checksum
