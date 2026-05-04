@@ -1,7 +1,11 @@
 #!/usr/bin/python3
 """
 Utility to verify that SecureDrop Workstation config is properly structured.
-Checks for
+
+Structural validation of `config.json` lives in `sdw_util.config_types`; see
+`Dom0Config.parse`. The class below additionally cross-checks the config
+against on-disk state: the Submission secret key file and existing
+private volumes for Qubes AppVMs.
 """
 
 import json
@@ -10,22 +14,18 @@ import re
 import subprocess
 import sys
 import tempfile
-from typing import Any, cast
+from typing import Any
 
 from qubesadmin import Qubes
 
-from sdw_util.config_types import Dom0Config
-
-TOR_V3_HOSTNAME_REGEX = r"^[a-z2-7]{56}\.onion$"
-TOR_V3_AUTH_REGEX = r"^[A-Z2-7]{52}$"
+from sdw_util.config_types import Dom0Config, ValidationError
 
 # CONFIG_FILEPATH = "/srv/salt/securedrop_salt/config.json"
 CONFIG_FILEPATH = "config.json"
 SECRET_KEY_FILEPATH = "sd-journalist.sec"
 
-
-class ValidationError(Exception):
-    pass
+# Re-export for callers that historically imported ValidationError from this module.
+__all__ = ["SDWConfigValidator", "ValidationError"]
 
 
 class SDWConfigValidator:
@@ -37,15 +37,10 @@ class SDWConfigValidator:
             self.config_filepath = CONFIG_FILEPATH
             self.secret_key_filepath = SECRET_KEY_FILEPATH
         self.confirm_config_file_exists()
-        # Validators below operate on the raw, untrusted dict view.
-        self._raw_config: dict[str, Any] = self.read_config_file()
-        self.confirm_onion_config_valid()
+        self.config: Dom0Config = Dom0Config.parse(self.read_config_file())
         self.confirm_submission_privkey_file()
         self.confirm_submission_privkey_fingerprint()
-        self.confirm_environment_valid()
         self.validate_existing_size()
-        # All validators have passed; expose the typed view to consumers.
-        self.config: Dom0Config = cast(Dom0Config, self._raw_config)
 
     def confirm_config_file_exists(self) -> None:
         if not os.path.exists(self.config_filepath):
@@ -53,35 +48,6 @@ class SDWConfigValidator:
                 f"Config file does not exist: {self.config_filepath}. "
                 "Create from config.json.example"
             )
-
-    def confirm_environment_valid(self) -> None:
-        """
-        The 'environment' config item is required to determine
-        whether prod or dev URLs are used for installing packages.
-        """
-        if "environment" not in self._raw_config:
-            raise ValidationError
-        if self._raw_config["environment"] not in ("prod", "dev", "staging"):
-            raise ValidationError(f"Invalid environment: {self._raw_config['environment']}")
-
-    def confirm_onion_config_valid(self) -> None:
-        """
-        Only v3 onion services are supported.
-        """
-        if "hidserv" not in self._raw_config:
-            raise ValidationError('"hidserv" is not defined in config.json')
-
-        # Verify the hostname
-        if "hostname" not in self._raw_config["hidserv"]:
-            raise ValidationError("hidden service hostname is not defined in config.json")
-        if not re.match(TOR_V3_HOSTNAME_REGEX, self._raw_config["hidserv"]["hostname"]):
-            raise ValidationError("Invalid hidden service hostname specified")
-
-        # Verify the key
-        if "key" not in self._raw_config["hidserv"]:
-            raise ValidationError("hidden service key is not defined in config.json")
-        if not re.match(TOR_V3_AUTH_REGEX, self._raw_config["hidserv"]["key"]):
-            raise ValidationError("Invalid hidden service key specified")
 
     def confirm_submission_privkey_file(self) -> None:
         """
@@ -119,52 +85,36 @@ class SDWConfigValidator:
             raise ValidationError(f"PGP secret key is not valid: {self.secret_key_filepath}")
 
     def confirm_submission_privkey_fingerprint(self) -> None:
-        if "submission_key_fpr" not in self._raw_config:
-            raise ValidationError('"submission_key_fpr" is not defined in config.json')
-        if not re.match("^[a-fA-F0-9]{40}$", self._raw_config["submission_key_fpr"]):
-            raise ValidationError("Invalid PGP key fingerprint specified")
+        """Cross-check the configured fingerprint against the on-disk key file."""
         gpg_cmd = ["gpg2", "--show-keys", self.secret_key_filepath]
         try:
             out = subprocess.check_output(gpg_cmd, stderr=subprocess.STDOUT).decode(
                 sys.stdout.encoding
             )
-            match = "      {}".format(self._raw_config["submission_key_fpr"])
+            match = f"      {self.config.submission_key_fpr}"
             if not re.search(match, out):
                 raise ValidationError("Configured fingerprint does not match key!")
 
         except subprocess.CalledProcessError as e:
             raise ValidationError(f"Key validation failed: {e.output.decode(sys.stdout.encoding)}")
 
-    def read_config_file(self) -> dict[str, Any]:
+    def read_config_file(self) -> Any:
         with open(self.config_filepath) as f:
             return json.load(f)
 
     def validate_existing_size(self) -> None:
-        """This method checks for existing private volume size and new
-        values in the config.json"""
-        if "vmsizes" not in self._raw_config:
-            raise ValidationError('Private volume sizes ("vmsizes") are not defined in config.json')
-        if "sd_app" not in self._raw_config["vmsizes"]:
-            raise ValidationError("Private volume size of sd-app must be defined in config.json")
-        if "sd_log" not in self._raw_config["vmsizes"]:
-            raise ValidationError("Private volume size of sd-log must be defined in config.json")
-
-        if not isinstance(self._raw_config["vmsizes"]["sd_app"], int):
-            raise ValidationError("Private volume size of sd-app must be an integer value.")
-        if not isinstance(self._raw_config["vmsizes"]["sd_log"], int):
-            raise ValidationError("Private volume size of sd-log must be an integer value.")
-
+        """Reject configs that would shrink an existing private volume."""
         app = Qubes()
         if "sd-app" in app.domains:
             vm = app.domains["sd-app"]
             vol = vm.volumes["private"]
-            if not (vol.size <= self._raw_config["vmsizes"]["sd_app"] * 1024 * 1024 * 1024):
+            if not (vol.size <= self.config.vmsizes.sd_app * 1024 * 1024 * 1024):
                 raise ValidationError("sd-app private volume is already bigger than configuration.")
 
         if "sd-log" in app.domains:
             vm = app.domains["sd-log"]
             vol = vm.volumes["private"]
-            if not (vol.size <= self._raw_config["vmsizes"]["sd_log"] * 1024 * 1024 * 1024):
+            if not (vol.size <= self.config.vmsizes.sd_log * 1024 * 1024 * 1024):
                 raise ValidationError("sd-log private volume is already bigger than configuration.")
 
 

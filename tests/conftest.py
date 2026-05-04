@@ -4,7 +4,6 @@ import warnings
 from collections.abc import Iterator
 from datetime import datetime
 from pathlib import Path
-from typing import cast
 
 import dnf
 import pytest
@@ -71,8 +70,7 @@ def dom0_config() -> Dom0Config:
         if "environment" not in config:
             warnings.warn("no 'environment' detected in config.json, assuming prod", stacklevel=2)
             config["environment"] = "prod"
-    # Trust validate_config.py to have rejected malformed configs upstream of test runs.
-    return cast(Dom0Config, config)
+    return Dom0Config.parse(config)
 
 
 @pytest.fixture(scope="session")

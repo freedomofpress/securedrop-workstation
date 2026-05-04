@@ -62,7 +62,7 @@ def test_sd_client_dependencies_installed(qube: QubeWrapper) -> None:
 
 @pytest.mark.provisioning
 def test_sd_client_config(dom0_config: Dom0Config, qube: QubeWrapper) -> None:
-    assert dom0_config["submission_key_fpr"] == qube.vm_config_read("SD_SUBMISSION_KEY_FPR")
+    assert dom0_config.submission_key_fpr == qube.vm_config_read("SD_SUBMISSION_KEY_FPR")
 
 
 @pytest.mark.provisioning
@@ -83,7 +83,7 @@ def test_sd_app_config(dom0_config: Dom0Config, qube: QubeWrapper, all_vms: VMCo
     # Check the size of the private volume
     # Should be 10GB
     # >>> 1024 * 1024 * 10 * 1024
-    size = dom0_config["vmsizes"]["sd_app"]
+    size = dom0_config.vmsizes.sd_app
     vol = vm.volumes["private"]
     assert vol.size == size * 1024 * 1024 * 1024
 

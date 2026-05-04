@@ -132,6 +132,6 @@ def test_sd_log_config(qube: QubeWrapper, dom0_config: Dom0Config, all_vms: VMCo
     # Check the size of the private volume
     # Should be same of config.json
     # >>> 1024 * 1024 * 5 * 1024
-    size = dom0_config["vmsizes"]["sd_log"]
+    size = dom0_config.vmsizes.sd_log
     vol = vm.volumes["private"]
     assert vol.size == size * 1024 * 1024 * 1024
