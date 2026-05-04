@@ -160,7 +160,7 @@ def test_sd_viewer_config(all_vms: VMCollection, dom0_config: Dom0Config) -> Non
     assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-viewer"
 
     # VM will be marked "internal" only in prod context.
-    if dom0_config["environment"] == "prod":
+    if dom0_config.environment == "prod":
         assert vm.features.get("internal") == "1"
 
 

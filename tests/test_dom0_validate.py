@@ -57,3 +57,14 @@ def test_config_malformed_fpr_json(test_resources_dir: Path, tmpdir: Path) -> No
         SDWConfigValidator(tmpdir)
 
     assert "Invalid PGP key fingerprint specified" in exc_info.exconly()
+
+
+def test_config_mismatched_fpr(test_resources_dir: Path, tmpdir: Path) -> None:
+    """A well-formed but wrong fingerprint must be rejected against the on-disk key."""
+    shutil.copy(f"{test_resources_dir}/testconfig.json.mismatched_fpr", f"{tmpdir}/config.json")
+    shutil.copy(f"{test_resources_dir}/example_key.asc", f"{tmpdir}/sd-journalist.sec")
+
+    with pytest.raises(ValidationError) as exc_info:
+        SDWConfigValidator(tmpdir)
+
+    assert "Configured fingerprint does not match key!" in exc_info.exconly()

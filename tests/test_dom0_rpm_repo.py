@@ -56,7 +56,7 @@ def repo_config(dom0_config: Dom0Config) -> dict[str, str]:
     # The dom0 fixture defaults to "dev" for the environment key.
     # It's possible that we can fall back to inferring the env based on
     # which keyring RPM packages are installed in dom0.
-    env = dom0_config["environment"]
+    env = dom0_config.environment
     return REPO_CONFIG[env].copy()
 
 
@@ -90,7 +90,7 @@ def test_dom0_has_keyring_package(dom0_config: Dom0Config) -> None:
     and that the variant of the package is appropriate for the configured env,
     e.g. dev vs prod.
     """
-    env = dom0_config["environment"]
+    env = dom0_config.environment
     # Prod keyring is always installed
     assert _is_installed("securedrop-workstation-keyring")
 

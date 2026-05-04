@@ -36,7 +36,7 @@ def config_fingerprint(dom0_config: Dom0Config) -> str:
     """
     Obtain the fingerprint explicitly configured in dom0 and injected into VMs.
     """
-    return dom0_config["submission_key_fpr"]
+    return dom0_config.submission_key_fpr
 
 
 @pytest.fixture

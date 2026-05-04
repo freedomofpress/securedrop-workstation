@@ -43,7 +43,7 @@ def test_sd_proxy_package_installed(qube: QubeWrapper) -> None:
 
 @pytest.mark.configuration
 def test_tor_hidserv_auth_url(qube: QubeWrapper, dom0_config: Dom0Config) -> None:
-    assert f"http://{dom0_config['hidserv']['hostname']}" == qube.vm_config_read("SD_PROXY_ORIGIN")
+    assert f"http://{dom0_config.hidserv.hostname}" == qube.vm_config_read("SD_PROXY_ORIGIN")
 
 
 @pytest.mark.configuration
@@ -119,5 +119,5 @@ def test_sd_proxy_dvm_config(all_vms: VMCollection, dom0_config: Dom0Config) -> 
     assert "service.securedrop-mime-handling" not in vm.features
 
     # VM will be marked "internal" only in prod context.
-    if dom0_config["environment"] == "prod":
+    if dom0_config.environment == "prod":
         assert vm.features.get("internal") == "1"
