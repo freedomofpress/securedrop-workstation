@@ -94,8 +94,9 @@ else
   echo
   echo "Task must be one of:"
   echo
-  echo " disable-unsafe-power-management   Disable suspend and hibernation buttons"
   echo " adjust-icon-size                  Increase the default desktop icon size"
-  echo " reset-power-management            Reset power management settings to default"
+  echo " disable-unsafe-power-management   Disable suspend and hibernation buttons"
+  echo " dismiss-desktop-icon-prompt       Mark the desktop icon for SDW as trusted"
   echo " reset-icon-size                   Reset icon size to default"
+  echo " reset-power-management            Reset power management settings to default"
 fi
