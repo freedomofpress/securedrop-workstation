@@ -1,0 +1,8 @@
+{
+  "submission_key_fpr": "65A1B5FF195B56353CC63DFFCC40EF1228271441",
+  "environment": "prod",
+  "vmsizes": {
+    "sd_app": 10,
+    "sd_log": 5
+  }
+}

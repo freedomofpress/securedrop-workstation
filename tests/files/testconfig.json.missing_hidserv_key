@@ -1,0 +1,11 @@
+{
+  "submission_key_fpr": "65A1B5FF195B56353CC63DFFCC40EF1228271441",
+  "hidserv": {
+    "hostname": "sdolvtfhatvsysc6l34d65ymdwxcujausv7k5jk4cy5ttzhjoi6fzvyd.onion"
+  },
+  "environment": "prod",
+  "vmsizes": {
+    "sd_app": 10,
+    "sd_log": 5
+  }
+}
