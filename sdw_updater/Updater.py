@@ -54,6 +54,7 @@ def _get_current_vms():
         "sd-gpg": f"sd-small-{debian_version}-template",
     }
 
+
 def _get_current_templates():
     return set([val for key, val in _get_current_vms().items() if key != "dom0"])
 
