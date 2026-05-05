@@ -49,6 +49,7 @@ def _get_current_vms():
         "sd-app": f"sd-small-{debian_version}-template",
         "sd-log": f"sd-small-{debian_version}-template",
         "sd-devices": f"sd-large-{debian_version}-template",
+        "sd-printers": f"sd-large-{debian_version}-template",
         "sd-proxy": f"sd-small-{debian_version}-template",
         "sd-gpg": f"sd-small-{debian_version}-template",
     }
