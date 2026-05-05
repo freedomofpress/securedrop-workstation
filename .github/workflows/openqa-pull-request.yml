@@ -5,9 +5,16 @@ run-name: "[OpenQA] ${{ github.event.action == 'synchronize' && 'synchronize' ||
 on:
   pull_request:
     types:
-      - labeled    # Trigger immediately when label added
-      - unlabeled  # Detect label removal in order to cancel previous runs
-      - synchronize
+      - labeled     # Trigger immediately when label added
+      - unlabeled   # Detect label removal in order to cancel previous runs
+      - synchronize # Re-run against new HEAD when commits are pushed to the PR
+
+# Collapse rapid toggles of the same label into a single run of the job.
+# Different labels (4.2 vs 4.3) and synchronize events stay in separate groups,
+# so they run independently.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.label.name || github.event.action }}
+  cancel-in-progress: true
 
 jobs:
   check:
@@ -62,6 +69,7 @@ jobs:
     needs: [check]
     if: ${{ needs.check.outputs.qubes-versions != '' }}
     strategy:
+      fail-fast: false
       matrix:
         qubes_version: ${{ fromJSON(needs.check.outputs.qubes-versions) }}
     uses: ./.github/workflows/openqa.yml
