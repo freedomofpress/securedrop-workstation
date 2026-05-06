@@ -123,9 +123,9 @@ def test_qubes_vm_update_ran_on_fedora_template(all_vms):
         updates_checked
     ), f"Updates for '{CURRENT_FEDORA_TEMPLATE}' should have been checked at least once"
     assert updated_once, (
-        f"Updates for '{CURRENT_FEDORA_TEMPLATE}' should been done least once."
+        f"Updates for '{CURRENT_FEDORA_TEMPLATE}' should been done least once.\n"
         "NOTE: there may also be the unlikely scenario where the template is so"
-        "fresh that there are no updates. This will be very rare"
+        "fresh that there are no updates. This will be very rare."
     )
 
 
