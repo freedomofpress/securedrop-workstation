@@ -100,6 +100,35 @@ def test_all_fedora_vms_uptodate(all_vms):
     vm.shutdown()
 
 
+@pytest.mark.packages
+@pytest.mark.provisioning
+def test_qubes_vm_update_ran_on_fedora_template(all_vms):
+    """
+    Asserts that the Fedora template used by the workstation has been updated
+    at least once after installation.
+
+    Admins are instructed to have they system fully up to date before installing
+    the workstation, but we don't expect them to template upgrade, in case the
+    Fedora version installed is EOL. Therefore, this checks if the installation
+    logic does update the template at least once.
+    """
+    fedora_template = all_vms[CURRENT_FEDORA_TEMPLATE]
+
+    # When qubes-vm-update runs, it sets the 'last-update' qubes feature
+    # to the date
+    updated_once = fedora_template.features.get("last-update") not in [None, ""]
+    updates_checked = fedora_template.features.get("last-updates-check") not in [None, ""]
+
+    assert (
+        updates_checked
+    ), f"Updates for '{CURRENT_FEDORA_TEMPLATE}' should have been checked at least once"
+    assert updated_once, (
+        f"Updates for '{CURRENT_FEDORA_TEMPLATE}' should been done least once."
+        "NOTE: there may also be the unlikely scenario where the template is so"
+        "fresh that there are no updates. This will be very rare"
+    )
+
+
 @pytest.mark.provisioning
 @pytest.mark.parametrize(
     "vm_name",
