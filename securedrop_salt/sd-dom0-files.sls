@@ -48,6 +48,17 @@ dom0-securedrop-launcher-desktop-shortcut:
     - group: {{ gui_user }}
     - mode: 755
 
+{% if grains['osrelease'] != '4.2' %}
+# Dismiss "security warning" when opening any desktop icons
+# as it is not a true security mitigation in Qubes. See #1582
+dom0-dismiss-desktop-icon-prompt:
+  cmd.run:
+    - name: /usr/bin/securedrop/update-xfce-settings dismiss-desktop-icon-prompt
+    - runas: {{ gui_user }}
+    - require:
+      - file: dom0-securedrop-launcher-desktop-shortcut
+{% endif %}
+
 dom0-environment-directory:
   file.directory:
     - name: /var/lib/securedrop-workstation/
