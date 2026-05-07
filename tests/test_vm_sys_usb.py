@@ -14,11 +14,11 @@ from tests.base import (
 
 
 @pytest.fixture(scope="module")
-def qube():
+def qube() -> QubeWrapper:
     return QubeWrapper("sys-usb", linux_security_modules="selinux")
 
 
 @pytest.mark.configuration
-def test_files_are_properly_copied(qube):
+def test_files_are_properly_copied(qube: QubeWrapper) -> None:
     assert qube.fileExists("/etc/udev/rules.d/99-sd-devices.rules")
     assert qube.fileExists("/usr/local/bin/sd-attach-export-device")

@@ -34,7 +34,7 @@ TEST_SOURCES_FILE = "apt-test_freedom_press.sources"
 TEST_SOURCES_TEMPLATE = SOURCES_DIR / f"{TEST_SOURCES_FILE}.j2"
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Switch apt sources between dev, staging, and prod"
@@ -47,7 +47,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def check_dom0():
+def check_dom0() -> None:
     """Verify we're running in dom0."""
     hostname = subprocess.check_output(["hostname"], text=True).strip()
     if hostname != "dom0":
@@ -55,7 +55,7 @@ def check_dom0():
         sys.exit(1)
 
 
-def update_config_json(environment):
+def update_config_json(environment: str) -> str:
     """Update the environment field in config.json."""
     # Read existing config as root
     result = subprocess.run(
@@ -95,7 +95,7 @@ def render_test_sources_file(component: str) -> str:
     return template.replace("{{ codename }}", CODENAME).replace("{{ component }}", component)
 
 
-def shutdown_template(template):
+def shutdown_template(template: str) -> None:
     print(f"  Shutting down {template}...")
     subprocess.check_call(
         ["qvm-shutdown", template],
@@ -104,7 +104,7 @@ def shutdown_template(template):
     )
 
 
-def update_template_sources(template, environment):
+def update_template_sources(template: str, environment: str) -> None:
     """Update apt sources in a template VM."""
     test_sources_path = f"/etc/apt/sources.list.d/{TEST_SOURCES_FILE}"
 
@@ -134,7 +134,7 @@ def update_template_sources(template, environment):
     shutdown_template(template)
 
 
-def main():
+def main() -> int:
     """Main entry point."""
     args = parse_args()
     check_dom0()

@@ -1,4 +1,5 @@
 import pytest
+from qubesadmin.app import VMCollection
 
 from tests.base import CURRENT_FEDORA_TEMPLATE
 
@@ -18,7 +19,7 @@ sufficiently up to date.
         "default-mgmt-dvm",
     ],
 )
-def test_current_fedora_for_sys_vms(sys_vm_name, all_vms):
+def test_current_fedora_for_sys_vms(sys_vm_name: str, all_vms: VMCollection) -> None:
     """
     Checks that all sys-* VMs are configured to use an up-to-date version of Fedora.
     """

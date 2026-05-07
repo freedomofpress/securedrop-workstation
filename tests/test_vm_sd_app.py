@@ -4,7 +4,9 @@ specifically for the "sd-app" VM and related functionality.
 """
 
 import pytest
+from qubesadmin.app import VMCollection
 
+from sdw_util.config_types import Dom0Config
 from tests.base import (
     SD_TAG,
     SD_TEMPLATE_SMALL,
@@ -16,7 +18,7 @@ from tests.base import (
 
 
 @pytest.fixture(scope="module")
-def qube():
+def qube() -> QubeWrapper:
     return QubeWrapper(
         "sd-app",
         expected_config_keys={
@@ -32,7 +34,7 @@ def qube():
 
 
 @pytest.mark.configuration
-def test_open_in_dvm_desktop(qube):
+def test_open_in_dvm_desktop(qube: QubeWrapper) -> None:
     contents = qube.get_file_contents("/usr/share/applications/open-in-dvm.desktop")
     expected_contents = [
         "TryExec=/usr/bin/qvm-open-in-vm",
@@ -43,32 +45,32 @@ def test_open_in_dvm_desktop(qube):
 
 
 @pytest.mark.configuration
-def test_mailcap_hardened(qube):
+def test_mailcap_hardened(qube: QubeWrapper) -> None:
     qube.mailcap_hardened()
 
 
 @pytest.mark.configuration
-def test_sd_client_package_installed(qube):
+def test_sd_client_package_installed(qube: QubeWrapper) -> None:
     assert qube.package_is_installed("securedrop-client")
 
 
 @pytest.mark.configuration
-def test_sd_client_dependencies_installed(qube):
+def test_sd_client_dependencies_installed(qube: QubeWrapper) -> None:
     assert qube.package_is_installed("python3-pyqt5")
     assert qube.package_is_installed("python3-pyqt5.qtsvg")
 
 
 @pytest.mark.provisioning
-def test_sd_client_config(dom0_config, qube):
-    assert dom0_config["submission_key_fpr"] == qube.vm_config_read("SD_SUBMISSION_KEY_FPR")
+def test_sd_client_config(dom0_config: Dom0Config, qube: QubeWrapper) -> None:
+    assert dom0_config.submission_key_fpr == qube.vm_config_read("SD_SUBMISSION_KEY_FPR")
 
 
 @pytest.mark.provisioning
-def test_logging_configured(qube):
+def test_logging_configured(qube: QubeWrapper) -> None:
     qube.logging_configured()
 
 
-def test_sd_app_config(dom0_config, qube, all_vms):
+def test_sd_app_config(dom0_config: Dom0Config, qube: QubeWrapper, all_vms: VMCollection) -> None:
     vm = all_vms["sd-app"]
     nvm = vm.netvm
     assert nvm is None
@@ -81,7 +83,7 @@ def test_sd_app_config(dom0_config, qube, all_vms):
     # Check the size of the private volume
     # Should be 10GB
     # >>> 1024 * 1024 * 10 * 1024
-    size = dom0_config["vmsizes"]["sd_app"]
+    size = dom0_config.vmsizes.sd_app
     vol = vm.volumes["private"]
     assert vol.size == size * 1024 * 1024 * 1024
 
