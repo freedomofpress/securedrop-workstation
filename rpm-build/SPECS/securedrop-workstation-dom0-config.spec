@@ -79,6 +79,7 @@ install -m 755 files/clean-salt %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/destroy-vm.py %{buildroot}/%{_datadir}/%{name}/scripts/destroy-vm
 install -m 755 files/validate_config.py %{buildroot}/%{_datadir}/%{name}/scripts/
 install -m 755 files/sdw-admin.py %{buildroot}/%{_bindir}/sdw-admin
+install -m 755 files/sdw-upgrade.py %{buildroot}/%{_bindir}/sdw-upgrade
 install -m 644 files/config.json.example %{buildroot}/%{_datadir}/%{name}/
 
 install -m 755 -d %{buildroot}/%{_bindir}
@@ -118,6 +119,8 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}/%{_user
 %attr(755, root, root) %{_datadir}/%{name}/scripts/destroy-vm
 %attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
 %attr(755, root, root) %{_bindir}/sdw-admin
+%attr(755, root, root) %{_bindir}/sdw-upgrade
+
 %{_datadir}/%{name}/config.json.example
 /srv/salt/securedrop_salt/*
 %attr(755, root, root) %{_bindir}/sdw-login
