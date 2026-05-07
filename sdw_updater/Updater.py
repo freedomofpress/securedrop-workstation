@@ -18,8 +18,6 @@ from sdw_util import Util
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_HOME = ".securedrop_updater"
-FLAG_FILE_STATUS_SD_APP = "/home/user/.securedrop_client/sdw-update-status"
-FLAG_FILE_LAST_UPDATED_SD_APP = "/home/user/.securedrop_client/sdw-last-updated"
 FLAG_FILE_STATUS_DOM0 = os.path.join(DEFAULT_HOME, "sdw-update-status")
 FLAG_FILE_LAST_UPDATED_DOM0 = os.path.join(DEFAULT_HOME, "sdw-last-updated")
 LOCK_FILE = "sdw-updater.lock"
@@ -272,25 +270,11 @@ def _apply_updates_dom0():
 
 def _write_last_updated_flags_to_disk():
     """
-    Writes the time of last successful upgrade to dom0 and sd-app
+    Writes the time of last successful upgrade to dom0
     """
     current_date = str(datetime.now().strftime(DATE_FORMAT))
 
-    flag_file_sd_app_last_updated = FLAG_FILE_LAST_UPDATED_SD_APP
     flag_file_dom0_last_updated = get_dom0_path(FLAG_FILE_LAST_UPDATED_DOM0)
-
-    try:
-        sdlog.info(f"Setting last updated to {current_date} in sd-app")
-        subprocess.check_call(
-            [
-                "qvm-run",
-                "sd-app",
-                f"echo '{current_date}' > {flag_file_sd_app_last_updated}",
-            ]
-        )
-    except subprocess.CalledProcessError as e:
-        sdlog.error("Error writing last updated flag to sd-app")
-        sdlog.error(str(e))
 
     try:
         sdlog.info(f"Setting last updated to {current_date} in dom0")
@@ -305,20 +289,9 @@ def _write_last_updated_flags_to_disk():
 
 def _write_updates_status_flag_to_disk(status):
     """
-    Writes the latest SecureDrop Workstation update status to disk, on both
-    dom0 and sd-app for futher processing in the future.
+    Writes the latest SecureDrop Workstation update status to disk in dom0.
     """
-    flag_file_path_sd_app = FLAG_FILE_STATUS_SD_APP
     flag_file_path_dom0 = get_dom0_path(FLAG_FILE_STATUS_DOM0)
-
-    try:
-        sdlog.info(f"Setting update flag to {status.value} in sd-app")
-        subprocess.check_call(
-            ["qvm-run", "sd-app", f"echo '{status.value}' > {flag_file_path_sd_app}"]
-        )
-    except subprocess.CalledProcessError as e:
-        sdlog.error("Error writing update status flag to sd-app")
-        sdlog.error(str(e))
 
     try:
         sdlog.info(f"Setting update flag to {status.value} in dom0")
