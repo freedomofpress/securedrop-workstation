@@ -1,5 +1,29 @@
 # changelog
 
+## 1.7.0
+
+This release primarily adds Qubes 4.3 support and takes advantage of the new features it brings.
+
+* Qubes 4.3 support:
+  * Qubes 4.3 base compatibility improvements (#1373)
+  * Skip launching SecureDrop Workstation updater during Qubes in-place upgrade (#1616)
+  * Deny device attachment to all VMs except sd-devices and sd-printers (#1553)
+  * Enable custom-persist for sd-app, sd-gpg and sd-log, making them semi-disposable (#1555)
+  * Set xfce-exe-checksum on desktop launcher (#1582)
+* Import sd-gpg secret key from dom0 on boot via qrexec, replacing Salt configuration (#1521)
+* Internal and development:
+  * Add security note clarifying ANSI character handling is intentional (#1609, #1624)
+  * Simpler RPM spec declaration (#1565)
+  * Remove erroneous double-slash in .spec install path (#1575)
+  * Test preloading of sd-viewer disposable qubes on Qubes 4.3+ (#1557)
+  * Set dependabot update cooldown to 7 days (#1595)
+  * Introduce basic but incomplete structure for sd-admin VM (#1572)
+  * Add semgrep for SaltStack regression tests (#1640)
+  * Set fail-fast: false on OpenQA jobs (#1583)
+  * Bump actions/upload-artifact from 6 to 7 (#1615)
+  * Bump actions/download-artifact from 7 to 8 (#1587)
+  * Bump actions/create-github-app-token from 2 to 3 (#1614)
+
 ## 1.6.0
 
 This release switches to using the [new SecureDrop Inbox](https://securedrop.org/news/securedrop-inbox-is-coming/)
