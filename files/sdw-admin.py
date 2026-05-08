@@ -13,6 +13,8 @@ import sys
 
 from qubesadmin import Qubes
 
+from sdw_util.config_types import ValidationError
+
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
 # errors from qubesctl. It may be possible to raise this again.
 MAX_CONCURRENCY = 2
@@ -33,7 +35,7 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
 )
 
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
-from validate_config import SDWConfigValidator, ValidationError  # noqa: E402
+from validate_config import SDWConfigValidator  # noqa: E402
 
 DEBIAN_VERSION = "bookworm"
 

@@ -24,9 +24,6 @@ from sdw_util.config_types import Dom0Config, ValidationError
 CONFIG_FILEPATH = "config.json"
 SECRET_KEY_FILEPATH = "sd-journalist.sec"
 
-# Re-export for callers that historically imported ValidationError from this module.
-__all__ = ["SDWConfigValidator", "ValidationError"]
-
 
 class SDWConfigValidator:
     def __init__(self, config_base_dir: str | os.PathLike[str] | None = None) -> None:
