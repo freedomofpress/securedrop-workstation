@@ -58,5 +58,5 @@ sd-gpg-custom-persist:
     - enable:
       - service.custom-persist
     - set:
-      - custom-persist.gnupg_dir: /home/user/.gnupg
+      - custom-persist.gnupg_dir: dir:user:user:0700:/home/user/.gnupg
 {% endif %}

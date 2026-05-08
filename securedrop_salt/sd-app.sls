@@ -55,9 +55,9 @@ sd-app-custom-persist:
     - enable:
       - service.custom-persist
     - set:
-      - custom-persist.client_dir: /home/user/.securedrop_client/
-      - custom-persist.app_db: /home/user/.config/SecureDrop/db.sqlite
-      - custom-persist.app_downloaded_files: /home/user/.config/SecureDrop/files/
+      - custom-persist.client_dir: dir:user:user:0700:/home/user/.securedrop_client
+      - custom-persist.app_db: file:user:user:0600:/home/user/.config/SecureDrop/db.sqlite
+      - custom-persist.app_downloaded_files: dir:user:user:0700:/home/user/.config/SecureDrop/files
 {% endif %}
 
 sd-app-config:
