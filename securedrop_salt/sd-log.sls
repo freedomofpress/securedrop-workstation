@@ -82,7 +82,7 @@ sd-log-custom-persist:
     - enable:
       - service.custom-persist
     - set:
-      - custom-persist.logs: /home/user/QubesIncomingLogs/
+      - custom-persist.logs: dir:user:user:0755:/home/user/QubesIncomingLogs
 {% endif %}
 
 # The private volume size should be set in config.json
