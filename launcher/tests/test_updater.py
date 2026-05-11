@@ -53,7 +53,7 @@ TEST_RESULTS_UPDATES = {
 
 
 def test__get_current_vms():
-    assert len(Updater._get_current_vms()) == 7
+    assert len(Updater._get_current_vms()) == 8
 
 
 def test__get_current_templates():
