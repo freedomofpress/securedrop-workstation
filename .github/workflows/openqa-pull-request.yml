@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Find all openqa-pending labels on this PR  # zizmor: ignore[template-injection]
         id: find_labels
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             let labels;

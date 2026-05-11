@@ -103,7 +103,7 @@ jobs:
     steps:
       - name: Get SHA of main branch
         id: get_main_sha
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           result-encoding: string
           script: |
