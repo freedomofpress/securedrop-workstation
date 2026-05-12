@@ -40,18 +40,6 @@ def qubes_to_names(qubes_list: list[QubesVM]) -> list[str]:
     return [qube.name for qube in qubes_list]
 
 
-WHONIX_17_TEMPLATES = names_to_qubes(["whonix-gateway-17", "whonix-workstation-17"])
-
-WHONIX_17_DERIVED = names_to_qubes(
-    [
-        "whonix-workstation-17-dvm",
-        "sys-whonix",
-        "anon-whonix",
-    ]
-)
-
-WHONIX_17_ALL = WHONIX_17_TEMPLATES + WHONIX_17_DERIVED
-
 CURRENT_FEDORA_TEMPLATE = app.domains.get("fedora-43-xfce")
 
 OLD_FEDORA_TEMPLATES = names_to_qubes(
@@ -306,17 +294,33 @@ class RemoveOldFedoras(RemoveQubesStep):
 
 
 class RemoveWhonix17(RemoveQubesStep):
-    def __init__(self) -> None:
+    WHONIX_17_TEMPLATES = names_to_qubes(["whonix-gateway-17", "whonix-workstation-17"])
+    WHONIX_17_DERIVED = names_to_qubes(
+        [
+            "anon-whonix",  # order matters (until we can use "qvm-template purge")
+            "whonix-workstation-17-dvm",
+            "sys-whonix",
+        ]
+    )
+    WHONIX_17_ALL = WHONIX_17_TEMPLATES + WHONIX_17_DERIVED
+
+    def __init__(self):
         super().__init__(
             description="Remove Whonix 17 entirely",
-            impact={" ".join(qubes_to_names(WHONIX_17_ALL))},
-            qubes_for_removal=WHONIX_17_ALL,
+            impact={" ".join(qubes_to_names(self.WHONIX_17_ALL))},
+            qubes_for_removal=self.WHONIX_17_ALL,
         )
 
     def apply(self) -> None:
-        # NOTE 'print_purge_impact' not neded: 'qvm-template purge' shows
-        # summary with all impacted qubes, unlike 'qvm-template remove'.
-        subprocess.run(["qvm-template", "purge"] + qubes_to_names(WHONIX_17_TEMPLATES), check=True)
+        self.print_purge_impact(removal_text="removal")
+
+        # "qvm-template purge" is best fit but we run into qubes-issues#10879
+        subprocess.run(
+            ["qvm-remove", "--force"] + qubes_to_names(self.WHONIX_17_DERIVED), check=True
+        )
+        subprocess.run(
+            ["qvm-remove", "--force"] + qubes_to_names(self.WHONIX_17_TEMPLATES), check=True
+        )
 
     def on_fail(self) -> None:
         print("\tWe detected some non-default whonix qubes which made automated risky.")
