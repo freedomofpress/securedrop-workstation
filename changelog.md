@@ -1,6 +1,11 @@
 # changelog
 
-## 1.7.0
+## 1.7.0-rc2
+
+* Fix custom-persist for fresh installs (#1651)
+* Adjust headline font weight for Qt6 (#1654)
+
+## 1.7.0-rc1
 
 This release primarily adds Qubes 4.3 support and takes advantage of the new features it brings.
 
