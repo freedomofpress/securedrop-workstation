@@ -3,6 +3,7 @@
 Interactive assistant for removing deprecated qubes prior to a Qubes OS upgrade.
 """
 
+import argparse
 import enum
 import logging
 import subprocess
@@ -370,6 +371,12 @@ def prepare_upgrade() -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--debug", "-d", action="store_true", help="enable debug output")
+    args = parser.parse_args()
+    if args.debug:
+        logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+
     try:
         prepare_upgrade()
     except subprocess.CalledProcessError as e:
