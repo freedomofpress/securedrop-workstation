@@ -57,8 +57,8 @@ sd-app-custom-persist:
     - set:
       - custom-persist.client_dir: dir:user:user:0700:/home/user/.securedrop_client
       - custom-persist.app_db: file:user:user:0600:/home/user/.config/SecureDrop/db.sqlite
-      - custom-persist.app_db_wal file:user:user:0600:/home/user/.config/SecureDrop/db.sqlite-wal
-      - custom-persist.app_db_shm file:user:user:0600:/home/user/.config/SecureDrop/db.sqlite-shm
+      - custom-persist.app_db_wal: file:user:user:0600:/home/user/.config/SecureDrop/db.sqlite-wal
+      - custom-persist.app_db_shm: file:user:user:0600:/home/user/.config/SecureDrop/db.sqlite-shm
       - custom-persist.app_downloaded_files: dir:user:user:0700:/home/user/.config/SecureDrop/files
 {% endif %}
 
