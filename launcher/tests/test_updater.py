@@ -143,21 +143,13 @@ def test_apply_templates(
 
 
 @pytest.mark.parametrize("status", UpdateStatus)
-@mock.patch("subprocess.check_call")
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
-def test_write_updates_status_flag_to_disk(
-    mocked_info, mocked_error, mocked_call, status, tmp_path
-):
+def test_write_updates_status_flag_to_disk(mocked_info, mocked_error, status, tmp_path):
     with mock.patch("os.path.expanduser", return_value=tmp_path):
-        flag_file_sd_app = Updater.FLAG_FILE_STATUS_SD_APP
         flag_file_dom0 = Updater.get_dom0_path(Updater.FLAG_FILE_STATUS_DOM0)
 
         Updater._write_updates_status_flag_to_disk(status)
-
-    mocked_call.assert_called_once_with(
-        ["qvm-run", "sd-app", f"echo '{status.value}' > {flag_file_sd_app}"]
-    )
 
     assert os.path.exists(flag_file_dom0)
     with open(flag_file_dom0) as f:
@@ -168,28 +160,11 @@ def test_write_updates_status_flag_to_disk(
 
 
 @pytest.mark.parametrize("status", UpdateStatus)
-@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
-@mock.patch("sdw_updater.Updater.sdlog.error")
-@mock.patch("sdw_updater.Updater.sdlog.info")
-def test_write_updates_status_flag_to_disk_failure_app(
-    mocked_info, mocked_error, mocked_call, status, tmp_path
-):
-    error_calls = [
-        call("Error writing update status flag to sd-app"),
-        call("Command 'check_call' returned non-zero exit status 1."),
-    ]
-    with mock.patch("os.path.expanduser", return_value=tmp_path):
-        Updater._write_updates_status_flag_to_disk(status)
-    mocked_error.assert_has_calls(error_calls)
-
-
-@pytest.mark.parametrize("status", UpdateStatus)
 @mock.patch("os.path.exists", side_effect=OSError("os_error"))
-@mock.patch("subprocess.check_call")
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
 def test_write_updates_status_flag_to_disk_failure_dom0(
-    mocked_info, mocked_error, mocked_call, mocked_open, status, tmp_path
+    mocked_info, mocked_error, mocked_open, status, tmp_path
 ):
     error_calls = [call("Error writing update status flag to dom0"), call("os_error")]
     with mock.patch("os.path.expanduser", return_value=tmp_path):
@@ -197,22 +172,14 @@ def test_write_updates_status_flag_to_disk_failure_dom0(
     mocked_error.assert_has_calls(error_calls)
 
 
-@mock.patch("subprocess.check_call")
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
-def test_write_last_updated_flags_to_disk(mocked_info, mocked_error, mocked_call, tmp_path):
-    flag_file_sd_app = Updater.FLAG_FILE_LAST_UPDATED_SD_APP
+def test_write_last_updated_flags_to_disk(mocked_info, mocked_error, tmp_path):
     with mock.patch("os.path.expanduser", return_value=tmp_path):
         flag_file_dom0 = Updater.get_dom0_path(Updater.FLAG_FILE_LAST_UPDATED_DOM0)
         current_time = str(datetime.now().strftime(Updater.DATE_FORMAT))
 
         Updater._write_last_updated_flags_to_disk()
-    subprocess_command = [
-        "qvm-run",
-        "sd-app",
-        f"echo '{current_time}' > {flag_file_sd_app}",
-    ]
-    mocked_call.assert_called_once_with(subprocess_command)
     assert not mocked_error.called
     assert os.path.exists(flag_file_dom0)
     with open(flag_file_dom0) as f:
@@ -221,29 +188,15 @@ def test_write_last_updated_flags_to_disk(mocked_info, mocked_error, mocked_call
     assert contents == current_time
 
 
-@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
+@mock.patch("os.path.exists", side_effect=OSError("os_error"))
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
-def test_write_last_updated_flags_to_disk_fails(mocked_info, mocked_error, mocked_call, tmp_path):
-    error_log = [
-        call("Error writing last updated flag to sd-app"),
-        call("Command 'check_call' returned non-zero exit status 1."),
-    ]
-    with mock.patch("os.path.expanduser", return_value=tmp_path):
-        Updater._write_last_updated_flags_to_disk()
-    mocked_error.assert_has_calls(error_log)
-
-
-@mock.patch("os.path.exists", return_value=False)
-@mock.patch("subprocess.check_call", side_effect=subprocess.CalledProcessError(1, "check_call"))
-@mock.patch("sdw_updater.Updater.sdlog.error")
-@mock.patch("sdw_updater.Updater.sdlog.info")
-def test_write_last_updated_flags_dom0_folder_creation_fail(
-    mocked_info, mocked_error, mocked_call, mocked_path_exists, tmp_path
+def test_write_last_updated_flags_to_disk_fails(
+    mocked_info, mocked_error, mocked_path_exists, tmp_path
 ):
     error_log = [
-        call("Error writing last updated flag to sd-app"),
-        call("Command 'check_call' returned non-zero exit status 1."),
+        call("Error writing last updated flag to dom0"),
+        call("os_error"),
     ]
     with mock.patch("os.path.expanduser", return_value=tmp_path):
         Updater._write_last_updated_flags_to_disk()
@@ -360,9 +313,8 @@ def test_overall_update_status_reboot_not_done_previously(
 
 
 @pytest.mark.parametrize("status", UpdateStatus)
-@mock.patch("subprocess.check_call")
 @mock.patch("sdw_updater.Updater.sdlog.error")
-def test_read_dom0_update_flag_from_disk(mocked_error, mocked_subprocess, status, tmp_path):
+def test_read_dom0_update_flag_from_disk(mocked_error, status, tmp_path):
     with mock.patch("os.path.expanduser", return_value=tmp_path):
         Updater._write_updates_status_flag_to_disk(status)
 
@@ -381,12 +333,9 @@ def test_read_dom0_update_flag_from_disk(mocked_error, mocked_subprocess, status
     assert not mocked_error.called
 
 
-@mock.patch("subprocess.check_call")
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
-def test_read_dom0_update_flag_from_disk_fails(
-    mocked_info, mocked_error, mocked_subprocess, tmp_path
-):
+def test_read_dom0_update_flag_from_disk_fails(mocked_info, mocked_error, tmp_path):
     with mock.patch(
         "sdw_updater.Updater.get_dom0_path",
         return_value=tmp_path / Path(Updater.FLAG_FILE_STATUS_DOM0),
