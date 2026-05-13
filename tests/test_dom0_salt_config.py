@@ -14,7 +14,7 @@ def checksum(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_is_topfile_enabled():
+def test_is_topfile_enabled() -> None:
     cmd = ["sudo", "qubesctl", "top.enabled"]
     wanted = "securedrop_salt.sd-workstation.top"
 

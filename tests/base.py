@@ -7,10 +7,12 @@ import json
 import os
 import re
 import subprocess
+from collections.abc import Iterable, Iterator
 
 import dnf
 import pytest
 from qubesadmin import Qubes
+from qubesadmin.vm import QubesVM
 
 # Reusable constant for DRY import across tests
 DEBIAN_VERSION = "bookworm"
@@ -33,7 +35,7 @@ CURRENT_WHONIX_VERSION = "17"
 
 
 # Lifted from launcher/sdw_util/Util.py
-def get_qubes_version():
+def get_qubes_version() -> str | None:
     """
     Helper function for checking the Qubes version. Returns None if not on Qubes.
     """
@@ -57,7 +59,7 @@ def get_qubes_version():
     return version
 
 
-def get_mimeapp_vars_for_vm(vm_name):
+def get_mimeapp_vars_for_vm(vm_name: str) -> Iterator[tuple[str, str]]:
     """
     Retrieve test fixture vars for inspecting MIME type handling for this VM.
     Assumes that hardcoded vars file exists on disk, adjacent to the test, named as
@@ -78,7 +80,7 @@ def get_mimeapp_vars_for_vm(vm_name):
                 yield (mime_type, expected_app)
 
 
-def is_managed_qube(qube):
+def is_managed_qube(qube: QubesVM) -> bool:
     """
     Help assess if qube is to be managed directly
 
@@ -89,7 +91,7 @@ def is_managed_qube(qube):
     return not getattr(qube, "is_preload", False)
 
 
-def is_workstation_qube(qube):
+def is_workstation_qube(qube: QubesVM) -> bool:
     """
     Is the qube a managed, workstation-tagged qube?
 
@@ -103,14 +105,14 @@ def is_workstation_qube(qube):
 class QubeWrapper:
     def __init__(
         self,
-        name,
-        expected_config_keys=set(),
-        linux_security_modules="apparmor",
-        enforced_apparmor_profiles=set(),
-        mime_types_handling=False,
-        mime_vars_vm_name=None,
-        devices_attachable=False,
-    ):
+        name: str,
+        expected_config_keys: set[str] = set(),
+        linux_security_modules: str = "apparmor",
+        enforced_apparmor_profiles: set[str] = set(),
+        mime_types_handling: bool = False,
+        mime_vars_vm_name: str | None = None,
+        devices_attachable: bool = False,
+    ) -> None:
         """
         QubesVM test helper.
 
@@ -138,7 +140,7 @@ class QubeWrapper:
         self.mime_vars_vm_name = mime_vars_vm_name if mime_vars_vm_name else name
         self.devices_attachable = devices_attachable
 
-    def run(self, cmd, user=""):
+    def run(self, cmd: str, user: str = "") -> str:
         """
         Wrapper for `Qube.run()` to make it a bit more ergonomic in tests.
         """
@@ -148,15 +150,15 @@ class QubeWrapper:
         full_cmd += [self.name, cmd]
         return subprocess.check_output(full_cmd).decode("utf-8").strip()
 
-    def get_file_contents(self, path):
+    def get_file_contents(self, path: str) -> str:
         cmd = ["qvm-run", "-p", self.name, f"sudo /bin/cat {path}"]
         return subprocess.check_output(cmd).decode("utf-8")
 
-    def get_symlink_location(self, path):
+    def get_symlink_location(self, path: str) -> str:
         cmd = ["qvm-run", "-p", self.name, f"/usr/bin/readlink -f {path}"]
         return subprocess.check_output(cmd).decode("utf-8").strip()
 
-    def package_is_installed(self, pkg):
+    def package_is_installed(self, pkg: str) -> bool:
         """
         Confirms that a given package is installed inside the VM.
         """
@@ -169,7 +171,7 @@ class QubeWrapper:
 
         return True
 
-    def service_is_active(self, service):
+    def service_is_active(self, service: str) -> bool:
         try:
             results = self.run(f"sudo systemctl is-active {service}")
         except subprocess.CalledProcessError as e:
@@ -179,7 +181,7 @@ class QubeWrapper:
                 raise e
         return results == "active"
 
-    def assertFileHasLine(self, remote_path, wanted_line):
+    def assertFileHasLine(self, remote_path: str, wanted_line: str) -> bool:
         remote_content = self.get_file_contents(remote_path)
         lines = remote_content.splitlines()
         for line in lines:
@@ -188,7 +190,7 @@ class QubeWrapper:
         msg = f"File {remote_path} does not contain expected line {wanted_line}"
         raise AssertionError(msg)
 
-    def fileExists(self, remote_path) -> bool:
+    def fileExists(self, remote_path: str) -> bool:
         # ls will return non-zero if the file doesn't exist
         # and error will be propagated to the test runner,
         # so we catch that case and return false.
@@ -199,12 +201,12 @@ class QubeWrapper:
 
         return True
 
-    def qubes_service_enabled(self, service):
+    def qubes_service_enabled(self, service: str) -> bool:
         """Check whether the named Qubes service is enabled on this
         VM."""
         return self.fileExists(f"/var/run/qubes-service/{service}")
 
-    def vm_config_read(self, key):
+    def vm_config_read(self, key: str) -> str | None:
         """Read `key` from the QubesDB `/vm-config/` hierarchy and return its
         value if set, otherwise `None`.
         """
@@ -213,7 +215,7 @@ class QubeWrapper:
         except subprocess.CalledProcessError:
             return None
 
-    def vm_config_check(self, expected):
+    def vm_config_check(self, expected: Iterable[str]) -> None:
         """Check that the set of expected by the VM keys equals the set of keys
         actually configured.
         """
@@ -221,7 +223,7 @@ class QubeWrapper:
         actual.discard("")  # if "qubesdb-list" returned nothing
         assert actual == set(expected)
 
-    def logging_configured(self):
+    def logging_configured(self) -> None:
         """
         Make sure rsyslog is configured to send in data to sd-log vm.
         """
@@ -245,7 +247,7 @@ remotevm = sd-log
         # cmd_output = self.run("sudo grep -F \"action 'action-0-omprog' suspended (module 'omprog')\" /var/log/syslog | wc -l").strip()  # noqa
         # assert cmd_output == "0"
 
-    def mailcap_hardened(self):
+    def mailcap_hardened(self) -> None:
         """
         Ensure that mailcap rules are not used as a fallback when looking up
         appropriate viewer applications for files of a given MIME type.
@@ -276,13 +278,13 @@ remotevm = sd-log
 
 
 class Test_SD_VM_Common:
-    def test_vm_config_keys(self, qube):
+    def test_vm_config_keys(self, qube: QubeWrapper) -> None:
         """Every VM should check that it has only the configuration keys it
         expects.
         """
         qube.vm_config_check(qube.expected_config_keys)
 
-    def test_lsm_enabled(self, qube):
+    def test_lsm_enabled(self, qube: QubeWrapper) -> None:
         """Check that the expected LSM is enabled"""
         if qube.linux_security_modules == "apparmor":
             assert qube.package_is_installed("apparmor")
@@ -295,7 +297,7 @@ class Test_SD_VM_Common:
         else:
             raise ValueError(f"Unsupported LSM: {qube.linux_security_modules}")
 
-    def test_enforced_apparmor_profiles(self, qube):
+    def test_enforced_apparmor_profiles(self, qube: QubeWrapper) -> None:
         """Check the expected AppArmor profiles are enforced"""
         if not qube.enforced_apparmor_profiles:
             pytest.skip(f"No enforced AppArmor profiles in {qube.name}")
@@ -304,7 +306,7 @@ class Test_SD_VM_Common:
         for profile in qube.enforced_apparmor_profiles:
             assert results["profiles"][profile] == "enforce"
 
-    def test_grsec_kernel(self, qube):
+    def test_grsec_kernel(self, qube: QubeWrapper) -> None:
         """
         Confirms expected grsecurity-patched kernel is running.
         """
@@ -323,7 +325,7 @@ class Test_SD_VM_Common:
         assert stdout.endswith("-grsec-workstation")
         qube.service_is_active("paxctld")
 
-    def test_debian_platform_version(self, qube):
+    def test_debian_platform_version(self, qube: QubeWrapper) -> None:
         """
         Asserts that the given AppVM is based on an OS listed in the
         SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
@@ -343,7 +345,7 @@ class Test_SD_VM_Common:
     @pytest.mark.mime
     @pytest.mark.slow
     @pytest.mark.configuration
-    def test_mime_types(self, qube):
+    def test_mime_types(self, qube: QubeWrapper) -> None:
         """
         Functionally verifies that the VM config handles specific filetypes correctly,
         opening them with the appropriate program.
@@ -360,7 +362,9 @@ class Test_SD_VM_Common:
     @pytest.mark.skipif(
         dnf.rpm.detect_releasever("/") == "4.2", reason="Feature only available in Qubes >= 4.3"
     )
-    def test_mock_device_attach_deny(self, qube, mock_block_device, qubesd_log):
+    def test_mock_device_attach_deny(
+        self, qube: QubeWrapper, mock_block_device: str, qubesd_log: Iterator[str]
+    ) -> None:
         if qube.name == "sys-usb":
             pytest.skip("Test does not run on 'sys-usb' (no need to attach devices to itself)")
         if qube.devices_attachable:

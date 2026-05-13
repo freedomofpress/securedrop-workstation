@@ -15,7 +15,7 @@ logger = logging.getLogger(SCRIPT_NAME)
 logging.basicConfig(level=logging.INFO)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--launch-app", action="store_true")
     args = parser.parse_args()

@@ -40,7 +40,7 @@ UPTIME_GRACE_PERIOD = 1800  # 30 minutes
 WARNING_THRESHOLD = 432000  # 5 days
 
 
-def is_update_check_necessary():
+def is_update_check_necessary() -> bool:
     """
     Perform a series of checks to determine if a security warning should be
     shown to the user, reminding them to check for available software updates
@@ -54,9 +54,9 @@ def is_update_check_necessary():
     # Get timestamp from last update (if it exists)
     if last_updated_file_exists:
         with open(LAST_UPDATED_FILE) as f:
-            last_update_time = f.readline().splitlines()[0]
+            last_update_str = f.readline().splitlines()[0]
         try:
-            last_update_time = datetime.strptime(last_update_time, LAST_UPDATED_FORMAT)
+            last_update_time = datetime.strptime(last_update_str, LAST_UPDATED_FORMAT)
         except ValueError:
             sdlog.error(
                 f"Data in {LAST_UPDATED_FILE} not in the expected format. "
@@ -104,7 +104,7 @@ def is_update_check_necessary():
     return False
 
 
-def get_uptime_seconds():
+def get_uptime_seconds() -> float:
     # Obtain current uptime
     with open("/proc/uptime") as f:
         return float(f.readline().split()[0])

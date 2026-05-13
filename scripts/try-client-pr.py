@@ -12,7 +12,7 @@ SMALL_TEMPLATE = "sd-small-bookworm-template"
 LARGE_TEMPLATE = "sd-large-bookworm-template"
 
 
-def run_in_vm(command, vmname, capture_output=False):
+def run_in_vm(command: list[str], vmname: str, capture_output: bool = False) -> str | None:
     """Run a command in the build VM."""
     full_command = ["qvm-run", "--pass-io", vmname, " ".join(command)]
     print(f"$ {' '.join(full_command)}")
@@ -23,7 +23,7 @@ def run_in_vm(command, vmname, capture_output=False):
         return None
 
 
-def check_out_pr(pr_id):
+def check_out_pr(pr_id: int) -> None:
     """Check out the PR into the local repository in build VM."""
     print(f"Checking out PR #{pr_id} in {BUILD_VM} VM...")
     branch = f"pr-{pr_id}"
@@ -42,7 +42,7 @@ def check_out_pr(pr_id):
     print(f"Successfully checked out PR #{pr_id}")
 
 
-def build_debs():
+def build_debs() -> None:
     """Run make build-debs in build VM to build the Debian packages."""
     # TODO: we should download these from CI instead of building them ourselves
     # TODO: an option to also update securedrop-builder?
@@ -53,13 +53,14 @@ def build_debs():
     print("Successfully built Debian packages")
 
 
-def find_debs_in_build_vm():
+def find_debs_in_build_vm() -> list[str]:
     """Find all .deb files in the build folder of build VM."""
     print(f"Finding .deb files in {BUILD_VM} VM...")
     # List all .deb files in the build directory
     output = run_in_vm(
         ["find", "securedrop-client/build", "-name", '"*.deb"'], BUILD_VM, capture_output=True
     )
+    assert output is not None  # noqa: S101
 
     deb_files = [line.strip() for line in output.strip().split("\n") if line.strip()]
 
@@ -74,7 +75,7 @@ def get_package_name_from_build_vm(deb_path: str) -> str:
     return Path(deb_path).name.split("_")[0]
 
 
-def copy_deb_to_dom0(build_vm_path):
+def copy_deb_to_dom0(build_vm_path: str) -> Path:
     """Copy a .deb file from build VM to dom0."""
     # Create a temp file path in dom0
     filename = Path(build_vm_path).name
@@ -88,21 +89,23 @@ def copy_deb_to_dom0(build_vm_path):
     return dom0_path
 
 
-def move_deb_to_template(dom0_path, template_vm):
+def move_deb_to_template(dom0_path: Path, template_vm: str) -> str:
     """Move a .deb file from dom0 to template VM."""
     subprocess.check_call(["qvm-move-to-vm", template_vm, str(dom0_path)])
     return f"/home/user/QubesIncoming/dom0/{dom0_path.name}"
 
 
-def install_debs_in_template(all_deb_paths, template_vm):
+def install_debs_in_template(all_deb_paths: list[str], template_vm: str) -> None:
     """Install .deb files in template VM."""
 
     # Need to escape "${Package}\n" from being interpreted by bash
-    wanted_packages = run_in_vm(
+    dpkg_output = run_in_vm(
         ["dpkg-query", "-f", "\\$\\{Package\\}\\\\n", "--show", "securedrop*"],
         template_vm,
         capture_output=True,
-    ).splitlines()
+    )
+    assert dpkg_output is not None  # noqa: S101
+    wanted_packages = dpkg_output.splitlines()
     if "securedrop-client" in wanted_packages:
         # If this is the VM where the client is installed, also install the app
         wanted_packages.append("securedrop-app")
@@ -129,7 +132,7 @@ def install_debs_in_template(all_deb_paths, template_vm):
     run_in_vm(["rm", "-v", debs_list], template_vm)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("pr_id", type=int, help="ID of the Pull Request to test")
     args = parser.parse_args()
@@ -153,7 +156,7 @@ def main():
 
     # Shutdown
     all_vms = subprocess.check_output(
-        ["qvm-ls", "--tags", "sd-workstation", "--raw-list", "--running"]
+        ["qvm-ls", "--tags", "sd-workstation", "--raw-list", "--running"], text=True
     ).splitlines()
     subprocess.check_call(["qvm-shutdown", "--wait"] + all_vms)
     # Manually start sd-proxy so Tor can start up early

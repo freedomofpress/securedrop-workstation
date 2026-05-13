@@ -16,7 +16,7 @@ from sdw_util import Util
 DEFAULT_INTERVAL = 28800  # 8hr default for update interval
 
 
-def parse_argv(argv):
+def parse_argv(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--skip-delta", type=int)
     parser.add_argument("--skip-netcheck", action="store_true")
@@ -24,7 +24,7 @@ def parse_argv(argv):
     return parser.parse_args(argv)
 
 
-def launch_updater(should_skip_netcheck: bool = False, launch_app: bool = False):
+def launch_updater(should_skip_netcheck: bool = False, launch_app: bool = False) -> None:
     """
     Start the updater GUI.
     """
@@ -35,7 +35,7 @@ def launch_updater(should_skip_netcheck: bool = False, launch_app: bool = False)
     sys.exit(app.exec())
 
 
-def main(argv):
+def main(argv: list[str]) -> None:
     Util.configure_logging(Updater.LOG_FILE)
     Util.configure_logging(Updater.DETAIL_LOG_FILE, Updater.DETAIL_LOGGER_PREFIX, backup_count=10)
     sdlog = Util.get_logger()

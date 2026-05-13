@@ -24,7 +24,7 @@ logger.addHandler(JournalHandler(SYSLOG_IDENTIFIER=RPC_POLICY_NAME))
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
-def main():
+def main() -> None:
     source_qube = os.getenv("QREXEC_REMOTE_DOMAIN")
     if source_qube != "sd-gpg":
         # Extra due-dilligence in case there is a policy misconfiguration

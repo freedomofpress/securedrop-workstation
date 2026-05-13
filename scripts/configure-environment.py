@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--config",
@@ -41,7 +41,7 @@ def parse_args():
     return args
 
 
-def set_env_in_config(args):
+def set_env_in_config(args: argparse.Namespace) -> None:
     with open(args.config) as f:
         old_config = json.load(f)
 
@@ -56,7 +56,7 @@ def set_env_in_config(args):
             json.dump(new_config, f)
 
 
-def apply_config(config_path):
+def apply_config(config_path: str) -> None:
     """Copying config secrets into place"""
     config_source = Path(config_path).parent
 
