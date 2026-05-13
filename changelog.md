@@ -1,20 +1,16 @@
 # changelog
 
-## 1.7.0-rc2
+## 1.7.0
 
-* Fix custom-persist for fresh installs (#1651)
-* Adjust headline font weight for Qt6 (#1654)
-
-## 1.7.0-rc1
-
-This release primarily adds Qubes 4.3 support and takes advantage of the new features it brings.
+This release primarily completes Qubes 4.3 support and takes advantage of the new features it brings.
 
 * Qubes 4.3 support:
   * Qubes 4.3 base compatibility improvements (#1373)
+  * Adjust headline font weight for Qt6 (#1654)
   * Skip launching SecureDrop Workstation updater during Qubes in-place upgrade (#1616)
   * Deny device attachment to all VMs except sd-devices and sd-printers (#1553)
-  * Enable custom-persist for sd-app, sd-gpg and sd-log, making them semi-disposable (#1555)
-  * Set xfce-exe-checksum on desktop launcher (#1582)
+  * Enable custom-persist for sd-app, sd-gpg and sd-log, making them semi-disposable (#1555, #1651, #1662, #1664)
+  * Suppress security warning on desktop launcher (#1582)
 * Import sd-gpg secret key from dom0 on boot via qrexec, replacing Salt configuration (#1521)
 * Internal and development:
   * Add security note clarifying ANSI character handling is intentional (#1609, #1624)
