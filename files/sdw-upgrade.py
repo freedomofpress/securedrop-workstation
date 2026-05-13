@@ -304,10 +304,9 @@ class RemoveWhonix17(RemoveQubesStep):
     )
     WHONIX_17_ALL = WHONIX_17_TEMPLATES + WHONIX_17_DERIVED
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             description="Remove Whonix 17 entirely",
-            impact={" ".join(qubes_to_names(self.WHONIX_17_ALL))},
             qubes_for_removal=self.WHONIX_17_ALL,
         )
 
