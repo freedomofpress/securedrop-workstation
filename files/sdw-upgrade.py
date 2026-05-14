@@ -78,7 +78,7 @@ class ActionRecommendation(enum.Enum):
 
 
 def prompt_user_confirmation(prompt: str) -> bool:
-    normalized_response = input(f"{LOG_ACTION}{prompt} [Y/n] ").strip().lower()
+    normalized_response = input(f"{LOG_ACTION}{prompt} [y/n] ").strip().lower()
 
     if normalized_response in ("y", "yes"):
         return True
