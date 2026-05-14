@@ -131,6 +131,9 @@ class RemoveQubesStep(UpgradePrepStep):
         expected_dependencies: list[QubesVM] = [],
         impact: str = "(no expected impact on your system)",
     ) -> None:
+        # Avoid mutable default argument issue
+        expected_dependencies = expected_dependencies or []
+
         # There may not be any existing qubes in which case there's no impact
         if qubes_for_removal or expected_dependencies:
             impact = "It may affect: " + ", ".join(
