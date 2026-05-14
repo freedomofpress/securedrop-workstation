@@ -12,3 +12,29 @@ rules:
     paths:
       include:
         - "*.sls"
+
+  - id: saltstack-cmd-wait-discouraged # "Regression test" for issue #1641
+    patterns:
+      - pattern: |
+          cmd.wait:
+            ...
+    message: SaltStack's cmd.wait is particularly tricky and the docs discourage it
+    languages:
+      - generic
+    severity: ERROR
+    paths:
+      include:
+        - "*.sls"
+  - id: saltstack-watch-requires-mod-watch # "Regression test" for issue #1641
+    patterns:
+      - pattern: |
+          ...:
+            ...
+            - watch: ...
+    message: Please make sure the watched state implements 'mod_watch'
+    languages:
+      - generic
+    severity: ERROR
+    paths:
+      include:
+        - "*.sls"
