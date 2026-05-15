@@ -11,7 +11,8 @@ include:
 
 # 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to
 # follow simple - like sd-fedora-NN-dvm
-{% set sd_supported_fedora_version = 'fedora-42' %}
+{% set sd_supported_fedora_version_num = 43 %}
+{% set sd_supported_fedora_version = 'fedora-' ~ sd_supported_fedora_version_num %}
 {% set sd_fedora_base_template = sd_supported_fedora_version + '-xfce' %}
 
 {% set gui_user = salt['cmd.shell']('groupmems -l -g qubes') %}
@@ -30,21 +31,24 @@ set-fedora-template-as-default-mgmt-dvm:
     - require:
       - qvm: dom0-install-fedora-template
 
-# If the VM has just been installed via qvm-template, update it immediately.
-# This is to ensure management VMs are up-to-date. When this state is run via
-# the GUI updater (as part of its routine dom0 highstate run), it ensures that
-# updates are applied to a new template even if the running updater has a stale list
-# (see https://github.com/freedomofpress/securedrop-workstation/issues/758).
+# Newly template is up to date before proceeding with VM configuration:
+#  1. VM configuration via salt uses management qubes. Any bugs in the official
+#     template, especially salt-related could brick VM configuration completely
+#     (e.g. https://github.com/freedomofpress/securedrop-workstation/pull/1638#issuecomment-4350992151)
+#  2. This state is run via the GUI updater (as part of its routine dom0 highstate
+#     run), it ensures that updates are applied to a new template even if the
+#     running updater has a stale list
+#     (see https://github.com/freedomofpress/securedrop-workstation/issues/758)
 update-fedora-template-if-new:
-  cmd.wait:
+  cmd.run:
     - name: qubes-vm-update --quiet --force-update --targets {{ sd_fedora_base_template }}
     - runas: {{ gui_user }}
     - require:
-      - qvm: dom0-install-fedora-template
       # Update the mgmt-dvm setting first, to avoid problems during first update
       - cmd: set-fedora-template-as-default-mgmt-dvm
-    - onchanges:
-      - qvm: dom0-install-fedora-template
+    - unless:
+      # Run if never updated (likely a clean install or just downloaded template)
+      - qvm-features {{ sd_fedora_base_template }} last-update
 
 # qvm.default-dispvm is not strictly required here, but we want it to be
 # updated as soon as possible to ensure make clean completes successfully, as
@@ -125,17 +129,6 @@ sd-{{ sys_vm }}-fedora-version-update:
       - qvm: create-{{ sd_supported_fedora_template }}
 {% endif %}
 
-# Finally, remove the old supported fedora DVM we created. We won't uninstall
-# the template, in case it's being used elsewhere, but the `sd-` VMs we can
-# reasonably manage (remove) ourselves.
-{% if sys_vm == "sys-usb" %}
-remove-sd-fedora-41-dvm:
-  qvm.absent:
-    - name: sd-fedora-41-dvm
-    - require:
-      - qvm: sd-sys-usb-fedora-version-update
-{% endif %}
-
 sd-{{ sys_vm }}-fedora-version-start:
   qvm.start:
     - name: {{ sys_vm }}
@@ -144,3 +137,17 @@ sd-{{ sys_vm }}-fedora-version-start:
 {% endif %}
 {% endfor %}
 
+
+# Finally, remove the old supported fedora DVMs we created. We won't uninstall
+# the template, in case it's being used elsewhere, but the `sd-` VMs we can
+# reasonably manage (remove) ourselves.
+{% set curr_fedora = sd_supported_fedora_version_num|string %}
+{% set prev_fedora = (sd_supported_fedora_version_num - 1)|string %}
+{% for curr_dispvm_template in required_dispvms %}
+  {% set prev_dispvm_template = curr_dispvm_template | replace(curr_fedora, prev_fedora) %}
+remove-{{ prev_dispvm_template }}:
+  qvm.absent:
+    - name: {{ prev_dispvm_template }}
+    - require:
+      - qvm: create-{{ curr_dispvm_template }}
+{% endfor %}
