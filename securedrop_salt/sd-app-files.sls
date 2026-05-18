@@ -16,10 +16,9 @@ include:
 
 # FPF repo is setup in "securedrop-workstation-$sdvars.distribution" template,
 # and then cloned as "sd-small-$sdvars.distribution-template"
-install-securedrop-client-package:
+install-securedrop-app-package:
   pkg.installed:
     - pkgs:
-      - securedrop-client
       - securedrop-app
     - require:
       - sls: securedrop_salt.fpf-apt-repo
