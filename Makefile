@@ -43,7 +43,7 @@ dev staging: assert-dom0 ## Installs, configures and builds a dev or staging env
 configure-env-%:
 	@echo "Configuring $* environment"
 	./scripts/configure-environment.py --env $*
-	./files/validate_config.py
+	sdw-admin --validate
 
 .PHONY: assert-keyring-%
 assert-keyring-%: ## Correct keyring pkg installed
