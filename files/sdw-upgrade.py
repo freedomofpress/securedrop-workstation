@@ -101,9 +101,13 @@ class UpgradePrepStep:
         action = self.can_run()
         if action == ActionRecommendation.AUTOMATIC:
             print(f"{LOG_SUB_ACTION}Applying...")
-            self.apply()
-            self.has_ran = True
-            print(f"{LOG_SUB_ACTION}Successfully applied!")
+            try:
+                self.apply()
+                self.has_ran = True
+                print(f"{LOG_SUB_ACTION}Successfully applied!")
+            except subprocess.CalledProcessError:
+                print(f"{LOG_SUB_ACTION}WARNING: Step may be incomplete")
+                self.has_ran = False
         elif action == ActionRecommendation.NOT_NEEDED:
             print(f"{LOG_SUB_ACTION}Step skipped (not needed)...")
             self.has_ran = True
@@ -382,6 +386,7 @@ def prepare_upgrade() -> None:
             print(f"{RED}[MANUAL]{RESET} " f"{BOLD}{ITALIC}{incomplete_step.description}{RESET}")
             incomplete_step.on_fail()
             print("")
+        sys.exit(1)
 
 
 def main() -> None:
@@ -391,11 +396,7 @@ def main() -> None:
     if args.debug:
         logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
-    try:
-        prepare_upgrade()
-    except subprocess.CalledProcessError as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+    prepare_upgrade()
 
 
 if __name__ == "__main__":
