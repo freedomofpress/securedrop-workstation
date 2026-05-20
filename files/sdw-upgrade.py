@@ -174,15 +174,23 @@ class RemoveQubesStep(UpgradePrepStep):
 
             if qube not in impacted_qubes_expected:
                 # early failure: mismatch
-                log.debug(f"Unexpected dependent: {qube.name}")
+                log.warning(f"Unexpected dependent: {qube.name}")
                 return ActionRecommendation.MANUAL
 
             if qube not in visited:
                 visited.append(qube)
                 for holder_qube, prop in qubesadmin.utils.vm_dependencies(app, qube):
-                    if holder_qube is None:
-                        # Global properties don't matter for finding dependencies
-                        continue
+                    if holder_qube is None:  # it's a global property
+                        if qube not in self.qubes_for_removal:
+                            # Fine to keep global properties on dependent qubes
+                            # so long as these are not for removal
+                            continue
+
+                        log.warning(
+                            f"Global property {prop} is set to {qube.name}, "
+                            "which is pending removal"
+                        )
+                        return ActionRecommendation.MANUAL
 
                     queue.append(holder_qube)
 
