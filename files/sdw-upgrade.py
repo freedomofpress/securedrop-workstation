@@ -333,7 +333,7 @@ class RemoveWhonix17(RemoveQubesStep):
         )
 
     def on_fail(self) -> None:
-        print("\tWe detected some non-default whonix qubes which made automated risky.")
+        print("\tWe detected some non-default whonix qubes which made automated removal risky.")
         print("")
         print(
             f"\t{BOLD}Action:{RESET} Consider removing Whonix 17, if there is no use-case for it."
