@@ -25,14 +25,14 @@ This release primarily completes Qubes 4.3 support and takes advantage of the ne
   * Bump actions/download-artifact from 7 to 8 (#1587)
   * Bump actions/create-github-app-token from 2 to 3 (#1614)
 
-## 1.6.1-rc1
+## 1.6.1
 
 This release enables upgrading to Qubes 4.3; please review the migration guide for detailed instructions.
 
 * Switch to Fedora 43 (#1638)
-* Add Qubes 4.3 upgrade prep script (#1653)
 * Internal:
   * Rename CI jobs and run against 4.3 (#1373)
+  * Add upgrade prep script draft (#1653)
 
 ## 1.6.0
 
