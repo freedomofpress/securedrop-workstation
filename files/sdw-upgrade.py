@@ -101,9 +101,13 @@ class UpgradePrepStep:
         action = self.can_run()
         if action == ActionRecommendation.AUTOMATIC:
             print(f"{LOG_SUB_ACTION}Applying...")
-            self.apply()
-            self.has_ran = True
-            print(f"{LOG_SUB_ACTION}Successfully applied!")
+            try:
+                self.apply()
+                self.has_ran = True
+                print(f"{LOG_SUB_ACTION}Successfully applied!")
+            except subprocess.CalledProcessError:
+                print(f"{LOG_SUB_ACTION}WARNING: Step may be incomplete")
+                self.has_ran = False
         elif action == ActionRecommendation.NOT_NEEDED:
             print(f"{LOG_SUB_ACTION}Step skipped (not needed)...")
             self.has_ran = True
@@ -174,15 +178,23 @@ class RemoveQubesStep(UpgradePrepStep):
 
             if qube not in impacted_qubes_expected:
                 # early failure: mismatch
-                log.debug(f"Unexpected dependent: {qube.name}")
+                log.warning(f"Unexpected dependent: {qube.name}")
                 return ActionRecommendation.MANUAL
 
             if qube not in visited:
                 visited.append(qube)
                 for holder_qube, prop in qubesadmin.utils.vm_dependencies(app, qube):
-                    if holder_qube is None:
-                        # Global properties don't matter for finding dependencies
-                        continue
+                    if holder_qube is None:  # it's a global property
+                        if qube not in self.qubes_for_removal:
+                            # Fine to keep global properties on dependent qubes
+                            # so long as these are not for removal
+                            continue
+
+                        log.warning(
+                            f"Global property {prop} is set to {qube.name}, "
+                            "which is pending removal"
+                        )
+                        return ActionRecommendation.MANUAL
 
                     queue.append(holder_qube)
 
@@ -325,7 +337,7 @@ class RemoveWhonix17(RemoveQubesStep):
         )
 
     def on_fail(self) -> None:
-        print("\tWe detected some non-default whonix qubes which made automated risky.")
+        print("\tWe detected some non-default whonix qubes which made automated removal risky.")
         print("")
         print(
             f"\t{BOLD}Action:{RESET} Consider removing Whonix 17, if there is no use-case for it."
@@ -374,6 +386,7 @@ def prepare_upgrade() -> None:
             print(f"{RED}[MANUAL]{RESET} " f"{BOLD}{ITALIC}{incomplete_step.description}{RESET}")
             incomplete_step.on_fail()
             print("")
+        sys.exit(1)
 
 
 def main() -> None:
@@ -383,11 +396,7 @@ def main() -> None:
     if args.debug:
         logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
-    try:
-        prepare_upgrade()
-    except subprocess.CalledProcessError as e:
-        print(f"Error: {e}")
-        sys.exit(1)
+    prepare_upgrade()
 
 
 if __name__ == "__main__":
