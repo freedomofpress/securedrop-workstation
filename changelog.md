@@ -1,13 +1,13 @@
 # changelog
 
-## 1.6.1-rc1
+## 1.6.1
 
 This release enables upgrading to Qubes 4.3; please review the migration guide for detailed instructions.
 
 * Switch to Fedora 43 (#1638)
-* Add Qubes 4.3 upgrade prep script (#1653)
 * Internal:
   * Rename CI jobs and run against 4.3 (#1373)
+  * Add upgrade prep script draft (#1653)
 
 ## 1.6.0
 
