@@ -1,5 +1,10 @@
 # changelog
 
+## 1.7.0-rc1
+
+* Stop installing securedrop-client and hide it (#1683)
+* fix hardware-dependent breakage when upgrading Fedora templates (#1691)
+
 ## 1.7.0
 
 This release primarily completes Qubes 4.3 support and takes advantage of the new features it brings.
