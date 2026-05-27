@@ -26,7 +26,6 @@ def qube() -> QubeWrapper:
             "SD_SUBMISSION_KEY_FPR",
             "SD_MIME_HANDLING",
         },
-        enforced_apparmor_profiles=set(),
         mime_types_handling=True,
     )
 
