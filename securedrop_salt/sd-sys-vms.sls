@@ -107,14 +107,11 @@ create-{{ required_dispvm }}:
 {% endif %}
 {% if salt['cmd.shell']('qvm-prefs ' + sys_vm + ' template') != sd_supported_fedora_template %}
 sd-{{ sys_vm }}-fedora-version-halt:
-  qvm.kill:
+  qvm.shutdown:
     - name: {{ sys_vm }}
-    - require:
-      - qvm: dom0-install-fedora-template
-
-sd-{{ sys_vm }}-fedora-version-halt-wait:
-  cmd.run:
-    - name: sleep 5
+      flags:
+        - wait
+        - force
     - require:
       - qvm: dom0-install-fedora-template
 
@@ -124,7 +121,7 @@ sd-{{ sys_vm }}-fedora-version-update:
     - prefs:
       - template: {{ sd_supported_fedora_template }}
     - require:
-      - cmd: sd-{{ sys_vm }}-fedora-version-halt-wait
+      - qvm: sd-{{ sys_vm }}-fedora-version-halt
 {% if sd_supported_fedora_template.endswith("-dvm") %}
       - qvm: create-{{ sd_supported_fedora_template }}
 {% endif %}
