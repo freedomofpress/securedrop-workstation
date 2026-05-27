@@ -26,9 +26,6 @@ def qube() -> QubeWrapper:
             "SD_SUBMISSION_KEY_FPR",
             "SD_MIME_HANDLING",
         },
-        enforced_apparmor_profiles={
-            "/usr/bin/securedrop-client",
-        },
         mime_types_handling=True,
     )
 
@@ -50,14 +47,10 @@ def test_mailcap_hardened(qube: QubeWrapper) -> None:
 
 
 @pytest.mark.configuration
-def test_sd_client_package_installed(qube: QubeWrapper) -> None:
-    assert qube.package_is_installed("securedrop-client")
-
-
-@pytest.mark.configuration
-def test_sd_client_dependencies_installed(qube: QubeWrapper) -> None:
-    assert qube.package_is_installed("python3-pyqt5")
-    assert qube.package_is_installed("python3-pyqt5.qtsvg")
+def test_sd_app_package_installed(qube: QubeWrapper) -> None:
+    assert qube.package_is_installed("securedrop-app")
+    # And the client has been removed
+    assert not qube.package_is_installed("securedrop-client")
 
 
 @pytest.mark.provisioning
