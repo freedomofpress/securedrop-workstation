@@ -1,5 +1,10 @@
 # changelog
 
+## 1.6.2-rc1
+
+* Stop installing securedrop-client and hide it (#1683)
+* complete sdw-upgrade script (#1687, #1693)
+
 ## 1.6.1
 
 This release enables upgrading to Qubes 4.3; please review the migration guide for detailed instructions.
