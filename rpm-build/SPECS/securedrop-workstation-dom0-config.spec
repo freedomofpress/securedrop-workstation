@@ -1,5 +1,9 @@
 Name:		securedrop-workstation-dom0-config
+<<<<<<< HEAD
 Version:	1.6.2
+=======
+Version:	1.7.1rc1
+>>>>>>> 57d387a (Bump to 1.7.1rc1 and add changelog)
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -221,6 +225,9 @@ fi
 
 %changelog
 * Thu May 28 2026 SecureDrop Team <securedrop@freedom.press> - 1.6.2
+- See changelog.md
+
+* Wed May 27 2026 SecureDrop Team <securedrop@freedom.press> - 1.7.1rc1
 - See changelog.md
 
 * Thu May 21 2026 SecureDrop Team <securedrop@freedom.press> - 1.6.1
