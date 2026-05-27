@@ -300,7 +300,7 @@ class RemoveWhonix17(RemoveQubesStep):
     WHONIX_17_TEMPLATES = names_to_qubes(["whonix-gateway-17", "whonix-workstation-17"])
     WHONIX_17_DERIVED = names_to_qubes(
         [
-            "anon-whonix",  # order matters (until we can use "qvm-template purge")
+            "anon-whonix",
             "whonix-workstation-17-dvm",
             "sys-whonix",
         ]
@@ -316,12 +316,13 @@ class RemoveWhonix17(RemoveQubesStep):
     def apply(self) -> None:
         self.print_purge_impact(removal_text="removal")
 
-        # "qvm-template purge" is best fit but we run into qubes-issues#10879
+        # NOTE: workaround bug in "qvm-template purge" (qubes-issues#10879)
+        # unsetting netvms because qvm-template can't break netvm dependencies
+        for qube in self.WHONIX_17_DERIVED:
+            qube.netvm = ""  # type: ignore[assignment]
+
         subprocess.run(
-            ["qvm-remove", "--force"] + qubes_to_names(self.WHONIX_17_DERIVED), check=True
-        )
-        subprocess.run(
-            ["qvm-remove", "--force"] + qubes_to_names(self.WHONIX_17_TEMPLATES), check=True
+            ["qvm-template", "purge"] + qubes_to_names(self.WHONIX_17_TEMPLATES), check=True
         )
 
     def on_fail(self) -> None:
