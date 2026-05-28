@@ -1,6 +1,6 @@
 # changelog
 
-## 1.7.0-rc1
+## 1.7.1
 
 * Stop installing securedrop-client and hide it (#1683)
 * fix hardware-dependent breakage when upgrading Fedora templates (#1691)
