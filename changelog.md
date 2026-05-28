@@ -1,6 +1,6 @@
 # changelog
 
-## 1.6.2-rc1
+## 1.6.2
 
 * Stop installing securedrop-client and hide it (#1683)
 * complete sdw-upgrade script (#1687, #1693)
