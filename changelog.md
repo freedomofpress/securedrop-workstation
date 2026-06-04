@@ -1,5 +1,10 @@
 # changelog
 
+## 1.7.1
+
+* Stop installing securedrop-client and hide it (#1683)
+* fix hardware-dependent breakage when upgrading Fedora templates (#1691)
+
 ## 1.7.0
 
 This release primarily completes Qubes 4.3 support and takes advantage of the new features it brings.
@@ -24,6 +29,11 @@ This release primarily completes Qubes 4.3 support and takes advantage of the ne
   * Bump actions/upload-artifact from 6 to 7 (#1615)
   * Bump actions/download-artifact from 7 to 8 (#1587)
   * Bump actions/create-github-app-token from 2 to 3 (#1614)
+
+## 1.6.2
+
+* Stop installing securedrop-client and hide it (#1683)
+* complete sdw-upgrade script (#1687, #1693)
 
 ## 1.6.1
 
