@@ -54,7 +54,7 @@
       </spacer>
      </item>
      <item row="7" column="4">
-      <widget class="QPushButton" name="clientOpenButton">
+      <widget class="QPushButton" name="inboxOpenButton">
        <property name="styleSheet">
         <string notr="true"/>
        </property>

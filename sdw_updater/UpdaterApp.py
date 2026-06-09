@@ -18,7 +18,7 @@ from sdw_util import Util
 logger = Util.get_logger(module=__name__)
 
 
-def launch_securedrop_client() -> None:
+def launch_securedrop_inbox() -> None:
     """
     Helper function to launch the SecureDrop Inbox
     """
@@ -56,9 +56,9 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self.cancelButton.show()
         self.cancelButton.clicked.connect(self.exit_updater)
 
-        self.clientOpenButton.setEnabled(False)
-        self.clientOpenButton.hide()
-        self.clientOpenButton.clicked.connect(launch_securedrop_client)
+        self.inboxOpenButton.setEnabled(False)
+        self.inboxOpenButton.hide()
+        self.inboxOpenButton.clicked.connect(launch_securedrop_inbox)
 
         self.rebootButton.setEnabled(False)
         self.rebootButton.hide()
@@ -92,9 +92,9 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
             self.headline.setText(strings.headline_status_reboot_required)
             self.proposedActionDescription.setText(strings.description_status_reboot_required)
         elif result["recommended_action"] == UpdateStatus.UPDATES_OK:
-            logger.info("VMs have been succesfully updated, OK to start client")
-            self.clientOpenButton.setEnabled(True)
-            self.clientOpenButton.show()
+            logger.info("VMs have been succesfully updated, OK to start inbox")
+            self.inboxOpenButton.setEnabled(True)
+            self.inboxOpenButton.show()
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
             self.headline.setText(strings.headline_status_updates_complete)

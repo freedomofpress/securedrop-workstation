@@ -38,11 +38,11 @@ class Ui_UpdaterDialog:
             20, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed
         )
         self.gridLayout.addItem(spacerItem, 1, 1, 1, 5)
-        self.clientOpenButton = QtWidgets.QPushButton(parent=UpdaterDialog)
-        self.clientOpenButton.setStyleSheet("")
-        self.clientOpenButton.setAutoDefault(True)
-        self.clientOpenButton.setObjectName("clientOpenButton")
-        self.gridLayout.addWidget(self.clientOpenButton, 7, 4, 1, 1)
+        self.inboxOpenButton = QtWidgets.QPushButton(parent=UpdaterDialog)
+        self.inboxOpenButton.setStyleSheet("")
+        self.inboxOpenButton.setAutoDefault(True)
+        self.inboxOpenButton.setObjectName("inboxOpenButton")
+        self.gridLayout.addWidget(self.inboxOpenButton, 7, 4, 1, 1)
         self.proposedActionDescription = QtWidgets.QLabel(parent=UpdaterDialog)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum
@@ -115,7 +115,7 @@ class Ui_UpdaterDialog:
         UpdaterDialog.setWindowTitle(
             _translate("UpdaterDialog", "SecureDrop Workstation preflight updater")
         )
-        self.clientOpenButton.setText(_translate("UpdaterDialog", "Continue"))
+        self.inboxOpenButton.setText(_translate("UpdaterDialog", "Continue"))
         self.proposedActionDescription.setText(_translate("UpdaterDialog", "Description goes here"))
         self.rebootButton.setText(_translate("UpdaterDialog", "Reboot"))
         self.applyUpdatesButton.setText(_translate("UpdaterDialog", "Start Updates"))

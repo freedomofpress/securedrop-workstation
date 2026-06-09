@@ -10,7 +10,7 @@ except ImportError:
 
 from sdw_updater import Updater
 from sdw_updater.Updater import is_qubes_mid_upgrade, should_launch_updater
-from sdw_updater.UpdaterApp import UpdaterApp, launch_securedrop_client
+from sdw_updater.UpdaterApp import UpdaterApp, launch_securedrop_inbox
 from sdw_util import Util
 
 DEFAULT_INTERVAL = 28800  # 8hr default for update interval
@@ -66,7 +66,7 @@ def main(argv: list[str]) -> None:
     if should_launch_updater(interval):
         launch_updater(args.skip_netcheck)
     else:
-        launch_securedrop_client()
+        launch_securedrop_inbox()
 
 
 if __name__ == "__main__":

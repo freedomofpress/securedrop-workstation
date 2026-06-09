@@ -42,7 +42,7 @@ detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 def _get_current_vms() -> dict[str, str]:
     debian_version = "bookworm"
 
-    # The are the TemplateVMs that require full patch level at boot in order to start the client,
+    # The are the TemplateVMs that require full patch level at boot in order to start the inbox,
     # as well as their associated TemplateVMs.
     # In the future, we could use qvm-prefs to extract this information.
     return {
@@ -470,11 +470,11 @@ def should_launch_updater(interval: int) -> bool:
             sdlog.info("Update interval expired: launching updater.")
             return True
         if status["status"] == UpdateStatus.UPDATES_OK.value:
-            sdlog.info("Updates OK and interval not expired, launching client.")
+            sdlog.info("Updates OK and interval not expired, launching inbox.")
             return False
         if status["status"] == UpdateStatus.REBOOT_REQUIRED.value:
             if last_required_reboot_performed():
-                sdlog.info("Required reboot performed, updating status and launching client.")
+                sdlog.info("Required reboot performed, updating status and launching inbox.")
                 _write_updates_status_flag_to_disk(UpdateStatus.UPDATES_OK)
                 return False
 

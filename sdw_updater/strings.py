@@ -27,7 +27,7 @@ description_status_updates_failed = (
     "There was an error downloading or installing updates for your workstation. "
     "The SecureDrop Inbox cannot be started at this time. Please contact your administrator."
 )
-# Post-update actions (launching client, reboot)
+# Post-update actions (launching inbox, reboot)
 headline_status_reboot_required = "All updates complete!"
 description_status_reboot_required = (
     "You need to reboot the computer for updates to be completed. "
