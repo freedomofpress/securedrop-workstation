@@ -2,7 +2,7 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 # TODO: parametrise this
-{% if grains['id'] in ["sd-small-bookworm-template", "sd-large-bookworm-template"] %}
+{% if grains['id'] in ["sd-small-trixie-template", "sd-large-trixie-template"] %}
 include:
   - securedrop_salt.fpf-apt-repo
 

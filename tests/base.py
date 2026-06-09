@@ -15,7 +15,7 @@ from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
 # Reusable constant for DRY import across tests
-DEBIAN_VERSION = "bookworm"
+DEBIAN_VERSION = "trixie"
 SD_TEMPLATE_BASE = f"sd-base-{DEBIAN_VERSION}-template"
 SD_TEMPLATE_LARGE = f"sd-large-{DEBIAN_VERSION}-template"
 SD_TEMPLATE_SMALL = f"sd-small-{DEBIAN_VERSION}-template"

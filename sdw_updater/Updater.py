@@ -40,7 +40,7 @@ detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 
 
 def _get_current_vms() -> dict[str, str]:
-    debian_version = "bookworm"
+    debian_version = "trixie"
 
     # The are the TemplateVMs that require full patch level at boot in order to start the inbox,
     # as well as their associated TemplateVMs.

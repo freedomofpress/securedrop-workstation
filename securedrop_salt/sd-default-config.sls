@@ -31,4 +31,4 @@
 {% endif %}
 
 # Append repo URL with appropriate distribution
-{% set _ = sdvars.update({"distribution": "bookworm"}) %}
+{% set _ = sdvars.update({"distribution": "trixie"}) %}

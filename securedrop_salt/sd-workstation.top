@@ -25,14 +25,14 @@ base:
     - securedrop_salt.sd-reset-whonix-prefs
     {% endif %}
 
-  sd-base-bookworm-template:
+  sd-base-trixie-template:
     - securedrop_salt.sd-base-template-packages
-  sd-small-bookworm-template:
+  sd-small-trixie-template:
     - securedrop_salt.sd-logging-setup
     - securedrop_salt.sd-app-files
     - securedrop_salt.sd-proxy-template-files
     - securedrop_salt.sd-gpg-template-files
-  sd-large-bookworm-template:
+  sd-large-trixie-template:
     - securedrop_salt.sd-logging-setup
     - securedrop_salt.sd-devices-files
     - securedrop_salt.sd-viewer-files

@@ -19,7 +19,7 @@ CONFLICTING_PROCESS_REGEX = r"Conflicting process .* is currently running."
 # Fixtures (sample files) for certain tests
 FIXTURES_PATH = Path(__file__).parent / "fixtures"
 
-DEBIAN_VERSION = "bookworm"
+DEBIAN_VERSION = "trixie"
 WHONIX_VERSION = 17
 
 

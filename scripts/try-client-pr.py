@@ -8,8 +8,8 @@ import tempfile
 from pathlib import Path
 
 BUILD_VM = os.environ.get("SECUREDROP_DEV_VM", "sd-dev")
-SMALL_TEMPLATE = "sd-small-bookworm-template"
-LARGE_TEMPLATE = "sd-large-bookworm-template"
+SMALL_TEMPLATE = "sd-small-trixie-template"
+LARGE_TEMPLATE = "sd-large-trixie-template"
 
 
 def run_in_vm(command: list[str], vmname: str, capture_output: bool = False) -> str | None:
