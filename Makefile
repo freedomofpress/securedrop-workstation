@@ -189,18 +189,6 @@ ifeq ($(OATHTOOL_PATH),)
 	@false
 endif
 
-PHONY: run-client
-run-client: assert-dom0 run-deps ## Run client application (automatic login)
-	qvm-run --service sd-app qubes.StartApp+press.freedom.SecureDropClient
-	@sleep 3
-	@xdotool type "journalist"
-	@xdotool key Tab
-	@xdotool type "correct horse battery staple profanity oil chewy"
-	@xdotool key Tab
-	@xdotool key Tab
-	@xdotool type $(shell oathtool --totp --base32 JHCOGO7VCER3EJ4L)
-	@xdotool key Return
-
 PHONY: run-app
 run-app: assert-dom0 run-deps ## Run SecureDrop Inbox (automatic login)
 	qvm-run --service sd-app qubes.StartApp+press.freedom.SecureDropApp
