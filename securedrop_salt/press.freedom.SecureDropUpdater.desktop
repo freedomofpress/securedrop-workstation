@@ -1,7 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Type=Application
-Terminal=false
-Icon=securedrop
-Name=SecureDrop Inbox
-Exec=/usr/bin/sdw-updater
