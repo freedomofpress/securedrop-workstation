@@ -25,7 +25,7 @@ dom0-login-autostart-desktop-file:
     - context:
         desktop_name: SDWLogin
         desktop_comment: Updates SecureDrop Workstation DispVMs at login
-        desktop_exec: /usr/bin/sdw-login --launch-app
+        desktop_exec: /usr/bin/sdw-login
     - user: {{ gui_user }}
     - group: {{ gui_user }}
     - mode: 664
@@ -35,10 +35,7 @@ dom0-login-autostart-desktop-file:
 dom0-securedrop-launcher-desktop-shortcut:
   file.managed:
     - name: /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
-    - source: "salt://securedrop_salt/press.freedom.SecureDropUpdater.desktop.j2"
-    - template: jinja
-    - context:
-        desktop_exec: sdw-updater --launch-app
+    - source: "salt://securedrop_salt/press.freedom.SecureDropUpdater.desktop"
     - user: {{ gui_user }}
     - group: {{ gui_user }}
     - mode: 755

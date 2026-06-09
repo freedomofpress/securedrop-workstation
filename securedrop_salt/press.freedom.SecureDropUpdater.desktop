@@ -4,4 +4,4 @@ Type=Application
 Terminal=false
 Icon=securedrop
 Name=SecureDrop Inbox
-Exec={{ desktop_exec }}
+Exec=/usr/bin/sdw-updater
