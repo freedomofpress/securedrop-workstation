@@ -101,7 +101,8 @@ install -m 755 -d %{buildroot}%{_sharedstatedir}/%{name}/
 install -m 755 -d %{buildroot}%{_userunitdir}/
 install -m 755 -d %{buildroot}%{_unitdir}
 install -m 755 -d %{buildroot}%{_userpresetdir}/
-install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}%{_datadir}/applications/
+install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/%{_datadir}/applications/
+install -m 644 files/press.freedom.SecureDropUpdater.desktop %{buildroot}/srv/salt/securedrop_salt/press.freedom.SecureDropUpdater.desktop
 install -m 644 files/securedrop-128x128.png %{buildroot}%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 install -m 644 files/securedrop-scalable.svg %{buildroot}%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 install -m 755 files/sdw-updater.py %{buildroot}%{_bindir}/sdw-updater

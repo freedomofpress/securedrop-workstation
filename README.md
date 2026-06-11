@@ -91,7 +91,7 @@ This repo also contains the following developer-facing components:
 
 SecureDrop Workstation has a companion repository, [SecureDrop Client](https://github.com/freedomofpress/securedrop-client/),
 that contains component code for all of the packages we ship in individual VMs once they have been provisioned:
-- The [SecureDrop Client](https://github.com/freedomofpress/securedrop-client/tree/main/client#readme) is installed in `sd-app` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
+- The [SecureDrop Inbox](https://github.com/freedomofpress/securedrop-client/tree/main/app#readme) is installed in `sd-app` and will be used to access the SecureDrop server *Journalist Interface* via the SecureDrop proxy.
 - The [SecureDrop Proxy](https://github.com/freedomofpress/securedrop-client/tree/main/proxy#readme) is installed in `sd-proxy` to communicate to the SecureDrop server *Journalist Interface* via Tor.
 - [SecureDrop Export](https://github.com/freedomofpress/securedrop-client/tree/main/export#readme) is installed in `sd-devices` and `sd-printers`. They are used to exporting files and manage printing.
 - The *SecureDrop Client* opens all submissions in the networkless, disposable `sd-viewer` VM
@@ -170,10 +170,10 @@ The *Display VM* (sd-viewer) is disposable, does not have network access, and is
 * An adversary can exhaust storage in the centralized logging VM (`sd-log`).
 
 #### What compromise of the *App VM* (`sd-app`) can achieve
-The *App VM* is where securedrop-client resides. It does not have network access, and the Qubes split-gpg mechanism permits access to GPG keys from this VM.
+The *App VM* is where SecureDrop Inbox resides. It does not have network access, and the Qubes split-gpg mechanism permits access to GPG keys from this VM.
 * An adversary can view all decrypted submissions.
 * An adversary can decrypt arbitrary encrypted submissions.
-* An adversary can interact with the SecureDrop *Journalist Interface* or modify SecureDrop client code.
+* An adversary can interact with the SecureDrop *Journalist Interface* or modify SecureDrop Inbox code.
 * An adversary can attempt to elevate their privileges and escape the VM.
 * An adversary can exhaust storage in the centralized logging VM (`sd-log`).
 

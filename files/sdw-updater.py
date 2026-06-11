@@ -10,7 +10,7 @@ except ImportError:
 
 from sdw_updater import Updater
 from sdw_updater.Updater import is_qubes_mid_upgrade, should_launch_updater
-from sdw_updater.UpdaterApp import UpdaterApp, launch_securedrop_client
+from sdw_updater.UpdaterApp import UpdaterApp, launch_securedrop_inbox
 from sdw_util import Util
 
 DEFAULT_INTERVAL = 28800  # 8hr default for update interval
@@ -20,17 +20,16 @@ def parse_argv(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--skip-delta", type=int)
     parser.add_argument("--skip-netcheck", action="store_true")
-    parser.add_argument("--launch-app", action="store_true")
     return parser.parse_args(argv)
 
 
-def launch_updater(should_skip_netcheck: bool = False, launch_app: bool = False) -> None:
+def launch_updater(should_skip_netcheck: bool = False) -> None:
     """
     Start the updater GUI.
     """
 
     app = QApplication(sys.argv)
-    form = UpdaterApp(should_skip_netcheck, launch_app)
+    form = UpdaterApp(should_skip_netcheck)
     form.show()
     sys.exit(app.exec())
 
@@ -65,9 +64,9 @@ def main(argv: list[str]) -> None:
     interval = int(args.skip_delta)
 
     if should_launch_updater(interval):
-        launch_updater(args.skip_netcheck, args.launch_app)
+        launch_updater(args.skip_netcheck)
     else:
-        launch_securedrop_client(app=args.launch_app)
+        launch_securedrop_inbox()
 
 
 if __name__ == "__main__":

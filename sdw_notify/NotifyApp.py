@@ -33,7 +33,7 @@ class NotifyDialog(QMessageBox):
 
     Constructor takes a boolean parameter, `is_sdapp_stopped`, which determines
     whether a longer error message indicating the updater's impact on a
-    currently-running client session will be shown.
+    currently-running inbox session will be shown.
     """
 
     def __init__(self, is_sdapp_stopped: bool):
