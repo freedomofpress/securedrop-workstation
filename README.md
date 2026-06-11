@@ -41,9 +41,9 @@ However, the Qubes OS approach is not without downsides. It stands and falls wit
 
 ## Project status
 
-SecureDrop Workstation is in open beta. We continue to move towards general availability of SecureDrop Workstation based on users' feedback and experience. The current version is compatible with Qubes 4.2 and work is ongoing on 4.3 compatibility. The mainline of this repo will be in flux and not suitable for production deployment until the work is completed and audited.
+SecureDrop Workstation is in open beta. We continue to move towards general availability of SecureDrop Workstation based on users' feedback and experience. The current version is compatible with Qubes OS 4.3. The mainline of this repo will be in flux and not suitable for production deployment until the work is completed and audited.
 
-For now, if you want to try SecureDrop Workstation's functionality we recommend following the installation instructions at [https://workstation.securedrop.org](https://workstation.securedrop.org), which will guide you through installing the latest stable version of SecureDrop Workstation on Qubes 4.2.
+For now, if you want to try SecureDrop Workstation's functionality we recommend following the installation instructions at [https://workstation.securedrop.org](https://workstation.securedrop.org), which will guide you through installing the latest stable version of SecureDrop Workstation.
 
 ## Architecture
 
@@ -104,7 +104,7 @@ that contains component code for all of the packages we ship in individual VMs o
 
 ## Installation
 
-Installing this project is involved. It requires an up-to-date Qubes 4.2 installation running on a machine with at least 16GB of RAM (32 GB recommended).
+Installing this project is involved. It requires an up-to-date Qubes 4.3 installation running on a machine with at least 16GB of RAM (32 GB recommended).
 
 **The project is currently in open beta. See our [blog post](https://securedrop.org/news/securedrop-workstation-1_0_0-released/) for more information. If you are interested in using SecureDrop Workstation, please reach out to us via the [contact form](https://securedrop.org/help/).**
 
