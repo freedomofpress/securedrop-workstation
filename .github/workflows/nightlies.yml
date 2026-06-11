@@ -25,7 +25,6 @@ jobs:
       fail-fast: false
       matrix:
         fedora_version:
-          - 37  # Qubes 4.2
           - 41  # Qubes 4.3
     container:
       image: quay.io/fedora/fedora:${{ matrix.fedora_version }}
@@ -86,8 +85,6 @@ jobs:
           git config --global user.email "securedrop@freedom.press"
           git config --global user.name "sdcibot-nightlies[bot]"
           cd securedrop-yum-test
-          mkdir -p workstation/dom0/f37-nightlies
-          cp -v ../rpm-build-37/*.rpm workstation/dom0/f37-nightlies/
           mkdir -p workstation/dom0/f41-nightlies
           cp -v ../rpm-build-41/*.rpm workstation/dom0/f41-nightlies/
           git add .
@@ -121,7 +118,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        qubes_version: ["4.2", "4.3"]
+        qubes_version: ["4.3"]
     with:
       environment: "dev"
       git_ref: ${{ needs.get-main-commit.outputs.main-commit}}

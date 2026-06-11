@@ -18,7 +18,6 @@ jobs:
       fail-fast: false
       matrix: &qubes_release
         qubes_release:
-          - { name: "Qubes 4.2", fedora_ver: "37", python_ver: "3.11" }
           - { name: "Qubes 4.3", fedora_ver: "41", python_ver: "3.13" }
 
     container:
