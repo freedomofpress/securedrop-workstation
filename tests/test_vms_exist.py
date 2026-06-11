@@ -11,7 +11,6 @@ from tests.base import (
     SD_UNTAGGED_DEPRECATED_VMS,
     SD_VMS,
 )
-from tests.conftest import skip_on_qubes_4_2
 
 
 @pytest.mark.provisioning
@@ -34,7 +33,6 @@ def test_all_sdw_vms_present(all_vms: VMCollection, sdw_tagged_vms: list[QubesVM
         assert all_vms.get(vm_name) is None, f"Qube '{vm_name}' expected"
 
 
-@skip_on_qubes_4_2
 @pytest.mark.provisioning
 def test_expected_persistence(sdw_tagged_vms: list[QubesVM]) -> None:
     """Make sure SD qubes are either disposable or have custom-persist enabled"""

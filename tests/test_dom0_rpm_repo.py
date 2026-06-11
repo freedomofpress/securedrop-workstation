@@ -43,7 +43,7 @@ def test_rpm_releasever_substitution() -> None:
     URL structure.
     """
     qubes_version = dnf.rpm.detect_releasever("/")
-    assert qubes_version in ["4.2", "4.3"]
+    assert qubes_version in ["4.3"]
 
 
 @pytest.fixture(scope="session")

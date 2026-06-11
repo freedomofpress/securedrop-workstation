@@ -5,8 +5,6 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import skip_on_qubes_4_2
-
 DESKTOP_FILE_NAME = "press.freedom.SecureDropUpdater.desktop"
 
 
@@ -26,7 +24,6 @@ def test_is_topfile_enabled() -> None:
         pytest.fail("Error checking topfiles")
 
 
-@skip_on_qubes_4_2
 @pytest.mark.provisioning
 def test_trust_desktop_launcher() -> None:
     desktop_file = Path.home() / "Desktop" / DESKTOP_FILE_NAME

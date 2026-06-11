@@ -19,7 +19,6 @@ from tests.base import (
 from tests.base import (
     Test_SD_VM_Common as Test_SD_Viewer_Common,  # noqa: F401 [HACK: import so base tests run]
 )
-from tests.conftest import skip_on_qubes_4_2
 
 EXPECTED_N_PRELOADED_VMS = [
     1,  # 16GB system (less than recommended)
@@ -164,7 +163,6 @@ def test_sd_viewer_config(all_vms: VMCollection, dom0_config: Dom0Config) -> Non
         assert vm.features.get("internal") == "1"
 
 
-@skip_on_qubes_4_2
 @pytest.mark.provisioning
 def test_preloading_assumptions(all_vms: VMCollection) -> None:
     # sd-viewer as default_dispvm is makes it preload implicitly
@@ -175,7 +173,6 @@ def test_preloading_assumptions(all_vms: VMCollection) -> None:
     assert preload_dispvm_max in EXPECTED_N_PRELOADED_VMS
 
 
-@skip_on_qubes_4_2
 @pytest.mark.provisioning
 def test_preloading_enabled(all_vms: VMCollection, qube: QubeWrapper) -> None:
     """
