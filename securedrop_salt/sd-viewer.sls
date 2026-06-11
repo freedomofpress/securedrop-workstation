@@ -35,9 +35,7 @@ sd-viewer:
       - netvm: ""
       - template_for_dispvms: True
       - default_dispvm: ""
-      {% if grains['osrelease'] != '4.2' %}
       - devices_denied: '*******'
-      {% endif %}
     - tags:
       - add:
         - sd-workstation

@@ -34,9 +34,7 @@ sd-gpg:
       - netvm: ""
       - autostart: true
       - default_dispvm: ""
-      {% if grains['osrelease'] != '4.2' %}
       - devices_denied: '*******'
-      {% endif %}
     - features:
       - enable:
         - service.securedrop-logging-disabled
@@ -51,7 +49,6 @@ sd-gpg:
       - sls: securedrop_salt.sd-workstation-template
       - sls: securedrop_salt.sd-upgrade-templates
 
-{% if grains['osrelease'] != '4.2' %}
 sd-gpg-custom-persist:
   qvm.features:
     - name: sd-gpg
@@ -59,4 +56,3 @@ sd-gpg-custom-persist:
       - service.custom-persist
     - set:
       - custom-persist.gnupg_dir: dir:user:user:0700:/home/user/.gnupg
-{% endif %}
