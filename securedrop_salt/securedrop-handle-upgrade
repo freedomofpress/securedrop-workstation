@@ -23,7 +23,7 @@ if [[ $TASK == "prepare" ]]; then
     # sd-app, we simply shutdown the machine as we want to preserve the data
     if qvm-check sd-app --quiet; then
         BASE_TEMPLATE=$(qvm-prefs sd-app template)
-        if [[ ! $BASE_TEMPLATE =~ "small-trixie" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "debian-13" ]]; then
             shutdown_if_running "sd-app"
         fi
     fi
@@ -36,7 +36,7 @@ if [[ $TASK == "prepare" ]]; then
     # provisioning process runs again and sets that value to sd-viewer
     if qvm-check --quiet sd-viewer; then
         BASE_TEMPLATE=$(qvm-prefs sd-viewer template)
-        if [[ ! $BASE_TEMPLATE =~ "large-trixie" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "debian-13" ]]; then
             qubes-prefs default_dispvm ''
             shutdown_if_running "sd-viewer"
             qvm-remove -f sd-viewer
@@ -45,7 +45,7 @@ if [[ $TASK == "prepare" ]]; then
 
     if qvm-check --quiet sd-devices; then
         BASE_TEMPLATE=$(qvm-prefs sd-devices-dvm template)
-        if [[ ! $BASE_TEMPLATE =~ "large-trixie" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "debian-13" ]]; then
             shutdown_if_running "sd-printers"
             shutdown_if_running "sd-devices"
             shutdown_if_running "sd-devices-dvm"
@@ -57,7 +57,7 @@ if [[ $TASK == "prepare" ]]; then
 
     if qvm-check --quiet sd-proxy-dvm; then
         BASE_TEMPLATE=$(qvm-prefs sd-proxy-dvm template)
-        if [[ ! $BASE_TEMPLATE =~ "large-trixie" ]]; then
+        if [[ ! $BASE_TEMPLATE =~ "debian-13" ]]; then
             shutdown_if_running "sd-proxy"
         fi
     fi

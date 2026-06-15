@@ -22,8 +22,8 @@ SOURCES_DIR = Path(__file__).parent.parent / "securedrop_salt"
 OPTIONS = ["dev", "staging", "prod"]
 CODENAME = "trixie"
 TEMPLATES = [
-    "sd-small-trixie-template",
-    "sd-large-trixie-template",
+    "sd-small-debian-13",
+    "sd-large-debian-13",
 ]
 TEST_COMPONENTS = {
     "dev": "main nightlies",

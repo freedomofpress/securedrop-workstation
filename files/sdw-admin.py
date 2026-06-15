@@ -99,7 +99,7 @@ def provision_and_configure() -> None:
     """
     provision("Provisioning Fedora-based system VMs", "securedrop_salt.sd-sys-vms")
     provision("Provisioning base template", "securedrop_salt.sd-base-template")
-    configure("Configuring base template", ["sd-base-trixie-template"])
+    configure("Configuring base template", ["sd-base-debian-13"])
     provision_all()
     configure(
         "Configure all SecureDrop Workstation VMs with service-specific configs",
@@ -202,13 +202,13 @@ def sync_appmenus() -> None:
     n.b. none of the small VMs are shown in the menu on prod, but nice to have it synced
     """
 
-    run_cmd(["qvm-start", "--skip-if-running", "sd-small-trixie-template"])
-    run_cmd(["qvm-sync-appmenus", "sd-small-trixie-template"])
-    run_cmd(["qvm-shutdown", "sd-small-trixie-template"])
+    run_cmd(["qvm-start", "--skip-if-running", "sd-small-debian-13"])
+    run_cmd(["qvm-sync-appmenus", "sd-small-debian-13"])
+    run_cmd(["qvm-shutdown", "sd-small-debian-13"])
 
-    run_cmd(["qvm-start", "--skip-if-running", "sd-large-trixie-template"])
-    run_cmd(["qvm-sync-appmenus", "sd-large-trixie-template"])
-    run_cmd(["qvm-shutdown", "sd-large-trixie-template"])
+    run_cmd(["qvm-start", "--skip-if-running", "sd-large-debian-13"])
+    run_cmd(["qvm-sync-appmenus", "sd-large-debian-13"])
+    run_cmd(["qvm-shutdown", "sd-large-debian-13"])
 
     # These are the ones we show in prod VMs, so sync explicitly
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-devices"])

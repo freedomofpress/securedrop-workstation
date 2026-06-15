@@ -31,4 +31,4 @@
 {% endif %}
 
 # Append repo URL with appropriate distribution
-{% set _ = sdvars.update({"distribution": "trixie"}) %}
+{% set _ = sdvars.update({"distribution": "trixie", "debian_version": "13"}) %}

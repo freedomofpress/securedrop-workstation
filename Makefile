@@ -127,7 +127,7 @@ sd-admin: assert-dom0 ## Provision sd-admin VM and install securedrop-admin
 	sudo qubesctl saltutil.sync_all refresh=true
 	@echo "Creating sd-admin template and AppVM..."
 	sudo qubesctl --show-output -- state.sls admin_salt.sd-admin
-	@echo "Installing packages inside sd-admin-trixie-template..."
+	@echo "Installing packages inside sd-admin-debian-13..."
 	sudo qubesctl --show-output --skip-dom0 --targets sd-admin-trixie-template -- state.sls admin_salt.sd-admin-packages
 	qvm-shutdown --wait -- sd-admin-trixie-template
 

@@ -15,10 +15,11 @@ from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
 # Reusable constant for DRY import across tests
-DEBIAN_VERSION = "trixie"
-SD_TEMPLATE_BASE = f"sd-base-{DEBIAN_VERSION}-template"
-SD_TEMPLATE_LARGE = f"sd-large-{DEBIAN_VERSION}-template"
-SD_TEMPLATE_SMALL = f"sd-small-{DEBIAN_VERSION}-template"
+DEBIAN_VERSION = 13
+DEBIAN_CODENAME = "trixie"
+SD_TEMPLATE_BASE = f"sd-base-debian-{DEBIAN_VERSION}"
+SD_TEMPLATE_LARGE = f"sd-large-debian-{DEBIAN_VERSION}"
+SD_TEMPLATE_SMALL = f"sd-small-debian-{DEBIAN_VERSION}"
 
 SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
 
@@ -329,7 +330,7 @@ class Test_SD_VM_Common:
         """
         Asserts that the given AppVM is based on an OS listed in the
         SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
-        All workstation-provisioned VMs should be based on DEBIAN_VERSION.
+        All workstation-provisioned VMs should be based on DEBIAN_CODENAME.
         """
 
         if qube.name.startswith("sys-"):
@@ -340,7 +341,7 @@ class Test_SD_VM_Common:
         if not search:
             raise RuntimeError(f"Unable to determine platform for {qube.name}")
         platform = search.group(1)
-        assert DEBIAN_VERSION in platform
+        assert DEBIAN_CODENAME in platform
 
     @pytest.mark.mime
     @pytest.mark.slow

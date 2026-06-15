@@ -9,15 +9,15 @@ include:
 
 # Installs consolidated templateVMs:
 # Sets virt_mode and kernel to use custom hardened kernel.
-# - sd-small-{{ sdvars.distribution }}-template, to be used for
+# - sd-small-debian-{{ sdvars.debian_version }}, to be used for
 #   sd-app, sd-gpg, sd-log, and sd-proxy
-# - sd-large-{{ sdvars.distribution }}-template, to be used for
+# - sd-large-debian-{{ sdvars.debian_version }}, to be used for
 #   sd-export and sd-viewer
-sd-small-{{ sdvars.distribution }}-template:
+sd-small-debian-{{ sdvars.debian_version }}:
   qvm.vm:
-    - name: sd-small-{{ sdvars.distribution }}-template
+    - name: sd-small-debian-{{ sdvars.debian_version }}
     - clone:
-      - source: sd-base-{{ sdvars.distribution }}-template
+      - source: sd-base-debian-{{ sdvars.debian_version }}
       - label: red
     - prefs:
       - virt-mode: pvh
@@ -36,11 +36,11 @@ sd-small-{{ sdvars.distribution }}-template:
     - require:
       - sls: securedrop_salt.sd-base-template
 
-sd-large-{{ sdvars.distribution }}-template:
+sd-large-debian-{{ sdvars.debian_version }}:
   qvm.vm:
-    - name: sd-large-{{ sdvars.distribution }}-template
+    - name: sd-large-debian-{{ sdvars.debian_version }}
     - clone:
-      - source: sd-base-{{ sdvars.distribution }}-template
+      - source: sd-base-debian-{{ sdvars.debian_version }}
       - label: red
     - prefs:
       - virt-mode: pvh

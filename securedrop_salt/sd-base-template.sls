@@ -12,7 +12,7 @@ dom0-install-debian-minimal-template:
 # Clones a base templateVM from debian-13-minimal
 sd-base-template:
   qvm.vm:
-    - name: sd-base-{{ sdvars.distribution }}-template
+    - name: sd-base-debian-{{ sdvars.debian_version }}
     - clone:
       - source: debian-13-minimal
       - label: red

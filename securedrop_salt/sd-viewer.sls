@@ -29,9 +29,9 @@ sd-viewer:
       # Label color is set during initial configuration but
       # not enforced on every Salt run, in case of user customization.
       - label: green
-      - template: sd-large-{{ sdvars.distribution }}-template
+      - template: sd-large-debian-{{ sdvars.debian_version }}
     - prefs:
-      - template: sd-large-{{ sdvars.distribution }}-template
+      - template: sd-large-debian-{{ sdvars.debian_version }}
       - netvm: ""
       - template_for_dispvms: True
       - default_dispvm: ""
@@ -55,7 +55,7 @@ sd-viewer:
         - service.paxctld
         - service.securedrop-mime-handling
     - require:
-      - qvm: sd-large-{{ sdvars.distribution }}-template
+      - qvm: sd-large-debian-{{ sdvars.debian_version }}
 
 
 # Set sd-viewer as the global default_dispvm
