@@ -197,6 +197,7 @@ run-app: assert-dom0 run-deps ## Run SecureDrop Inbox (automatic login)
 	@xdotool key Tab
 	@xdotool type "correct horse battery staple profanity oil chewy"
 	@xdotool key Tab
+	@xdotool key Tab
 	@xdotool type $(shell oathtool --totp --base32 JHCOGO7VCER3EJ4L)
 	@xdotool key Return
 
