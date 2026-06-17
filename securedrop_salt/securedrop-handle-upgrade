@@ -38,6 +38,7 @@ if [[ $TASK == "prepare" ]]; then
         BASE_TEMPLATE=$(qvm-prefs sd-viewer template)
         if [[ ! $BASE_TEMPLATE =~ "debian-13" ]]; then
             qubes-prefs default_dispvm ''
+            qvm-prefs sd-app default_dispvm ''
             shutdown_if_running "sd-viewer"
             qvm-remove -f sd-viewer
         fi
