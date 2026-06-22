@@ -372,13 +372,15 @@ class Test_SD_VM_Common:
 
         # Device attachment expected to fail (generic qubes)
         with pytest.raises(subprocess.CalledProcessError) as exc_info:
-            subprocess.check_output(
+            subprocess.run(
                 ["qvm-block", "attach", qube.name, mock_block_device],
-                stderr=subprocess.STDOUT,  # Capture qubesd error message
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,  # Capture qubesd error message
+                check=True,
                 text=True,
             )
 
-        assert "Error: Got empty response from qubesd" in exc_info.value.stdout
+        assert "Error: Got empty response from qubesd" in exc_info.stderr
 
         # Previous error too generic: Dig into journal logs to confirm attachment denial
         expected_re = re.compile(
