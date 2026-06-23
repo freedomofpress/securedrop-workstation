@@ -176,8 +176,8 @@ class QubeWrapper:
         try:
             results = self.run(f"sudo systemctl is-active {service}")
         except subprocess.CalledProcessError as e:
-            if e.returncode == 3:
-                return False  # exit code 3 == inactive
+            if e.returncode in (3, 4):
+                return False  # exit code 3 == inactive, 4 == missing unit (so it's not running)
             else:
                 raise e
         return results == "active"
