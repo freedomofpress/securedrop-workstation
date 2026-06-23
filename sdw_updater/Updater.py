@@ -40,20 +40,20 @@ detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 
 
 def _get_current_vms() -> dict[str, str]:
-    debian_version = "bookworm"
+    debian_version = "13"
 
     # The are the TemplateVMs that require full patch level at boot in order to start the inbox,
     # as well as their associated TemplateVMs.
     # In the future, we could use qvm-prefs to extract this information.
     return {
         "fedora": "fedora-43-xfce",
-        "sd-viewer": f"sd-large-{debian_version}-template",
-        "sd-app": f"sd-small-{debian_version}-template",
-        "sd-log": f"sd-small-{debian_version}-template",
-        "sd-devices": f"sd-large-{debian_version}-template",
-        "sd-printers": f"sd-large-{debian_version}-template",
-        "sd-proxy": f"sd-small-{debian_version}-template",
-        "sd-gpg": f"sd-small-{debian_version}-template",
+        "sd-viewer": f"sd-large-debian-{debian_version}",
+        "sd-app": f"sd-small-debian-{debian_version}",
+        "sd-log": f"sd-small-debian-{debian_version}",
+        "sd-devices": f"sd-large-debian-{debian_version}",
+        "sd-printers": f"sd-large-debian-{debian_version}",
+        "sd-proxy": f"sd-small-debian-{debian_version}",
+        "sd-gpg": f"sd-small-debian-{debian_version}",
     }
 
 

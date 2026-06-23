@@ -71,7 +71,7 @@ def test_logs_are_flowing(qube: QubeWrapper, sdw_tagged_vms: list[QubesVM]) -> N
 
     # base template doesn't have sd-log configured
     # TODO: test a sd-viewer based dispVM
-    skip = [f"sd-base-{DEBIAN_VERSION}-template", "sd-viewer"]
+    skip = [f"sd-base-debian-{DEBIAN_VERSION}", "sd-viewer"]
     # VMs we expect logs will not go to
     no_log_vms = ["sd-gpg", "sd-log"]
 

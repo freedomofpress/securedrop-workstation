@@ -20,10 +20,10 @@ CONFIG_JSON = Path("/usr/share/securedrop-workstation-dom0-config/config.json")
 SOURCES_DIR = Path(__file__).parent.parent / "securedrop_salt"
 
 OPTIONS = ["dev", "staging", "prod"]
-CODENAME = "bookworm"
+CODENAME = "trixie"
 TEMPLATES = [
-    "sd-small-bookworm-template",
-    "sd-large-bookworm-template",
+    "sd-small-debian-13",
+    "sd-large-debian-13",
 ]
 TEST_COMPONENTS = {
     "dev": "main nightlies",

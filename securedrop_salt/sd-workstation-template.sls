@@ -8,18 +8,14 @@ include:
   - securedrop_salt.sd-base-template
 
 # Installs consolidated templateVMs:
-# Sets virt_mode and kernel to use custom hardened kernel.
-# - sd-small-{{ sdvars.distribution }}-template, to be used for
-#   sd-app, sd-gpg, sd-log, and sd-proxy
-# - sd-large-{{ sdvars.distribution }}-template, to be used for
-#   sd-export and sd-viewer
-sd-small-{{ sdvars.distribution }}-template:
+{% for template_prefix in ["sd-small", "sd-large"] %}
+{{template_prefix}}-debian-{{ sdvars.debian_version }}:
   qvm.vm:
-    - name: sd-small-{{ sdvars.distribution }}-template
     - clone:
-      - source: sd-base-{{ sdvars.distribution }}-template
+      - source: sd-base-debian-{{ sdvars.debian_version }}
       - label: red
     - prefs:
+      # Sets virt_mode and kernel to use custom hardened kernel.
       - virt-mode: pvh
       - kernel: 'pvgrub2-pvh'
       - default_dispvm: ""
@@ -35,26 +31,4 @@ sd-small-{{ sdvars.distribution }}-template:
         - service.paxctld
     - require:
       - sls: securedrop_salt.sd-base-template
-
-sd-large-{{ sdvars.distribution }}-template:
-  qvm.vm:
-    - name: sd-large-{{ sdvars.distribution }}-template
-    - clone:
-      - source: sd-base-{{ sdvars.distribution }}-template
-      - label: red
-    - prefs:
-      - virt-mode: pvh
-      - kernel: 'pvgrub2-pvh'
-      - default_dispvm: ""
-      {% if grains['osrelease'] != '4.2' %}
-      - devices_denied: '*******'
-      {% endif %}
-    - tags:
-      - add:
-        - sd-workstation
-        - sd-{{ sdvars.distribution }}
-    - features:
-      - enable:
-        - service.paxctld
-    - require:
-      - sls: securedrop_salt.sd-base-template
+{% endfor %}

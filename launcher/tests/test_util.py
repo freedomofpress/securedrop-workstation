@@ -19,7 +19,7 @@ CONFLICTING_PROCESS_REGEX = r"Conflicting process .* is currently running."
 # Fixtures (sample files) for certain tests
 FIXTURES_PATH = Path(__file__).parent / "fixtures"
 
-DEBIAN_VERSION = "bookworm"
+DEBIAN_VERSION = 13
 WHONIX_VERSION = 17
 
 
@@ -252,7 +252,7 @@ def test_is_sdapp_halted_yes(os_release_fixture, version_contains):
     """
     output = bytes(
         "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
-        f"    Halted    AppVM   yellow     sd-small-{DEBIAN_VERSION}-template\n",
+        f"    Halted    AppVM   yellow     sd-small-debian-{DEBIAN_VERSION}\n",
         "utf-8",
     )
 
@@ -277,7 +277,7 @@ def test_is_sdapp_halted_no(os_release_fixture, version_contains):
     """
     output = bytes(
         "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
-        f"    Paused    AppVM   yellow     sd-small-{DEBIAN_VERSION}-template\n",
+        f"    Paused    AppVM   yellow     sd-small-debian-{DEBIAN_VERSION}\n",
         "utf-8",
     )
 

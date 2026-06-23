@@ -9,7 +9,7 @@ from qubesadmin.vm import QubesVM
 from sdw_util.config_types import Dom0Config
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
-    DEBIAN_VERSION,
+    DEBIAN_CODENAME,
     SD_TEMPLATE_LARGE,
     SD_TEMPLATE_SMALL,
     SD_VMS,
@@ -230,4 +230,4 @@ def assert_apt_source(vm: QubesVM, component: str, url: str, filename: str) -> N
 
     assert f"Components: {component}\n" in contents, f"{vm.name} wrong component"
     assert f"URIs: {url}\n" in contents, f"{vm.name} wrong URL"
-    assert f"Suites: {DEBIAN_VERSION}\n" in contents, f"{vm.name} wrong suite/codename"
+    assert f"Suites: {DEBIAN_CODENAME}\n" in contents, f"{vm.name} wrong suite/codename"

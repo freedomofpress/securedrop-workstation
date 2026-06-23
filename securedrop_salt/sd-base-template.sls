@@ -4,17 +4,17 @@
 # Imports "sdvars" for environment config
 {% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
 
-# Ensure debian-12-minimal is present for use as base template
+# Ensure debian-13-minimal is present for use as base template
 dom0-install-debian-minimal-template:
   qvm.template_installed:
-    - name: debian-12-minimal
+    - name: debian-13-minimal
 
-# Clones a base templateVM from debian-12-minimal
+# Clones a base templateVM from debian-13-minimal
 sd-base-template:
   qvm.vm:
-    - name: sd-base-{{ sdvars.distribution }}-template
+    - name: sd-base-debian-{{ sdvars.debian_version }}
     - clone:
-      - source: debian-12-minimal
+      - source: debian-13-minimal
       - label: red
     - prefs:
       - default_dispvm: ""

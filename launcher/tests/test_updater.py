@@ -21,7 +21,6 @@ debian_based_vms = [
 ]
 
 WHONIX_VERSION = 17
-DEBIAN_VERSION = "bookworm"
 
 TEST_RESULTS_OK = {
     "dom0": UpdateStatus.UPDATES_OK,

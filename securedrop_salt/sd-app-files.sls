@@ -5,15 +5,15 @@
 # sd-app-files
 # ========
 #
-# Moves files into place on sd-small-$sdvars.distribution-template
+# Moves files into place on sd-small-debian-$sdvars.debian_version
 #
 ##
 include:
   - securedrop_salt.fpf-apt-repo
   - securedrop_salt.sd-logging-setup
 
-# FPF repo is setup in "securedrop-workstation-$sdvars.distribution" template,
-# and then cloned as "sd-small-$sdvars.distribution-template"
+# FPF repo is setup in base template, and then cloned as
+# "sd-small-debian-$sdvars.debian_version"
 install-securedrop-app-package:
   pkg.installed:
     - pkgs:

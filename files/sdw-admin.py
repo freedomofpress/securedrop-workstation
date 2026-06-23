@@ -24,7 +24,7 @@ DEFAULT_SD_LOG_GB = 5
 
 SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
 SALT_PATH = "/srv/salt/securedrop_salt/"
-BASE_TEMPLATE = "debian-12-minimal"
+BASE_TEMPLATE = "debian-13-minimal"
 
 SUBMISSION_KEY = "sd-journalist.sec"
 TAILS_PATH = "/run/media/user/TailsData/"
@@ -37,7 +37,7 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator  # noqa: E402
 
-DEBIAN_VERSION = "bookworm"
+DEBIAN_VERSION = "trixie"
 
 
 def parse_args() -> argparse.Namespace:
@@ -99,7 +99,7 @@ def provision_and_configure() -> None:
     """
     provision("Provisioning Fedora-based system VMs", "securedrop_salt.sd-sys-vms")
     provision("Provisioning base template", "securedrop_salt.sd-base-template")
-    configure("Configuring base template", ["sd-base-bookworm-template"])
+    configure("Configuring base template", ["sd-base-debian-13"])
     provision_all()
     configure(
         "Configure all SecureDrop Workstation VMs with service-specific configs",
@@ -202,13 +202,13 @@ def sync_appmenus() -> None:
     n.b. none of the small VMs are shown in the menu on prod, but nice to have it synced
     """
 
-    run_cmd(["qvm-start", "--skip-if-running", "sd-small-bookworm-template"])
-    run_cmd(["qvm-sync-appmenus", "sd-small-bookworm-template"])
-    run_cmd(["qvm-shutdown", "sd-small-bookworm-template"])
+    run_cmd(["qvm-start", "--skip-if-running", "sd-small-debian-13"])
+    run_cmd(["qvm-sync-appmenus", "sd-small-debian-13"])
+    run_cmd(["qvm-shutdown", "sd-small-debian-13"])
 
-    run_cmd(["qvm-start", "--skip-if-running", "sd-large-bookworm-template"])
-    run_cmd(["qvm-sync-appmenus", "sd-large-bookworm-template"])
-    run_cmd(["qvm-shutdown", "sd-large-bookworm-template"])
+    run_cmd(["qvm-start", "--skip-if-running", "sd-large-debian-13"])
+    run_cmd(["qvm-sync-appmenus", "sd-large-debian-13"])
+    run_cmd(["qvm-shutdown", "sd-large-debian-13"])
 
     # These are the ones we show in prod VMs, so sync explicitly
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-devices"])

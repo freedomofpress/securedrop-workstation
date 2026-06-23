@@ -51,9 +51,9 @@ install-sd-log:
       # Label color is set during initial configuration but
       # not enforced on every Salt run, in case of user customization.
       - label: red
-      - template: sd-small-{{ sdvars.distribution }}-template
+      - template: sd-small-debian-{{ sdvars.debian_version }}
     - prefs:
-      - template: sd-small-{{ sdvars.distribution }}-template
+      - template: sd-small-debian-{{ sdvars.debian_version }}
       - netvm: ""
       - autostart: true
       - default_dispvm: ""
@@ -73,7 +73,7 @@ install-sd-log:
         - sd-install-epoch: {{ sdlog_epoch }}
         - menu-items: "org.gnome.Nautilus.desktop"
     - require:
-      - qvm: sd-small-{{ sdvars.distribution }}-template
+      - qvm: sd-small-debian-{{ sdvars.debian_version }}
 
 {% if grains['osrelease'] != '4.2' %}
 sd-log-custom-persist:
