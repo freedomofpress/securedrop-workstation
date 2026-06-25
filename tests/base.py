@@ -18,15 +18,15 @@ from qubesadmin.vm import QubesVM
 DEBIAN_VERSION = 13
 DEBIAN_CODENAME = "trixie"
 SD_TEMPLATE_BASE = f"sd-base-debian-{DEBIAN_VERSION}"
-SD_TEMPLATE_LARGE = f"sd-large-debian-{DEBIAN_VERSION}"
-SD_TEMPLATE_SMALL = f"sd-small-debian-{DEBIAN_VERSION}"
+SD_VIEWER_TEMPLATE = f"sd-viewer-debian-{DEBIAN_VERSION}"
+SD_INBOX_TEMPLATE = f"sd-inbox-debian-{DEBIAN_VERSION}"
 
 SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
 
 # Expectations regarding VMs' existence and versions
 SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-devices", "sd-printers"]
 SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
-SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_TEMPLATE_LARGE, SD_TEMPLATE_SMALL]
+SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_VIEWER_TEMPLATE, SD_INBOX_TEMPLATE]
 SD_UNTAGGED_DEPRECATED_VMS = ["sd-retain-logvm"]
 
 CURRENT_FEDORA_VERSION = "43"

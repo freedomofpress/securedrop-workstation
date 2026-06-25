@@ -4,11 +4,11 @@ from qubesadmin.vm import QubesVM
 
 from tests.base import (
     SD_DVM_TEMPLATES,
+    SD_INBOX_TEMPLATE,
     SD_TAG,
-    SD_TEMPLATE_LARGE,
-    SD_TEMPLATE_SMALL,
     SD_TEMPLATES,
     SD_UNTAGGED_DEPRECATED_VMS,
+    SD_VIEWER_TEMPLATE,
     SD_VMS,
 )
 from tests.conftest import skip_on_qubes_4_2
@@ -108,20 +108,20 @@ def test_whonix_vms_reset(whonix_vm_name: str, all_vms: VMCollection) -> None:
 
 
 @pytest.mark.provisioning
-def test_sd_small_template(all_vms: VMCollection) -> None:
+def test_sd_inbox_template(all_vms: VMCollection) -> None:
     """
-    Confirm that the "small" version of the SDW TemplateVM is configured correctly.
+    Confirm that the "inbox" version of the SDW TemplateVM is configured correctly.
     """
-    vm = all_vms[SD_TEMPLATE_SMALL]
+    vm = all_vms[SD_INBOX_TEMPLATE]
     assert vm.netvm is None
     assert SD_TAG in vm.tags
 
 
 @pytest.mark.provisioning
-def test_sd_large_template(all_vms: VMCollection) -> None:
+def test_sd_viewer_template(all_vms: VMCollection) -> None:
     """
-    Confirm that the "large" version of the SDW TemplateVM is configured correctly.
+    Confirm that the "viewer" version of the SDW TemplateVM is configured correctly.
     """
-    vm = all_vms[SD_TEMPLATE_LARGE]
+    vm = all_vms[SD_VIEWER_TEMPLATE]
     assert vm.netvm is None
     assert SD_TAG in vm.tags

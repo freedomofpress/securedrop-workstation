@@ -83,7 +83,7 @@ elif [[ $TASK == "remove" ]]; then
     # before deleting it.
     # TODO: clean this up, we don't have separate templates anymore and nobody
     # will be upgrading from the original setup
-    for template in sd-small-bookworm-template sd-large-bookworm-template
+    for template in sd-inbox-bookworm-template sd-viewer-bookworm-template
     do
         if qvm-check "${template}" --quiet; then
             shutdown_if_running "${template}"

@@ -13,7 +13,7 @@ from qubesadmin.app import VMCollection
 from sdw_util.config_types import Dom0Config
 from tests.base import (
     SD_TAG,
-    SD_TEMPLATE_LARGE,
+    SD_VIEWER_TEMPLATE,
     QubeWrapper,
 )
 from tests.base import (
@@ -119,7 +119,7 @@ def test_logging_configured(qube: QubeWrapper) -> None:
 def test_redis_packages_not_installed(qube: QubeWrapper) -> None:
     """
     Only the log collector, i.e. sd-log, needs redis, so redis will be
-    present in small template, but not in large.
+    present in the inbox template, but not in the viewer.
     """
     assert not qube.package_is_installed("redis")
     assert not qube.package_is_installed("redis-server")
@@ -150,7 +150,7 @@ def test_sd_viewer_config(all_vms: VMCollection, dom0_config: Dom0Config) -> Non
     vm = all_vms["sd-viewer"]
     nvm = vm.netvm
     assert nvm is None
-    assert vm.template.name == SD_TEMPLATE_LARGE
+    assert vm.template.name == SD_VIEWER_TEMPLATE
     assert not vm.provides_network
     assert vm.template_for_dispvms
     assert SD_TAG in vm.tags
