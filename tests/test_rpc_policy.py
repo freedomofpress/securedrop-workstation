@@ -96,9 +96,7 @@ def test_policy_from_sdgpg_to_dom0_allowed(sdw_tagged_vms: list[QubesVM], qubes_
     """Securedrop.GetSecretKeys only allowed in: sd-gpg -> dom0"""
 
     for qube in sdw_tagged_vms:
-        dom0 = "@adminvm" if qubes_ver == "4.2" else "dom0"
-
-        allowed = policy_exists(qube.name, dom0, "securedrop.GetSecretKeys")
+        allowed = policy_exists(qube.name, "dom0", "securedrop.GetSecretKeys")
         if qube.name == "sd-gpg":
             assert allowed
         else:

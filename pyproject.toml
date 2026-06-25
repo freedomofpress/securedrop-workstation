@@ -1,5 +1,5 @@
 [project]
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 name = "securedrop-workstation-dom0-config"
 dynamic = [ "version", "classifiers" ]
 description = ""
@@ -29,13 +29,10 @@ semgrep = "*"
 # In production these are installed as a system package so match the
 # versions exactly.
 # NOTE: 'python_version' used as a proxy for the Qubes version:
-#    - python 3.11 => Fedora 37 => Qubes 4.2
 #    - python 3.13 => Fedora 41 => Qubes 4.3
-PyQt5 = {version = "=5.15.9", markers = "python_version <= '3.11'" }
-PyQt5-Qt5 = {version = "=5.15.2", markers = "python_version <= '3.11'" }
-PyQt5-sip = {version = "=12.11.0", markers = "python_version <= '3.11'" }
-PyQt6 = {version = "=6.8.1", markers = "python_version > '3.11'" }
-PyQt6-sip = {version = "=13.9.1", markers = "python_version > '3.11'" }
+#    - python 3.?? => Fedora ?? => Qubes ?
+PyQt6 = {version = "=6.8.1", markers = "python_version >= '3.13'" }
+PyQt6-sip = {version = "=13.9.1", markers = "python_version >= '3.13'" }
 
 [tool.ruff]
 line-length = 100
@@ -108,7 +105,7 @@ ignore = [
 ]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
 # In-tree stubs (currently: qubesadmin) live under stubs/.
 mypy_path = "stubs"
 # Other dom0-only deps (dnf, qubesdb, systemd, ...) still lack stubs.

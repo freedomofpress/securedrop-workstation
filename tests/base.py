@@ -9,7 +9,6 @@ import re
 import subprocess
 from collections.abc import Iterable, Iterator
 
-import dnf
 import pytest
 from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
@@ -360,9 +359,6 @@ class Test_SD_VM_Common:
                 actual_app == expected_app
             ), f"MIME type {mime_type}: expected {expected_app}, got {actual_app}"
 
-    @pytest.mark.skipif(
-        dnf.rpm.detect_releasever("/") == "4.2", reason="Feature only available in Qubes >= 4.3"
-    )
     def test_mock_device_attach_deny(
         self, qube: QubeWrapper, mock_block_device: str, qubesd_log: Iterator[str]
     ) -> None:

@@ -1,7 +1,7 @@
 DEFAULT_GOAL: help
-PYTHON3 := $(if $(shell bash -c "command -v python3.11"), python3.11, python3)
-# If we're on anything but Fedora 37/41, execute some commands in a container
-# Note: if your development environment is Fedora 37 based, you may want to
+PYTHON3 := $(if $(shell bash -c "command -v python3.13"), python3.13, python3)
+# If we're on anything but Fedora 41, execute some commands in a container
+# Note: if your development environment is Fedora 41 based, you may want to
 # manually prepend ./scripts/container.sh to commands you want to execute
 CONTAINER := $(if $(shell grep -E "(Thirty Seven|Forty One)" /etc/fedora-release),,./scripts/container.sh)
 

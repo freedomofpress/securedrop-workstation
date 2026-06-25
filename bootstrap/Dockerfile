@@ -1,4 +1,4 @@
-ARG FEDORA_VERSION=37
+ARG FEDORA_VERSION=41
 FROM quay.io/fedora/fedora:${FEDORA_VERSION}
 
 # Install "make" so that we can run the makefile targets for dev deps.

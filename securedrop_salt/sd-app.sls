@@ -30,9 +30,7 @@ sd-app:
       - template: sd-small-debian-{{ sdvars.debian_version }}
       - netvm: ""
       - default_dispvm: "sd-viewer"
-      {% if grains['osrelease'] != '4.2' %}
       - devices_denied: '*******'
-      {% endif %}
     - tags:
       - add:
         - sd-client
@@ -48,7 +46,6 @@ sd-app:
       - qvm: sd-small-debian-{{ sdvars.debian_version }}
       - sls: securedrop_salt.sd-viewer
 
-{% if grains['osrelease'] != '4.2' %}
 sd-app-custom-persist:
   qvm.features:
     - name: sd-app
@@ -60,7 +57,6 @@ sd-app-custom-persist:
       - custom-persist.app_db_wal: file:user:user:0600:/home/user/.config/SecureDrop/db.sqlite-wal
       - custom-persist.app_db_shm: file:user:user:0600:/home/user/.config/SecureDrop/db.sqlite-shm
       - custom-persist.app_downloaded_files: dir:user:user:0700:/home/user/.config/SecureDrop/files
-{% endif %}
 
 sd-app-config:
   qvm.features:

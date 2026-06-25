@@ -57,9 +57,7 @@ install-sd-log:
       - netvm: ""
       - autostart: true
       - default_dispvm: ""
-      {% if grains['osrelease'] != '4.2' %}
       - devices_denied: '*******'
-      {% endif %}
     - tags:
       - add:
         - sd-workstation
@@ -69,21 +67,13 @@ install-sd-log:
         - service.redis
         - service.securedrop-logging-disabled
         - service.securedrop-log-server
+        - service.custom-persist
       - set:
         - sd-install-epoch: {{ sdlog_epoch }}
         - menu-items: "org.gnome.Nautilus.desktop"
+        - custom-persist.logs: dir:user:user:0755:/home/user/QubesIncomingLogs
     - require:
       - qvm: sd-small-debian-{{ sdvars.debian_version }}
-
-{% if grains['osrelease'] != '4.2' %}
-sd-log-custom-persist:
-  qvm.features:
-    - name: sd-log
-    - enable:
-      - service.custom-persist
-    - set:
-      - custom-persist.logs: dir:user:user:0755:/home/user/QubesIncomingLogs
-{% endif %}
 
 # The private volume size should be set in config.json
 sd-log-private-volume-size:
