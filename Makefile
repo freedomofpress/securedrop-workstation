@@ -63,11 +63,11 @@ install-rpm: assert-dom0 ## Install locally-built rpm (dev) or download publishe
 	@rpm -q securedrop-workstation-keyring || sudo qubes-dom0-update -y --clean securedrop-workstation-keyring
 ifeq ($(RPM_INSTALL_STRATEGY),dev)
 	@echo "Install dependencies and locally-built rpm"
-	@sudo qubes-dom0-update --clean -y grub2-xen-pvh
+	@rpm -q grub2-xen-pvh || sudo qubes-dom0-update --clean -y grub2-xen-pvh
 	@./scripts/prep-dev
 else
 	@echo "Install published rpm"
-	@sudo qubes-dom0-update -y securedrop-workstation-dom0-config
+	@rpm -q securedrop-workstation-dom0-config || sudo qubes-dom0-update -y securedrop-workstation-dom0-config
 endif
 	@echo "Provide instance-specific configuration and run sdw-admin --apply."
 

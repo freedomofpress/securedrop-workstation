@@ -42,7 +42,7 @@ def rpm_import(key_file: Path) -> None:
 def is_key_imported(rpm_id: str) -> bool:
     """Check rpmdb for key with givem rpm_id."""
     try:
-        subprocess.check_call(["rpm", "-q", rpm_id])
+        subprocess.check_call(["rpm", "-q", "--quiet", rpm_id])
         return True
     except subprocess.CalledProcessError:
         return False
@@ -50,13 +50,15 @@ def is_key_imported(rpm_id: str) -> bool:
 
 def dom0_install_keyring(env: str | None = None) -> None:
     """Use qubes-dom0-update to install keyring package."""
-    args = ["sudo", "qubes-dom0-update", "--clean", "-y"]
+    package_name = f"{KEYRING_PACKAGENAME}-{env}" if env else KEYRING_PACKAGENAME
 
+    if is_key_imported(package_name):
+        print(f"Package {package_name} is already installed.")
+        return
+
+    args = ["sudo", "qubes-dom0-update", "--clean", "-y"]
     if env:
-        package_name = f"{KEYRING_PACKAGENAME}-{env}"
         args.append(f"--enablerepo={package_name}")
-    else:
-        package_name = KEYRING_PACKAGENAME
     args.append(package_name)
     subprocess.check_call(args)
 
