@@ -1,5 +1,5 @@
 [Default Applications]
-text/plain=org.gnome.gedit.desktop
+text/plain=org.gnome.TextEditor.desktop
 text/csv=libreoffice-base.desktop
 application/vnd.oasis.opendocument.text=libreoffice-base.desktop
 application/vnd.oasis.opendocument.spreadsheet=libreoffice-base.desktop
@@ -11,7 +11,7 @@ application/vnd.openxmlformats-officedocument.wordprocessingml.document=libreoff
 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet=libreoffice-base.desktop
 application/vnd.openxmlformats-officedocument.presentationml.presentation=libreoffice-base.desktop
 application/pdf=org.gnome.Evince.desktop
-application/x-desktop=org.gnome.gedit.desktop
+application/x-desktop=org.gnome.TextEditor.desktop
 audio/mp4=audacious.desktop
 audio/mpeg=audacious.desktop
 audio/x-vorbis+ogg=audacious.desktop
