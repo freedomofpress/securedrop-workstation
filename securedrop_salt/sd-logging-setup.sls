@@ -2,7 +2,7 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 # TODO: parametrise this
-{% if grains['id'] in ["sd-small-debian-13", "sd-large-debian-13"] %}
+{% if grains['id'] in ["sd-inbox-debian-13", "sd-viewer-debian-13"] %}
 include:
   - securedrop_salt.fpf-apt-repo
 
@@ -16,7 +16,7 @@ install-securedrop-log-package:
 
 {% endif %}
 
-{% if grains['id'] == "sd-small-debian-{}".format(grains['osrelease']) %}
+{% if grains['id'] == "sd-inbox-debian-{}".format(grains['osrelease']) %}
 install-redis-for-sd-log-template:
   pkg.installed:
     - pkgs:

@@ -15,9 +15,9 @@ from qubesadmin.vm import QubesVM
 from sdw_util.config_types import Dom0Config
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
+    SD_INBOX_TEMPLATE,
     SD_TEMPLATE_BASE,
-    SD_TEMPLATE_LARGE,
-    SD_TEMPLATE_SMALL,
+    SD_VIEWER_TEMPLATE,
     is_workstation_qube,
 )
 
@@ -94,8 +94,8 @@ def cleanup(request: pytest.FixtureRequest, sdw_tagged_vms: list[QubesVM]) -> It
     app = Qubes()
     for vm_name in [
         SD_TEMPLATE_BASE,
-        SD_TEMPLATE_LARGE,
-        SD_TEMPLATE_SMALL,
+        SD_VIEWER_TEMPLATE,
+        SD_INBOX_TEMPLATE,
         CURRENT_FEDORA_TEMPLATE,
     ]:
         try:

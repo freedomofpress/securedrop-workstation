@@ -8,8 +8,8 @@ import tempfile
 from pathlib import Path
 
 BUILD_VM = os.environ.get("SECUREDROP_DEV_VM", "sd-dev")
-SMALL_TEMPLATE = "sd-small-debian-13"
-LARGE_TEMPLATE = "sd-large-debian-13"
+INBOX_TEMPLATE = "sd-inbox-debian-13"
+VIEWER_TEMPLATE = "sd-viewer-debian-13"
 
 
 def run_in_vm(command: list[str], vmname: str, capture_output: bool = False) -> str | None:
@@ -151,8 +151,8 @@ def main() -> None:
         print(f"Package: {package_name} - {deb_file}")
 
     # Install the deb files in template VMs
-    install_debs_in_template(deb_files, SMALL_TEMPLATE)
-    install_debs_in_template(deb_files, LARGE_TEMPLATE)
+    install_debs_in_template(deb_files, INBOX_TEMPLATE)
+    install_debs_in_template(deb_files, VIEWER_TEMPLATE)
 
     # Shutdown
     all_vms = subprocess.check_output(

@@ -21,9 +21,9 @@ sd-devices-dvm:
       # Label color is set during initial configuration but
       # not enforced on every Salt run, in case of user customization.
       - label: red
-      - template: sd-large-debian-{{ sdvars.debian_version }}
+      - template: sd-viewer-debian-{{ sdvars.debian_version }}
     - prefs:
-      - template: sd-large-debian-{{ sdvars.debian_version }}
+      - template: sd-viewer-debian-{{ sdvars.debian_version }}
       - netvm: ""
       - template_for_dispvms: True
       - default_dispvm: ""
@@ -39,7 +39,7 @@ sd-devices-dvm:
       - default:  # Explictly remove (it had been enabled in past)
         - service.cups
     - require:
-      - qvm: sd-large-debian-{{ sdvars.debian_version }}
+      - qvm: sd-viewer-debian-{{ sdvars.debian_version }}
 
 sd-devices-create-named-dispvm:
   qvm.vm:

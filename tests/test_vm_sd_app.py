@@ -8,8 +8,8 @@ from qubesadmin.app import VMCollection
 
 from sdw_util.config_types import Dom0Config
 from tests.base import (
+    SD_INBOX_TEMPLATE,
     SD_TAG,
-    SD_TEMPLATE_SMALL,
     QubeWrapper,
 )
 from tests.base import (
@@ -67,7 +67,7 @@ def test_sd_app_config(dom0_config: Dom0Config, qube: QubeWrapper, all_vms: VMCo
     vm = all_vms["sd-app"]
     nvm = vm.netvm
     assert nvm is None
-    assert vm.template.name == SD_TEMPLATE_SMALL
+    assert vm.template.name == SD_INBOX_TEMPLATE
     assert not vm.provides_network
     assert not vm.template_for_dispvms
     assert "service.securedrop-log-server" not in vm.features

@@ -27,12 +27,12 @@ base:
 
   sd-base-debian-13:
     - securedrop_salt.sd-base-template-packages
-  sd-small-debian-13:
+  sd-inbox-debian-13:
     - securedrop_salt.sd-logging-setup
     - securedrop_salt.sd-app-files
     - securedrop_salt.sd-proxy-template-files
     - securedrop_salt.sd-gpg-template-files
-  sd-large-debian-13:
+  sd-viewer-debian-13:
     - securedrop_salt.sd-logging-setup
     - securedrop_salt.sd-devices-files
     - securedrop_salt.sd-viewer-files
