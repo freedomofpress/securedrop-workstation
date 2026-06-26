@@ -106,9 +106,6 @@ def install_debs_in_template(all_deb_paths: list[str], template_vm: str) -> None
     )
     assert dpkg_output is not None  # noqa: S101
     wanted_packages = dpkg_output.splitlines()
-    if "securedrop-client" in wanted_packages:
-        # If this is the VM where the client is installed, also install the app
-        wanted_packages.append("securedrop-app")
     print(f"Going to install into {template_vm}: {', '.join(wanted_packages)}")
 
     template_deb_paths = []
