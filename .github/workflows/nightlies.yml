@@ -61,7 +61,9 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          pattern: "*"
+          pattern: "rpm-build-*"
+          merge-multiple: true
+          path: rpms
 
       - uses: actions/checkout@v6
         with:
@@ -85,8 +87,11 @@ jobs:
           git config --global user.email "securedrop@freedom.press"
           git config --global user.name "sdcibot-nightlies[bot]"
           cd securedrop-yum-test
-          mkdir -p workstation/dom0/f41-nightlies
-          cp -v ../rpm-build-41/*.rpm workstation/dom0/f41-nightlies/
+          for version in fc41; do
+            dest="workstation/dom0/${version/fc/f}-nightlies"
+            mkdir -p "$dest"
+            cp -v ../rpms/*.${version}.*.rpm "$dest/"
+          done
           git add .
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
           # Sleep before we push so the token will have propagated across GitHub infra 
