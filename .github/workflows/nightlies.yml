@@ -49,7 +49,6 @@ jobs:
           if-no-files-found: error
 
   commit-and-push:
-    if: ${{ github.ref == 'refs/heads/main' }} # Skip when testing workflow
     runs-on: ubuntu-latest
     container: debian:bookworm
     needs:
@@ -79,10 +78,7 @@ jobs:
           private-key: ${{ secrets.FPF_BRANCH_UPDATER_APP_PRIVKEY }}
           repositories: securedrop-yum-test
 
-      - name: Commit and push
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          TARGET_REPO: freedomofpress/securedrop-yum-test
+      - name: Commit
         run: |
           git config --global user.email "securedrop@freedom.press"
           git config --global user.name "sdcibot-nightlies[bot]"
@@ -94,7 +90,17 @@ jobs:
           done
           git add .
           git diff-index --quiet HEAD || git commit -m "Automated SecureDrop workstation build"
-          # Sleep before we push so the token will have propagated across GitHub infra 
+
+      # Skip the push on dry runs (e.g. workflow-testing PRs); the commit above
+      # still validates the build/copy logic.
+      - name: Push
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TARGET_REPO: freedomofpress/securedrop-yum-test
+        run: |
+          cd securedrop-yum-test
+          # Sleep before we push so the token will have propagated across GitHub infra
           sleep 5
           git push https://x-access-token:${GH_TOKEN}@github.com/${TARGET_REPO}.git main
 
