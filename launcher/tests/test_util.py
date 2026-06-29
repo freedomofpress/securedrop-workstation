@@ -252,7 +252,7 @@ def test_is_sdapp_halted_yes(os_release_fixture, version_contains):
     """
     output = bytes(
         "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
-        f"    Halted    AppVM   yellow     sd-small-debian-{DEBIAN_VERSION}\n",
+        f"    Halted    AppVM   yellow     sd-inbox-debian-{DEBIAN_VERSION}\n",
         "utf-8",
     )
 
@@ -277,7 +277,7 @@ def test_is_sdapp_halted_no(os_release_fixture, version_contains):
     """
     output = bytes(
         "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
-        f"    Paused    AppVM   yellow     sd-small-debian-{DEBIAN_VERSION}\n",
+        f"    Paused    AppVM   yellow     sd-inbox-debian-{DEBIAN_VERSION}\n",
         "utf-8",
     )
 

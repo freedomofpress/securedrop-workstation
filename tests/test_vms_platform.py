@@ -10,8 +10,8 @@ from sdw_util.config_types import Dom0Config
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     DEBIAN_CODENAME,
-    SD_TEMPLATE_LARGE,
-    SD_TEMPLATE_SMALL,
+    SD_INBOX_TEMPLATE,
+    SD_VIEWER_TEMPLATE,
     SD_VMS,
 )
 
@@ -137,8 +137,8 @@ def test_qubes_vm_update_ran_on_fedora_template(all_vms: VMCollection) -> None:
     "vm_name",
     [
         CURRENT_FEDORA_TEMPLATE,
-        SD_TEMPLATE_LARGE,
-        SD_TEMPLATE_SMALL,
+        SD_VIEWER_TEMPLATE,
+        SD_INBOX_TEMPLATE,
     ],
 )
 def test_os_eol(vm_name: str, all_vms: VMCollection) -> None:
@@ -188,8 +188,8 @@ def test_sd_vm_apt_sources(dom0_config: Dom0Config, all_vms: VMCollection) -> No
     Test that the three templates we install our apt sources into are correct
     """
     for vm_name in [
-        SD_TEMPLATE_SMALL,
-        SD_TEMPLATE_LARGE,
+        SD_INBOX_TEMPLATE,
+        SD_VIEWER_TEMPLATE,
     ]:
         vm = all_vms[vm_name]
 

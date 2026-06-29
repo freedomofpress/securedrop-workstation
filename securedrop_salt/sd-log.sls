@@ -51,9 +51,9 @@ install-sd-log:
       # Label color is set during initial configuration but
       # not enforced on every Salt run, in case of user customization.
       - label: red
-      - template: sd-small-debian-{{ sdvars.debian_version }}
+      - template: sd-inbox-debian-{{ sdvars.debian_version }}
     - prefs:
-      - template: sd-small-debian-{{ sdvars.debian_version }}
+      - template: sd-inbox-debian-{{ sdvars.debian_version }}
       - netvm: ""
       - autostart: true
       - default_dispvm: ""
@@ -73,7 +73,7 @@ install-sd-log:
         - menu-items: "org.gnome.Nautilus.desktop"
         - custom-persist.logs: dir:user:user:0755:/home/user/QubesIncomingLogs
     - require:
-      - qvm: sd-small-debian-{{ sdvars.debian_version }}
+      - qvm: sd-inbox-debian-{{ sdvars.debian_version }}
 
 # The private volume size should be set in config.json
 sd-log-private-volume-size:

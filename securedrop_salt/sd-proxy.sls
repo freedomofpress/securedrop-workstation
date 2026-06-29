@@ -22,9 +22,9 @@ sd-proxy-dvm:
       # Label color is set during initial configuration but
       # not enforced on every Salt run, in case of user customization.
       - label: blue
-      - template: sd-small-debian-{{ sdvars.debian_version }}
+      - template: sd-inbox-debian-{{ sdvars.debian_version }}
     - prefs:
-      - template: sd-small-debian-{{ sdvars.debian_version }}
+      - template: sd-inbox-debian-{{ sdvars.debian_version }}
       - netvm: sys-firewall
       - template_for_dispvms: True
       - default_dispvm: ""
@@ -41,7 +41,7 @@ sd-proxy-dvm:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
     - require:
-      - qvm: sd-small-debian-{{ sdvars.debian_version }}
+      - qvm: sd-inbox-debian-{{ sdvars.debian_version }}
 
 sd-proxy-create-named-dispvm:
   qvm.vm:

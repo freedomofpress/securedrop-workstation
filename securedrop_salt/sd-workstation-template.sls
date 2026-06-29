@@ -8,7 +8,7 @@ include:
   - securedrop_salt.sd-base-template
 
 # Installs consolidated templateVMs:
-{% for template_prefix in ["sd-small", "sd-large"] %}
+{% for template_prefix in ["sd-inbox", "sd-viewer"] %}
 {{template_prefix}}-debian-{{ sdvars.debian_version }}:
   qvm.vm:
     - clone:

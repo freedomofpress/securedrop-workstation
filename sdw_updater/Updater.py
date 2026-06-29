@@ -47,13 +47,13 @@ def _get_current_vms() -> dict[str, str]:
     # In the future, we could use qvm-prefs to extract this information.
     return {
         "fedora": "fedora-43-xfce",
-        "sd-viewer": f"sd-large-debian-{debian_version}",
-        "sd-app": f"sd-small-debian-{debian_version}",
-        "sd-log": f"sd-small-debian-{debian_version}",
-        "sd-devices": f"sd-large-debian-{debian_version}",
-        "sd-printers": f"sd-large-debian-{debian_version}",
-        "sd-proxy": f"sd-small-debian-{debian_version}",
-        "sd-gpg": f"sd-small-debian-{debian_version}",
+        "sd-viewer": f"sd-viewer-debian-{debian_version}",
+        "sd-app": f"sd-inbox-debian-{debian_version}",
+        "sd-log": f"sd-inbox-debian-{debian_version}",
+        "sd-devices": f"sd-viewer-debian-{debian_version}",
+        "sd-printers": f"sd-viewer-debian-{debian_version}",
+        "sd-proxy": f"sd-inbox-debian-{debian_version}",
+        "sd-gpg": f"sd-inbox-debian-{debian_version}",
     }
 
 

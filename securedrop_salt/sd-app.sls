@@ -25,9 +25,9 @@ sd-app:
       # Label color is set during initial configuration but
       # not enforced on every Salt run, in case of user customization.
       - label: yellow
-      - template: sd-small-debian-{{ sdvars.debian_version }}
+      - template: sd-inbox-debian-{{ sdvars.debian_version }}
     - prefs:
-      - template: sd-small-debian-{{ sdvars.debian_version }}
+      - template: sd-inbox-debian-{{ sdvars.debian_version }}
       - netvm: ""
       - default_dispvm: "sd-viewer"
       - devices_denied: '*******'
@@ -43,7 +43,7 @@ sd-app:
         - service.paxctld
         - service.securedrop-mime-handling
     - require:
-      - qvm: sd-small-debian-{{ sdvars.debian_version }}
+      - qvm: sd-inbox-debian-{{ sdvars.debian_version }}
       - sls: securedrop_salt.sd-viewer
 
 sd-app-custom-persist:

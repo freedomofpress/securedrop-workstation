@@ -199,16 +199,17 @@ def sync_appmenus() -> None:
     Sync appmenus now that all packages are installed
     TODO: this should be done by salt or debs, but we do it manually here because it's
     not straightforward to run a dom0 salt state after VMs run.
-    n.b. none of the small VMs are shown in the menu on prod, but nice to have it synced
+    n.b. none of the sd-inbox-based VMs are shown in the menu on prod,
+    but nice to have it synced.
     """
 
-    run_cmd(["qvm-start", "--skip-if-running", "sd-small-debian-13"])
-    run_cmd(["qvm-sync-appmenus", "sd-small-debian-13"])
-    run_cmd(["qvm-shutdown", "sd-small-debian-13"])
+    run_cmd(["qvm-start", "--skip-if-running", "sd-inbox-debian-13"])
+    run_cmd(["qvm-sync-appmenus", "sd-inbox-debian-13"])
+    run_cmd(["qvm-shutdown", "sd-inbox-debian-13"])
 
-    run_cmd(["qvm-start", "--skip-if-running", "sd-large-debian-13"])
-    run_cmd(["qvm-sync-appmenus", "sd-large-debian-13"])
-    run_cmd(["qvm-shutdown", "sd-large-debian-13"])
+    run_cmd(["qvm-start", "--skip-if-running", "sd-viewer-debian-13"])
+    run_cmd(["qvm-sync-appmenus", "sd-viewer-debian-13"])
+    run_cmd(["qvm-shutdown", "sd-viewer-debian-13"])
 
     # These are the ones we show in prod VMs, so sync explicitly
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-devices"])
