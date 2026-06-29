@@ -10,8 +10,12 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Callable
+from contextlib import ContextDecorator
+from typing import Literal
 
 from qubesadmin import Qubes
+from qubesadmin.vm import QubesVM
 
 from sdw_util.config_types import ValidationError
 
@@ -37,7 +41,7 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator  # noqa: E402
 
-DEBIAN_VERSION = "trixie"
+DEBIAN_VERSION = "13"
 
 
 def parse_args() -> argparse.Namespace:
@@ -136,6 +140,83 @@ def run_cmd(args: list[str]) -> None:
         raise SDWAdminException(f"Error while running {' '.join(args)}")
 
 
+class template_upgrade_handler(ContextDecorator):
+    """
+    Temporarily prevents startup of managed qubes
+
+    Necessary during provisioning, particularly in template changes, where
+    all qubes dependent dependent on a template (including disposables only
+    indirectly based on it) need to be shut down, otherwise provisioning fails.
+
+    NOTE: deferred template changes may make this redundant
+    https://github.com/qubesos/qubes-issues/issues/8070
+    """
+
+    def __enter__(self) -> Callable[..., ContextDecorator]:
+        self.app = Qubes()
+
+        self.skip_upgrade_handler = self.template_upgrades_needed()
+        if self.skip_upgrade_handler:
+            return self
+
+        print("[info] Temporarily disabling startup for managed qubes.")
+        # Exclude:
+        #   - the ones already with prohibit-start for unrelated reasons
+        #   - preloaded disposables
+        self.excluded = [
+            q
+            for q in self.app.domains
+            if "sd-workstation" in q.tags
+            if ("prohibit-start" in q.features or not is_managed(q))
+        ]
+
+        affected_qubes = self.affected_qubes()
+        for qube in affected_qubes:
+            qube.features["prohibit-start"] = "disabled during set up"
+
+        # Use of qvm-shutdown since it can somewhat handle dependencies
+        shutdown_list = [q.name for q in affected_qubes]
+        if shutdown_list:
+            run_cmd(["qvm-shutdown", "--wait", "--"] + shutdown_list)
+
+        return self
+
+    def __exit__(self, *exc: object) -> Literal[False]:
+        # No cleanup needed, because it never ran
+        if self.skip_upgrade_handler:
+            return False
+
+        print("[info] Re-enabling startup for managed qubes.")
+
+        # Obtain the list again since:
+        #  - some qubes may have been removed (e.g. old templates)
+        #  - somes cloned qubes may have inherited prohibit-startup
+        for qube in self.affected_qubes():
+            del qube.features["prohibit-start"]
+
+        return False
+
+    def affected_qubes(self) -> list[QubesVM]:
+        # IMPORTANT: List of qubes may have changed
+        self.app.domains.refresh_cache(force=True)
+
+        return [
+            q
+            for q in self.app.domains
+            if ("sd-workstation" in q.tags and q not in self.excluded and is_managed(q))
+        ]
+
+    def template_upgrades_needed(self) -> bool:
+        templ_current_version_checks = [
+            q.features["os-version"] == DEBIAN_VERSION
+            for q in Qubes().domains
+            if ("sd-workstation" in q.tags and q.klass == "TemplateVM")
+        ]
+
+        # Ignore if all templates are using the intended version
+        return all(templ_current_version_checks)
+
+
 def provision(step_description: str, salt_state: str) -> None:
     """
     Create, change or delete qubes
@@ -144,6 +225,7 @@ def provision(step_description: str, salt_state: str) -> None:
     qubesctl_call(step_description, ["--", "state.sls", salt_state])
 
 
+@template_upgrade_handler()
 def provision_all() -> None:
     """
     Provision all enabled salt states
@@ -280,7 +362,7 @@ def perform_uninstall() -> None:
     )
 
 
-def is_managed(qube_name: str) -> bool:
+def is_managed(qube: str | QubesVM) -> bool:
     """
     Help assess if qube is to be managed directly
 
@@ -288,7 +370,9 @@ def is_managed(qube_name: str) -> bool:
     - preloaded qubes: they are restarted when changes are
     applied to templates and do no need explicit management.
     """
-    return not getattr(Qubes().domains[qube_name], "is_preload", False)
+    if type(qube) is str:
+        qube = Qubes().domains[qube]
+    return not getattr(qube, "is_preload", False)
 
 
 def extract_secret_key_fingerprints(gpg_output: str) -> list[str]:
