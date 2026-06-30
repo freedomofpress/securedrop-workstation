@@ -24,7 +24,7 @@ jobs:
       image: quay.io/fedora/fedora:${{ matrix.qubes_release.fedora_ver }}
     steps:
       - run: dnf install -y git make
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Install dependencies
@@ -45,7 +45,7 @@ jobs:
       image: quay.io/fedora/fedora:${{ matrix.qubes_release.fedora_ver }}
     steps:
       - run: dnf install -y git make
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Install dependencies
@@ -68,7 +68,7 @@ jobs:
       image: quay.io/fedora/fedora:${{ matrix.qubes_release.fedora_ver }}
     steps:
       - run: dnf install -y make
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Install dependencies
