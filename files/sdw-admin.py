@@ -10,8 +10,8 @@ import json
 import os
 import subprocess
 import sys
-from collections.abc import Callable
-from contextlib import ContextDecorator
+from collections.abc import Callable, Iterator
+from contextlib import ContextDecorator, contextmanager
 from typing import Literal
 
 from qubesadmin import Qubes
@@ -37,6 +37,12 @@ TAILS_PKG_JOURNALIST_INTERFACE_CONFIG = TAILS_PATH + "securedrop-admin/app-journ
 TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
     TAILS_PATH + "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
+
+# Salt pillar override to make sure dom0 states do not re-enable
+# preloaded dispvms. Needed due to inclusion of 'qvm.preload-disposables'
+# indirectly via 'qvm.default-dvm'. Removing this does not mean preloaded
+# disposables are disabled. Just that they don't get enabled on provisioning.
+PILLAR_DISABLE_PRELOAD = {"qvm": {"dom0": {"preload": False}}}
 
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator  # noqa: E402
@@ -140,6 +146,29 @@ def run_cmd(args: list[str]) -> None:
         raise SDWAdminException(f"Error while running {' '.join(args)}")
 
 
+@contextmanager
+def suppress_preloaded_disposables() -> Iterator[None]:
+    """
+    Temporarily disable preloaded disposables during provisioning
+    """
+    print("[info] Temporarily disabling preloaded disposables")
+
+    # Save current settings
+    dom0 = Qubes().domains["dom0"]
+    original_preload_dispvm_max = dom0.features.get("preload-dispvm-max", "0")
+
+    # Disable preloaded disposables
+    dom0.features["preload-dispvm-max"] = "0"
+
+    try:
+        yield
+    finally:
+        print("[info] Re-enabling preloaded disposables")
+
+        # Reset to original settings
+        dom0.features["preload-dispvm-max"] = original_preload_dispvm_max
+
+
 class template_upgrade_handler(ContextDecorator):
     """
     Temporarily prevents startup of managed qubes
@@ -221,8 +250,10 @@ def provision(step_description: str, salt_state: str) -> None:
     """
     Create, change or delete qubes
     """
-
-    qubesctl_call(step_description, ["--", "state.sls", salt_state])
+    qubesctl_call(
+        step_description,
+        ["--", "state.sls", salt_state, f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
+    )
 
 
 @template_upgrade_handler()
@@ -231,7 +262,8 @@ def provision_all() -> None:
     Provision all enabled salt states
     """
     qubesctl_call(
-        "Set up dom0 config files, including RPC policies, and create VMs", ["state.highstate"]
+        "Set up dom0 config files, including RPC policies, and create VMs",
+        ["state.highstate", f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
     )
 
 
@@ -666,7 +698,9 @@ def main() -> None:
         validate_config(SCRIPTS_PATH)
         copy_config()
         refresh_salt()
-        provision_and_configure()
+        with suppress_preloaded_disposables():
+            provision_and_configure()
+
     elif args.uninstall:
         print(
             "Uninstalling will remove all packages and destroy all VMs associated\n"
