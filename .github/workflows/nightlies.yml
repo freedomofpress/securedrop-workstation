@@ -30,7 +30,7 @@ jobs:
       image: quay.io/fedora/fedora:${{ matrix.fedora_version }}
     steps:
       - run: dnf install -y make git
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Install dependencies
@@ -64,7 +64,7 @@ jobs:
           merge-multiple: true
           path: rpms
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           repository: "freedomofpress/securedrop-yum-test"
           path: "securedrop-yum-test"
