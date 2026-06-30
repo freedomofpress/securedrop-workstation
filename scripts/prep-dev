@@ -37,7 +37,10 @@ fi
 
 echo "Deploying Salt config..."
 sudo dnf clean all
-if rpm -q "$rpm_name" > /dev/null 2>&1; then
+
+# Full name needed to compare against installed version
+pkg_full_name=$(basename "$latest_rpm" | sed -e 's/.rpm//g')
+if rpm -q "$pkg_full_name" > /dev/null 2>&1; then
     echo "Reinstalling $latest_rpm ..."
     sudo dnf reinstall -y "$latest_rpm"
 else
