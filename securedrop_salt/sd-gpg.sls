@@ -17,7 +17,6 @@
 
 include:
   - securedrop_salt.sd-workstation-template
-  - securedrop_salt.sd-upgrade-templates
 
 sd-gpg:
   qvm.vm:
@@ -47,7 +46,6 @@ sd-gpg:
         - sd-workstation
     - require:
       - sls: securedrop_salt.sd-workstation-template
-      - sls: securedrop_salt.sd-upgrade-templates
 
 sd-gpg-custom-persist:
   qvm.features:

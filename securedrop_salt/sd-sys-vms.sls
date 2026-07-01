@@ -6,7 +6,10 @@
 
 include:
   # Import the upstream Qubes-maintained default-dispvm to ensure Fedora-based
-  # DispVM is created
+  # DispVM is created.
+  # WARNING: this includes indirectly 'qvm.preload-disposables', which reverts
+  # any temporary disabling of disposable preloading. To avoid this, the pillar
+  # 'qvm:dom0:preload' needs to be overridden as 'false'.
   - qvm.default-dispvm
 
 # 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to

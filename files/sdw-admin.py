@@ -10,8 +10,12 @@ import json
 import os
 import subprocess
 import sys
+from collections.abc import Callable, Iterator
+from contextlib import ContextDecorator, contextmanager
+from typing import Literal
 
 from qubesadmin import Qubes
+from qubesadmin.vm import QubesVM
 
 from sdw_util.config_types import ValidationError
 
@@ -34,10 +38,16 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
     TAILS_PATH + "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
 
+# Salt pillar override to make sure dom0 states do not re-enable
+# preloaded dispvms. Needed due to inclusion of 'qvm.preload-disposables'
+# indirectly via 'qvm.default-dvm'. Removing this does not mean preloaded
+# disposables are disabled. Just that they don't get enabled on provisioning.
+PILLAR_DISABLE_PRELOAD = {"qvm": {"dom0": {"preload": False}}}
+
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator  # noqa: E402
 
-DEBIAN_VERSION = "trixie"
+DEBIAN_VERSION = "13"
 
 
 def parse_args() -> argparse.Namespace:
@@ -136,20 +146,124 @@ def run_cmd(args: list[str]) -> None:
         raise SDWAdminException(f"Error while running {' '.join(args)}")
 
 
+@contextmanager
+def suppress_preloaded_disposables() -> Iterator[None]:
+    """
+    Temporarily disable preloaded disposables during provisioning
+    """
+    print("[info] Temporarily disabling preloaded disposables")
+
+    # Save current settings
+    dom0 = Qubes().domains["dom0"]
+    original_preload_dispvm_max = dom0.features.get("preload-dispvm-max", "0")
+
+    # Disable preloaded disposables
+    dom0.features["preload-dispvm-max"] = "0"
+
+    try:
+        yield
+    finally:
+        print("[info] Re-enabling preloaded disposables")
+
+        # Reset to original settings
+        dom0.features["preload-dispvm-max"] = original_preload_dispvm_max
+
+
+class template_upgrade_handler(ContextDecorator):
+    """
+    Temporarily prevents startup of managed qubes
+
+    Necessary during provisioning, particularly in template changes, where
+    all qubes dependent dependent on a template (including disposables only
+    indirectly based on it) need to be shut down, otherwise provisioning fails.
+
+    NOTE: deferred template changes may make this redundant
+    https://github.com/qubesos/qubes-issues/issues/8070
+    """
+
+    def __enter__(self) -> Callable[..., ContextDecorator]:
+        self.app = Qubes()
+
+        self.skip_upgrade_handler = self.template_upgrades_needed()
+        if self.skip_upgrade_handler:
+            return self
+
+        print("[info] Temporarily disabling startup for managed qubes.")
+        # Exclude:
+        #   - the ones already with prohibit-start for unrelated reasons
+        #   - preloaded disposables
+        self.excluded = [
+            q
+            for q in self.app.domains
+            if "sd-workstation" in q.tags
+            if ("prohibit-start" in q.features or not is_managed(q))
+        ]
+
+        affected_qubes = self.affected_qubes()
+        for qube in affected_qubes:
+            qube.features["prohibit-start"] = "disabled during set up"
+
+        # Use of qvm-shutdown since it can somewhat handle dependencies
+        shutdown_list = [q.name for q in affected_qubes]
+        if shutdown_list:
+            run_cmd(["qvm-shutdown", "--wait", "--"] + shutdown_list)
+
+        return self
+
+    def __exit__(self, *exc: object) -> Literal[False]:
+        # No cleanup needed, because it never ran
+        if self.skip_upgrade_handler:
+            return False
+
+        print("[info] Re-enabling startup for managed qubes.")
+
+        # Obtain the list again since:
+        #  - some qubes may have been removed (e.g. old templates)
+        #  - somes cloned qubes may have inherited prohibit-startup
+        for qube in self.affected_qubes():
+            del qube.features["prohibit-start"]
+
+        return False
+
+    def affected_qubes(self) -> list[QubesVM]:
+        # IMPORTANT: List of qubes may have changed
+        self.app.domains.refresh_cache(force=True)
+
+        return [
+            q
+            for q in self.app.domains
+            if ("sd-workstation" in q.tags and q not in self.excluded and is_managed(q))
+        ]
+
+    def template_upgrades_needed(self) -> bool:
+        templ_current_version_checks = [
+            q.features["os-version"] == DEBIAN_VERSION
+            for q in Qubes().domains
+            if ("sd-workstation" in q.tags and q.klass == "TemplateVM")
+        ]
+
+        # Ignore if all templates are using the intended version
+        return all(templ_current_version_checks)
+
+
 def provision(step_description: str, salt_state: str) -> None:
     """
     Create, change or delete qubes
     """
+    qubesctl_call(
+        step_description,
+        ["--", "state.sls", salt_state, f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
+    )
 
-    qubesctl_call(step_description, ["--", "state.sls", salt_state])
 
-
+@template_upgrade_handler()
 def provision_all() -> None:
     """
     Provision all enabled salt states
     """
     qubesctl_call(
-        "Set up dom0 config files, including RPC policies, and create VMs", ["state.highstate"]
+        "Set up dom0 config files, including RPC policies, and create VMs",
+        ["state.highstate", f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
     )
 
 
@@ -280,7 +394,7 @@ def perform_uninstall() -> None:
     )
 
 
-def is_managed(qube_name: str) -> bool:
+def is_managed(qube: str | QubesVM) -> bool:
     """
     Help assess if qube is to be managed directly
 
@@ -288,7 +402,9 @@ def is_managed(qube_name: str) -> bool:
     - preloaded qubes: they are restarted when changes are
     applied to templates and do no need explicit management.
     """
-    return not getattr(Qubes().domains[qube_name], "is_preload", False)
+    if type(qube) is str:
+        qube = Qubes().domains[qube]
+    return not getattr(qube, "is_preload", False)
 
 
 def extract_secret_key_fingerprints(gpg_output: str) -> list[str]:
@@ -582,7 +698,9 @@ def main() -> None:
         validate_config(SCRIPTS_PATH)
         copy_config()
         refresh_salt()
-        provision_and_configure()
+        with suppress_preloaded_disposables():
+            provision_and_configure()
+
     elif args.uninstall:
         print(
             "Uninstalling will remove all packages and destroy all VMs associated\n"

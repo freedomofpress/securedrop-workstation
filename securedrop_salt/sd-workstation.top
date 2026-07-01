@@ -9,7 +9,6 @@ base:
     - securedrop_salt.sd-dom0-files
     - securedrop_salt.sd-base-template
     - securedrop_salt.sd-workstation-template
-    - securedrop_salt.sd-upgrade-templates
     - securedrop_salt.sd-log
     - securedrop_salt.sd-devices
     - securedrop_salt.sd-printers
@@ -18,7 +17,6 @@ base:
     - securedrop_salt.sd-viewer
     - securedrop_salt.sd-app
     - securedrop_salt.sd-remove-unused-qubes
-    - securedrop_salt.sd-remove-unused-templates
 
     {# Whonix > 17 does not need cleanup #}
     {% if whonix.whonix_version == '17' %}
