@@ -3,7 +3,7 @@
 
 ##
 # Configures the FPF apt repository and installs securedrop-admin
-# inside the sd-admin-trixie-template VM.
+# inside the sd-admin-debian-13 VM.
 #
 # Mirrors the approach in securedrop_salt/fpf-apt-repo.sls and
 # securedrop_salt/sd-base-template-packages.sls, but uses duplicated
