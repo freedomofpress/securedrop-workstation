@@ -20,8 +20,6 @@ debian_based_vms = [
     "sd-devices",
 ]
 
-WHONIX_VERSION = 17
-
 TEST_RESULTS_OK = {
     "dom0": UpdateStatus.UPDATES_OK,
     "fedora": UpdateStatus.UPDATES_OK,

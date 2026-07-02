@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
-{% import "qvm/whonix.jinja" as whonix %}
-
 base:
   dom0:
     - securedrop_salt.sd-sys-vms
@@ -17,12 +15,6 @@ base:
     - securedrop_salt.sd-viewer
     - securedrop_salt.sd-app
     - securedrop_salt.sd-remove-unused-qubes
-
-    {# Whonix > 17 does not need cleanup #}
-    {% if whonix.whonix_version == '17' %}
-    - securedrop_salt.sd-reset-whonix-prefs
-    {% endif %}
-
   sd-base-debian-13:
     - securedrop_salt.sd-base-template-packages
   sd-inbox-debian-13:
@@ -37,12 +29,6 @@ base:
   'sd-fedora-43-dvm,sys-usb':
     - match: list
     - securedrop_salt.sd-usb-autoattach-add
-
-  {# Whonix > 17 does not need cleanup #}
-  {% if whonix.whonix_version == '17' %}
-  whonix-gateway-17:
-    - securedrop_salt.sd-remove-whonix-packages
-  {% endif %}
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.

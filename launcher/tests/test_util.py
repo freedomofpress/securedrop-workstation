@@ -20,7 +20,6 @@ CONFLICTING_PROCESS_REGEX = r"Conflicting process .* is currently running."
 FIXTURES_PATH = Path(__file__).parent / "fixtures"
 
 DEBIAN_VERSION = 13
-WHONIX_VERSION = 17
 
 
 @mock.patch("sdw_util.Util.sdlog.error")

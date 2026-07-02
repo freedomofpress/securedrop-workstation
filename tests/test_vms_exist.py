@@ -81,30 +81,6 @@ def test_sd_whonix_absent(all_vms: VMCollection) -> None:
     assert "sd-whonix" not in all_vms
 
 
-WHONIX_QUBES = [
-    "whonix-workstation-17",
-    "whonix-gateway-17",
-    "sys-whonix",
-    "anon-whonix",
-    "whonix-workstation-17-dvm",
-]
-
-
-@pytest.mark.provisioning
-@pytest.mark.parametrize("whonix_vm_name", WHONIX_QUBES)
-def test_whonix_vms_reset(whonix_vm_name: str, all_vms: VMCollection) -> None:
-    """
-    Whonix templates used to be modified by the workstation (<=1.4.0).
-    Ensure they were properly reset.
-    """
-
-    # skip check on non-existent qubes
-    if whonix_vm_name not in all_vms:
-        pytest.skip(f"skipping qvm-prefs check on non-existent qube: '{whonix_vm_name}'")
-    qube = all_vms[whonix_vm_name]
-    assert qube.property_is_default("kernelopts")
-
-
 @pytest.mark.provisioning
 def test_sd_inbox_template(all_vms: VMCollection) -> None:
     """
