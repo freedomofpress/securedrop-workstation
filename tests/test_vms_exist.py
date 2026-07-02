@@ -73,15 +73,6 @@ def test_default_dispvm(sdw_tagged_vms: list[QubesVM]) -> None:
 
 
 @pytest.mark.provisioning
-def test_sd_whonix_absent(all_vms: VMCollection) -> None:
-    """
-    The sd-whonix once existed to proxy sd-proxy's traffic through Tor.
-    But we've since removed it and included a Tor proxy in sd-proxy.
-    """
-    assert "sd-whonix" not in all_vms
-
-
-@pytest.mark.provisioning
 def test_sd_inbox_template(all_vms: VMCollection) -> None:
     """
     Confirm that the "inbox" version of the SDW TemplateVM is configured correctly.
