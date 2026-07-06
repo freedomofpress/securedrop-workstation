@@ -183,7 +183,7 @@ class template_upgrade_handler(ContextDecorator):
     def __enter__(self) -> Callable[..., ContextDecorator]:
         self.app = Qubes()
 
-        self.skip_upgrade_handler = self.template_upgrades_needed()
+        self.skip_upgrade_handler = not self.template_upgrades_needed()
         if self.skip_upgrade_handler:
             return self
 
@@ -245,8 +245,7 @@ class template_upgrade_handler(ContextDecorator):
             if ("sd-workstation" in q.tags and q.klass == "TemplateVM")
         ]
 
-        # Ignore if all templates are using the intended version
-        return all(templ_current_version_checks)
+        return not all(templ_current_version_checks)
 
 
 def provision(step_description: str, salt_state: str) -> None:
