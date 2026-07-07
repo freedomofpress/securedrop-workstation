@@ -221,7 +221,7 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
-* Wed Jun 03 2026 SecureDrop Team <securedrop@freedom.press> - 1.8.0rc1
+* Tue Jul 07 2026 SecureDrop Team <securedrop@freedom.press> - 1.8.0rc1
 - See changelog.md
 
 * Thu May 28 2026 SecureDrop Team <securedrop@freedom.press> - 1.7.1
