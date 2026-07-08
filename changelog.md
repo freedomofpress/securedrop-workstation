@@ -2,31 +2,34 @@
 
 ## 1.8.0-rc1
 
-This release upgrades SecureDrop Workstation VMs from Debian 12 (Bookworm) to Debian 13 (Trixie).
+This release focused on upgrading SecureDrop Workstation qubes from Debian 12 (Bookworm)
+to Debian 13 (Trixie). Some document viewer applications have been replaced and others
+updated with major visual changes.
 
-* Debian Trixie and Qubes 4.3:
-  * Update SDW templates to Debian 13 (Trixie) (#1719)
-  * Rename templates to `sd-inbox-*`/`sd-viewer-*` (#1737)
-  * Remove remaining Qubes 4.2 references; default to building for Qubes 4.3 (Fedora 41) and bump minimum Python to 3.13 (#1724)
-  * Fix `make staging` under Qubes 4.3 (#1728)
-  * Update MIME-type tests for Trixie's switch to gnome-text-editor (#1739)
-* SecureDrop Inbox:
-  * Finish removing SecureDrop Client Classic references now that Inbox is the default (#1721)
-  * Inbox now requires two tabs to move from the password field to TOTP (#1726)
-* Upgrade flow:
-  * Replace `handle-upgrade` script with generic upgrade logic; suppress preloaded disposables during `sdw-admin`; show "provisioning complete" message at the end (#1744)
-  * Handle qube removal in global properties during upgrade (#1687)
-  * Fix Whonix removal during upgrade (#1693)
-  * Fix install across different versions in the prep script (#1747)
+* Update SDW templates to Debian 13 (Trixie) (#1719, #1739)
+* Include 4.2 'sdw-upgrade' script (previously unreleased in Qubes 4.3) (#1653, #1687, #1693)
+
 * Internal and development:
+  * Rename templates to `sd-inbox-*`/`sd-viewer-*` (#1737)
+  * Inbox now requires two tabs to move from the password field to TOTP (#1726)
+  * Finish removing (mostly internal) SecureDrop Client Classic references now that Inbox is the default (#1721)
+  * Stop writing update flags to sd-app (used in SecureDrop Client Classic) (#1637)
+  * Fix install across different versions in the prep script (#1747)
+  * Remove Qubes 4.2 references; build for Qubes 4.3 by default; bump min. Python to 3.13 (#1724)
+  * Replace `handle-upgrade` with combination of `prohibit-start` and preloaded disps. disabling (#1744)
+  * Fix `make staging` under Qubes 4.3 (#1728)
   * Enable dependency cooldowns within poetry (#1717)
   * Add semgrep check for Salt pitfalls (`watch`, `cmd.wait`) (#1666)
   * Use installed validation script for `make dev`/`make staging` (#1681)
   * Fix nightlies when there's only one version; run commit-and-push job in dry-run mode (#1745)
   * Remove obsolete Inbox special-casing in try-client-pr (#1741)
+  * Add sd-printers to documentation and other locations (#1613)
+  * Salt: avoid running sd-dom0-files.sls twice (#1586)
   * Bump idna from 3.13 to 3.15 (#1694)
   * Bump actions/checkout from 6 to 7 (#1742)
   * Bump actions/dependency-review-action from 4 to 5 (#1674)
+  * Bump actions/github-script from 8 to 9 (#1617)
+  * Add type annotations for Python code (#1625, #1656)
 
 ## 1.7.1
 
