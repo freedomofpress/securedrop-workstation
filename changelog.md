@@ -1,5 +1,10 @@
 # changelog
 
+## 1.8.0-rc2
+
+* Set migration flag (#1759)
+* Disable dom0 highstate to work around updater bugs with template switches (#1769)
+
 ## 1.8.0-rc1
 
 This release focused on upgrading SecureDrop Workstation qubes from Debian 12 (Bookworm)
