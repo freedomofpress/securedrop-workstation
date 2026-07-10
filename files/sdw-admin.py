@@ -37,13 +37,6 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
     TAILS_PATH + "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
 
-# Salt pillar override to make sure dom0 states do not re-enable
-# preloaded dispvms. Needed due to inclusion of 'qvm.preload-disposables'
-# indirectly via 'qvm.default-dvm'. Removing this does not mean preloaded
-# disposables are disabled. Just that they don't get enabled on provisioning.
-# FIXME: https://github.com/freedomofpress/securedrop-workstation/issues/1523
-PILLAR_DISABLE_PRELOAD = {"qvm": {"dom0": {"preload": False}}}
-
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator  # noqa: E402
 
@@ -148,7 +141,7 @@ def provision(step_description: str, salt_state: str) -> None:
     """
     qubesctl_call(
         step_description,
-        ["--", "state.sls", salt_state, f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
+        ["--", "state.sls", salt_state],
     )
 
 
@@ -158,7 +151,7 @@ def provision_all() -> None:
     """
     qubesctl_call(
         "Set up dom0 config files, including RPC policies, and create VMs",
-        ["state.highstate", f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
+        ["state.highstate"],
     )
 
 

@@ -4,13 +4,22 @@
 # Ensures that sys-* VMs (viz. sys-net, sys-firewall, sys-usb) use
 # an up-to-date version of Fedora, in order to receive security updates.
 
-include:
-  # Import the upstream Qubes-maintained default-dispvm to ensure Fedora-based
-  # DispVM is created.
-  # WARNING: this includes indirectly 'qvm.preload-disposables', which reverts
-  # any temporary disabling of disposable preloading. To avoid this, the pillar
-  # 'qvm:dom0:preload' needs to be overridden as 'false'.
-  - qvm.default-dispvm
+# Import the upstream Qubes-maintained default-dispvm to ensure Fedora-based
+# DispVM is created.
+# WARNING: this includes indirectly 'qvm.preload-disposables', which reverts
+# any temporary disabling of disposable preloading. To avoid this, the pillar
+# 'qvm:dom0:preload' needs to be overridden as 'false'. Removing this does not
+# mean preloaded disposables are disabled. Just that they don't get enabled
+# on provisioning.
+# FIXME: https://github.com/freedomofpress/securedrop-workstation/issues/1523
+default_dvm_with_custom_pillar:
+  module.run:
+    - state.apply:
+      - mods: qvm.default-dispvm
+      - pillar:
+          qvm:
+            dom0:
+              preload: false
 
 # 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to
 # follow simple - like sd-fedora-NN-dvm
@@ -61,7 +70,7 @@ set-fedora-default-template-version:
     - name: qubes-prefs default_template {{ sd_fedora_base_template }}
     - require:
       - qvm: dom0-install-fedora-template
-      - sls: qvm.default-dispvm
+      - module: default_dvm_with_custom_pillar
 
 # On 4.1, several sys qubes are disposable by default - since we also want to
 # upgrade the templates for those, we need to ensure that the respective dvms
