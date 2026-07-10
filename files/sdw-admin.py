@@ -10,9 +10,6 @@ import json
 import os
 import subprocess
 import sys
-from collections.abc import Callable, Iterator
-from contextlib import ContextDecorator, contextmanager
-from typing import Literal
 
 from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
@@ -145,110 +142,6 @@ def run_cmd(args: list[str]) -> None:
         raise SDWAdminException(f"Error while running {' '.join(args)}")
 
 
-@contextmanager
-def suppress_preloaded_disposables() -> Iterator[None]:
-    """
-    Temporarily disable preloaded disposables during provisioning
-    """
-    print("[info] Temporarily disabling preloaded disposables")
-
-    # Save current settings
-    dom0 = Qubes().domains["dom0"]
-    original_preload_dispvm_max = dom0.features.get("preload-dispvm-max", "0")
-
-    # Disable preloaded disposables
-    dom0.features["preload-dispvm-max"] = "0"
-
-    try:
-        yield
-    finally:
-        print("[info] Re-enabling preloaded disposables")
-
-        # Reset to original settings
-        dom0.features["preload-dispvm-max"] = original_preload_dispvm_max
-
-
-class template_upgrade_handler(ContextDecorator):
-    """
-    Temporarily prevents startup of managed qubes
-
-    Necessary during provisioning, particularly in template changes, where
-    all qubes dependent on a template (including disposables only
-    indirectly based on it) need to be shut down, otherwise provisioning fails.
-
-    NOTE: deferred template changes may make this redundant
-    https://github.com/qubesos/qubes-issues/issues/8070
-    """
-
-    def __enter__(self) -> Callable[..., ContextDecorator]:
-        self.app = Qubes()
-
-        self.skip_upgrade_handler = self.template_upgrades_needed()
-        if self.skip_upgrade_handler:
-            return self
-
-        print("[info] Temporarily disabling startup for managed qubes.")
-        # Exclude:
-        #   - the ones already with prohibit-start for unrelated reasons
-        #   - preloaded disposables
-        self.excluded = [
-            q
-            for q in self.app.domains
-            if "sd-workstation" in q.tags
-            if ("prohibit-start" in q.features or not is_managed(q))
-        ]
-
-        affected_qubes = self.affected_qubes()
-        for qube in affected_qubes:
-            qube.features["prohibit-start"] = "disabled during set up"
-
-        # Use of qvm-shutdown since it can somewhat handle dependencies
-        shutdown_list = [q.name for q in affected_qubes]
-        if shutdown_list:
-            run_cmd(["qvm-shutdown", "--wait", "--"] + shutdown_list)
-
-        return self
-
-    def __exit__(self, *exc: object) -> Literal[False]:
-        # No cleanup needed, because it never ran
-        if self.skip_upgrade_handler:
-            return False
-
-        print("[info] Re-enabling startup for managed qubes.")
-
-        # Obtain the list again since:
-        #  - some qubes may have been removed (e.g. old templates)
-        #  - some cloned qubes may have inherited prohibit-startup
-        for qube in self.affected_qubes():
-            if "prohibit-start" in qube.features:
-                del qube.features["prohibit-start"]
-
-        return False
-
-    def affected_qubes(self) -> list[QubesVM]:
-        # IMPORTANT: List of qubes may have changed
-        self.app.domains.refresh_cache(force=True)
-
-        return [
-            q
-            for q in self.app.domains
-            if ("sd-workstation" in q.tags and q not in self.excluded and is_managed(q))
-        ]
-
-    def template_upgrades_needed(self) -> bool:
-        # NOTE: a more clever detection is warranted, but inspecting what salt is going
-        # to do is not a particular thing salt is good at. This is left here for when
-        # re-implemented with another IaC tool that doesn't need wrapper scripts like these.
-        templ_current_version_checks = [
-            q.features["os-version"] == DEBIAN_VERSION
-            for q in Qubes().domains
-            if ("sd-workstation" in q.tags and q.klass == "TemplateVM")
-        ]
-
-        # Ignore if all templates are using the intended version
-        return all(templ_current_version_checks)
-
-
 def provision(step_description: str, salt_state: str) -> None:
     """
     Create, change or delete qubes
@@ -259,7 +152,6 @@ def provision(step_description: str, salt_state: str) -> None:
     )
 
 
-@template_upgrade_handler()
 def provision_all() -> None:
     """
     Provision all enabled salt states
@@ -701,8 +593,7 @@ def main() -> None:
         validate_config(SCRIPTS_PATH)
         copy_config()
         refresh_salt()
-        with suppress_preloaded_disposables():
-            provision_and_configure()
+        provision_and_configure()
         print("Provisioning complete. Please reboot to complete the installation.")
 
     elif args.uninstall:

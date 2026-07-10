@@ -9,6 +9,7 @@ base:
     - securedrop_salt.sd-dom0-files
     - securedrop_salt.sd-base-template
     - securedrop_salt.sd-workstation-template
+    - securedrop_salt.sd-upgrade-templates
     - securedrop_salt.sd-log
     - securedrop_salt.sd-devices
     - securedrop_salt.sd-printers
