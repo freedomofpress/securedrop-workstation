@@ -14,6 +14,7 @@ import sys
 from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
+from sdw_updater.Updater import DEBIAN_VERSION
 from sdw_util.config_types import ValidationError
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
@@ -26,7 +27,6 @@ DEFAULT_SD_LOG_GB = 5
 SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
 SALT_PATH = "/srv/salt/securedrop_salt/"
 
-DEBIAN_VERSION = "13"
 BASE_TEMPLATE = f"debian-{DEBIAN_VERSION}-minimal"
 
 SUBMISSION_KEY = "sd-journalist.sec"

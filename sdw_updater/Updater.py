@@ -38,22 +38,22 @@ MIGRATION_DIR = "/tmp/sdw-migrations"
 sdlog = Util.get_logger(module=__name__)
 detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 
+DEBIAN_VERSION = "13"
+
 
 def _get_current_vms() -> dict[str, str]:
-    debian_version = "13"
-
     # The are the TemplateVMs that require full patch level at boot in order to start the inbox,
     # as well as their associated TemplateVMs.
     # In the future, we could use qvm-prefs to extract this information.
     return {
         "fedora": "fedora-43-xfce",
-        "sd-viewer": f"sd-viewer-debian-{debian_version}",
-        "sd-app": f"sd-inbox-debian-{debian_version}",
-        "sd-log": f"sd-inbox-debian-{debian_version}",
-        "sd-devices": f"sd-viewer-debian-{debian_version}",
-        "sd-printers": f"sd-viewer-debian-{debian_version}",
-        "sd-proxy": f"sd-inbox-debian-{debian_version}",
-        "sd-gpg": f"sd-inbox-debian-{debian_version}",
+        "sd-viewer": f"sd-viewer-debian-{DEBIAN_VERSION}",
+        "sd-app": f"sd-inbox-debian-{DEBIAN_VERSION}",
+        "sd-log": f"sd-inbox-debian-{DEBIAN_VERSION}",
+        "sd-devices": f"sd-viewer-debian-{DEBIAN_VERSION}",
+        "sd-printers": f"sd-viewer-debian-{DEBIAN_VERSION}",
+        "sd-proxy": f"sd-inbox-debian-{DEBIAN_VERSION}",
+        "sd-gpg": f"sd-inbox-debian-{DEBIAN_VERSION}",
     }
 
 
