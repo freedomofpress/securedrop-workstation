@@ -25,6 +25,8 @@ from sdw_updater.Updater import DEBIAN_VERSION
 log = logging.getLogger(Path(__file__).name)
 
 PROHIBIT_START_REASON = "SDW: disabled during set up"
+
+# qubes-feature name to temporarily hold the number of preloeaded disposables
 PRELOAD_MAX_TMP_FEAT_NAME = "preload-dispvm-max-saved"
 
 app = qubesadmin.Qubes()
