@@ -33,6 +33,16 @@ app = qubesadmin.Qubes()
 
 
 def start_template_upgrade() -> None:
+    """
+    Temporarily prevents startup of managed qubes
+
+    Necessary during provisioning, particularly in template changes, where
+    all qubes dependent on a template (including disposables only
+    indirectly based on it) need to be shut down, otherwise provisioning fails.
+
+    NOTE: deferred template changes may make this redundant
+    https://github.com/qubesos/qubes-issues/issues/8070
+    """
     # Exclude:
     #   - the ones already with prohibit-start for unrelated reason
     #   - preloaded disposables
