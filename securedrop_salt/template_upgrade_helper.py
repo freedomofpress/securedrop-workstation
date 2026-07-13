@@ -26,6 +26,12 @@ log = logging.getLogger(Path(__file__).name)
 
 PROHIBIT_START_REASON = "SDW: disabled during set up"
 
+# If the script gets abruptly executed at the right point we may loose
+# the actual number of disposable VMs. Either that or it was never set
+# for some unexplicable circumstance. Since 32GB is the recommended RAM
+# having 2 as the default (in case of breakage) it should be acceptable.
+SANE_N_DISPVMS = "2"
+
 # qubes-feature name to temporarily hold the number of preloeaded disposables
 PRELOAD_MAX_TMP_FEAT_NAME = "preload-dispvm-max-saved"
 
@@ -117,7 +123,9 @@ def start_suppress_preloaded_disposables() -> None:
     dom0 = app.domains["dom0"]
 
     # Save current settings (use dom0 features as way to save state)
-    dom0.features[PRELOAD_MAX_TMP_FEAT_NAME] = dom0.features.get("preload-dispvm-max", "0")
+    dom0.features[PRELOAD_MAX_TMP_FEAT_NAME] = dom0.features.get(
+        "preload-dispvm-max", SANE_N_DISPVMS
+    )
 
     # Disable preloaded disposables (they will start shutting down immediately)
     dom0.features["preload-dispvm-max"] = "0"
@@ -141,7 +149,9 @@ def finish_suppress_preloaded_disposables() -> None:
     dom0 = app.domains["dom0"]
 
     # Reset to original settings
-    dom0.features["preload-dispvm-max"] = dom0.features.get(PRELOAD_MAX_TMP_FEAT_NAME, "2")
+    dom0.features["preload-dispvm-max"] = dom0.features.get(
+        PRELOAD_MAX_TMP_FEAT_NAME, SANE_N_DISPVMS
+    )
     if dom0.features.get(PRELOAD_MAX_TMP_FEAT_NAME) is None:
         del dom0.features[PRELOAD_MAX_TMP_FEAT_NAME]
 
