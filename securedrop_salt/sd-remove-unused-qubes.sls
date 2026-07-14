@@ -5,9 +5,9 @@
 # WARNING: only remove when complete reinstall is assumed (e.g. 1.0.0 release)
 # This is because the workstation may have been offline for a while
 # and skipped some salt updates.
+# FIXME: sd-small-bookworm-template and sd-large-bookworm-template are not removed
+# yet because the old updater still expects them to be around (#1771)
 {% set qubes_for_removal = [
-  "sd-small-bookworm-template",
-  "sd-large-bookworm-template",
   "sd-base-bookworm-template",
   "sd-retain-logvm",
   "sd-whonix",
