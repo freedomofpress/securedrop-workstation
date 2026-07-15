@@ -7,6 +7,9 @@
 
 set -euo pipefail
 
+# Import shared variables
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+
 ANSI_COLORS=${ANSI_COLORS:-'1'}
 
 log() {
@@ -27,7 +30,7 @@ dom0_import_signing_key() {
 
     log "Importing local singning into dom0's RPM database (so packages can be validated)"
     local_pub_key_path=$(mktemp)
-    qvm-run -p "$SECUREDROP_DEV_VM" -- \
+    qvm-run -p "$DEV_VM" -- \
       "env GNUPGHOME=$SD_DEV_GNUPGHOME gpg --export --armor \"$LOCAL_SIG_KEY_NAME\"" > "$local_pub_key_path"
     sudo rpm --import "$local_pub_key_path"
 }
@@ -36,8 +39,8 @@ dom0_set_up() {
     # Save the old updatevm so it can later be restored
     old_updatevm=$(qubes-prefs updatevm)
 
-    log "Changing UpdateVM: $old_updatevm -> $SECUREDROP_DEV_VM"
-    qubes-prefs updatevm "$SECUREDROP_DEV_VM"
+    log "Changing UpdateVM: $old_updatevm -> $DEV_VM"
+    qubes-prefs updatevm "$DEV_VM"
 
     log "yum.repos.d: modifying to disable https and gpgcheck"
     sudo sed -i 's/https:/http:/g' /etc/yum.repos.d/securedrop-workstation-dom0.repo
@@ -83,13 +86,17 @@ EOF
 }
 
 vm_set_up_from_dom0() {
+    # get relative script path
+    script_abs_path="$(realpath "${BASH_SOURCE[0]}")"
+    script_rel_path="${script_abs_path#"$DOM0_DEV_DIR"/}"
+
     # Import the signing key generated on dev vm
-    log "Generating GPG RPM signing key in $SECUREDROP_DEV_VM"
-    qvm-run -p "$SECUREDROP_DEV_VM" -- "ANSI_COLORS=0 $SECUREDROP_DEV_DIR/$0 generate-key"
+    log "Generating GPG RPM signing key in $DEV_VM"
+    qvm-run -p "$DEV_VM" -- "ANSI_COLORS=0 $DEV_DIR/$script_rel_path generate-key"
     dom0_import_signing_key
 
-    log "Running $(basename "$0") in $SECUREDROP_DEV_VM (in background)"
-    qvm-run -p "$SECUREDROP_DEV_VM" -- "ANSI_COLORS=0 $SECUREDROP_DEV_DIR/$0 run-server"
+    log "Running $(basename "$0") in $DEV_VM (in background)"
+    qvm-run -p "$DEV_VM" -- "ANSI_COLORS=0 $DEV_DIR/$0 run-server"
 
 }
 
@@ -111,6 +118,7 @@ vm_set_up() {
     log "Creating repo to serve artifacts at $build_artifacts_dir"
     mkdir -p "$yum_local_rpm_dir"
     scripts_dir=$(dirname "$0")
+
     project_git_root=$(cd "$scripts_dir" && git rev-parse --show-toplevel)
     cp "$project_git_root/$build_artifacts_dir"/*.rpm "$yum_local_rpm_dir"
 
