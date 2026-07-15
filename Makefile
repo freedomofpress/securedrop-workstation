@@ -128,8 +128,8 @@ sd-admin: assert-dom0 ## Provision sd-admin VM and install securedrop-admin
 	@echo "Creating sd-admin template and AppVM..."
 	sudo qubesctl --show-output -- state.sls admin_salt.sd-admin
 	@echo "Installing packages inside sd-admin-debian-13..."
-	sudo qubesctl --show-output --skip-dom0 --targets sd-admin-trixie-template -- state.sls admin_salt.sd-admin-packages
-	qvm-shutdown --wait -- sd-admin-trixie-template
+	sudo qubesctl --show-output --skip-dom0 --targets sd-admin-debian-13 -- state.sls admin_salt.sd-admin-packages
+	qvm-shutdown --wait -- sd-admin-debian-13
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0

@@ -17,9 +17,9 @@ sd-admin:
     - name: sd-admin
     - present:
       - label: red
-      - template: sd-admin-trixie-template
+      - template: sd-admin-debian-13
     - prefs:
-      - template: sd-admin-trixie-template
+      - template: sd-admin-debian-13
       - netvm: sys-firewall
       - autostart: false
       - default_dispvm: ""
@@ -28,4 +28,4 @@ sd-admin:
         - sd-workstation
         - sd-admin
     - require:
-      - qvm: sd-admin-trixie-template
+      - qvm: sd-admin-debian-13

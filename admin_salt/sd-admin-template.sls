@@ -9,9 +9,9 @@ dom0-install-debian-13-template:
 
 # N.B. hardcoding "trixie" rather than reading from sdvars to decouple
 # the sd-admin config from the rest of the SDW config during prototyping.
-sd-admin-trixie-template:
+sd-admin-debian-13:
   qvm.vm:
-    - name: sd-admin-trixie-template
+    - name: sd-admin-debian-13
     - clone:
       - source: debian-13
       - label: red
