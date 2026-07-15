@@ -19,6 +19,7 @@ Refer to the [SecureDrop Workstation RM docs](https://developers.securedrop.org/
 ### Pre-release tasks
 - [ ] Merge remaining PRs:
   - [ ] #[PR_NUMBER]
+- [ ] Set [migration flag](https://github.com/freedomofpress/securedrop-workstation/blob/e533eab/rpm-build/SPECS/securedrop-workstation-dom0-config.spec#L196-L198) if `sdw-admin --apply` is needed during update
 - [ ] Update docs
 
 ### Release tasks
