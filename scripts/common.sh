@@ -1,5 +1,8 @@
-TOPLEVEL=$(git rev-parse --show-toplevel)
-export TOPLEVEL
+if which git >/dev/null 2>&1; then
+    TOPLEVEL=$(git -C $(dirname "$0") rev-parse --show-toplevel)
+    export TOPLEVEL
+fi
+
 PROJECT="securedrop-workstation-dom0-config"
 export PROJECT
 export FEDORA_VERSION="${FEDORA_VERSION:-41}"
