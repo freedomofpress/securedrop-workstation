@@ -191,7 +191,7 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 # Update Salt Configuration
 qubesctl saltutil.clear_cache -l quiet --out quiet > /dev/null || true
 qubesctl saltutil.sync_all refresh=true -l quiet --out quiet > /dev/null || true
-qubesctl top.enable securedrop_salt.sd-workstation > /dev/null ||:
+qubesctl top.disable securedrop_salt.sd-workstation > /dev/null ||:
 
 # Force full run of all Salt states - uncomment in release branch
 # mkdir -p /tmp/sdw-migrations
