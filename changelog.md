@@ -1,17 +1,12 @@
 # changelog
 
-## 1.8.0-rc2
-
-* Set migration flag (#1759)
-* Disable dom0 highstate to work around updater bugs with template switches (#1769)
-
-## 1.8.0-rc1
+## 1.8.0
 
 This release focused on upgrading SecureDrop Workstation qubes from Debian 12 (Bookworm)
 to Debian 13 (Trixie). Some document viewer applications have been replaced and others
 updated with major visual changes.
 
-* Update SDW templates to Debian 13 (Trixie) (#1719, #1739)
+* Update SDW templates to Debian 13 (Trixie) (#1719, #1739, #1759)
 * Include 4.2 'sdw-upgrade' script (previously unreleased in Qubes 4.3) (#1653, #1687, #1693)
 
 * Internal and development:
@@ -22,6 +17,7 @@ updated with major visual changes.
   * Fix install across different versions in the prep script (#1747)
   * Remove Qubes 4.2 references; build for Qubes 4.3 by default; bump min. Python to 3.13 (#1724)
   * Replace `handle-upgrade` with combination of `prohibit-start` and preloaded disps. disabling (#1744)
+  * Disable dom0 highstate to work around updater bugs with template switches (#1769)
   * Fix `make staging` under Qubes 4.3 (#1728)
   * Enable dependency cooldowns within poetry (#1717)
   * Add semgrep check for Salt pitfalls (`watch`, `cmd.wait`) (#1666)
