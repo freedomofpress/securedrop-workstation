@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import IO, Any, TypeGuard
 
-from sdw_util import Util
+from sdw_util import Util, __version__
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_HOME = ".securedrop_updater"
@@ -71,7 +71,8 @@ def run_full_install() -> UpdateStatus:
     VM state during major migrations, such as template consolidation.
     """
     sdlog.info("Running 'sdw-admin --apply' to apply full system state")
-    apply_cmd = ["sdw-admin", "--apply"]
+    # Pass our own version so Salt states can work around bugs in old updaters.
+    apply_cmd = ["sdw-admin", "--apply", "--updater-version", __version__]
     apply_cmd_for_log = (" ").join(apply_cmd)
     try:
         output = subprocess.check_output(apply_cmd)
@@ -423,7 +424,15 @@ def apply_dom0_state() -> UpdateStatus:
     ensure it is environment-specific.
     """
     sdlog.info("Applying dom0 state")
-    cmd = ["sudo", "qubesctl", "--show-output", "state.highstate"]
+    # Pass our own version so Salt states can work around bugs in old updaters.
+    pillar = {"sd": {"updater_version": __version__}}
+    cmd = [
+        "sudo",
+        "qubesctl",
+        "--show-output",
+        "state.highstate",
+        f"pillar={json.dumps(pillar)}",
+    ]
     cmd_for_log = " ".join(cmd)
     try:
         output = subprocess.check_output(cmd)

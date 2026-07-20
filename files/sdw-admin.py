@@ -17,6 +17,7 @@ from typing import Literal
 from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
+from sdw_util import __version__
 from sdw_util.config_types import ValidationError
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
@@ -40,19 +41,18 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
     TAILS_PATH + "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
 
-# Salt pillar override to make sure dom0 states do not re-enable
-# preloaded dispvms. Needed due to inclusion of 'qvm.preload-disposables'
-# indirectly via 'qvm.default-dvm'. Removing this does not mean preloaded
-# disposables are disabled. Just that they don't get enabled on provisioning.
-# FIXME: https://github.com/freedomofpress/securedrop-workstation/issues/1523
-PILLAR_DISABLE_PRELOAD = {"qvm": {"dom0": {"preload": False}}}
-
 sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
 from validate_config import SDWConfigValidator  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+        help="Show the SecureDrop Workstation version and exit",
+    )
     parser.add_argument(
         "--apply",
         default=False,
@@ -88,7 +88,50 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Configure SecureDrop Workstation",
     )
+    parser.add_argument(
+        "--updater-version",
+        default=None,
+        required=False,
+        help=("Version of the updater invoking sdw-admin. Do not manually set."),
+    )
     return parser.parse_args()
+
+
+def _invoked_by_updater() -> bool:
+    """
+    Return True if sdw-admin's parent process is the Updater.
+
+    This is a bit of a hack and can be removed once we're confident everyone is on
+    an updater that passes along --updater-version.
+    """
+    try:
+        with open(f"/proc/{os.getppid()}/cmdline", "rb") as f:
+            return "sdw-updater" in f.read().decode("utf-8", "replace")
+    except OSError:
+        # We return True here because it's the more conservative approach and
+        # avoids potentially applying compatible updates.
+        return True
+
+
+def resolve_updater_version(cli_updater_version: str | None) -> str:
+    """
+    Determine the version of the updater orchestrating this run.
+
+    There are three main scenarios here:
+
+    1) A newer updater, which passed in --updater-version
+    2) An old updater, which shells out to `sdw-admin --apply` without the flag;
+       conservatively assume 1.7.0, the oldest updater we need to support.
+    3) A direct sdw-admin invocation (e.g. during fresh install), in which case
+       its own version is the relevant one.
+    """
+    if cli_updater_version:
+        return cli_updater_version
+    elif _invoked_by_updater():
+        return "1.7.0"
+    else:
+        # direct sdw-admin invocation
+        return __version__
 
 
 def copy_config() -> None:
@@ -104,20 +147,39 @@ def copy_config() -> None:
         raise SDWAdminException("Error copying configuration")
 
 
-def provision_and_configure() -> None:
+def build_pillar(updater_version: str) -> dict:
+    """
+    Build the Salt pillar passed to dom0 states
+    """
+    # qvm.dom0.preload=False because:
+    # Salt pillar override to make sure dom0 states do not re-enable
+    # preloaded dispvms. Needed due to inclusion of 'qvm.preload-disposables'
+    # indirectly via 'qvm.default-dvm'. Removing this does not mean preloaded
+    # disposables are disabled. Just that they don't get enabled on provisioning.
+    # FIXME: https://github.com/freedomofpress/securedrop-workstation/issues/1523
+    pillar: dict[str, dict] = {
+        "qvm": {"dom0": {"preload": False}},
+        # Pass through the updater's version to salt for any back-compat workarounds
+        "sd": {"updater_version": updater_version},
+    }
+    return pillar
+
+
+def provision_and_configure(updater_version: str) -> None:
     """
     Applies the salt state.highstate on dom0 and all VMs
     """
+    pillar = build_pillar(updater_version)
 
     # HACK: enable top as a workaround for #1763. In release 1.8.0 post-inst disabled
     # the top file and it gets re-enabled in sdw-admin. This may be removed after the
     # release.
     run_cmd(["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"])
 
-    provision("Provisioning Fedora-based system VMs", "securedrop_salt.sd-sys-vms")
-    provision("Provisioning base template", "securedrop_salt.sd-base-template")
+    provision("Provisioning Fedora-based system VMs", "securedrop_salt.sd-sys-vms", pillar)
+    provision("Provisioning base template", "securedrop_salt.sd-base-template", pillar)
     configure("Configuring base template", ["sd-base-debian-13"])
-    provision_all()
+    provision_all(pillar)
     configure(
         "Configure all SecureDrop Workstation VMs with service-specific configs",
         [q.name for q in Qubes().domains if "sd-workstation" in q.tags],
@@ -250,24 +312,24 @@ class template_upgrade_handler(ContextDecorator):
         return all(templ_current_version_checks)
 
 
-def provision(step_description: str, salt_state: str) -> None:
+def provision(step_description: str, salt_state: str, pillar: dict) -> None:
     """
     Create, change or delete qubes
     """
     qubesctl_call(
         step_description,
-        ["--", "state.sls", salt_state, f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
+        ["--", "state.sls", salt_state, f"pillar={json.dumps(pillar)}"],
     )
 
 
 @template_upgrade_handler()
-def provision_all() -> None:
+def provision_all(pillar: dict) -> None:
     """
     Provision all enabled salt states
     """
     qubesctl_call(
         "Set up dom0 config files, including RPC policies, and create VMs",
-        ["state.highstate", f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
+        ["state.highstate", f"pillar={json.dumps(pillar)}"],
     )
 
 
@@ -375,12 +437,13 @@ def refresh_salt() -> None:
 
 
 def perform_uninstall() -> None:
+    pillar = build_pillar(__version__)  # Uninstall never runs through the updater
     try:
         subprocess.check_call(
             ["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-default-dispvm"]
         )
         print("Destroying all VMs")
-        provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-unused-qubes")
+        provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-unused-qubes", pillar)
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all-tagged"])
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
@@ -702,8 +765,9 @@ def main() -> None:
         validate_config(SCRIPTS_PATH)
         copy_config()
         refresh_salt()
+        updater_version = resolve_updater_version(args.updater_version)
         with suppress_preloaded_disposables():
-            provision_and_configure()
+            provision_and_configure(updater_version)
         print("Provisioning complete. Please reboot to complete the installation.")
 
     elif args.uninstall:

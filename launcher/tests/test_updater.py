@@ -542,9 +542,10 @@ def test_should_run_updater_invalid_status_value(mocked_write):
 @mock.patch("sdw_updater.Updater.sdlog.info")
 def test_apply_dom0_state_success(mocked_info, mocked_error, mocked_subprocess):
     Updater.apply_dom0_state()
+    pillar = json.dumps({"sd": {"updater_version": Updater.__version__}})
     log_call_list = [call("Applying dom0 state"), call("Dom0 state applied")]
     mocked_subprocess.assert_called_once_with(
-        ["sudo", "qubesctl", "--show-output", "state.highstate"]
+        ["sudo", "qubesctl", "--show-output", "state.highstate", f"pillar={pillar}"]
     )
     mocked_info.assert_has_calls(log_call_list)
     assert not mocked_error.called
@@ -558,12 +559,13 @@ def test_apply_dom0_state_success(mocked_info, mocked_error, mocked_subprocess):
 @mock.patch("sdw_updater.Updater.sdlog.info")
 def test_apply_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
     Updater.apply_dom0_state()
+    pillar = json.dumps({"sd": {"updater_version": Updater.__version__}})
     log_error_calls = [
         call("Failed to apply dom0 state. See updater-detail.log for details."),
         call("Command 'check_output' returned non-zero exit status 1."),
     ]
     mocked_subprocess.assert_called_once_with(
-        ["sudo", "qubesctl", "--show-output", "state.highstate"]
+        ["sudo", "qubesctl", "--show-output", "state.highstate", f"pillar={pillar}"]
     )
     mocked_info.assert_called_once_with("Applying dom0 state")
     mocked_error.assert_has_calls(log_error_calls)
@@ -602,7 +604,7 @@ def test_run_full_install(mocked_call, mocked_output, mocked_info):
     MIGRATION_DIR = "/tmp/potato"
     with mock.patch("sdw_updater.Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = Updater.run_full_install()
-    check_outputs = [call(["sdw-admin", "--apply"])]
+    check_outputs = [call(["sdw-admin", "--apply", "--updater-version", Updater.__version__])]
     check_calls = [call(["sudo", "rm", "-rf", MIGRATION_DIR])]
     assert mocked_output.call_count == 1
     assert mocked_call.call_count == 1
@@ -628,7 +630,7 @@ def test_run_full_install_with_error(mocked_call, mocked_output, mocked_error):
     MIGRATION_DIR = "/tmp/potato"
     with mock.patch("sdw_updater.Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = Updater.run_full_install()
-    calls = [call(["sdw-admin", "--apply"])]
+    calls = [call(["sdw-admin", "--apply", "--updater-version", Updater.__version__])]
     assert mocked_output.call_count == 1
     assert mocked_call.call_count == 0
     assert mocked_error.called
@@ -652,7 +654,7 @@ def test_run_full_install_with_flag_error(mocked_call, mocked_output, mocked_err
     MIGRATION_DIR = "/tmp/potato"
     with mock.patch("sdw_updater.Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = Updater.run_full_install()
-    check_outputs = [call(["sdw-admin", "--apply"])]
+    check_outputs = [call(["sdw-admin", "--apply", "--updater-version", Updater.__version__])]
     check_calls = [call(["sudo", "rm", "-rf", MIGRATION_DIR])]
     assert mocked_output.call_count == 1
     assert mocked_call.call_count == 1

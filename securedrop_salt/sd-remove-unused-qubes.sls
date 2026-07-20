@@ -5,13 +5,20 @@
 # WARNING: only remove when complete reinstall is assumed (e.g. 1.0.0 release)
 # This is because the workstation may have been offline for a while
 # and skipped some salt updates.
-# FIXME: sd-small-bookworm-template and sd-large-bookworm-template are not removed
-# yet because the old updater still expects them to be around (#1771)
 {% set qubes_for_removal = [
   "sd-base-bookworm-template",
   "sd-retain-logvm",
   "sd-whonix",
 ] %}
+
+# We can only remove these once we're on a >=1.8.0 updater.
+{% set updater_version = salt['pillar.get']('sd:updater_version', None) %}
+{% if updater_version and salt['pkg.version_cmp'](updater_version, '1.8.0') >= 0 %}
+{% do qubes_for_removal.extend([
+  "sd-small-bookworm-template",
+  "sd-large-bookworm-template",
+]) %}
+{% endif %}
 
 {% for qube_name in qubes_for_removal %}
 poweroff-before-removal-{{ qube_name }}:

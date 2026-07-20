@@ -5,6 +5,7 @@ import datetime
 from pathlib import Path
 
 spec = Path("rpm-build/SPECS/securedrop-workstation-dom0-config.spec")
+init = Path("sdw_util/__init__.py")
 author = "SecureDrop Team <securedrop@freedom.press>"
 message = "See changelog.md"
 
@@ -28,5 +29,8 @@ for i, line in enumerate(spec_lines):
         spec_lines.insert(i + 1, changelog_entry)
 
 spec.write_text("\n".join(spec_lines) + "\n")
+
+# Update the hardcoded __version__ for sdw-admin + updater.
+init.write_text(f'__version__ = "{new_version}"\n')
 
 print(f"Updated version to {new_version}")
