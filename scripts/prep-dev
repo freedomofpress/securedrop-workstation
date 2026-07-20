@@ -4,9 +4,7 @@
 # locally built RPM in order to deploy the Salt config.
 set -euo pipefail
 
-
-# The dest directory in dom0 is not customizable.
-dom0_dev_dir="$HOME/securedrop-workstation"
+source "$(dirname "$0")/common.sh"
 
 # Substring to ensure that the primary dom0 config RPM is selected;
 # used to differentiate between the the default RPM and the WIP sd-admin RPM.
@@ -15,13 +13,13 @@ rpm_name="securedrop-workstation-dom0-config"
 function find_latest_rpm() {
     # Look up which version of dom0 we're using.
     fedora_version="$(rpm --eval '%{fedora}')"
-    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "${rpm_name}*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
+    find "${DOM0_DEV_DIR}/rpm-build/RPMS/" -type f -iname "${rpm_name}*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
 }
 
 function find_any_rpm() {
     # Fallback for CI, which renames rpms. Try installing
     # any rpm present in the RPMS directory.
-    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "${rpm_name}*.rpm" -print0 | xargs -r -0 ls -t | head -n 1
+    find "${DOM0_DEV_DIR}/rpm-build/RPMS/" -type f -iname "${rpm_name}*.rpm" -print0 | xargs -r -0 ls -t | head -n 1
 }
 
 latest_rpm="$(find_latest_rpm)"

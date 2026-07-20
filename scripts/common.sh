@@ -1,5 +1,8 @@
-TOPLEVEL=$(git rev-parse --show-toplevel)
-export TOPLEVEL
+if which git >/dev/null 2>&1; then
+    TOPLEVEL=$(git -C $(dirname "$0") rev-parse --show-toplevel)
+    export TOPLEVEL
+fi
+
 PROJECT="securedrop-workstation-dom0-config"
 export PROJECT
 export FEDORA_VERSION="${FEDORA_VERSION:-41}"
@@ -18,3 +21,14 @@ else
 fi
 
 export OCI_BIN
+
+
+# Support environment variable overrides, but provide sane defaults.
+DEV_VM="${SECUREDROP_DEV_VM:-sd-dev}"
+export DEV_VM
+DEV_DIR="${SECUREDROP_DEV_DIR:-/home/user/securedrop-workstation}"
+export DEV_DIR
+
+# The dest directory in dom0 is not customizable.
+DOM0_DEV_DIR="$HOME/securedrop-workstation"
+export DOM0_DEV_DIR

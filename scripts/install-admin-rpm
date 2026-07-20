@@ -3,16 +3,17 @@
 # This is opt-in and separate from the main prep-dev workflow.
 set -euo pipefail
 
-dom0_dev_dir="$HOME/securedrop-workstation"
+source "$(dirname "$0")/common.sh"
+
 rpm_name="securedrop-admin-dom0-config"
 
 function find_latest_rpm() {
     fedora_version="$(rpm --eval '%{fedora}')"
-    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "${rpm_name}*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
+    find "${DOM0_DEV_DIR}/rpm-build/RPMS/" -type f -iname "${rpm_name}*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
 }
 
 function find_any_rpm() {
-    find "${dom0_dev_dir}/rpm-build/RPMS/" -type f -iname "${rpm_name}*.rpm" -print0 | xargs -r -0 ls -t | head -n 1
+    find "${DOM0_DEV_DIR}/rpm-build/RPMS/" -type f -iname "${rpm_name}*.rpm" -print0 | xargs -r -0 ls -t | head -n 1
 }
 
 latest_rpm="$(find_latest_rpm)"

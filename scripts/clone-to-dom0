@@ -6,6 +6,8 @@ set -e
 set -u
 set -o pipefail
 
+source "$(dirname "$0")/common.sh"
+
 # Ensure we're running in dom0, otherwise clone action could destroy
 # active work in AppVM.
 if [[ "$(hostname)" != "dom0" ]]; then
@@ -13,34 +15,27 @@ if [[ "$(hostname)" != "dom0" ]]; then
     exit 1
 fi
 
-# Support environment variable overrides, but provide sane defaults.
-dev_vm="${SECUREDROP_DEV_VM:-sd-dev}"
-dev_dir="${SECUREDROP_DEV_DIR:-/home/user/securedrop-workstation}"
-
-# The dest directory in dom0 is not customizable.
-dom0_dev_dir="$HOME/securedrop-workstation"
-
 # Call out to target AppVM, to build an RPM containing
 # the latest Salt config for dom0. The RPM will be included
 # in the subsequent tarball, which is fetched to dom0.
 function build-dom0-rpm() {
-    printf "Building RPM on %s ...\n" "${dev_vm}"
+    printf "Building RPM on %s ...\n" "${DEV_VM}"
     dom0_fedora_version="$(rpm --eval '%{fedora}')"
-    qvm-run --pass-io "$dev_vm" "FEDORA_VERSION=$dom0_fedora_version make -C $dev_dir build-rpm"
+    qvm-run --pass-io "$DEV_VM" "FEDORA_VERSION=$dom0_fedora_version make -C $DEV_DIR build-rpm"
 }
 
 # Call out to target AppVM to create a tarball in dom0
 function create-tarball() {
-    printf "Cloning code from %s:%s ...\n" "${dev_vm}" "${dev_dir}"
-    qvm-run --pass-io "$dev_vm" \
+    printf "Cloning code from %s:%s ...\n" "${DEV_VM}" "${DEV_DIR}"
+    qvm-run --pass-io "$DEV_VM" \
         "tar -c --exclude-vcs \
-        -C '$(dirname "$dev_dir")' \
-        '$(basename "$dev_dir")'" > /tmp/sd-proj.tar
+        -C '$(dirname "$DEV_DIR")' \
+        '$(basename "$DEV_DIR")'" > /tmp/sd-proj.tar
 }
 
 function unpack-tarball() {
-    rm -rf "${dom0_dev_dir:?}/"*
-    tar xf /tmp/sd-proj.tar -C "${dom0_dev_dir}" --strip-components=1
+    rm -rf "${DOM0_DEV_DIR:?}/"*
+    tar xf /tmp/sd-proj.tar -C "${DOM0_DEV_DIR}" --strip-components=1
 }
 
 # By default we build the RPM, but the step can be skipped, which is useful
