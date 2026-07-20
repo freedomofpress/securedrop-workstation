@@ -359,7 +359,7 @@ class Test_SD_VM_Common:
                 actual_app == expected_app
             ), f"MIME type {mime_type}: expected {expected_app}, got {actual_app}"
 
-    @pytest.mark.skip(reason="broken")
+    @pytest.mark.skip(reason="Broken in CI. Tracked as #1579")
     def test_mock_device_attach_deny(
         self, qube: QubeWrapper, mock_block_device: str, qubesd_log: Iterator[str]
     ) -> None:
