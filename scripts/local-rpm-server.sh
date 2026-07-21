@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # Import shared variables
-source "$(dirname "$0")/common.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 ANSI_COLORS=${ANSI_COLORS:-'1'}
 
