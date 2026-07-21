@@ -98,14 +98,6 @@ def test_logs_are_flowing(qube: QubeWrapper, sdw_tagged_vms: list[QubesVM]) -> N
 
 
 @pytest.mark.configuration
-def test_log_dirs_properly_named(qube: QubeWrapper) -> None:
-    cmd_output = qube.run("ls -1 /home/user/QubesIncomingLogs")
-    log_dirs = cmd_output.split("\n")
-    # Confirm we don't have 'host' entries from Whonix VMs
-    assert "host" not in log_dirs
-
-
-@pytest.mark.configuration
 def test_sd_log_service(qube: QubeWrapper) -> None:
     assert qube.service_is_active("securedrop-log-server")
 

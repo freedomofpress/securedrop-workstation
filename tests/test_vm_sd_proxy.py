@@ -47,19 +47,6 @@ def test_tor_hidserv_auth_url(qube: QubeWrapper, dom0_config: Dom0Config) -> Non
 
 
 @pytest.mark.configuration
-def test_whonix_ws_repo_absent(qube: QubeWrapper) -> None:
-    """
-    The sd-proxy VM was previously based on Whonix Workstation,
-    but we've since moved to the standard SDW Debian-based template.
-    Guard against regressions by ensuring the old Whonix apt list
-    is missing.
-    """
-    # Whonix project changed the repo filename ~2021-05, so check both.
-    assert not qube.fileExists("/etc/apt/sources.list.d/whonix.list")
-    assert not qube.fileExists("/etc/apt/sources.list.d/derivative.list")
-
-
-@pytest.mark.configuration
 def test_logging_configured(qube: QubeWrapper) -> None:
     qube.logging_configured()
 

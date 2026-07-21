@@ -122,11 +122,6 @@ def provision_and_configure() -> None:
         "Configure all SecureDrop Workstation VMs with service-specific configs",
         [q.name for q in Qubes().domains if "sd-workstation" in q.tags],
     )
-
-    if "whonix-gateway-17" in Qubes().domains:
-        # Qubes installations without whonix
-        configure("Disabling Whonix customizations", ["whonix-gateway-17"])
-
     sync_appmenus()
 
     if "sd-fedora-43-dvm" in Qubes().domains:
