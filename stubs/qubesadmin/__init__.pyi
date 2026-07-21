@@ -9,6 +9,7 @@ from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
 class Qubes:
+    cache_enabled: bool
     domains: VMCollection
     default_dispvm: QubesVM
     def __init__(self) -> None: ...
