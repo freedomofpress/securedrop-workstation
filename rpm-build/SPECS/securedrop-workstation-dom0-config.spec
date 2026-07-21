@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	1.8.0rc1
+Version:	1.9.0rc1
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -194,8 +194,8 @@ qubesctl saltutil.sync_all refresh=true -l quiet --out quiet > /dev/null || true
 qubesctl top.disable securedrop_salt.sd-workstation > /dev/null ||:
 
 # Force full run of all Salt states - uncomment in release branch
-# mkdir -p /tmp/sdw-migrations
-# touch /tmp/sdw-migrations/fedora-43-bump
+mkdir -p /tmp/sdw-migrations
+touch /tmp/sdw-migrations/debian-13-bump
 
 # Enable service that conditionally removes our systemd-logind customizations
 # on dev machines only.
@@ -221,7 +221,10 @@ if [ $1 -eq 0 ]; then
 fi
 
 %changelog
-* Wed Jun 03 2026 SecureDrop Team <securedrop@freedom.press> - 1.8.0rc1
+* Mon Jul 20 2026 SecureDrop Team <securedrop@freedom.press> - 1.9.0rc1
+- See changelog.md
+
+* Thu Jul 16 2026 SecureDrop Team <securedrop@freedom.press> - 1.8.0
 - See changelog.md
 
 * Thu May 28 2026 SecureDrop Team <securedrop@freedom.press> - 1.7.1
