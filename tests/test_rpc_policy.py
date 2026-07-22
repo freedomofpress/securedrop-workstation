@@ -101,3 +101,46 @@ def test_policy_from_sdgpg_to_dom0_allowed(sdw_tagged_vms: list[QubesVM], qubes_
             assert allowed
         else:
             assert not allowed
+
+
+@pytest.mark.provisioning
+def test_usbattach_policy_denies_sd_workstation(sdw_tagged_vms: list[QubesVM]) -> None:
+    """
+    Regression test: qubes.USBAttach to or from any @tag:sd-workstation VM must
+    be denied and must NOT resolve to an 'ask' prompt.
+
+    Previously, the wildcard 'qubes.USBAttach * @anyvm @anyvm ask' rule in
+    31-securedrop-workstation.policy was evaluated before the deny rules in
+    32-securedrop-workstation.policy (first-match-wins), making the deny rules
+    unreachable dead code. The fix adds explicit deny rules for @tag:sd-workstation
+    directly in file 31, before the wildcard ask rule.
+    """
+    # Representative non-SDW VMs that should not be able to attach USB to an
+    # sd-workstation-tagged VM (or have USB attached from one).
+    non_sdw_sources = ["sys-net", "sys-firewall", "sys-usb"]
+
+    for vm in sdw_tagged_vms:
+        # Skip sd-export-target VMs: sys-usb -> @tag:sd-export-target is
+        # intentionally allowed via an explicit allow rule above the deny rules.
+        if "sd-export" in vm.name:
+            continue
+
+        # No external VM should be able to attach USB to an sd-workstation VM.
+        for source in non_sdw_sources:
+            assert not policy_exists(
+                source, vm.name, "qubes.USBAttach"
+            ), (
+                f"qubes.USBAttach from {source} to {vm.name} should be denied, "
+                f"but a policy route was found. The @anyvm @anyvm ask wildcard in "
+                f"31-securedrop-workstation.policy may be shadowing the deny rule."
+            )
+
+        # No sd-workstation VM should be able to initiate a USB attach to
+        # an external VM either.
+        for target in non_sdw_sources:
+            assert not policy_exists(
+                vm.name, target, "qubes.USBAttach"
+            ), (
+                f"qubes.USBAttach from {vm.name} to {target} should be denied, "
+                f"but a policy route was found."
+            )
