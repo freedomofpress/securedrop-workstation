@@ -569,6 +569,38 @@ def test_apply_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
     mocked_error.assert_has_calls(log_error_calls)
 
 
+@mock.patch("subprocess.check_output", side_effect=[b""])
+@mock.patch("sdw_updater.Updater.sdlog.error")
+@mock.patch("sdw_updater.Updater.sdlog.info")
+def test_enable_dom0_state_success(mocked_info, mocked_error, mocked_subprocess):
+    assert Updater.enable_dom0_state() == UpdateStatus.UPDATES_OK
+    log_call_list = [call("Enabling dom0 top file"), call("dom0 top file enabled")]
+    mocked_subprocess.assert_called_once_with(
+        ["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"]
+    )
+    mocked_info.assert_has_calls(log_call_list)
+    assert not mocked_error.called
+
+
+@mock.patch(
+    "subprocess.check_output",
+    side_effect=[subprocess.CalledProcessError(1, cmd="check_output", output=b"")],
+)
+@mock.patch("sdw_updater.Updater.sdlog.error")
+@mock.patch("sdw_updater.Updater.sdlog.info")
+def test_enable_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
+    assert Updater.enable_dom0_state() == UpdateStatus.UPDATES_FAILED
+    log_error_calls = [
+        call("Failed to enable dom0 top file. See updater-detail.log for details."),
+        call("Command 'check_output' returned non-zero exit status 1."),
+    ]
+    mocked_subprocess.assert_called_once_with(
+        ["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"]
+    )
+    mocked_info.assert_called_once_with("Enabling dom0 top file")
+    mocked_error.assert_has_calls(log_error_calls)
+
+
 @mock.patch("os.path.exists", return_value=True)
 @mock.patch("os.listdir", return_value=["apple", "banana"])
 @mock.patch("sdw_updater.Updater.sdlog.info")

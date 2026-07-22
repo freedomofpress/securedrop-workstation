@@ -250,6 +250,7 @@ class UpgradeThread(QThread):
         # Pre-populate results with all available steps for early exits
         results = {
             "dom0": UpdateStatus.UPDATES_REQUIRED,
+            "enable_dom0": UpdateStatus.UPDATES_REQUIRED,
             "apply_dom0": UpdateStatus.UPDATES_REQUIRED,
             "apply_all": UpdateStatus.UPDATES_REQUIRED,
             "templates": UpdateStatus.UPDATES_REQUIRED,
@@ -263,6 +264,12 @@ class UpgradeThread(QThread):
             return results  # Fail early
 
         self.progress_signal.emit(10)
+
+        # Re-enable the dom0 top file just in case
+        results["enable_dom0"] = Updater.enable_dom0_state()
+        if results["enable_dom0"] == UpdateStatus.UPDATES_FAILED:
+            return results
+        self.progress_signal.emit(11)
 
         if Updater.migration_is_required():
             # Progress bar will freeze for ~15m during full state run

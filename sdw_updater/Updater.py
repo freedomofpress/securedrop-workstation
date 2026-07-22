@@ -415,6 +415,29 @@ def overall_update_status(results: dict[str, UpdateStatus]) -> UpdateStatus:
     return UpdateStatus.UPDATES_OK
 
 
+def enable_dom0_state() -> UpdateStatus:
+    """
+    Ensure the salt top file is enabled; this is mostly to ensure that if for
+    whatever reason the pre-1.8.0 disable wasn't undone in sdw-admin, we're still
+    running those states
+    """
+    sdlog.info("Enabling dom0 top file")
+    cmd = ["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"]
+    cmd_for_log = " ".join(cmd)
+    try:
+        output = subprocess.check_output(cmd)
+        sdlog.info("dom0 top file enabled")
+        clean_output = Util.cleanup_for_log(output.decode("utf-8").strip())
+        detail_log.info(f"Output from command: {cmd_for_log}\n{clean_output}")
+        return UpdateStatus.UPDATES_OK
+    except subprocess.CalledProcessError as e:
+        sdlog.error(f"Failed to enable dom0 top file. See {DETAIL_LOG_FILE} for details.")
+        sdlog.error(str(e))
+        clean_output = Util.cleanup_for_log(e.output.decode("utf-8").strip())
+        detail_log.error(f"Output from failed command: {cmd_for_log}\n{clean_output}")
+        return UpdateStatus.UPDATES_FAILED
+
+
 def apply_dom0_state() -> UpdateStatus:
     """
     Applies the dom0 state to ensure dom0 and AppVMs are properly
