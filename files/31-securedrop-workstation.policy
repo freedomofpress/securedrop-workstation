@@ -32,6 +32,11 @@ qubes.GpgImportKey      *           @tag:sd-client sd-gpg allow
 qubes.Gpg2              *           @tag:sd-client sd-gpg allow target=sd-gpg
 
 qubes.USBAttach         *           sys-usb @tag:sd-export-target allow  user=root
+# Deny USB attachment to/from all sd-workstation-tagged VMs explicitly before
+# the wildcard ask rule below, preventing the deny rules in
+# 32-securedrop-workstation.policy from being shadowed (first-match-wins).
+qubes.USBAttach         *           @anyvm @tag:sd-workstation deny
+qubes.USBAttach         *           @tag:sd-workstation @anyvm deny
 qubes.USBAttach         *           @anyvm @anyvm ask
 
 qubes.USB               *           @tag:sd-export-target sys-usb allow
