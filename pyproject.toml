@@ -24,6 +24,7 @@ pysequoia = "^0.1.25"
 zizmor = "*"
 python-systemd = "^0.0.9"
 semgrep = "*"
+pytest-mock = "^3.15.1"
 
 [tool.poetry.group.system-package-equivalents.dependencies]
 # In production these are installed as a system package so match the
