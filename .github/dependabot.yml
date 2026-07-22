@@ -8,9 +8,6 @@ updates:
       - dependency-type: "all"
     ignore:
       - dependency-name: "pyqt*"
-    groups:
-        dependencies:
-          patterns: ["*"]
     cooldown:
       default-days: 7
   - package-ecosystem: "github-actions"
