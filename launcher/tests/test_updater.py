@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import os
 import subprocess
@@ -356,7 +357,8 @@ def test_read_dom0_update_flag_from_disk_fails(mocked_info, mocked_error, tmp_pa
     ],
 )
 @pytest.mark.skipif(
-    os.environ.get("CI") == "true", reason="Skipping on CI (should only run in Qubes)"
+    importlib.util.find_spec("qubesadmin") is None,
+    reason="qubesadmin module not available (only runs in dom0)",
 )
 def test_is_qubes_mid_upgrade(qubes_ver, agent_ver, is_mid_upgrade, mocker, mocked_qubes_app):
     # Overrding "dnf.rpm.detect_releasever" to simulate being on particular Qubes version
