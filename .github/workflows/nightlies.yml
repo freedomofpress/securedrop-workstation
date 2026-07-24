@@ -50,7 +50,7 @@ jobs:
 
   commit-and-push:
     runs-on: ubuntu-latest
-    container: debian:bookworm
+    container: debian:trixie
     needs:
       - build-rpm
     steps:
