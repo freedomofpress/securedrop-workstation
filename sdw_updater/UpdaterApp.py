@@ -255,22 +255,15 @@ class UpgradeThread(QThread):
             "templates": UpdateStatus.UPDATES_REQUIRED,
         }
 
-        # Update dom0 first, then apply dom0 state. If full state run
-        # is required, the dom0 state will drop a flag.
+        # Update dom0 first, if the migration flag is dropped,
+        # do a full salt run, otherwise just the dom0 states.
         self.progress_signal.emit(5)
         results["dom0"] = Updater.apply_updates_dom0()
         if results["dom0"] == UpdateStatus.UPDATES_FAILED:
             return results  # Fail early
 
-        # apply dom0 state
         self.progress_signal.emit(10)
-        # add to results dict, if it fails it will show error message
-        results["apply_dom0"] = Updater.apply_dom0_state()
-        if results["apply_dom0"] == UpdateStatus.UPDATES_FAILED:
-            return results  # Fail early
 
-        self.progress_signal.emit(15)
-        # rerun full config if dom0 checks determined it's required
         if Updater.migration_is_required():
             # Progress bar will freeze for ~15m during full state run
             self.progress_signal.emit(35)
@@ -280,12 +273,20 @@ class UpgradeThread(QThread):
                 return results  # Fail early
 
             self.progress_signal.emit(75)
+            results["apply_dom0"] = UpdateStatus.UPDATES_OK  # dom0 handled via full salt run
 
             templates_progress_callback = self.templates_progress_callback_factory(
                 progress_start=75,
                 progress_end=90,
             )
         else:
+            # Full salt run not needed, just run dom0 states
+            results["apply_dom0"] = Updater.apply_dom0_state()
+            if results["apply_dom0"] == UpdateStatus.UPDATES_FAILED:
+                return results  # Fail early
+
+            self.progress_signal.emit(15)
+
             results["apply_all"] = UpdateStatus.UPDATES_OK  # No updates
             templates_progress_callback = self.templates_progress_callback_factory(
                 progress_start=15,

@@ -20,25 +20,14 @@ def app():
 
 
 @mock.patch("sdw_updater.Updater.apply_updates_dom0", return_value=UpdateStatus.UPDATES_FAILED)
-@mock.patch("sdw_updater.Updater.apply_dom0_state")
-def test_run_full_update_fail_early_1(apply_dom0_state_mock, apply_updates_dom0_mock):
-    results = UpdaterApp.UpgradeThread().run_full_update()
-    assert overall_update_status(results) == UpdateStatus.UPDATES_FAILED
-    assert apply_updates_dom0_mock.called
-    assert not apply_dom0_state_mock.called
-
-
-@mock.patch("sdw_updater.Updater.apply_updates_dom0", return_value=UpdateStatus.UPDATES_OK)
-@mock.patch("sdw_updater.Updater.apply_dom0_state", return_value=UpdateStatus.UPDATES_FAILED)
 @mock.patch("sdw_updater.Updater.migration_is_required")
-def test_run_full_update_fail_early_2(
-    migration_required_mock, apply_dom0_state_mock, apply_updates_dom0_mock
+def test_run_full_update_dom0_update_failure_exits_early(
+    migration_is_required_mock, apply_updates_dom0_mock
 ):
     results = UpdaterApp.UpgradeThread().run_full_update()
     assert overall_update_status(results) == UpdateStatus.UPDATES_FAILED
     assert apply_updates_dom0_mock.called
-    assert apply_dom0_state_mock.called
-    assert not migration_required_mock.called
+    assert not migration_is_required_mock.called
 
 
 @mock.patch("sdw_updater.Updater.apply_updates_dom0", return_value=UpdateStatus.UPDATES_OK)
@@ -46,7 +35,7 @@ def test_run_full_update_fail_early_2(
 @mock.patch("sdw_updater.Updater.migration_is_required", return_value=False)
 @mock.patch("sdw_updater.Updater.run_full_install")
 @mock.patch("sdw_updater.Updater.apply_updates_templates")
-def test_run_full_update_fail_early_3(
+def test_run_full_update_dom0_state_failure_exits_early(
     apply_updates_templates_mock,
     run_full_install_mock,
     migration_required_mock,
@@ -56,17 +45,18 @@ def test_run_full_update_fail_early_3(
     results = UpdaterApp.UpgradeThread().run_full_update()
     assert overall_update_status(results) == UpdateStatus.UPDATES_FAILED
     assert apply_updates_dom0_mock.called
+    assert migration_required_mock.called
     assert apply_dom0_state_mock.called
     assert not run_full_install_mock.called
     assert not apply_updates_templates_mock.called
 
 
 @mock.patch("sdw_updater.Updater.apply_updates_dom0", return_value=UpdateStatus.UPDATES_OK)
-@mock.patch("sdw_updater.Updater.apply_dom0_state", return_value=UpdateStatus.UPDATES_OK)
+@mock.patch("sdw_updater.Updater.apply_dom0_state")
 @mock.patch("sdw_updater.Updater.migration_is_required", return_value=True)
 @mock.patch("sdw_updater.Updater.run_full_install", return_value=UpdateStatus.UPDATES_FAILED)
 @mock.patch("sdw_updater.Updater.apply_updates_templates")
-def test_run_full_update_fail_early_4(
+def test_run_full_update_migration_install_failure_exits_early(
     apply_updates_templates_mock,
     run_full_install_mock,
     migration_required_mock,
@@ -76,14 +66,16 @@ def test_run_full_update_fail_early_4(
     results = UpdaterApp.UpgradeThread().run_full_update()
     assert overall_update_status(results) == UpdateStatus.UPDATES_FAILED
     assert apply_updates_dom0_mock.called
-    assert apply_dom0_state_mock.called
+    assert (
+        not apply_dom0_state_mock.called
+    ), "dom0 states not individually invoked during full updater run"
     assert migration_required_mock.called
     assert run_full_install_mock.called
     assert not apply_updates_templates_mock.called
 
 
 @mock.patch("sdw_updater.Updater.apply_updates_dom0", return_value=UpdateStatus.UPDATES_OK)
-@mock.patch("sdw_updater.Updater.apply_dom0_state", return_value=UpdateStatus.UPDATES_OK)
+@mock.patch("sdw_updater.Updater.apply_dom0_state")
 @mock.patch("sdw_updater.Updater.migration_is_required", return_value=True)
 @mock.patch("sdw_updater.Updater.run_full_install", return_value=UpdateStatus.UPDATES_OK)
 @mock.patch("sdw_updater.Updater.apply_updates_templates", return_value=UpdateStatus.UPDATES_OK)
@@ -96,20 +88,24 @@ def test_run_full_update_success_migration(
 ):
     results = UpdaterApp.UpgradeThread().run_full_update()
     assert overall_update_status(results) == UpdateStatus.UPDATES_OK
+    assert not apply_dom0_state_mock.called
 
 
+@mock.patch("sdw_updater.Updater.run_full_install")
 @mock.patch("sdw_updater.Updater.apply_updates_dom0", return_value=UpdateStatus.UPDATES_OK)
 @mock.patch("sdw_updater.Updater.apply_dom0_state", return_value=UpdateStatus.UPDATES_OK)
 @mock.patch("sdw_updater.Updater.migration_is_required", return_value=False)
 @mock.patch("sdw_updater.Updater.apply_updates_templates", return_value=UpdateStatus.UPDATES_OK)
 def test_run_full_update_success_no_migration(
     apply_updates_templates_mock,
-    run_full_install_mock,
+    migration_is_required_mock,
     apply_dom0_state_mock,
     apply_updates_dom0_mock,
+    run_full_install_mock,
 ):
     results = UpdaterApp.UpgradeThread().run_full_update()
     assert overall_update_status(results) == UpdateStatus.UPDATES_OK
+    assert not run_full_install_mock.called
 
 
 @mock.patch("sdw_util.Util.get_qubes_version", return_value="4.1")
