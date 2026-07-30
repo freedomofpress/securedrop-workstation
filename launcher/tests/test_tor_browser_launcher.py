@@ -3,12 +3,13 @@ import runpy
 import socket
 import subprocess
 import sys
+from contextlib import nullcontext
 from pathlib import Path
 from unittest import mock
 
 import pytest
 
-from securedrop_tor_browser import core
+from securedrop_tor_browser import core, release
 from securedrop_tor_browser import main as launcher
 
 FINGERPRINT = "EF6E286DDA85EA2A4BA7DE684E2C6E8793298290"
@@ -120,16 +121,30 @@ def test_launcher_reports_missing_configuration_as_a_graphical_error(tmp_path):
 
 def test_launcher_accepts_valid_prerequisites_without_inspecting_apparmor(tmp_path):
     config_path = write_valid_prerequisites(tmp_path)
+    stable = release.StableRelease(
+        release.Version("15.0.1"),
+        "https://dist.torproject.org/torbrowser/15.0.1/browser.tar.xz",
+        "https://dist.torproject.org/torbrowser/15.0.1/browser.tar.xz.asc",
+    )
 
     with (
         mock.patch.object(core, "MANAGED_CONFIG_PATH", config_path),
+        mock.patch.object(
+            launcher.frontend,
+            "metadata_retrieval",
+            return_value=nullcontext(lambda: False),
+        ),
+        mock.patch.object(launcher.release, "discover_stable_release", return_value=stable),
+        mock.patch.object(
+            launcher.release, "read_optional_version", return_value=release.Version("15.0.1")
+        ),
         mock.patch.object(launcher.frontend, "show_error") as show_error,
         mock.patch.object(launcher.frontend, "show_ready", return_value=0) as show_ready,
     ):
         result = launcher.main()
 
     assert result == 0
-    show_ready.assert_called_once_with()
+    show_ready.assert_called_once_with("15.0.1")
     show_error.assert_not_called()
 
 
