@@ -11,6 +11,9 @@
 # independent of the workstation package.
 ##
 
+include:
+  - admin_salt.sd-admin-tor-browser
+
 {% from 'admin_salt/sd-admin-config.sls' import admin_vars with context %}
 
 update-apt-cache:
@@ -46,4 +49,5 @@ install-securedrop-admin:
   pkg.installed:
     - pkgs:
       - securedrop-admin
+      - python3-pyqt6
     - refresh: True

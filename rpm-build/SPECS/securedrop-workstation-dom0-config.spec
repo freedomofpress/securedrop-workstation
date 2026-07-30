@@ -131,6 +131,10 @@ install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}%{_useru
 
 %if %{with admin}
 cp -a admin_salt %{buildroot}/srv/salt/admin_salt
+cp -a securedrop_tor_browser %{buildroot}/srv/salt/admin_salt/
+install -m 755 files/securedrop-tor-browser %{buildroot}/srv/salt/admin_salt/
+install -m 644 files/press.freedom.SecureDropTorBrowser.desktop %{buildroot}/srv/salt/admin_salt/
+install -m 644 files/securedrop-scalable.svg %{buildroot}/srv/salt/admin_salt/securedrop-tor-browser.svg
 
 # Install shared apt source templates into admin_salt so the admin package
 # can reference them via salt://admin_salt/ without depending on the

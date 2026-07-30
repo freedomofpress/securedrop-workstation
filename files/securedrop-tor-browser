@@ -1,0 +1,7 @@
+#!/usr/bin/python3
+
+from securedrop_tor_browser.main import main
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

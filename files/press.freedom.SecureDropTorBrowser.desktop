@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon=securedrop-tor-browser
+Name=SecureDrop Tor Browser
+Exec=securedrop-tor-browser
+Categories=Network;WebBrowser;
