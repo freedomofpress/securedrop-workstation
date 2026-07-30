@@ -49,5 +49,6 @@ install-securedrop-admin:
   pkg.installed:
     - pkgs:
       - securedrop-admin
+      - apparmor
       - python3-pyqt6
     - refresh: True

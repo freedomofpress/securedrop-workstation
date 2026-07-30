@@ -10,8 +10,9 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 from collections.abc import Callable, Iterator
-from contextlib import ContextDecorator, contextmanager
+from contextlib import ContextDecorator, contextmanager, suppress
 from typing import Literal
 
 from qubesadmin import Qubes
@@ -28,17 +29,16 @@ DEFAULT_SD_LOG_GB = 5
 
 SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
 SALT_PATH = "/srv/salt/securedrop_salt/"
+ADMIN_SALT_PATH = "/srv/salt/admin_salt/"
 
 DEBIAN_VERSION = "13"
 BASE_TEMPLATE = f"debian-{DEBIAN_VERSION}-minimal"
 
 SUBMISSION_KEY = "sd-journalist.sec"
+ONION_AUTH_CREDENTIAL = "app-journalist.auth_private"
 TAILS_PATH = "/run/media/user/TailsData/"
 TAILS_GNUPG_PATH = TAILS_PATH + "gnupg/"
 TAILS_PKG_JOURNALIST_INTERFACE_CONFIG = TAILS_PATH + "securedrop-admin/app-journalist.auth_private"
-TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
-    TAILS_PATH + "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
-)
 
 # Salt pillar override to make sure dom0 states do not re-enable
 # preloaded dispvms. Needed due to inclusion of 'qvm.preload-disposables'
@@ -100,6 +100,18 @@ def copy_config() -> None:
         subprocess.check_call(
             ["sudo", "cp", os.path.join(SCRIPTS_PATH, "sd-journalist.sec"), SALT_PATH]
         )
+        onion_auth_source = os.path.join(SCRIPTS_PATH, ONION_AUTH_CREDENTIAL)
+        if os.path.exists(onion_auth_source):
+            subprocess.check_call(
+                [
+                    "sudo",
+                    "install",
+                    "--mode",
+                    "0600",
+                    onion_auth_source,
+                    os.path.join(ADMIN_SALT_PATH, ONION_AUTH_CREDENTIAL),
+                ]
+            )
     except subprocess.CalledProcessError:
         raise SDWAdminException("Error copying configuration")
 
@@ -535,9 +547,7 @@ def import_journalist_interface_config() -> tuple[str, str]:
     Assumes that USB drive is attached to vault VM and decrypted.
     Returns (hostname, key) of the journalist interface hidserv
     """
-    journalist_interface_config = ""
     try:
-        # First, check for the 2.13.0+ location
         journalist_interface_config = subprocess.check_output(
             [
                 "qvm-run",
@@ -548,27 +558,48 @@ def import_journalist_interface_config() -> tuple[str, str]:
             text=True,
         )
     except subprocess.CalledProcessError:
-        try:
-            # Fall back to the legacy location
-            journalist_interface_config = subprocess.check_output(
-                [
-                    "qvm-run",
-                    "--pass-io",
-                    "vault",
-                    f"cat {TAILS_GIT_JOURNALIST_INTERFACE_CONFIG}",
-                ],
-                text=True,
-            )
-        except subprocess.CalledProcessError:
-            raise SDWAdminException(
-                "Failed to find a valid journalist interface config.\n"
-                "Check the attached USB key and try again."
-            )
+        raise SDWAdminException(
+            f"Failed to find {ONION_AUTH_CREDENTIAL} in the supported SecureDrop Admin "
+            "configuration location.\nCheck the attached USB key and try again."
+        )
 
     fields = journalist_interface_config.strip().split(":")
+    if len(fields) != 4 or fields[1:3] != ["descriptor", "x25519"]:
+        raise SDWAdminException(
+            f"The imported {ONION_AUTH_CREDENTIAL} is malformed. "
+            "Regenerate the SecureDrop Admin configuration and try again."
+        )
     addr = fields[0]
     auth_token = fields[3]
     return addr, auth_token
+
+
+def persist_onion_auth_credential(addr: str, auth_token: str) -> None:
+    """Atomically stage the sole supported onion-auth source for admin Salt."""
+    onion_address = addr if addr.endswith(".onion") else f"{addr}.onion"
+    credential = f"{onion_address}:descriptor:x25519:{auth_token}\n"
+    temp_path = ""
+    try:
+        with tempfile.NamedTemporaryFile("w", prefix="sdw-onion-auth-", delete=False) as stream:
+            temp_path = stream.name
+            stream.write(credential)
+        os.chmod(temp_path, 0o600)
+        subprocess.check_call(
+            [
+                "sudo",
+                "install",
+                "--mode",
+                "0600",
+                temp_path,
+                os.path.join(SCRIPTS_PATH, ONION_AUTH_CREDENTIAL),
+            ]
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise SDWAdminException("Error staging the Journalist Interface credential") from exc
+    finally:
+        if temp_path:
+            with suppress(FileNotFoundError):
+                os.unlink(temp_path)
 
 
 def import_config() -> None:
@@ -636,6 +667,7 @@ def import_config() -> None:
         if response.lower() != "y":
             print("Exiting.")
             return
+        persist_onion_auth_credential(ji_addr, ji_auth_token)
 
         # Configure private volume sizes. Validator requires int; cast user input.
         sd_app_input = input(

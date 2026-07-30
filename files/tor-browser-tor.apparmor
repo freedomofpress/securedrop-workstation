@@ -1,0 +1,13 @@
+#include <tunables/global>
+
+/usr/lib/securedrop-tor-browser/tor flags=(attach_disconnected) {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  /usr/lib/securedrop-tor-browser/tor mr,
+  /usr/lib/securedrop-tor-browser/tor-browser/** rix,
+  /etc/securedrop/tor-browser/torrc r,
+  /var/lib/securedrop-tor-browser/onion-auth/app-journalist.auth_private r,
+  owner /run/user/*/securedrop-tor-browser/** rw,
+  /var/lib/securedrop-tor-browser/tor/** rwk,
+}

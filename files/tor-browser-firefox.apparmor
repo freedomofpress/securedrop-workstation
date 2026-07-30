@@ -1,0 +1,17 @@
+#include <tunables/global>
+
+/usr/lib/securedrop-tor-browser/firefox flags=(attach_disconnected) {
+  #include <abstractions/base>
+  #include <abstractions/gnome>
+  #include <abstractions/nameservice>
+  #include <abstractions/user-tmp>
+
+  /usr/lib/securedrop-tor-browser/firefox mr,
+  /usr/lib/securedrop-tor-browser/browser/** rix,
+  owner /run/user/*/securedrop-tor-browser/** rw,
+  owner /var/lib/securedrop-tor-browser/browser/** rwk,
+
+  deny /var/lib/securedrop-tor-browser/onion-auth/** r,
+  deny owner @{HOME}/.ssh/** rwklx,
+  deny owner @{HOME}/.securedrop-admin/** rwklx,
+}

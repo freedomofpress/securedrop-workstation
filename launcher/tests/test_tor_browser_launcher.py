@@ -11,6 +11,43 @@ import pytest
 from securedrop_tor_browser import core
 from securedrop_tor_browser import main as launcher
 
+FINGERPRINT = "EF6E286DDA85EA2A4BA7DE684E2C6E8793298290"
+VALID_CREDENTIAL = (
+    f"{'a' * 56}.onion"
+    ":descriptor:x25519:"
+    f"{'B' * 52}"
+)
+
+
+def write_valid_prerequisites(tmp_path: Path) -> Path:
+    credential_dir = tmp_path / "auth"
+    credential_dir.mkdir()
+    credential = credential_dir / "app-journalist.auth_private"
+    credential.write_text(VALID_CREDENTIAL + "\n")
+    credential.chmod(0o600)
+
+    torrc = tmp_path / "torrc"
+    torrc.write_text("ClientOnly 1\n")
+    key = tmp_path / "tor-browser-signing-key.asc"
+    key.write_text("pinned key")
+    minimum_version = tmp_path / "minimum-version"
+    minimum_version.write_text("15.0.1\n")
+    config = {
+        "managed_by": "SecureDrop Workstation",
+        "minimum_version": "15.0.1",
+        "minimum_version_path": str(minimum_version),
+        "minimum_version_sha256": core.sha256_file(minimum_version),
+        "onion_auth_dir": str(credential_dir),
+        "torrc_path": str(torrc),
+        "torrc_sha256": core.sha256_file(torrc),
+        "signing_key_path": str(key),
+        "signing_key_fingerprint": FINGERPRINT,
+        "signing_key_sha256": core.sha256_file(key),
+    }
+    config_path = tmp_path / "tor-browser.json"
+    config_path.write_text(json.dumps(config))
+    return config_path
+
 
 def test_graphical_error_keeps_application_alive_while_constructing_widget():
     script = """
@@ -81,9 +118,8 @@ def test_launcher_reports_missing_configuration_as_a_graphical_error(tmp_path):
     popen.assert_not_called()
 
 
-def test_launcher_accepts_a_workstation_managed_json_object(tmp_path):
-    config_path = tmp_path / "tor-browser.json"
-    config_path.write_text(json.dumps({"managed_by": "SecureDrop Workstation"}))
+def test_launcher_accepts_valid_prerequisites_without_inspecting_apparmor(tmp_path):
+    config_path = write_valid_prerequisites(tmp_path)
 
     with (
         mock.patch.object(core, "MANAGED_CONFIG_PATH", config_path),
@@ -114,6 +150,80 @@ def test_unrecognized_json_object_fails_closed(tmp_path):
     show_ready.assert_not_called()
 
 
+@pytest.mark.parametrize(
+    ("mutate", "expected"),
+    [
+        (lambda config: Path(config["onion_auth_dir"]).joinpath(
+            "app-journalist.auth_private"
+        ).unlink(), "onion-auth credential"),
+        (lambda config: Path(config["onion_auth_dir"]).joinpath(
+            "extra.auth_private"
+        ).write_text(VALID_CREDENTIAL), "exactly one"),
+        (lambda config: Path(config["onion_auth_dir"]).joinpath(
+            "app-journalist.auth_private"
+        ).write_text("secret-value"), "malformed"),
+        (lambda config: Path(config["torrc_path"]).write_text("SocksPort 1"), "managed Tor"),
+        (lambda config: config.__setitem__("signing_key_fingerprint", "0" * 40),
+         "signing key"),
+        (lambda config: Path(config["signing_key_path"]).unlink(), "signing key"),
+        (lambda config: Path(config["signing_key_path"]).write_text("other key"),
+         "signing key"),
+        (lambda config: config.__setitem__("minimum_version", "latest"),
+         "minimum version"),
+        (lambda config: Path(config["minimum_version_path"]).unlink(), "minimum version"),
+        (lambda config: Path(config["minimum_version_path"]).write_text("14.0\n"),
+         "minimum version"),
+    ],
+    ids=[
+        "missing-onion-auth",
+        "multiple-onion-auth",
+        "malformed-onion-auth",
+        "modified-torrc",
+        "unexpected-signing-fingerprint",
+        "missing-signing-key",
+        "modified-signing-key",
+        "invalid-minimum-version",
+        "missing-minimum-version",
+        "modified-minimum-version",
+    ],
+)
+def test_invalid_security_prerequisite_fails_closed_without_exposing_secret(
+    tmp_path, mutate, expected
+):
+    config_path = write_valid_prerequisites(tmp_path)
+    config = json.loads(config_path.read_text())
+    mutate(config)
+    config_path.write_text(json.dumps(config))
+
+    with (
+        mock.patch.object(core, "MANAGED_CONFIG_PATH", config_path),
+        mock.patch.object(socket, "create_connection") as create_connection,
+        mock.patch.object(subprocess, "Popen") as popen,
+        pytest.raises(core.ManagedConfigurationError) as exc_info,
+    ):
+        core.load_managed_config()
+
+    message = str(exc_info.value)
+    assert expected in message
+    assert "secret-value" not in message
+    assert VALID_CREDENTIAL not in message
+    create_connection.assert_not_called()
+    popen.assert_not_called()
+
+
+def test_onion_auth_credential_requires_restrictive_permissions(tmp_path):
+    config_path = write_valid_prerequisites(tmp_path)
+    config = json.loads(config_path.read_text())
+    credential = Path(config["onion_auth_dir"]) / "app-journalist.auth_private"
+    credential.chmod(0o644)
+
+    with (
+        mock.patch.object(core, "MANAGED_CONFIG_PATH", config_path),
+        pytest.raises(core.ManagedConfigurationError, match="permissions"),
+    ):
+        core.load_managed_config()
+
+
 def test_admin_salt_exposes_only_the_supported_command_and_desktop_entry():
     state = Path("admin_salt/sd-admin-tor-browser.sls").read_text()
     desktop_entry = Path("files/press.freedom.SecureDropTorBrowser.desktop").read_text()
@@ -137,3 +247,16 @@ def test_launcher_assets_are_limited_to_the_admin_rpm_subpackage():
     for asset in launcher_assets:
         assert asset not in spec[:admin_install]
         assert asset in spec[admin_install:standard_files]
+
+
+def test_admin_salt_atomically_manages_all_security_prerequisites():
+    state = Path("admin_salt/sd-admin-tor-browser.sls").read_text()
+
+    assert "app-journalist.auth_private" in state
+    assert 'mode: "0600"' in state
+    assert "makedirs: true" in state
+    assert "torrc" in state
+    assert "tor-browser-signing-key.asc" in state
+    assert "tor-browser-firefox.apparmor" in state
+    assert "tor-browser-tor.apparmor" in state
+    assert "tor-browser-minimum-version" in state
