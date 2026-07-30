@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import http.client
 import json
+import os
 import ssl
+import tempfile
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -324,3 +326,29 @@ def read_optional_version(path: Path) -> Version | None:
         return Version(value)
     except ValueError as exc:
         raise ReleaseSecurityError(f"Tor Browser version state at {path} is malformed.") from exc
+
+
+def advance_high_water(path: Path, version: Version) -> None:
+    """Atomically persist a successful version without lowering the existing floor."""
+    current = read_optional_version(path)
+    if current is not None and current >= version:
+        return
+
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}-",
+        dir=path.parent,
+    )
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w") as temporary:
+            temporary.write(f"{version}\n")
+            temporary.flush()
+            os.fsync(temporary.fileno())
+        os.replace(temporary_path, path)
+        directory = os.open(path.parent, os.O_DIRECTORY | os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        temporary_path.unlink(missing_ok=True)

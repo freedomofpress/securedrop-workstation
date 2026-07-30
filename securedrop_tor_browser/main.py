@@ -1,10 +1,24 @@
 from pathlib import Path
 
-from securedrop_tor_browser import core, frontend, install, release
+from securedrop_tor_browser import core, frontend, install, lifecycle, release
 
 
 def main() -> int:
-    """Establish freshness before allowing any browser startup."""
+    """Run one mutually exclusive update-and-browser lifecycle."""
+    try:
+        with lifecycle.exclusive_lifecycle(release.STATE_ROOT):
+            return _run_locked_lifecycle(release.STATE_ROOT)
+    except lifecycle.LifecycleBusy:
+        return frontend.show_already_running()
+    except OSError as exc:
+        return frontend.show_error(
+            "Tor Browser cannot start",
+            f"Tor Browser temporary state could not be recovered safely: {exc}",
+        )
+
+
+def _run_locked_lifecycle(state_root: Path) -> int:
+    """Establish freshness while the caller retains the lifecycle lock."""
     try:
         config = core.load_managed_config()
     except core.ManagedConfigurationError as exc:
@@ -40,6 +54,7 @@ def main() -> int:
         return frontend.show_error("Tor Browser release check blocked", str(exc))
 
     if decision.action is release.ReleaseAction.CURRENT:
+        release.advance_high_water(release.HIGH_WATER_VERSION_PATH, stable.version)
         return frontend.show_ready(str(stable.version))
     if decision.action is release.ReleaseAction.INSTALL:
         try:
@@ -48,6 +63,7 @@ def main() -> int:
                     stable,
                     signing_key_path=Path(config["signing_key_path"]),
                     signing_key_fingerprint=config["signing_key_fingerprint"],
+                    state_root=state_root,
                     cancelled=progress.cancelled,
                     disable_cancellation=progress.disable_cancellation,
                 )

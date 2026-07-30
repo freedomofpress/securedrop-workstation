@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from collections.abc import Callable
 from contextlib import nullcontext
+from pathlib import Path
 from types import TracebackType
 from typing import Self
 from unittest import mock
@@ -390,6 +391,15 @@ def test_launcher_blocks_stale_downgraded_and_below_minimum_metadata(
     assert launcher.main() == 1
     assert error.call_args.args[0] == "Tor Browser release blocked"
     ready.assert_not_called()
+
+
+def test_high_water_version_never_decreases(tmp_path: Path) -> None:
+    high_water = tmp_path / "highest-version"
+
+    release.advance_high_water(high_water, release.Version("15.0.19"))
+    release.advance_high_water(high_water, release.Version("15.0.18"))
+
+    assert high_water.read_text() == "15.0.19\n"
 
 
 def test_launcher_cancels_direct_streaming_retrieval_without_changing_version_state(

@@ -1,10 +1,26 @@
 import os
 import socket
 import tempfile
+from pathlib import Path
 
 import pytest
 
 import sdw_updater.Updater
+
+
+@pytest.fixture(autouse=True)
+def isolate_tor_browser_state(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from securedrop_tor_browser import release
+
+    state_root = tmp_path / "tor-browser-state"
+    active = state_root / "active"
+    monkeypatch.setattr(release, "STATE_ROOT", state_root)
+    monkeypatch.setattr(release, "ACTIVE_INSTALL_PATH", active)
+    monkeypatch.setattr(release, "INSTALLED_VERSION_PATH", active / ".securedrop-version")
+    monkeypatch.setattr(release, "HIGH_WATER_VERSION_PATH", state_root / "highest-version")
 
 
 @pytest.fixture

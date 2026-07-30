@@ -35,6 +35,18 @@ def show_retry_or_close(title: str, message: str) -> bool:
     return False
 
 
+def show_already_running() -> int:
+    """Report harmless contention with the kernel-owned lifecycle lock."""
+    application = _application()
+    QMessageBox.information(
+        None,
+        "Tor Browser is starting or running",
+        "Tor Browser is already starting or running. No second session was started.",
+    )
+    application.quit()
+    return 0
+
+
 @contextmanager
 def metadata_retrieval() -> Iterator[Callable[[], bool]]:
     """Show a responsive, cancellable release-check dialog."""

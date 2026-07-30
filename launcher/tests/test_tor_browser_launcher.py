@@ -9,7 +9,7 @@ from unittest import mock
 
 import pytest
 
-from securedrop_tor_browser import core, release
+from securedrop_tor_browser import core, lifecycle, release
 from securedrop_tor_browser import main as launcher
 
 FINGERPRINT = "EF6E286DDA85EA2A4BA7DE684E2C6E8793298290"
@@ -46,7 +46,15 @@ def write_valid_prerequisites(tmp_path: Path) -> Path:
     return config_path
 
 
-def test_graphical_error_keeps_application_alive_while_constructing_widget():
+def assert_lifecycle_lock_is_held(state_root: Path) -> None:
+    with (
+        pytest.raises(lifecycle.LifecycleBusy),
+        lifecycle.exclusive_lifecycle(state_root),
+    ):
+        pytest.fail("the Tor Browser lifecycle lock must remain held")
+
+
+def test_graphical_error_keeps_application_alive_while_constructing_widget() -> None:
     script = """
 from PyQt6.QtWidgets import QWidget
 from securedrop_tor_browser import frontend
@@ -64,6 +72,18 @@ raise SystemExit(frontend.show_error("title", "message"))
 
     assert result.returncode == 1, result.stderr
     assert "Must construct a QApplication" not in result.stderr
+
+
+def test_lock_contention_message_reports_browser_is_starting_or_running() -> None:
+    with (
+        mock.patch.object(launcher.frontend, "_application") as application,
+        mock.patch.object(launcher.frontend.QMessageBox, "information") as information,
+    ):
+        assert launcher.frontend.show_already_running() == 0
+
+    assert information.call_args.args[1] == "Tor Browser is starting or running"
+    assert "No second session was started" in information.call_args.args[2]
+    application.return_value.quit.assert_called_once_with()
 
 
 def test_packaged_entry_point_invokes_the_launcher():
@@ -113,6 +133,77 @@ def test_launcher_reports_missing_configuration_as_a_graphical_error(tmp_path):
     show_ready.assert_not_called()
     create_connection.assert_not_called()
     popen.assert_not_called()
+
+
+def test_second_launcher_reports_starting_or_running_without_checking_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    state_root = tmp_path / "state"
+    monkeypatch.setattr(launcher.release, "STATE_ROOT", state_root)
+    load_config = mock.Mock()
+    monkeypatch.setattr(launcher.core, "load_managed_config", load_config)
+    already_running = mock.Mock(return_value=0)
+    monkeypatch.setattr(launcher.frontend, "show_already_running", already_running)
+
+    with lifecycle.exclusive_lifecycle(state_root):
+        assert launcher.main() == 0
+
+    already_running.assert_called_once_with()
+    load_config.assert_not_called()
+
+
+def test_launcher_recovers_abandoned_state_while_holding_lock(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    state_root = tmp_path / "state"
+    abandoned_install = state_root / ".install-crashed"
+    abandoned_install.mkdir(parents=True)
+    abandoned_profile = state_root / lifecycle.RUNTIME_DIRECTORY / "profile-crashed"
+    abandoned_profile.mkdir(parents=True)
+    installed = state_root / "installations" / "15.0.19-crash-recovered"
+    installed.mkdir(parents=True)
+    installed_version = installed / ".securedrop-version"
+    installed_version.write_text("15.0.19\n")
+    active = state_root / "active"
+    active.symlink_to(installed)
+    high_water = state_root / "highest-version"
+    high_water.write_text("15.0.18\n")
+    monkeypatch.setattr(launcher.release, "STATE_ROOT", state_root)
+    monkeypatch.setattr(launcher.release, "INSTALLED_VERSION_PATH", installed_version)
+    monkeypatch.setattr(launcher.release, "HIGH_WATER_VERSION_PATH", high_water)
+    stable = release.StableRelease(
+        release.Version("15.0.19"),
+        "https://dist.torproject.org/torbrowser/15.0.19/browser.tar.xz",
+        "https://dist.torproject.org/torbrowser/15.0.19/browser.tar.xz.asc",
+    )
+
+    def load_config() -> dict[str, str]:
+        assert not abandoned_install.exists()
+        assert not abandoned_profile.exists()
+        assert_lifecycle_lock_is_held(state_root)
+        return {"minimum_version": "15.0.1"}
+
+    monkeypatch.setattr(launcher.core, "load_managed_config", load_config)
+    monkeypatch.setattr(
+        launcher.frontend,
+        "metadata_retrieval",
+        lambda: nullcontext(lambda: False),
+    )
+    monkeypatch.setattr(launcher.release, "discover_stable_release", lambda **kwargs: stable)
+    ready_versions: list[str] = []
+
+    def show_ready(version: str) -> int:
+        assert_lifecycle_lock_is_held(state_root)
+        ready_versions.append(version)
+        return 0
+
+    monkeypatch.setattr(launcher.frontend, "show_ready", show_ready)
+
+    assert launcher.main() == 0
+    assert high_water.read_text() == "15.0.19\n"
+    assert ready_versions == ["15.0.19"]
 
 
 def test_launcher_accepts_valid_prerequisites_without_inspecting_apparmor(tmp_path):
@@ -183,6 +274,7 @@ def test_launcher_installs_required_bundle_before_reporting_ready(tmp_path):
         stable,
         signing_key_path=Path(json.loads(config_path.read_text())["signing_key_path"]),
         signing_key_fingerprint=FINGERPRINT,
+        state_root=tmp_path / "tor-browser-state",
         cancelled=progress.cancelled,
         disable_cancellation=progress.disable_cancellation,
     )

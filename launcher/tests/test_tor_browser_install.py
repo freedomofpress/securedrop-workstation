@@ -90,6 +90,9 @@ def test_first_installation_activates_only_the_verified_advertised_bundle(
     assert release.read_optional_version(active / ".securedrop-version") == release.Version(
         "15.0.19"
     )
+    assert release.read_optional_version(tmp_path / "state" / "highest-version") == release.Version(
+        "15.0.19"
+    )
     verifier.assert_called_once()
     assert not list((tmp_path / "state").glob(".install-*"))
 
@@ -138,6 +141,7 @@ def test_upgrade_atomically_switches_active_and_retains_previous_installation(
         for path in (state_root / "installations").iterdir()
     )
     assert retained == ["15.0.18", "15.0.19"]
+    assert (state_root / "highest-version").read_text() == "15.0.19\n"
 
 
 @pytest.mark.parametrize("reason", ["invalid signature", "unknown signing key"])

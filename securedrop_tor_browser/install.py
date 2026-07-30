@@ -26,6 +26,7 @@ from securedrop_tor_browser.release import (
     REQUEST_TIMEOUT_SECONDS,
     STATE_ROOT,
     StableRelease,
+    advance_high_water,
 )
 
 Download = Callable[[str, Path, Callable[[], bool]], None]
@@ -318,6 +319,7 @@ def install_verified_bundle(
                 "The verified Tor Browser bundle could not be atomically activated."
             ) from exc
         activated = True
+        advance_high_water(state_root / "highest-version", stable.version)
     finally:
         if pending_active is not None:
             with suppress(FileNotFoundError):
