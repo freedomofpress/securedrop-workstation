@@ -68,6 +68,16 @@ create-securedrop-tor-browser-group:
     - name: securedrop-tor-browser
     - system: true
 
+manage-securedrop-tor-browser-state:
+  file.directory:
+    - name: /var/lib/securedrop-tor-browser
+    - user: user
+    - group: securedrop-tor-browser
+    - mode: "0700"
+    - makedirs: true
+    - require:
+      - group: create-securedrop-tor-browser-group
+
 grant-launcher-access-to-security-prerequisites:
   user.present:
     - name: user
@@ -76,6 +86,7 @@ grant-launcher-access-to-security-prerequisites:
     - remove_groups: false
     - require:
       - group: create-securedrop-tor-browser-group
+      - file: manage-securedrop-tor-browser-state
 
 install-securedrop-tor-browser-onion-auth:
   file.managed:
@@ -85,6 +96,8 @@ install-securedrop-tor-browser-onion-auth:
     - group: securedrop-tor-browser
     - mode: "0600"
     - makedirs: true
+    - require:
+      - file: manage-securedrop-tor-browser-state
 
 remove-unsupported-onion-auth-credentials:
   file.directory:

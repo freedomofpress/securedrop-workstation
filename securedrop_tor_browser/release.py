@@ -28,8 +28,10 @@ MAX_REDIRECTS = 3
 MAX_AUTOMATIC_RETRIES = 2
 BACKOFF_SECONDS = (0.25, 0.5)
 TRANSIENT_HTTP_STATUSES = frozenset({408, 425, 429, 500, 502, 503, 504})
-INSTALLED_VERSION_PATH = Path("/var/lib/securedrop-tor-browser/installed-version")
-HIGH_WATER_VERSION_PATH = Path("/var/lib/securedrop-tor-browser/highest-version")
+STATE_ROOT = Path("/var/lib/securedrop-tor-browser")
+ACTIVE_INSTALL_PATH = STATE_ROOT / "active"
+INSTALLED_VERSION_PATH = ACTIVE_INSTALL_PATH / ".securedrop-version"
+HIGH_WATER_VERSION_PATH = STATE_ROOT / "highest-version"
 
 
 class ReleaseError(Exception):

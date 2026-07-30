@@ -1,4 +1,6 @@
-from securedrop_tor_browser import core, frontend, release
+from pathlib import Path
+
+from securedrop_tor_browser import core, frontend, install, release
 
 
 def main() -> int:
@@ -40,5 +42,20 @@ def main() -> int:
     if decision.action is release.ReleaseAction.CURRENT:
         return frontend.show_ready(str(stable.version))
     if decision.action is release.ReleaseAction.INSTALL:
-        return frontend.show_error("Tor Browser installation required", decision.reason)
+        try:
+            with frontend.bundle_installation(str(stable.version)) as progress:
+                install.install_verified_bundle(
+                    stable,
+                    signing_key_path=Path(config["signing_key_path"]),
+                    signing_key_fingerprint=config["signing_key_fingerprint"],
+                    cancelled=progress.cancelled,
+                    disable_cancellation=progress.disable_cancellation,
+                )
+        except install.InstallationCancelled as exc:
+            return frontend.show_error("Tor Browser installation cancelled", str(exc))
+        except install.InstallationSecurityError as exc:
+            return frontend.show_error("Tor Browser installation blocked", str(exc))
+        except (install.InstallationError, OSError) as exc:
+            return frontend.show_error("Tor Browser installation failed", str(exc))
+        return frontend.show_ready(str(stable.version))
     return frontend.show_error("Tor Browser release blocked", decision.reason)

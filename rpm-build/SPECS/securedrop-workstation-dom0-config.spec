@@ -59,6 +59,7 @@ configuration over time.
 %package -n securedrop-admin-dom0-config
 Summary: SecureDrop Admin
 Requires: qubes-mgmt-salt-dom0-virtual-machines
+Requires: gnupg2
 %description -n securedrop-admin-dom0-config
 This package contains VM configuration files for the Qubes-based
 SecureDrop Admin project. The package should be installed

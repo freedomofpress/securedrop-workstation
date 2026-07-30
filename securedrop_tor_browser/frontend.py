@@ -60,6 +60,43 @@ def metadata_retrieval() -> Iterator[Callable[[], bool]]:
         dialog.close()
 
 
+class BundleInstallationProgress:
+    """Expose only the cancellation controls needed by the installer."""
+
+    def __init__(self, application: QApplication, dialog: QProgressDialog) -> None:
+        self._application = application
+        self._dialog = dialog
+
+    def cancelled(self) -> bool:
+        self._application.processEvents()
+        return self._dialog.wasCanceled()
+
+    def disable_cancellation(self, message: str) -> None:
+        self._dialog.setLabelText(message)
+        self._dialog.setCancelButton(None)
+        self._application.processEvents()
+
+
+@contextmanager
+def bundle_installation(version: str) -> Iterator[BundleInstallationProgress]:
+    """Show cancellable download progress, then allow an uninterruptible switch."""
+    application = _application()
+    dialog = QProgressDialog(
+        f"Downloading Tor Browser {version}…",
+        "Cancel",
+        0,
+        0,
+    )
+    dialog.setWindowTitle("Installing Tor Browser")
+    dialog.setMinimumDuration(0)
+    dialog.setAutoClose(False)
+    dialog.show()
+    try:
+        yield BundleInstallationProgress(application, dialog)
+    finally:
+        dialog.close()
+
+
 def show_ready(version: str) -> int:
     """Report that the installed browser matches the advertised stable release."""
     application = _application()

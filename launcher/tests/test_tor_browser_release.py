@@ -287,7 +287,11 @@ def test_launcher_recognizes_matching_installed_release_as_current():
 def test_launcher_offers_retry_and_close_after_transient_retries_are_exhausted(
     monkeypatch,
 ):
-    config = {"minimum_version": "15.0.1"}
+    config = {
+        "minimum_version": "15.0.1",
+        "signing_key_path": "/managed/pinned-key.asc",
+        "signing_key_fingerprint": "EF6E286DDA85EA2A4BA7DE684E2C6E8793298290",
+    }
     outcomes: list[release.StableRelease | Exception] = [
         release.TransientReleaseError("offline"),
         release.StableRelease(
@@ -308,12 +312,22 @@ def test_launcher_offers_retry_and_close_after_transient_retries_are_exhausted(
     monkeypatch.setattr(launcher.release, "discover_stable_release", discover)
     monkeypatch.setattr(launcher.release, "read_optional_version", lambda path: None)
     monkeypatch.setattr(launcher.frontend, "show_retry_or_close", lambda *args: True)
+    progress = mock.Mock()
+    monkeypatch.setattr(
+        launcher.frontend, "bundle_installation", lambda _version: nullcontext(progress)
+    )
+    install_bundle = mock.Mock()
+    monkeypatch.setattr(launcher.install, "install_verified_bundle", install_bundle)
+    ready = mock.Mock(return_value=0)
+    monkeypatch.setattr(launcher.frontend, "show_ready", ready)
     show_error = mock.Mock(return_value=1)
     monkeypatch.setattr(launcher.frontend, "show_error", show_error)
 
-    assert launcher.main() == 1
+    assert launcher.main() == 0
     assert not outcomes
-    assert show_error.call_args.args[0] == "Tor Browser installation required"
+    install_bundle.assert_called_once()
+    ready.assert_called_once_with("15.0.19")
+    show_error.assert_not_called()
 
 
 @pytest.mark.parametrize(
