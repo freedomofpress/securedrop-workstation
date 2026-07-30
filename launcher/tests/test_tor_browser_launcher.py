@@ -2,6 +2,7 @@ import json
 import runpy
 import socket
 import subprocess
+import sys
 from pathlib import Path
 from unittest import mock
 
@@ -9,6 +10,26 @@ import pytest
 
 from securedrop_tor_browser import core
 from securedrop_tor_browser import main as launcher
+
+
+def test_graphical_error_keeps_application_alive_while_constructing_widget():
+    script = """
+from PyQt6.QtWidgets import QWidget
+from securedrop_tor_browser import frontend
+
+frontend.QMessageBox.critical = lambda *args: QWidget()
+raise SystemExit(frontend.show_error("title", "message"))
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        check=False,
+        capture_output=True,
+        env={"QT_QPA_PLATFORM": "offscreen"},
+        text=True,
+    )
+
+    assert result.returncode == 1, result.stderr
+    assert "Must construct a QApplication" not in result.stderr
 
 
 def test_packaged_entry_point_invokes_the_launcher():
