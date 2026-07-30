@@ -1,10 +1,18 @@
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
-from securedrop_tor_browser import core, frontend, install, lifecycle, release
+from securedrop_tor_browser import core, frontend, install, lifecycle, release, session
 
 
-def main() -> int:
+def main(arguments: Sequence[str] = ()) -> int:
     """Run one mutually exclusive update-and-browser lifecycle."""
+    if arguments:
+        return frontend.show_error(
+            "Unsupported Tor Browser launch",
+            "The managed Tor Browser launcher does not accept links or startup options. "
+            "Use its managed Journalist Interface bookmark.",
+        )
     try:
         with lifecycle.exclusive_lifecycle(release.STATE_ROOT):
             return _run_locked_lifecycle(release.STATE_ROOT)
@@ -15,6 +23,37 @@ def main() -> int:
             "Tor Browser cannot start",
             f"Tor Browser temporary state could not be recovered safely: {exc}",
         )
+
+
+def _install_release(
+    stable: release.StableRelease,
+    config: dict[str, Any],
+    state_root: Path,
+) -> int | None:
+    try:
+        with frontend.bundle_installation(str(stable.version)) as progress:
+            install.install_verified_bundle(
+                stable,
+                signing_key_path=Path(config["signing_key_path"]),
+                signing_key_fingerprint=config["signing_key_fingerprint"],
+                state_root=state_root,
+                cancelled=progress.cancelled,
+                disable_cancellation=progress.disable_cancellation,
+            )
+    except install.InstallationCancelled as exc:
+        return frontend.show_error("Tor Browser installation cancelled", str(exc))
+    except install.InstallationSecurityError as exc:
+        return frontend.show_error("Tor Browser installation blocked", str(exc))
+    except (install.InstallationError, OSError) as exc:
+        return frontend.show_error("Tor Browser installation failed", str(exc))
+    return None
+
+
+def _run_managed_session(config: dict[str, Any], state_root: Path) -> int:
+    try:
+        return session.run_browser_session(config, state_root)
+    except (session.SessionError, OSError) as exc:
+        return frontend.show_error("Tor Browser session failed", str(exc))
 
 
 def _run_locked_lifecycle(state_root: Path) -> int:
@@ -55,23 +94,11 @@ def _run_locked_lifecycle(state_root: Path) -> int:
 
     if decision.action is release.ReleaseAction.CURRENT:
         release.advance_high_water(release.HIGH_WATER_VERSION_PATH, stable.version)
-        return frontend.show_ready(str(stable.version))
-    if decision.action is release.ReleaseAction.INSTALL:
-        try:
-            with frontend.bundle_installation(str(stable.version)) as progress:
-                install.install_verified_bundle(
-                    stable,
-                    signing_key_path=Path(config["signing_key_path"]),
-                    signing_key_fingerprint=config["signing_key_fingerprint"],
-                    state_root=state_root,
-                    cancelled=progress.cancelled,
-                    disable_cancellation=progress.disable_cancellation,
-                )
-        except install.InstallationCancelled as exc:
-            return frontend.show_error("Tor Browser installation cancelled", str(exc))
-        except install.InstallationSecurityError as exc:
-            return frontend.show_error("Tor Browser installation blocked", str(exc))
-        except (install.InstallationError, OSError) as exc:
-            return frontend.show_error("Tor Browser installation failed", str(exc))
-        return frontend.show_ready(str(stable.version))
-    return frontend.show_error("Tor Browser release blocked", decision.reason)
+    elif decision.action is release.ReleaseAction.INSTALL:
+        install_result = _install_release(stable, config, state_root)
+        if install_result is not None:
+            return install_result
+    else:
+        return frontend.show_error("Tor Browser release blocked", decision.reason)
+
+    return _run_managed_session(config, state_root)

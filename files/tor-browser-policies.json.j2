@@ -1,0 +1,19 @@
+{
+  "policies": {
+    "DisableAppUpdate": true,
+    "Homepage": {
+      "URL": "http://{{ onion_hostname }}",
+      "Locked": true,
+      "StartPage": "homepage-locked"
+    },
+    "ManagedBookmarks": [
+      {
+        "toplevel_name": "SecureDrop"
+      },
+      {
+        "name": "Journalist Interface",
+        "url": "http://{{ onion_hostname }}"
+      }
+    ]
+  }
+}

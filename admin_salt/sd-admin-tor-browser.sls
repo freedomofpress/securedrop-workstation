@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
+{% import_json "securedrop_salt/config.json" as d %}
+
 install-securedrop-tor-browser-core:
   file.recurse:
     - name: /usr/lib/python3/dist-packages/securedrop_tor_browser
@@ -39,6 +41,18 @@ install-securedrop-tor-browser-managed-config:
   file.managed:
     - name: /etc/securedrop/tor-browser.json
     - source: salt://admin_salt/tor-browser.json
+    - mode: "0644"
+    - makedirs: true
+
+install-securedrop-tor-browser-policy:
+  file.managed:
+    - name: /etc/firefox/policies/policies.json
+    - source: salt://admin_salt/tor-browser-policies.json.j2
+    - template: jinja
+    - context:
+        onion_hostname: {{ d.hidserv.hostname }}
+    - user: root
+    - group: root
     - mode: "0644"
     - makedirs: true
 

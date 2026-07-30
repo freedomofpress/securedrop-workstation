@@ -1,11 +1,12 @@
 {
+  "browser_policy_path": "/etc/firefox/policies/policies.json",
   "managed_by": "SecureDrop Workstation",
   "minimum_version": "15.0.1",
   "minimum_version_path": "/usr/share/securedrop-tor-browser/tor-browser-minimum-version",
   "minimum_version_sha256": "7072dc7e08597f21723f66330871482b07854e03571e24a064da22f4ab50ba5a",
   "onion_auth_dir": "/var/lib/securedrop-tor-browser/onion-auth",
   "torrc_path": "/etc/securedrop/tor-browser/torrc",
-  "torrc_sha256": "e73083d6a6b261318402b1ffc72d97d71d015f85dbe61e46303b044d4a7da7cf",
+  "torrc_sha256": "70b8185465e014b67e4fcd78a9cc9b0ed46e7a9b1b9d3ed2d988e9cd142ae634",
   "signing_key_path": "/usr/share/securedrop-tor-browser/tor-browser-signing-key.asc",
   "signing_key_fingerprint": "EF6E286DDA85EA2A4BA7DE684E2C6E8793298290",
   "signing_key_sha256": "9fbd0958366fcfc19cd9d3ac60fa85364025e42c549716f4ee80682a89af6ff2"

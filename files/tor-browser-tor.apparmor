@@ -1,13 +1,24 @@
 #include <tunables/global>
 
-/usr/lib/securedrop-tor-browser/tor flags=(attach_disconnected) {
+profile securedrop-tor-browser-tor flags=(attach_disconnected) {
   #include <abstractions/base>
   #include <abstractions/nameservice>
 
-  /usr/lib/securedrop-tor-browser/tor mr,
-  /usr/lib/securedrop-tor-browser/tor-browser/** rix,
+  network inet stream,
+  network inet6 stream,
+  network unix stream,
+
+  /var/lib/securedrop-tor-browser/active/Browser/TorBrowser/Tor/tor mr,
+  /var/lib/securedrop-tor-browser/active/Browser/TorBrowser/Tor/** rixm,
+  /var/lib/securedrop-tor-browser/installations/*/Browser/TorBrowser/Tor/tor mr,
+  /var/lib/securedrop-tor-browser/installations/*/Browser/TorBrowser/Tor/** rixm,
   /etc/securedrop/tor-browser/torrc r,
+  /var/lib/securedrop-tor-browser/onion-auth/ r,
   /var/lib/securedrop-tor-browser/onion-auth/app-journalist.auth_private r,
-  owner /run/user/*/securedrop-tor-browser/** rw,
-  /var/lib/securedrop-tor-browser/tor/** rwk,
+  owner /var/lib/securedrop-tor-browser/runtime/ rw,
+  owner /var/lib/securedrop-tor-browser/runtime/{socks.socket,control.socket,control.authcookie} rwk,
+  owner /var/lib/securedrop-tor-browser/tor/ rw,
+  owner /var/lib/securedrop-tor-browser/tor/** rwk,
+
+  deny owner @{HOME}/** rwklmx,
 }

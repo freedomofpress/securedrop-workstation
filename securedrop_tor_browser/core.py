@@ -42,7 +42,7 @@ def _required_string(config: dict[str, Any], name: str) -> str:
     return value
 
 
-def _validate_onion_auth(config: dict[str, Any]) -> None:
+def _validate_onion_auth(config: dict[str, Any]) -> str:
     credential_dir = Path(_required_string(config, "onion_auth_dir"))
     try:
         credentials = list(credential_dir.glob("*.auth_private"))
@@ -65,6 +65,45 @@ def _validate_onion_auth(config: dict[str, Any]) -> None:
         raise _administrator_error("onion-auth credential permissions", "must be 0600")
     if ONION_AUTH_PATTERN.fullmatch(contents) is None:
         raise _administrator_error("onion-auth credential", "is malformed")
+    return contents.split(":", 1)[0]
+
+
+def managed_browser_policy(onion_hostname: str) -> dict[str, Any]:
+    """Return the exact navigation and update policy managed by Workstation."""
+    journalist_url = f"http://{onion_hostname}"
+    return {
+        "policies": {
+            "DisableAppUpdate": True,
+            "Homepage": {
+                "URL": journalist_url,
+                "Locked": True,
+                "StartPage": "homepage-locked",
+            },
+            "ManagedBookmarks": [
+                {"toplevel_name": "SecureDrop"},
+                {"name": "Journalist Interface", "url": journalist_url},
+            ],
+        }
+    }
+
+
+def _validate_browser_policy(config: dict[str, Any], onion_hostname: str) -> None:
+    policy_path = Path(_required_string(config, "browser_policy_path"))
+    try:
+        policy_stat = policy_path.stat()
+        policy = json.loads(policy_path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise _administrator_error(
+            "managed Tor Browser policy", "is missing or unreadable"
+        ) from exc
+    if stat.S_IMODE(policy_stat.st_mode) & 0o022:
+        raise _administrator_error(
+            "managed Tor Browser policy permissions", "allow non-administrative changes"
+        )
+    if policy != managed_browser_policy(onion_hostname):
+        raise _administrator_error(
+            "managed Tor Browser policy", "does not contain the required managed settings"
+        )
 
 
 def _validate_pinned_file(
@@ -124,9 +163,10 @@ def load_managed_config() -> dict[str, Any]:
     if fingerprint != SIGNING_KEY_FINGERPRINT:
         raise _administrator_error("Tor Browser signing key", "has an unexpected fingerprint")
 
-    _validate_onion_auth(config)
+    onion_hostname = _validate_onion_auth(config)
     _validate_pinned_file(config, "torrc_path", "torrc_sha256", "managed Tor configuration")
     _validate_pinned_file(
         config, "signing_key_path", "signing_key_sha256", "Tor Browser signing key"
     )
+    _validate_browser_policy(config, onion_hostname)
     return config

@@ -2,4 +2,7 @@
 ClientOnly 1
 ClientOnionAuthDir /var/lib/securedrop-tor-browser/onion-auth
 DataDirectory /var/lib/securedrop-tor-browser/tor
-SocksPort unix:/run/user/1000/securedrop-tor-browser/tor.sock
+SocksPort unix:/var/lib/securedrop-tor-browser/runtime/socks.socket
+ControlPort unix:/var/lib/securedrop-tor-browser/runtime/control.socket
+CookieAuthentication 1
+CookieAuthFile /var/lib/securedrop-tor-browser/runtime/control.authcookie

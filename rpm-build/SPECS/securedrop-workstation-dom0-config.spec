@@ -138,6 +138,7 @@ install -m 644 files/press.freedom.SecureDropTorBrowser.desktop %{buildroot}/srv
 install -m 644 files/securedrop-scalable.svg %{buildroot}/srv/salt/admin_salt/securedrop-tor-browser.svg
 install -m 644 files/tor-browser.json %{buildroot}/srv/salt/admin_salt/
 install -m 644 files/tor-browser-torrc %{buildroot}/srv/salt/admin_salt/
+install -m 644 files/tor-browser-policies.json.j2 %{buildroot}/srv/salt/admin_salt/
 install -m 644 files/tor-browser-signing-key.asc %{buildroot}/srv/salt/admin_salt/
 install -m 644 files/tor-browser-minimum-version %{buildroot}/srv/salt/admin_salt/
 install -m 644 files/tor-browser-firefox.apparmor %{buildroot}/srv/salt/admin_salt/

@@ -29,7 +29,13 @@ def write_valid_prerequisites(tmp_path: Path) -> Path:
     key.write_text("pinned key")
     minimum_version = tmp_path / "minimum-version"
     minimum_version.write_text("15.0.1\n")
+    browser_policy = tmp_path / "policies.json"
+    browser_policy.write_text(
+        json.dumps(core.managed_browser_policy(VALID_CREDENTIAL.split(":", 1)[0]))
+    )
+    browser_policy.chmod(0o644)
     config = {
+        "browser_policy_path": str(browser_policy),
         "managed_by": "SecureDrop Workstation",
         "minimum_version": "15.0.1",
         "minimum_version_path": str(minimum_version),
@@ -89,11 +95,29 @@ def test_lock_contention_message_reports_browser_is_starting_or_running() -> Non
 def test_packaged_entry_point_invokes_the_launcher():
     with (
         mock.patch("securedrop_tor_browser.main.main", return_value=23) as main,
+        mock.patch.object(sys, "argv", ["securedrop-tor-browser"]),
         pytest.raises(SystemExit, match="23"),
     ):
         runpy.run_path("files/securedrop-tor-browser", run_name="__main__")
 
-    main.assert_called_once_with()
+    main.assert_called_once_with([])
+
+
+def test_launcher_rejects_arbitrary_startup_urls_before_any_lifecycle_activity():
+    with (
+        mock.patch.object(launcher.frontend, "show_error", return_value=2) as show_error,
+        mock.patch.object(launcher.lifecycle, "exclusive_lifecycle") as exclusive_lifecycle,
+        mock.patch.object(socket, "create_connection") as create_connection,
+        mock.patch.object(subprocess, "Popen") as popen,
+    ):
+        result = launcher.main([f"http://{'a' * 56}.onion/not-managed"])
+
+    assert result == 2
+    assert show_error.call_args.args[0] == "Unsupported Tor Browser launch"
+    assert "does not accept links or startup options" in show_error.call_args.args[1]
+    exclusive_lifecycle.assert_not_called()
+    create_connection.assert_not_called()
+    popen.assert_not_called()
 
 
 def test_missing_managed_configuration_fails_closed_without_external_activity(tmp_path):
@@ -192,18 +216,20 @@ def test_launcher_recovers_abandoned_state_while_holding_lock(
         lambda: nullcontext(lambda: False),
     )
     monkeypatch.setattr(launcher.release, "discover_stable_release", lambda **kwargs: stable)
-    ready_versions: list[str] = []
+    launched_versions: list[str] = []
 
-    def show_ready(version: str) -> int:
+    def run_browser_session(config: dict[str, str], session_state_root: Path) -> int:
         assert_lifecycle_lock_is_held(state_root)
-        ready_versions.append(version)
+        assert config["minimum_version"] == "15.0.1"
+        assert session_state_root == state_root
+        launched_versions.append(str(stable.version))
         return 0
 
-    monkeypatch.setattr(launcher.frontend, "show_ready", show_ready)
+    monkeypatch.setattr(launcher.session, "run_browser_session", run_browser_session)
 
     assert launcher.main() == 0
     assert high_water.read_text() == "15.0.19\n"
-    assert ready_versions == ["15.0.19"]
+    assert launched_versions == ["15.0.19"]
 
 
 def test_launcher_accepts_valid_prerequisites_without_inspecting_apparmor(tmp_path):
@@ -226,12 +252,17 @@ def test_launcher_accepts_valid_prerequisites_without_inspecting_apparmor(tmp_pa
             launcher.release, "read_optional_version", return_value=release.Version("15.0.1")
         ),
         mock.patch.object(launcher.frontend, "show_error") as show_error,
-        mock.patch.object(launcher.frontend, "show_ready", return_value=0) as show_ready,
+        mock.patch.object(
+            launcher.session, "run_browser_session", return_value=0
+        ) as run_browser_session,
     ):
         result = launcher.main()
 
     assert result == 0
-    show_ready.assert_called_once_with("15.0.1")
+    run_browser_session.assert_called_once_with(
+        json.loads(config_path.read_text()),
+        tmp_path / "tor-browser-state",
+    )
     show_error.assert_not_called()
 
 
@@ -244,6 +275,8 @@ def test_launcher_installs_required_bundle_before_reporting_ready(tmp_path):
     )
     progress = mock.Mock()
     progress.cancelled.return_value = False
+    workflow = mock.Mock()
+    workflow.run_session.return_value = 0
 
     with (
         mock.patch.object(core, "MANAGED_CONFIG_PATH", config_path),
@@ -263,9 +296,13 @@ def test_launcher_installs_required_bundle_before_reporting_ready(tmp_path):
             "read_optional_version",
             side_effect=[release.Version("15.0.1"), release.Version("15.0.1")],
         ),
-        mock.patch.object(launcher.install, "install_verified_bundle") as install_bundle,
+        mock.patch.object(
+            launcher.install, "install_verified_bundle", workflow.install_bundle
+        ) as install_bundle,
+        mock.patch.object(
+            launcher.session, "run_browser_session", workflow.run_session
+        ) as run_browser_session,
         mock.patch.object(launcher.frontend, "show_error") as show_error,
-        mock.patch.object(launcher.frontend, "show_ready", return_value=0) as show_ready,
     ):
         result = launcher.main()
 
@@ -278,7 +315,11 @@ def test_launcher_installs_required_bundle_before_reporting_ready(tmp_path):
         cancelled=progress.cancelled,
         disable_cancellation=progress.disable_cancellation,
     )
-    show_ready.assert_called_once_with("15.0.2")
+    run_browser_session.assert_called_once_with(
+        json.loads(config_path.read_text()),
+        tmp_path / "tor-browser-state",
+    )
+    assert [item[0] for item in workflow.mock_calls] == ["install_bundle", "run_session"]
     show_error.assert_not_called()
 
 
@@ -393,6 +434,10 @@ def test_unrecognized_json_object_fails_closed(tmp_path):
             lambda config: Path(config["minimum_version_path"]).write_text("14.0\n"),
             "minimum version",
         ),
+        (
+            lambda config: Path(config["browser_policy_path"]).write_text("{}"),
+            "Browser policy",
+        ),
     ],
     ids=[
         "missing-onion-auth",
@@ -405,6 +450,7 @@ def test_unrecognized_json_object_fails_closed(tmp_path):
         "invalid-minimum-version",
         "missing-minimum-version",
         "modified-minimum-version",
+        "modified-browser-policy",
     ],
 )
 def test_invalid_security_prerequisite_fails_closed_without_exposing_secret(
@@ -479,6 +525,8 @@ def test_admin_salt_atomically_manages_all_security_prerequisites():
     assert "tor-browser-signing-key.asc" in state
     assert "tor-browser-firefox.apparmor" in state
     assert "tor-browser-tor.apparmor" in state
+    assert "tor-browser-policies.json.j2" in state
+    assert "/etc/firefox/policies/policies.json" in state
     assert "tor-browser-minimum-version" in state
 
 

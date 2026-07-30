@@ -275,14 +275,12 @@ def test_launcher_recognizes_matching_installed_release_as_current():
             if path == release.INSTALLED_VERSION_PATH
             else None,
         )
-        ready: list[str] = []
-        monkeypatch.setattr(
-            launcher.frontend, "show_ready", lambda version: ready.append(version) or 0
-        )
+        run_session = mock.Mock(return_value=0)
+        monkeypatch.setattr(launcher.session, "run_browser_session", run_session)
 
         assert launcher.main() == 0
 
-    assert ready == ["15.0.19"]
+    run_session.assert_called_once_with(config, release.STATE_ROOT)
 
 
 def test_launcher_offers_retry_and_close_after_transient_retries_are_exhausted(
@@ -319,15 +317,15 @@ def test_launcher_offers_retry_and_close_after_transient_retries_are_exhausted(
     )
     install_bundle = mock.Mock()
     monkeypatch.setattr(launcher.install, "install_verified_bundle", install_bundle)
-    ready = mock.Mock(return_value=0)
-    monkeypatch.setattr(launcher.frontend, "show_ready", ready)
+    run_session = mock.Mock(return_value=0)
+    monkeypatch.setattr(launcher.session, "run_browser_session", run_session)
     show_error = mock.Mock(return_value=1)
     monkeypatch.setattr(launcher.frontend, "show_error", show_error)
 
     assert launcher.main() == 0
     assert not outcomes
     install_bundle.assert_called_once()
-    ready.assert_called_once_with("15.0.19")
+    run_session.assert_called_once_with(config, release.STATE_ROOT)
     show_error.assert_not_called()
 
 
@@ -347,14 +345,14 @@ def test_launcher_security_failure_or_cancellation_has_no_retry_or_launch(monkey
     monkeypatch.setattr(launcher.frontend, "metadata_retrieval", lambda: nullcontext(lambda: False))
     monkeypatch.setattr(launcher.release, "discover_stable_release", fail)
     retry = mock.Mock()
-    ready = mock.Mock()
+    run_session = mock.Mock()
     monkeypatch.setattr(launcher.frontend, "show_retry_or_close", retry)
-    monkeypatch.setattr(launcher.frontend, "show_ready", ready)
+    monkeypatch.setattr(launcher.session, "run_browser_session", run_session)
     monkeypatch.setattr(launcher.frontend, "show_error", lambda *args: 1)
 
     assert launcher.main() == 1
     retry.assert_not_called()
-    ready.assert_not_called()
+    run_session.assert_not_called()
 
 
 @pytest.mark.parametrize(
@@ -383,14 +381,14 @@ def test_launcher_blocks_stale_downgraded_and_below_minimum_metadata(
     monkeypatch.setattr(launcher.frontend, "metadata_retrieval", lambda: nullcontext(lambda: False))
     monkeypatch.setattr(launcher.release, "discover_stable_release", lambda **kwargs: discovered)
     monkeypatch.setattr(launcher.release, "read_optional_version", lambda path: next(versions))
-    ready = mock.Mock()
+    run_session = mock.Mock()
     error = mock.Mock(return_value=1)
-    monkeypatch.setattr(launcher.frontend, "show_ready", ready)
+    monkeypatch.setattr(launcher.session, "run_browser_session", run_session)
     monkeypatch.setattr(launcher.frontend, "show_error", error)
 
     assert launcher.main() == 1
     assert error.call_args.args[0] == "Tor Browser release blocked"
-    ready.assert_not_called()
+    run_session.assert_not_called()
 
 
 def test_high_water_version_never_decreases(tmp_path: Path) -> None:
@@ -429,8 +427,8 @@ def test_launcher_cancels_direct_streaming_retrieval_without_changing_version_st
     monkeypatch.setattr(urllib_request, "build_opener", lambda *handlers: opener)
     popen = mock.Mock(side_effect=AssertionError("release discovery must not invoke subprocess"))
     monkeypatch.setattr("subprocess.Popen", popen)
-    ready = mock.Mock()
-    monkeypatch.setattr(launcher.frontend, "show_ready", ready)
+    run_session = mock.Mock()
+    monkeypatch.setattr(launcher.session, "run_browser_session", run_session)
     monkeypatch.setattr(launcher.frontend, "show_error", lambda *args: 1)
 
     assert launcher.main() == 1
@@ -438,4 +436,4 @@ def test_launcher_cancels_direct_streaming_retrieval_without_changing_version_st
     assert stream.closed
     assert stream.read_calls == 1
     popen.assert_not_called()
-    ready.assert_not_called()
+    run_session.assert_not_called()
