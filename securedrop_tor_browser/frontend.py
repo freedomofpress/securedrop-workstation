@@ -73,7 +73,7 @@ def metadata_retrieval() -> Iterator[Callable[[], bool]]:
 
 
 class BundleInstallationProgress:
-    """Expose only the cancellation controls needed by the installer."""
+    """Expose download progress and cancellation controls needed by the installer."""
 
     def __init__(self, application: QApplication, dialog: QProgressDialog) -> None:
         self._application = application
@@ -82,6 +82,14 @@ class BundleInstallationProgress:
     def cancelled(self) -> bool:
         self._application.processEvents()
         return self._dialog.wasCanceled()
+
+    def update(self, downloaded: int, total: int | None) -> None:
+        if total is None or total <= 0:
+            self._dialog.setRange(0, 0)
+        else:
+            self._dialog.setRange(0, 100)
+            self._dialog.setValue(min(downloaded * 100 // total, 100))
+        self._application.processEvents()
 
     def disable_cancellation(self, message: str) -> None:
         self._dialog.setLabelText(message)
@@ -97,7 +105,7 @@ def bundle_installation(version: str) -> Iterator[BundleInstallationProgress]:
         f"Downloading Tor Browser {version}…",
         "Cancel",
         0,
-        0,
+        100,
     )
     dialog.setWindowTitle("Installing Tor Browser")
     dialog.setMinimumDuration(0)

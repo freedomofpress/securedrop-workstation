@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -37,6 +38,7 @@ def _install_release(
                 signing_key_path=Path(config["signing_key_path"]),
                 signing_key_fingerprint=config["signing_key_fingerprint"],
                 state_root=state_root,
+                download=partial(install.download_file, progress=progress.update),
                 cancelled=progress.cancelled,
                 disable_cancellation=progress.disable_cancellation,
             )

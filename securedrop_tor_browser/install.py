@@ -30,6 +30,7 @@ from securedrop_tor_browser.release import (
 )
 
 Download = Callable[[str, Path, Callable[[], bool]], None]
+Progress = Callable[[int, int | None], None]
 Verify = Callable[[Path, Path, Path, str], None]
 Run = Callable[..., subprocess.CompletedProcess[str]]
 DOWNLOAD_CHUNK_BYTES = 256 * 1024
@@ -58,6 +59,10 @@ OpenUrl = Callable[[urllib_request.Request, float], DownloadResponse]
 
 
 def _ignore_message(_message: str) -> None:
+    pass
+
+
+def _ignore_progress(_downloaded: int, _total: int | None) -> None:
     pass
 
 
@@ -126,6 +131,7 @@ def download_file(
     destination: Path,
     cancelled: Callable[[], bool],
     *,
+    progress: Progress = _ignore_progress,
     open_url: OpenUrl = _open_url,
 ) -> None:
     """Stream one artifact from an allowlisted Tor HTTPS host into staging."""
@@ -166,6 +172,14 @@ def download_file(
                         f"The Tor Browser bundle download returned HTTP {response.status}."
                     )
 
+                try:
+                    total = int(headers["content-length"])
+                except (KeyError, ValueError):
+                    total = None
+                if total is not None and total < 0:
+                    total = None
+                downloaded = 0
+                progress(downloaded, total)
                 with destination.open("xb") as stream:
                     while True:
                         _check_cancelled(cancelled)
@@ -174,6 +188,8 @@ def download_file(
                         if not chunk:
                             return
                         stream.write(chunk)
+                        downloaded += len(chunk)
+                        progress(downloaded, total)
         raise AssertionError("unreachable")
     except BaseException:
         with suppress(FileNotFoundError):

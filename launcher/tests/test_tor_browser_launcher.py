@@ -307,14 +307,18 @@ def test_launcher_installs_required_bundle_before_reporting_ready(tmp_path):
         result = launcher.main()
 
     assert result == 0
-    install_bundle.assert_called_once_with(
-        stable,
-        signing_key_path=Path(json.loads(config_path.read_text())["signing_key_path"]),
-        signing_key_fingerprint=FINGERPRINT,
-        state_root=tmp_path / "tor-browser-state",
-        cancelled=progress.cancelled,
-        disable_cancellation=progress.disable_cancellation,
+    install_bundle.assert_called_once()
+    install_args, install_kwargs = install_bundle.call_args
+    assert install_args == (stable,)
+    assert install_kwargs["signing_key_path"] == Path(
+        json.loads(config_path.read_text())["signing_key_path"]
     )
+    assert install_kwargs["signing_key_fingerprint"] == FINGERPRINT
+    assert install_kwargs["state_root"] == tmp_path / "tor-browser-state"
+    assert install_kwargs["cancelled"] == progress.cancelled
+    assert install_kwargs["disable_cancellation"] == progress.disable_cancellation
+    assert install_kwargs["download"].func is launcher.install.download_file
+    assert install_kwargs["download"].keywords == {"progress": progress.update}
     run_browser_session.assert_called_once_with(
         json.loads(config_path.read_text()),
         tmp_path / "tor-browser-state",

@@ -491,6 +491,26 @@ def test_cancelling_streamed_download_removes_partial_file(tmp_path: Path) -> No
     assert response.closed
 
 
+def test_streamed_download_reports_byte_progress(tmp_path: Path) -> None:
+    response = StreamingDownloadResponse(b"first", b"second")
+    response.headers["Content-Length"] = "11"
+    progress = mock.Mock()
+
+    install.download_file(
+        "https://dist.torproject.org/torbrowser/15.0.19/browser.tar.xz",
+        tmp_path / "bundle.tar.xz",
+        lambda: False,
+        progress=progress,
+        open_url=lambda _request, _timeout: response,
+    )
+
+    assert progress.call_args_list == [
+        mock.call(0, 11),
+        mock.call(5, 11),
+        mock.call(11, 11),
+    ]
+
+
 def test_cancellation_is_disabled_before_verification_and_activation(tmp_path: Path) -> None:
     stable = release.StableRelease(
         release.Version("15.0.19"),
