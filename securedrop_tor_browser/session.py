@@ -11,7 +11,7 @@ from securedrop_tor_browser import lifecycle
 TOR_PROFILE_NAME = "securedrop-tor-browser-tor"
 FIREFOX_PROFILE_NAME = "securedrop-tor-browser-firefox"
 AA_EXEC_PATH = Path("/usr/bin/aa-exec")
-RUNTIME_DIRECTORY = lifecycle.RUNTIME_DIRECTORY
+RUNTIME_ROOT = lifecycle.RUNTIME_ROOT
 SOCKS_SOCKET_NAME = "socks.socket"
 CONTROL_SOCKET_NAME = "control.socket"
 CONTROL_COOKIE_NAME = "control.authcookie"
@@ -86,7 +86,7 @@ def _copy_xauthority(runtime: Path, environment: dict[str, str]) -> None:
 
 
 def _require_bundle_layout(state_root: Path) -> tuple[Path, Path, Path, Path]:
-    browser = state_root / "active" / "Browser"
+    browser = state_root / "browser" / "Browser"
     tor = browser / "TorBrowser" / "Tor" / "tor"
     firefox = browser / "firefox.real"
     baseline = browser / "TorBrowser" / "Data" / "Browser" / "profile.default"
@@ -97,7 +97,7 @@ def _require_bundle_layout(state_root: Path) -> tuple[Path, Path, Path, Path]:
         or not os.access(firefox, os.X_OK)
         or not baseline.is_dir()
     ):
-        raise SessionError("The active Tor Browser installation is incomplete.")
+        raise SessionError("The managed Tor Browser installation is incomplete.")
     return browser, tor, firefox, baseline
 
 
@@ -148,7 +148,7 @@ def _cleanup_session(
                 cleanup_error = exc
 
     try:
-        shutil.rmtree(runtime)
+        lifecycle.cleanup_runtime(runtime)
     except FileNotFoundError:
         pass
     except OSError as exc:
@@ -187,6 +187,7 @@ def run_browser_session(
     popen: Popen = subprocess.Popen,
     monotonic: Callable[[], float] = time.monotonic,
     sleep: Callable[[float], None] = time.sleep,
+    runtime_root: Path | None = None,
 ) -> int:
     """Run one fresh-profile Tor and Firefox session under enforced confinement."""
     browser, tor, firefox, baseline = _require_bundle_layout(state_root)
@@ -194,12 +195,12 @@ def run_browser_session(
     if not isinstance(torrc_value, str) or not torrc_value:
         raise SessionError("The managed Tor configuration path is invalid.")
 
-    runtime = state_root / RUNTIME_DIRECTORY
+    runtime = RUNTIME_ROOT if runtime_root is None else runtime_root
     tor_process: Process | None = None
     browser_process: Process | None = None
     try:
-        runtime.mkdir(mode=0o700)
-        (state_root / "tor").mkdir(mode=0o700, exist_ok=True)
+        lifecycle.ensure_private_directory(runtime)
+        (runtime / "tor").mkdir(mode=0o700)
         for directory in ("cache", "config", "data", "home", "tmp"):
             (runtime / directory).mkdir(mode=0o700)
         profile = runtime / "profile"

@@ -1,4 +1,5 @@
 import json
+import os
 import runpy
 import socket
 import subprocess
@@ -19,6 +20,7 @@ VALID_CREDENTIAL = f"{'a' * 56}.onion" ":descriptor:x25519:" f"{'B' * 52}"
 def write_valid_prerequisites(tmp_path: Path) -> Path:
     credential_dir = tmp_path / "auth"
     credential_dir.mkdir()
+    credential_dir.chmod(0o700)
     credential = credential_dir / "app-journalist.auth_private"
     credential.write_text(VALID_CREDENTIAL + "\n")
     credential.chmod(0o600)
@@ -184,16 +186,19 @@ def test_launcher_recovers_abandoned_state_while_holding_lock(
     state_root = tmp_path / "state"
     abandoned_install = state_root / ".install-crashed"
     abandoned_install.mkdir(parents=True)
-    abandoned_profile = state_root / lifecycle.RUNTIME_DIRECTORY / "profile-crashed"
+    state_root.chmod(0o700)
+    abandoned_profile = lifecycle.RUNTIME_ROOT / "profile-crashed"
     abandoned_profile.mkdir(parents=True)
-    installed = state_root / "installations" / "15.0.19-crash-recovered"
+    lifecycle.RUNTIME_ROOT.chmod(0o700)
+    installed = state_root / "browser"
     installed.mkdir(parents=True)
+    installed.chmod(0o755)
     installed_version = installed / ".securedrop-version"
     installed_version.write_text("15.0.19\n")
-    active = state_root / "active"
-    active.symlink_to(installed)
+    installed_version.chmod(0o600)
     high_water = state_root / "highest-version"
     high_water.write_text("15.0.18\n")
+    high_water.chmod(0o600)
     monkeypatch.setattr(launcher.release, "STATE_ROOT", state_root)
     monkeypatch.setattr(launcher.release, "INSTALLED_VERSION_PATH", installed_version)
     monkeypatch.setattr(launcher.release, "HIGH_WATER_VERSION_PATH", high_water)
@@ -494,6 +499,76 @@ def test_onion_auth_credential_requires_restrictive_permissions(tmp_path):
         core.load_managed_config()
 
 
+@pytest.mark.parametrize("unsafe", ["symlink", "directory"])
+def test_onion_auth_credential_rejects_unsafe_file_types(tmp_path: Path, unsafe: str) -> None:
+    config_path = write_valid_prerequisites(tmp_path)
+    config = json.loads(config_path.read_text())
+    credential = Path(config["onion_auth_dir"]) / "app-journalist.auth_private"
+    credential.unlink()
+    if unsafe == "symlink":
+        target = tmp_path / "credential-target"
+        target.write_text(VALID_CREDENTIAL + "\n")
+        target.chmod(0o600)
+        credential.symlink_to(target)
+    else:
+        credential.mkdir()
+
+    with (
+        mock.patch.object(core, "MANAGED_CONFIG_PATH", config_path),
+        pytest.raises(core.ManagedConfigurationError, match="type"),
+    ):
+        core.load_managed_config()
+
+
+@pytest.mark.parametrize("entry_name", ["directory", "credential"])
+def test_onion_auth_rejects_wrong_ownership(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    entry_name: str,
+) -> None:
+    config_path = write_valid_prerequisites(tmp_path)
+    config = json.loads(config_path.read_text())
+    credential_dir = Path(config["onion_auth_dir"])
+    credential = credential_dir / "app-journalist.auth_private"
+    unsafe_entry = credential_dir if entry_name == "directory" else credential
+    real_lstat = Path.lstat
+
+    def wrong_owner(path: Path) -> os.stat_result:
+        result = real_lstat(path)
+        if path == unsafe_entry:
+            values = list(result)
+            values[4] = result.st_uid + 1
+            return os.stat_result(values)
+        return result
+
+    monkeypatch.setattr(Path, "lstat", wrong_owner)
+    with (
+        mock.patch.object(core, "MANAGED_CONFIG_PATH", config_path),
+        pytest.raises(core.ManagedConfigurationError, match="owner"),
+    ):
+        core.load_managed_config()
+
+
+@pytest.mark.parametrize("unsafe", ["symlink", "file"])
+def test_onion_auth_rejects_unsafe_directory_types(tmp_path: Path, unsafe: str) -> None:
+    config_path = write_valid_prerequisites(tmp_path)
+    config = json.loads(config_path.read_text())
+    credential_dir = Path(config["onion_auth_dir"])
+    if unsafe == "symlink":
+        target = tmp_path / "real-auth"
+        credential_dir.rename(target)
+        credential_dir.symlink_to(target, target_is_directory=True)
+    else:
+        config["onion_auth_dir"] = str(credential_dir / "app-journalist.auth_private")
+        config_path.write_text(json.dumps(config))
+
+    with (
+        mock.patch.object(core, "MANAGED_CONFIG_PATH", config_path),
+        pytest.raises(core.ManagedConfigurationError, match="directory"),
+    ):
+        core.load_managed_config()
+
+
 def test_admin_salt_exposes_only_the_supported_command_and_desktop_entry():
     state = Path("admin_salt/sd-admin-tor-browser.sls").read_text()
     desktop_entry = Path("files/press.freedom.SecureDropTorBrowser.desktop").read_text()
@@ -521,10 +596,11 @@ def test_launcher_assets_are_limited_to_the_admin_rpm_subpackage():
 
 def test_admin_salt_atomically_manages_all_security_prerequisites():
     state = Path("admin_salt/sd-admin-tor-browser.sls").read_text()
+    app_state = Path("admin_salt/sd-admin-tor-browser-app.sls").read_text()
 
-    assert "app-journalist.auth_private" in state
-    assert 'mode: "0600"' in state
-    assert "makedirs: true" in state
+    assert "app-journalist.auth_private" in app_state
+    assert 'mode: "0600"' in app_state
+    assert "makedirs: true" in app_state
     assert "torrc" in state
     assert "tor-browser-signing-key.asc" in state
     assert "tor-browser-firefox.apparmor" in state
@@ -535,12 +611,16 @@ def test_admin_salt_atomically_manages_all_security_prerequisites():
 
 
 def test_admin_package_provisions_writable_private_install_state_and_gpgv():
-    state = Path("admin_salt/sd-admin-tor-browser.sls").read_text()
+    state = Path("admin_salt/sd-admin-tor-browser-app.sls").read_text()
+    top = Path("admin_salt/sd-admin.top").read_text()
+    template_state = Path("admin_salt/sd-admin-tor-browser.sls").read_text()
     spec = Path("rpm-build/SPECS/securedrop-workstation-dom0-config.spec").read_text()
     admin_package = spec[spec.index("%package -n securedrop-admin-dom0-config") :]
 
     assert "manage-securedrop-tor-browser-state" in state
-    assert "name: /var/lib/securedrop-tor-browser" in state
+    assert "name: /home/user/.local/share/securedrop-tor-browser" in state
     assert "user: user" in state
     assert 'mode: "0700"' in state
+    assert "sd-admin:\n    - admin_salt.sd-admin-tor-browser-app" in top
+    assert "/var/lib/securedrop-tor-browser" not in template_state
     assert "Requires: gnupg2" in admin_package

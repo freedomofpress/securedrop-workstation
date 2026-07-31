@@ -15,6 +15,10 @@ from securedrop_tor_browser import main as launcher
 from securedrop_tor_browser import release
 
 
+def test_managed_state_uses_fixed_persistent_private_home_paths() -> None:
+    assert Path("/home/user/.local/share/securedrop-tor-browser") == release.DURABLE_STATE_ROOT
+
+
 class ScriptedTransport:
     def __init__(self, *steps: release.HttpResponse | Exception) -> None:
         self.steps = list(steps)

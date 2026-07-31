@@ -8,3 +8,6 @@ base:
 
   sd-admin-debian-13:
     - admin_salt.sd-admin-packages
+
+  sd-admin:
+    - admin_salt.sd-admin-tor-browser-app

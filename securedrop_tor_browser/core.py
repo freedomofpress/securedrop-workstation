@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import re
 import stat
 from pathlib import Path
@@ -9,9 +10,7 @@ MANAGED_CONFIG_PATH = Path("/etc/securedrop/tor-browser.json")
 MANAGED_BY = "SecureDrop Workstation"
 SIGNING_KEY_FINGERPRINT = "EF6E286DDA85EA2A4BA7DE684E2C6E8793298290"
 ONION_AUTH_FILENAME = "app-journalist.auth_private"
-ONION_AUTH_PATTERN = re.compile(
-    r"[a-z2-7]{56}\.onion:descriptor:x25519:[A-Z2-7]{52}\n?"
-)
+ONION_AUTH_PATTERN = re.compile(r"[a-z2-7]{56}\.onion:descriptor:x25519:[A-Z2-7]{52}\n?")
 VERSION_PATTERN = re.compile(r"[0-9]+(?:\.[0-9]+){1,3}")
 
 
@@ -45,9 +44,18 @@ def _required_string(config: dict[str, Any], name: str) -> str:
 def _validate_onion_auth(config: dict[str, Any]) -> str:
     credential_dir = Path(_required_string(config, "onion_auth_dir"))
     try:
+        directory_stat = credential_dir.lstat()
         credentials = list(credential_dir.glob("*.auth_private"))
     except OSError as exc:
         raise _administrator_error("onion-auth credential", "cannot be inspected") from exc
+    if (
+        not stat.S_ISDIR(directory_stat.st_mode)
+        or directory_stat.st_uid != os.getuid()
+        or stat.S_IMODE(directory_stat.st_mode) != 0o700
+    ):
+        raise _administrator_error(
+            "onion-auth credential directory", "has an unsafe type, owner, or permissions"
+        )
     if not credentials:
         raise _administrator_error("onion-auth credential", "is missing")
     if len(credentials) != 1 or credentials[0].name != ONION_AUTH_FILENAME:
@@ -57,12 +65,22 @@ def _validate_onion_auth(config: dict[str, Any]) -> str:
 
     credential = credentials[0]
     try:
-        mode = stat.S_IMODE(credential.stat().st_mode)
+        credential_stat = credential.lstat()
+        mode = stat.S_IMODE(credential_stat.st_mode)
+    except OSError as exc:
+        raise _administrator_error("onion-auth credential", "cannot be read") from exc
+    if (
+        not stat.S_ISREG(credential_stat.st_mode)
+        or credential_stat.st_uid != os.getuid()
+        or mode != 0o600
+    ):
+        raise _administrator_error(
+            "onion-auth credential type, owner, and permissions", "must be a user-owned 0600 file"
+        )
+    try:
         contents = credential.read_text()
     except OSError as exc:
         raise _administrator_error("onion-auth credential", "cannot be read") from exc
-    if mode != 0o600:
-        raise _administrator_error("onion-auth credential permissions", "must be 0600")
     if ONION_AUTH_PATTERN.fullmatch(contents) is None:
         raise _administrator_error("onion-auth credential", "is malformed")
     return contents.split(":", 1)[0]
@@ -150,9 +168,9 @@ def load_managed_config() -> dict[str, Any]:
         "release-managed minimum version",
     )
     try:
-        installed_minimum_version = Path(
-            _required_string(config, "minimum_version_path")
-        ).read_text().strip()
+        installed_minimum_version = (
+            Path(_required_string(config, "minimum_version_path")).read_text().strip()
+        )
     except OSError as exc:
         raise _administrator_error("release-managed minimum version", "cannot be read") from exc
     if installed_minimum_version != minimum_version:

@@ -1,8 +1,8 @@
 # Managed by SecureDrop Workstation. Local changes are overwritten.
 ClientOnly 1
-ClientOnionAuthDir /var/lib/securedrop-tor-browser/onion-auth
-DataDirectory /var/lib/securedrop-tor-browser/tor
-SocksPort unix:/var/lib/securedrop-tor-browser/runtime/socks.socket
-ControlPort unix:/var/lib/securedrop-tor-browser/runtime/control.socket
+ClientOnionAuthDir /home/user/.local/share/securedrop-tor-browser/onion-auth
+DataDirectory /run/user/1000/securedrop-tor-browser/tor
+SocksPort unix:/run/user/1000/securedrop-tor-browser/socks.socket
+ControlPort unix:/run/user/1000/securedrop-tor-browser/control.socket
 CookieAuthentication 1
-CookieAuthFile /var/lib/securedrop-tor-browser/runtime/control.authcookie
+CookieAuthFile /run/user/1000/securedrop-tor-browser/control.authcookie

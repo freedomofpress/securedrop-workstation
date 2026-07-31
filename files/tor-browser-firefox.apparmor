@@ -8,15 +8,26 @@ profile securedrop-tor-browser-firefox flags=(attach_disconnected) {
 
   network unix stream,
 
-  /var/lib/securedrop-tor-browser/active/Browser/ r,
-  /var/lib/securedrop-tor-browser/active/Browser/** rixm,
-  /var/lib/securedrop-tor-browser/installations/*/Browser/ r,
-  /var/lib/securedrop-tor-browser/installations/*/Browser/** rixm,
+  /home/user/.local/share/securedrop-tor-browser/browser/Browser/ r,
+  /home/user/.local/share/securedrop-tor-browser/browser/Browser/** rixm,
   /etc/firefox/policies/policies.json r,
 
-  owner /var/lib/securedrop-tor-browser/runtime/ rw,
-  owner /var/lib/securedrop-tor-browser/runtime/** rwkl,
+  owner /run/user/1000/securedrop-tor-browser/ rw,
+  owner /run/user/1000/securedrop-tor-browser/** rwkl,
+  deny owner /run/user/1000/securedrop-tor-browser/lifecycle.lock rwkl,
+  deny owner /run/user/1000/securedrop-tor-browser/tor/{,**} rwkl,
 
-  deny /var/lib/securedrop-tor-browser/onion-auth/** r,
-  deny owner @{HOME}/** rwklmx,
+  deny /home/user/.local/share/securedrop-tor-browser/onion-auth/** r,
+
+  # Included abstractions grant these real-home paths. The managed browser
+  # uses its runtime HOME and must not inherit access to unrelated user data.
+  deny owner @{HOME}/.Private/{,**} rwklmx,
+  deny owner @{HOME}/{.ICEauthority,.Xauthority,.XCompose,.drirc} rwklmx,
+  deny owner @{HOME}/.local/share/sddm/.Xauthority rwklmx,
+  deny owner @{HOME}/{.fonts.conf,.fonts.cache-2} rwklmx,
+  deny owner @{HOME}/{.fonts,.fonts.conf.d}/{,**} rwklmx,
+  deny owner @{HOME}/.local/share/fonts/{,**} rwklmx,
+  deny owner @{HOME}/{.fontconfig,.cache/fontconfig}/{,**} rwklmx,
+  deny owner @{HOME}/.config/fontconfig/{,**} rwklmx,
+  deny owner @{HOME}/.Fontmatrix/Activated/{,**} rwklmx,
 }

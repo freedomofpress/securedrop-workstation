@@ -30,9 +30,10 @@ MAX_REDIRECTS = 3
 MAX_AUTOMATIC_RETRIES = 2
 BACKOFF_SECONDS = (0.25, 0.5)
 TRANSIENT_HTTP_STATUSES = frozenset({408, 425, 429, 500, 502, 503, 504})
-STATE_ROOT = Path("/var/lib/securedrop-tor-browser")
-ACTIVE_INSTALL_PATH = STATE_ROOT / "active"
-INSTALLED_VERSION_PATH = ACTIVE_INSTALL_PATH / ".securedrop-version"
+DURABLE_STATE_ROOT = Path("/home/user/.local/share/securedrop-tor-browser")
+STATE_ROOT = DURABLE_STATE_ROOT
+BROWSER_PATH = STATE_ROOT / "browser"
+INSTALLED_VERSION_PATH = BROWSER_PATH / ".securedrop-version"
 HIGH_WATER_VERSION_PATH = STATE_ROOT / "highest-version"
 
 

@@ -35,7 +35,7 @@ class FakeProcess:
 
 
 def write_bundle_layout(state_root: Path) -> None:
-    browser = state_root / "active" / "Browser"
+    browser = state_root / "browser" / "Browser"
     baseline = browser / "TorBrowser" / "Data" / "Browser" / "profile.default"
     baseline.mkdir(parents=True)
     (baseline / "baseline-marker").write_text("pristine")
@@ -81,21 +81,33 @@ def test_apparmor_assets_separate_tor_secrets_from_ephemeral_browser_state() -> 
 
     assert f"profile {session.TOR_PROFILE_NAME} " in tor_profile
     assert f"profile {session.FIREFOX_PROFILE_NAME} " in firefox_profile
-    assert "/var/lib/securedrop-tor-browser/onion-auth/ r," in tor_profile
+    assert "/home/user/.local/share/securedrop-tor-browser/onion-auth/ r," in tor_profile
     assert "app-journalist.auth_private r," in tor_profile
-    assert "deny /var/lib/securedrop-tor-browser/onion-auth/** r," in firefox_profile
+    assert "deny /home/user/.local/share/securedrop-tor-browser/onion-auth/** r," in firefox_profile
     assert "network inet stream," in tor_profile
     assert "network unix stream," in tor_profile
     assert "network inet stream," not in firefox_profile
     assert "/etc/firefox/policies/policies.json r," in firefox_profile
-    assert "deny owner @{HOME}/** rwklmx," in firefox_profile
-    assert "runtime/** rwkl," in firefox_profile
-    assert "/dev/shm/" not in firefox_profile
-    assert "SocksPort unix:/var/lib/securedrop-tor-browser/runtime/socks.socket" in torrc
-    assert "ControlPort unix:/var/lib/securedrop-tor-browser/runtime/control.socket" in torrc
     assert (
-        "CookieAuthFile /var/lib/securedrop-tor-browser/runtime/control.authcookie" in torrc
+        "/home/user/.local/share/securedrop-tor-browser/browser/Browser/** rixm," in firefox_profile
     )
+    assert "deny owner @{HOME}/.Private/{,**} rwklmx," in firefox_profile
+    assert (
+        "deny owner @{HOME}/{.ICEauthority,.Xauthority,.XCompose,.drirc} rwklmx," in firefox_profile
+    )
+    assert "deny owner @{HOME}/.config/fontconfig/{,**} rwklmx," in firefox_profile
+    assert "/run/user/1000/securedrop-tor-browser/** rwkl," in firefox_profile
+    assert (
+        "deny owner /run/user/1000/securedrop-tor-browser/lifecycle.lock rwkl," in firefox_profile
+    )
+    assert "deny owner /run/user/1000/securedrop-tor-browser/tor/{,**} rwkl," in firefox_profile
+    assert "/home/user/**" not in firefox_profile.replace(
+        "/home/user/.local/share/securedrop-tor-browser", ""
+    )
+    assert "/dev/shm/" not in firefox_profile
+    assert "SocksPort unix:/run/user/1000/securedrop-tor-browser/socks.socket" in torrc
+    assert "ControlPort unix:/run/user/1000/securedrop-tor-browser/control.socket" in torrc
+    assert "CookieAuthFile /run/user/1000/securedrop-tor-browser/control.authcookie" in torrc
 
 
 def test_session_copies_pristine_profile_supervises_confined_processes_and_cleans_up(
@@ -118,7 +130,7 @@ def test_session_copies_pristine_profile_supervises_confined_processes_and_clean
     def popen(command: list[str], **kwargs: Any) -> FakeProcess:
         calls.append((command, kwargs))
         if len(calls) == 1:
-            runtime = state_root / session.RUNTIME_DIRECTORY
+            runtime = session.RUNTIME_ROOT
             (runtime / session.SOCKS_SOCKET_NAME).touch()
             (runtime / session.CONTROL_SOCKET_NAME).touch()
             (runtime / session.CONTROL_COOKIE_NAME).touch()
@@ -140,7 +152,7 @@ def test_session_copies_pristine_profile_supervises_confined_processes_and_clean
         str(session.AA_EXEC_PATH),
         f"--profile={session.TOR_PROFILE_NAME}",
         "--",
-        str(state_root / "active/Browser/TorBrowser/Tor/tor"),
+        str(state_root / "browser/Browser/TorBrowser/Tor/tor"),
         "-f",
         str(torrc),
     ]
@@ -148,27 +160,24 @@ def test_session_copies_pristine_profile_supervises_confined_processes_and_clean
         str(session.AA_EXEC_PATH),
         f"--profile={session.FIREFOX_PROFILE_NAME}",
         "--",
-        str(state_root / "active/Browser/firefox.real"),
+        str(state_root / "browser/Browser/firefox.real"),
         "--no-remote",
         "--profile",
-        str(state_root / session.RUNTIME_DIRECTORY / "profile"),
+        str(session.RUNTIME_ROOT / "profile"),
     ]
-    assert tor_options["cwd"] == state_root / "active/Browser"
+    assert tor_options["cwd"] == state_root / "browser/Browser"
     browser_environment = browser_options["env"]
     assert browser_environment["TOR_SKIP_LAUNCH"] == "1"
     assert browser_environment["TOR_SOCKS_IPC_PATH"].endswith(session.SOCKS_SOCKET_NAME)
     assert browser_environment["TOR_CONTROL_IPC_PATH"].endswith(session.CONTROL_SOCKET_NAME)
-    assert browser_environment["HOME"].startswith(str(state_root / session.RUNTIME_DIRECTORY))
+    assert browser_environment["HOME"].startswith(str(session.RUNTIME_ROOT))
     assert browser_environment["DISPLAY"] == ":1"
-    assert browser_environment["XAUTHORITY"].startswith(
-        str(state_root / session.RUNTIME_DIRECTORY)
-    )
+    assert browser_environment["XAUTHORITY"].startswith(str(session.RUNTIME_ROOT))
     assert ONION_HOSTNAME not in " ".join(browser_command)
     assert tor_process.terminated
-    assert not (state_root / session.RUNTIME_DIRECTORY).exists()
-    assert (state_root / "tor").is_dir()
+    assert list(session.RUNTIME_ROOT.iterdir()) == []
     baseline_marker = (
-        state_root / "active/Browser/TorBrowser/Data/Browser/profile.default/baseline-marker"
+        state_root / "browser/Browser/TorBrowser/Data/Browser/profile.default/baseline-marker"
     )
     assert baseline_marker.is_file()
 
@@ -197,7 +206,7 @@ def test_session_fails_closed_before_firefox_when_tor_does_not_create_managed_so
         )
 
     assert calls == 1
-    assert not (state_root / session.RUNTIME_DIRECTORY).exists()
+    assert list(session.RUNTIME_ROOT.iterdir()) == []
 
 
 def test_session_uses_only_a_small_environment_allowlist(tmp_path: Path) -> None:
@@ -246,7 +255,7 @@ def test_session_attempts_all_cleanup_and_reports_process_stop_failure(tmp_path:
         nonlocal calls
         calls += 1
         if calls == 1:
-            runtime = state_root / session.RUNTIME_DIRECTORY
+            runtime = session.RUNTIME_ROOT
             (runtime / session.SOCKS_SOCKET_NAME).touch()
             (runtime / session.CONTROL_SOCKET_NAME).touch()
             (runtime / session.CONTROL_COOKIE_NAME).touch()
@@ -264,7 +273,7 @@ def test_session_attempts_all_cleanup_and_reports_process_stop_failure(tmp_path:
     assert browser_process.terminated
     assert browser_process.killed
     assert tor_process.terminated
-    assert not (state_root / session.RUNTIME_DIRECTORY).exists()
+    assert list(session.RUNTIME_ROOT.iterdir()) == []
 
 
 def test_session_reports_mutable_profile_removal_failure(
@@ -283,7 +292,7 @@ def test_session_reports_mutable_profile_removal_failure(
         nonlocal calls
         calls += 1
         if calls == 1:
-            runtime = state_root / session.RUNTIME_DIRECTORY
+            runtime = session.RUNTIME_ROOT
             (runtime / session.SOCKS_SOCKET_NAME).touch()
             (runtime / session.CONTROL_SOCKET_NAME).touch()
             (runtime / session.CONTROL_COOKIE_NAME).touch()
@@ -304,4 +313,4 @@ def test_session_reports_mutable_profile_removal_failure(
         )
 
     assert tor_process.terminated
-    assert (state_root / session.RUNTIME_DIRECTORY).exists()
+    assert session.RUNTIME_ROOT.exists()

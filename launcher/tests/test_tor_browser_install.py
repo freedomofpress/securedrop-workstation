@@ -84,10 +84,11 @@ def test_first_installation_activates_only_the_verified_advertised_bundle(
         cancelled=mock.Mock(return_value=False),
     )
 
-    active = tmp_path / "state" / "active"
-    assert active.is_symlink()
-    assert json.loads((active / "Browser/tbb_version.json").read_text())["version"] == "15.0.19"
-    assert release.read_optional_version(active / ".securedrop-version") == release.Version(
+    browser = tmp_path / "state" / "browser"
+    assert browser.is_dir()
+    assert not browser.is_symlink()
+    assert json.loads((browser / "Browser/tbb_version.json").read_text())["version"] == "15.0.19"
+    assert release.read_optional_version(browser / ".securedrop-version") == release.Version(
         "15.0.19"
     )
     assert release.read_optional_version(tmp_path / "state" / "highest-version") == release.Version(
@@ -95,9 +96,11 @@ def test_first_installation_activates_only_the_verified_advertised_bundle(
     )
     verifier.assert_called_once()
     assert not list((tmp_path / "state").glob(".install-*"))
+    assert not list((tmp_path / "state").glob(".retired-*"))
+    assert not (tmp_path / "state" / "installations").exists()
 
 
-def test_upgrade_atomically_switches_active_and_retains_previous_installation(
+def test_upgrade_replaces_browser_and_retains_no_previous_installation(
     tmp_path: Path,
 ) -> None:
     state_root = tmp_path / "state"
@@ -132,15 +135,13 @@ def test_upgrade_atomically_switches_active_and_retains_previous_installation(
             cancelled=lambda: False,
         )
 
-    active = state_root / "active"
-    assert release.read_optional_version(active / ".securedrop-version") == release.Version(
+    browser_path = state_root / "browser"
+    assert release.read_optional_version(browser_path / ".securedrop-version") == release.Version(
         "15.0.19"
     )
-    retained = sorted(
-        path.joinpath(".securedrop-version").read_text().strip()
-        for path in (state_root / "installations").iterdir()
-    )
-    assert retained == ["15.0.18", "15.0.19"]
+    assert not (state_root / "installations").exists()
+    assert not list(state_root.glob(".install-*"))
+    assert not list(state_root.glob(".retired-*"))
     assert (state_root / "highest-version").read_text() == "15.0.19\n"
 
 
@@ -150,10 +151,9 @@ def test_signature_failure_preserves_active_installation(
     reason: str,
 ) -> None:
     state_root = tmp_path / "state"
-    prior = state_root / "installations" / "15.0.18-existing"
+    prior = state_root / "browser"
     prior.mkdir(parents=True)
     (prior / ".securedrop-version").write_text("15.0.18\n")
-    (state_root / "active").symlink_to(prior)
     stable = release.StableRelease(
         release.Version("15.0.19"),
         "https://dist.torproject.org/torbrowser/15.0.19/browser.tar.xz",
@@ -191,12 +191,11 @@ def test_signature_failure_preserves_active_installation(
             cancelled=lambda: False,
         )
 
-    assert (state_root / "active").resolve() == prior
-    assert release.read_optional_version(state_root / "active" / ".securedrop-version") == (
+    assert release.read_optional_version(prior / ".securedrop-version") == (
         release.Version("15.0.18")
     )
-    assert list((state_root / "installations").iterdir()) == [prior]
     assert not list(state_root.glob(".install-*"))
+    assert not list(state_root.glob(".retired-*"))
 
 
 def test_verified_bundle_version_must_match_advertised_release(tmp_path: Path) -> None:
@@ -230,8 +229,8 @@ def test_verified_bundle_version_must_match_advertised_release(tmp_path: Path) -
             cancelled=lambda: False,
         )
 
-    assert not (state_root / "active").exists()
-    assert not list((state_root / "installations").iterdir())
+    assert not (state_root / "browser").exists()
+    assert not (state_root / "installations").exists()
     assert not list(state_root.glob(".install-*"))
 
 
@@ -239,10 +238,9 @@ def test_interrupted_download_removes_partial_data_without_changing_durable_stat
     tmp_path: Path,
 ) -> None:
     state_root = tmp_path / "state"
-    prior = state_root / "installations" / "15.0.18-existing"
+    prior = state_root / "browser"
     prior.mkdir(parents=True)
     (prior / ".securedrop-version").write_text("15.0.18\n")
-    (state_root / "active").symlink_to(prior)
     high_water = state_root / "highest-version"
     high_water.write_text("15.0.18\n")
     stable = release.StableRelease(
@@ -270,20 +268,19 @@ def test_interrupted_download_removes_partial_data_without_changing_durable_stat
             cancelled=lambda: True,
         )
 
-    assert (state_root / "active").resolve() == prior
+    assert prior.is_dir()
     assert high_water.read_text() == "15.0.18\n"
-    assert list((state_root / "installations").iterdir()) == [prior]
     assert not list(state_root.glob(".install-*"))
+    assert not list(state_root.glob(".retired-*"))
 
 
 def test_extraction_failure_does_not_launch_or_modify_active_installation(
     tmp_path: Path,
 ) -> None:
     state_root = tmp_path / "state"
-    prior = state_root / "installations" / "15.0.18-existing"
+    prior = state_root / "browser"
     prior.mkdir(parents=True)
     (prior / ".securedrop-version").write_text("15.0.18\n")
-    (state_root / "active").symlink_to(prior)
     stable = release.StableRelease(
         release.Version("15.0.19"),
         "https://dist.torproject.org/torbrowser/15.0.19/browser.tar.xz",
@@ -312,18 +309,17 @@ def test_extraction_failure_does_not_launch_or_modify_active_installation(
             cancelled=lambda: False,
         )
 
-    assert (state_root / "active").resolve() == prior
-    assert list((state_root / "installations").iterdir()) == [prior]
+    assert prior.is_dir()
+    assert not list(state_root.glob(".retired-*"))
 
 
-def test_installation_store_failure_preserves_prior_active_installation(
+def test_retirement_failure_preserves_prior_browser_installation(
     tmp_path: Path,
 ) -> None:
     state_root = tmp_path / "state"
-    prior = state_root / "installations" / "15.0.18-existing"
+    prior = state_root / "browser"
     prior.mkdir(parents=True)
     (prior / ".securedrop-version").write_text("15.0.18\n")
-    (state_root / "active").symlink_to(prior)
     stable = release.StableRelease(
         release.Version("15.0.19"),
         "https://dist.torproject.org/torbrowser/15.0.19/browser.tar.xz",
@@ -343,7 +339,7 @@ def test_installation_store_failure_preserves_prior_active_installation(
 
     with (
         mock.patch.object(install.os, "replace", side_effect=OSError("installation failed")),
-        pytest.raises(install.InstallationError, match="installed"),
+        pytest.raises(install.InstallationError, match="activated"),
     ):
         install.install_verified_bundle(
             stable,
@@ -355,16 +351,16 @@ def test_installation_store_failure_preserves_prior_active_installation(
             cancelled=lambda: False,
         )
 
-    assert (state_root / "active").resolve() == prior
-    assert list((state_root / "installations").iterdir()) == [prior]
+    assert prior.is_dir()
     assert not list(state_root.glob(".install-*"))
+    assert not list(state_root.glob(".retired-*"))
 
 
-def test_atomic_switch_failure_preserves_prior_active_installation(tmp_path: Path) -> None:
+def test_atomic_switch_failure_preserves_prior_browser_installation(tmp_path: Path) -> None:
     state_root = tmp_path / "state"
-    active = state_root / "active"
-    active.mkdir(parents=True)
-    (active / ".securedrop-version").write_text("15.0.18\n")
+    browser_path = state_root / "browser"
+    browser_path.mkdir(parents=True)
+    (browser_path / ".securedrop-version").write_text("15.0.18\n")
     stable = release.StableRelease(
         release.Version("15.0.19"),
         "https://dist.torproject.org/torbrowser/15.0.19/browser.tar.xz",
@@ -382,7 +378,20 @@ def test_atomic_switch_failure_preserves_prior_active_installation(tmp_path: Pat
     ) -> None:
         destination.write_bytes(downloads[url])
 
-    with pytest.raises(install.InstallationError, match="activate"):
+    real_replace = install.os.replace
+    replacements = 0
+
+    def fail_promotion(source: Path, destination: Path) -> None:
+        nonlocal replacements
+        replacements += 1
+        if replacements == 2:
+            raise OSError("promotion failed")
+        real_replace(source, destination)
+
+    with (
+        mock.patch.object(install.os, "replace", side_effect=fail_promotion),
+        pytest.raises(install.InstallationError, match="activate"),
+    ):
         install.install_verified_bundle(
             stable,
             signing_key_path=tmp_path / "pinned-key.asc",
@@ -393,11 +402,11 @@ def test_atomic_switch_failure_preserves_prior_active_installation(tmp_path: Pat
             cancelled=lambda: False,
         )
 
-    assert release.read_optional_version(active / ".securedrop-version") == release.Version(
+    assert release.read_optional_version(browser_path / ".securedrop-version") == release.Version(
         "15.0.18"
     )
-    assert not any((state_root / "installations").iterdir())
-    assert not list(state_root.glob(".active-*"))
+    assert not (state_root / "installations").exists()
+    assert not list(state_root.glob(".retired-*"))
 
 
 def test_signature_verifier_requires_valid_signature_from_pinned_primary_key(

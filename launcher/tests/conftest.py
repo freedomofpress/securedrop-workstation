@@ -13,14 +13,17 @@ def isolate_tor_browser_state(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from securedrop_tor_browser import release
+    from securedrop_tor_browser import lifecycle, release, session
 
     state_root = tmp_path / "tor-browser-state"
-    active = state_root / "active"
+    runtime_root = tmp_path / "tor-browser-runtime"
+    browser = state_root / "browser"
     monkeypatch.setattr(release, "STATE_ROOT", state_root)
-    monkeypatch.setattr(release, "ACTIVE_INSTALL_PATH", active)
-    monkeypatch.setattr(release, "INSTALLED_VERSION_PATH", active / ".securedrop-version")
+    monkeypatch.setattr(release, "BROWSER_PATH", browser)
+    monkeypatch.setattr(release, "INSTALLED_VERSION_PATH", browser / ".securedrop-version")
     monkeypatch.setattr(release, "HIGH_WATER_VERSION_PATH", state_root / "highest-version")
+    monkeypatch.setattr(lifecycle, "RUNTIME_ROOT", runtime_root)
+    monkeypatch.setattr(session, "RUNTIME_ROOT", runtime_root)
 
 
 @pytest.fixture

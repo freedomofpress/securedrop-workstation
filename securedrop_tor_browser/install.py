@@ -25,6 +25,7 @@ from securedrop_tor_browser.release import (
     MAX_REDIRECTS,
     REQUEST_TIMEOUT_SECONDS,
     STATE_ROOT,
+    ReleaseSecurityError,
     StableRelease,
     advance_high_water,
 )
@@ -290,12 +291,11 @@ def install_verified_bundle(
 ) -> None:
     """Stage, verify, extract, and atomically activate one advertised release."""
     state_root.mkdir(mode=0o700, parents=True, exist_ok=True)
-    installations = state_root / "installations"
-    installations.mkdir(mode=0o700, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=".install-", dir=state_root))
-    installed_path: Path | None = None
-    pending_active: Path | None = None
-    activated = False
+    browser_path = state_root / "browser"
+    retired = state_root / f".retired-{staging.name.removeprefix('.install-')}"
+    replacement_started = False
+    promoted = False
 
     try:
         bundle_path = staging / "bundle.tar.xz"
@@ -316,30 +316,32 @@ def install_verified_bundle(
 
         browser = extracted / "tor-browser"
         _validate_extracted_version(browser, stable)
-        installation_name = f"{stable.version}-{staging.name.removeprefix('.install-')}"
-        installed_path = installations / installation_name
         try:
+            browser.chmod(0o700)
             (browser / ".securedrop-version").write_text(f"{stable.version}\n")
-            os.replace(browser, installed_path)
+            (browser / ".securedrop-version").chmod(0o600)
         except OSError as exc:
             raise InstallationError(
                 "The verified Tor Browser bundle could not be installed."
             ) from exc
 
-        pending_active = state_root / f".active-{staging.name.removeprefix('.install-')}"
-        pending_active.symlink_to(installed_path)
         try:
-            os.replace(pending_active, state_root / "active")
-        except OSError as exc:
+            if browser_path.exists():
+                os.replace(browser_path, retired)
+                replacement_started = True
+            os.replace(browser, browser_path)
+            promoted = True
+            advance_high_water(state_root / "highest-version", stable.version)
+        except (OSError, ReleaseSecurityError) as exc:
+            if promoted:
+                shutil.rmtree(browser_path, ignore_errors=True)
+            if replacement_started and retired.exists() and not browser_path.exists():
+                with suppress(OSError):
+                    os.replace(retired, browser_path)
             raise InstallationError(
                 "The verified Tor Browser bundle could not be atomically activated."
             ) from exc
-        activated = True
-        advance_high_water(state_root / "highest-version", stable.version)
+        if replacement_started:
+            shutil.rmtree(retired)
     finally:
-        if pending_active is not None:
-            with suppress(FileNotFoundError):
-                pending_active.unlink()
         shutil.rmtree(staging, ignore_errors=True)
-        if installed_path is not None and not activated:
-            shutil.rmtree(installed_path, ignore_errors=True)
