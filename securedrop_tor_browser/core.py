@@ -92,6 +92,7 @@ def managed_browser_policy(onion_hostname: str) -> dict[str, Any]:
     return {
         "policies": {
             "DisableAppUpdate": True,
+            "DisplayBookmarksToolbar": "always",
             "Homepage": {
                 "URL": journalist_url,
                 "Locked": True,

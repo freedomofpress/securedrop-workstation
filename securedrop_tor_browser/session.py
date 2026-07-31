@@ -1,8 +1,10 @@
 import os
 import shutil
+import stat
 import subprocess
 import time
 from collections.abc import Callable, Mapping
+from contextlib import suppress
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -10,6 +12,7 @@ from securedrop_tor_browser import eventlog, lifecycle
 
 TOR_PROFILE_NAME = "securedrop-tor-browser-tor"
 FIREFOX_PROFILE_NAME = "securedrop-tor-browser-firefox"
+LOCAL_POLICY_RELATIVE_PATH = Path("distribution/policies.json")
 AA_EXEC_PATH = Path("/usr/bin/aa-exec")
 RUNTIME_ROOT = lifecycle.RUNTIME_ROOT
 SOCKS_SOCKET_NAME = "socks.socket"
@@ -18,6 +21,7 @@ CONTROL_COOKIE_NAME = "control.authcookie"
 SOCKET_START_TIMEOUT_SECONDS = 15.0
 PROCESS_STOP_TIMEOUT_SECONDS = 5.0
 POLL_INTERVAL_SECONDS = 0.1
+SANDBOX_WARNING_DISMISSAL = 'user_pref("security.sandbox.warn_unprivileged_namespaces", false);'
 
 
 class SessionError(Exception):
@@ -101,6 +105,76 @@ def _require_bundle_layout(state_root: Path) -> tuple[Path, Path, Path, Path]:
     return browser, tor, firefox, baseline
 
 
+def _install_local_browser_policy(
+    browser: Path,
+    config: Mapping[str, Any],
+) -> tuple[Path, bool]:
+    """Expose the validated policy where Tor Browser will load it."""
+    policy_value = config.get("browser_policy_path")
+    if not isinstance(policy_value, str) or not policy_value:
+        raise SessionError("The managed browser policy path is invalid.")
+    policy_source = Path(policy_value)
+    if not policy_source.is_file():
+        raise SessionError("The managed browser policy is unavailable.")
+
+    distribution = browser / LOCAL_POLICY_RELATIVE_PATH.parent
+    try:
+        distribution_stat = os.lstat(distribution)
+    except FileNotFoundError:
+        created_distribution = True
+    else:
+        created_distribution = False
+        if not stat.S_ISDIR(distribution_stat.st_mode):
+            raise SessionError("The Tor Browser policy directory is invalid.")
+    try:
+        if created_distribution:
+            distribution.mkdir(mode=0o755)
+    except OSError as exc:
+        raise SessionError("The Tor Browser policy directory could not be prepared.") from exc
+
+    local_policy = browser / LOCAL_POLICY_RELATIVE_PATH
+    if local_policy.is_symlink() and local_policy.readlink() == policy_source:
+        return local_policy, created_distribution
+    if local_policy.exists() or local_policy.is_symlink():
+        raise SessionError("The Tor Browser policy location is already occupied.")
+    try:
+        local_policy.symlink_to(policy_source)
+    except OSError as exc:
+        if created_distribution:
+            with suppress(OSError):
+                distribution.rmdir()
+        raise SessionError("The managed browser policy could not be installed.") from exc
+    return local_policy, created_distribution
+
+
+def _configure_browser_profile(profile: Path) -> None:
+    """Apply session-only preferences to the copied browser profile."""
+    user_preferences = profile / "user.js"
+    try:
+        metadata = user_preferences.lstat()
+    except FileNotFoundError:
+        contents = ""
+    except OSError as exc:
+        raise SessionError("The managed browser preferences could not be inspected.") from exc
+    else:
+        if not stat.S_ISREG(metadata.st_mode):
+            raise SessionError("The managed browser preferences have an unsafe file type.")
+        try:
+            contents = user_preferences.read_text()
+        except OSError as exc:
+            raise SessionError("The managed browser preferences could not be read.") from exc
+
+    if SANDBOX_WARNING_DISMISSAL not in contents:
+        if contents and not contents.endswith("\n"):
+            contents += "\n"
+        contents += f"{SANDBOX_WARNING_DISMISSAL}\n"
+    try:
+        user_preferences.write_text(contents)
+        user_preferences.chmod(0o600)
+    except OSError as exc:
+        raise SessionError("The managed browser preferences could not be installed.") from exc
+
+
 def _wait_for_tor(
     process: Process,
     runtime: Path,
@@ -137,6 +211,8 @@ def _cleanup_session(
     browser_process: Process | None,
     tor_process: Process | None,
     runtime: Path,
+    local_policy: Path | None,
+    remove_distribution: bool,
 ) -> None:
     """Attempt every teardown step and report if the session was not fully cleaned."""
     cleanup_error: OSError | subprocess.SubprocessError | None = None
@@ -144,6 +220,15 @@ def _cleanup_session(
         try:
             _stop_process(process)
         except (OSError, subprocess.SubprocessError) as exc:
+            if cleanup_error is None:
+                cleanup_error = exc
+
+    if local_policy is not None:
+        try:
+            local_policy.unlink(missing_ok=True)
+            if remove_distribution:
+                local_policy.parent.rmdir()
+        except OSError as exc:
             if cleanup_error is None:
                 cleanup_error = exc
 
@@ -198,6 +283,8 @@ def run_browser_session(
     runtime = RUNTIME_ROOT if runtime_root is None else runtime_root
     tor_process: Process | None = None
     browser_process: Process | None = None
+    local_policy: Path | None = None
+    remove_distribution = False
     try:
         lifecycle.ensure_private_directory(runtime)
         (runtime / "tor").mkdir(mode=0o700)
@@ -205,6 +292,8 @@ def run_browser_session(
             (runtime / directory).mkdir(mode=0o700)
         profile = runtime / "profile"
         shutil.copytree(baseline, profile, symlinks=True)
+        _configure_browser_profile(profile)
+        local_policy, remove_distribution = _install_local_browser_policy(browser, config)
 
         environment = browser_environment(runtime)
         _copy_xauthority(runtime, environment)
@@ -256,5 +345,11 @@ def run_browser_session(
         return result
     finally:
         eventlog.info(eventlog.Phase.CLEANUP, "session cleanup starting")
-        _cleanup_session(browser_process, tor_process, runtime)
+        _cleanup_session(
+            browser_process,
+            tor_process,
+            runtime,
+            local_policy,
+            remove_distribution,
+        )
         eventlog.info(eventlog.Phase.CLEANUP, "session cleanup completed")

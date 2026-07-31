@@ -53,6 +53,7 @@ def test_managed_policy_has_read_only_navigation_and_disables_internal_updates()
     policies = policy["policies"]
 
     assert policies["DisableAppUpdate"] is True
+    assert policies["DisplayBookmarksToolbar"] == "always"
     assert policies["Homepage"] == {
         "URL": f"http://{ONION_HOSTNAME}",
         "Locked": True,
@@ -87,6 +88,7 @@ def test_apparmor_assets_separate_tor_secrets_from_ephemeral_browser_state() -> 
     assert "network inet stream," in tor_profile
     assert "network unix stream," in tor_profile
     assert "network inet stream," not in firefox_profile
+    assert "capability sys_admin" not in firefox_profile
     assert "/etc/firefox/policies/policies.json r," in firefox_profile
     assert (
         "/home/user/.local/share/securedrop-tor-browser/browser/Browser/** rixm," in firefox_profile
@@ -120,6 +122,8 @@ def test_session_copies_pristine_profile_supervises_confined_processes_and_clean
     write_bundle_layout(state_root)
     torrc = tmp_path / "torrc"
     torrc.write_text("managed")
+    browser_policy = tmp_path / "policies.json"
+    browser_policy.write_text(json.dumps(core.managed_browser_policy(ONION_HOSTNAME)))
     xauthority = tmp_path / "source-xauthority"
     xauthority.write_text("cookie")
     monkeypatch.setenv("DISPLAY", ":1")
@@ -137,10 +141,21 @@ def test_session_copies_pristine_profile_supervises_confined_processes_and_clean
             (runtime / session.CONTROL_SOCKET_NAME).touch()
             (runtime / session.CONTROL_COOKIE_NAME).touch()
             return tor_process
+        installed_policy = state_root / "browser" / "Browser" / "distribution" / "policies.json"
+        assert installed_policy.is_symlink()
+        assert installed_policy.readlink() == browser_policy
+        assert installed_policy.read_text() == browser_policy.read_text()
+        assert (
+            'user_pref("security.sandbox.warn_unprivileged_namespaces", false);'
+            in (session.RUNTIME_ROOT / "profile" / "user.js").read_text()
+        )
         return browser_process
 
     result = session.run_browser_session(
-        {"torrc_path": str(torrc)},
+        {
+            "torrc_path": str(torrc),
+            "browser_policy_path": str(browser_policy),
+        },
         state_root,
         popen=popen,
         sleep=lambda _seconds: None,
@@ -181,6 +196,7 @@ def test_session_copies_pristine_profile_supervises_confined_processes_and_clean
     assert browser_options["stderr"] is subprocess.DEVNULL
     assert ONION_HOSTNAME not in " ".join(browser_command)
     assert tor_process.terminated
+    assert not (state_root / "browser" / "Browser" / "distribution" / "policies.json").exists()
     assert list(session.RUNTIME_ROOT.iterdir()) == []
     baseline_marker = (
         state_root / "browser/Browser/TorBrowser/Data/Browser/profile.default/baseline-marker"
@@ -212,6 +228,8 @@ def test_session_fails_closed_before_firefox_when_tor_does_not_create_managed_so
     write_bundle_layout(state_root)
     torrc = tmp_path / "torrc"
     torrc.write_text("managed")
+    browser_policy = tmp_path / "policies.json"
+    browser_policy.write_text(json.dumps(core.managed_browser_policy(ONION_HOSTNAME)))
     calls = 0
     tor_process = FakeProcess(1)
 
@@ -222,13 +240,51 @@ def test_session_fails_closed_before_firefox_when_tor_does_not_create_managed_so
 
     with pytest.raises(session.SessionError, match="Tor exited before"):
         session.run_browser_session(
-            {"torrc_path": str(torrc)},
+            {
+                "torrc_path": str(torrc),
+                "browser_policy_path": str(browser_policy),
+            },
             state_root,
             popen=popen,
             sleep=lambda _seconds: None,
         )
 
     assert calls == 1
+    assert list(session.RUNTIME_ROOT.iterdir()) == []
+
+
+def test_session_rejects_an_occupied_install_local_policy_before_starting_tor(
+    tmp_path: Path,
+) -> None:
+    state_root = tmp_path / "state"
+    write_bundle_layout(state_root)
+    torrc = tmp_path / "torrc"
+    torrc.write_text("managed")
+    browser_policy = tmp_path / "policies.json"
+    browser_policy.write_text(json.dumps(core.managed_browser_policy(ONION_HOSTNAME)))
+    installed_policy = state_root / "browser/Browser/distribution/policies.json"
+    installed_policy.parent.mkdir()
+    installed_policy.write_text("unexpected")
+    calls = 0
+
+    def popen(_command: list[str], **_kwargs: Any) -> FakeProcess:
+        nonlocal calls
+        calls += 1
+        return FakeProcess()
+
+    with pytest.raises(session.SessionError, match="policy location is already occupied"):
+        session.run_browser_session(
+            {
+                "torrc_path": str(torrc),
+                "browser_policy_path": str(browser_policy),
+            },
+            state_root,
+            popen=popen,
+            sleep=lambda _seconds: None,
+        )
+
+    assert calls == 0
+    assert installed_policy.read_text() == "unexpected"
     assert list(session.RUNTIME_ROOT.iterdir()) == []
 
 
@@ -250,11 +306,40 @@ def test_session_uses_only_a_small_environment_allowlist(tmp_path: Path) -> None
     assert environment["PATH"] == os.defpath
 
 
+def test_managed_profile_preferences_preserve_tor_browser_defaults(tmp_path: Path) -> None:
+    profile = tmp_path / "profile"
+    profile.mkdir()
+    user_preferences = profile / "user.js"
+    existing_preference = 'user_pref("torbrowser.test", true);\n'
+    user_preferences.write_text(existing_preference)
+
+    session._configure_browser_profile(profile)
+
+    contents = user_preferences.read_text()
+    assert existing_preference in contents
+    assert 'user_pref("security.sandbox.warn_unprivileged_namespaces", false);' in contents
+
+
+def test_managed_profile_preferences_reject_symlinks(tmp_path: Path) -> None:
+    profile = tmp_path / "profile"
+    profile.mkdir()
+    target = tmp_path / "outside-user.js"
+    target.write_text("unchanged")
+    (profile / "user.js").symlink_to(target)
+
+    with pytest.raises(session.SessionError, match="unsafe file type"):
+        session._configure_browser_profile(profile)
+
+    assert target.read_text() == "unchanged"
+
+
 def test_session_attempts_all_cleanup_and_reports_process_stop_failure(tmp_path: Path) -> None:
     state_root = tmp_path / "state"
     write_bundle_layout(state_root)
     torrc = tmp_path / "torrc"
     torrc.write_text("managed")
+    browser_policy = tmp_path / "policies.json"
+    browser_policy.write_text(json.dumps(core.managed_browser_policy(ONION_HOSTNAME)))
     tor_process = FakeProcess()
 
     class StopFailureProcess(FakeProcess):
@@ -287,7 +372,10 @@ def test_session_attempts_all_cleanup_and_reports_process_stop_failure(tmp_path:
 
     with pytest.raises(session.SessionError, match="cleanup"):
         session.run_browser_session(
-            {"torrc_path": str(torrc)},
+            {
+                "torrc_path": str(torrc),
+                "browser_policy_path": str(browser_policy),
+            },
             state_root,
             popen=popen,
             sleep=lambda _seconds: None,
@@ -307,6 +395,8 @@ def test_session_reports_mutable_profile_removal_failure(
     write_bundle_layout(state_root)
     torrc = tmp_path / "torrc"
     torrc.write_text("managed")
+    browser_policy = tmp_path / "policies.json"
+    browser_policy.write_text(json.dumps(core.managed_browser_policy(ONION_HOSTNAME)))
     tor_process = FakeProcess()
     browser_process = FakeProcess(0)
     calls = 0
@@ -329,7 +419,10 @@ def test_session_reports_mutable_profile_removal_failure(
 
     with pytest.raises(session.SessionError, match="cleanup"):
         session.run_browser_session(
-            {"torrc_path": str(torrc)},
+            {
+                "torrc_path": str(torrc),
+                "browser_policy_path": str(browser_policy),
+            },
             state_root,
             popen=popen,
             sleep=lambda _seconds: None,
