@@ -20,6 +20,7 @@ from urllib import error as urllib_error
 from urllib import request as urllib_request
 from urllib.parse import urljoin, urlsplit
 
+from securedrop_tor_browser import eventlog
 from securedrop_tor_browser.release import (
     DOWNLOAD_HOSTS,
     MAX_REDIRECTS,
@@ -300,10 +301,18 @@ def install_verified_bundle(
     try:
         bundle_path = staging / "bundle.tar.xz"
         signature_path = staging / "bundle.tar.xz.asc"
+        eventlog.info(
+            eventlog.Phase.DOWNLOAD, f"bundle download started for version {stable.version}"
+        )
         download(stable.bundle_url, bundle_path, cancelled)
         download(stable.signature_url, signature_path, cancelled)
+        eventlog.info(
+            eventlog.Phase.DOWNLOAD, f"bundle download completed for version {stable.version}"
+        )
         disable_cancellation("Verifying and installing Tor Browser…")
+        eventlog.info(eventlog.Phase.SIGNATURE_VERIFICATION, "signature verification started")
         verify(bundle_path, signature_path, signing_key_path, signing_key_fingerprint)
+        eventlog.info(eventlog.Phase.SIGNATURE_VERIFICATION, "signature verification succeeded")
 
         extracted = staging / "extracted"
         try:

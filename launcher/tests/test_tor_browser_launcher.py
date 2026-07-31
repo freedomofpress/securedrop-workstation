@@ -1,9 +1,12 @@
+import io
 import json
 import os
+import re
 import runpy
 import socket
 import subprocess
 import sys
+import tarfile
 from contextlib import nullcontext
 from pathlib import Path
 from unittest import mock
@@ -52,6 +55,24 @@ def write_valid_prerequisites(tmp_path: Path) -> Path:
     config_path = tmp_path / "tor-browser.json"
     config_path.write_text(json.dumps(config))
     return config_path
+
+
+def installable_bundle(version: str) -> bytes:
+    archive = io.BytesIO()
+    files = {
+        "tor-browser/Browser/tbb_version.json": json.dumps({"version": version}).encode(),
+        "tor-browser/Browser/TorBrowser/Tor/tor": b"tor",
+        "tor-browser/Browser/firefox.real": b"firefox",
+        "tor-browser/Browser/TorBrowser/Data/Browser/profile.default/prefs.js": b"",
+    }
+    with tarfile.open(fileobj=archive, mode="w:xz") as tar:
+        for name, contents in files.items():
+            info = tarfile.TarInfo(name)
+            info.size = len(contents)
+            if name.endswith(("/tor", "firefox.real")):
+                info.mode = 0o755
+            tar.addfile(info, io.BytesIO(contents))
+    return archive.getvalue()
 
 
 def assert_lifecycle_lock_is_held(state_root: Path) -> None:
@@ -330,6 +351,235 @@ def test_launcher_installs_required_bundle_before_reporting_ready(tmp_path):
     )
     assert [item[0] for item in workflow.mock_calls] == ["install_bundle", "run_session"]
     show_error.assert_not_called()
+
+
+def test_launcher_reports_ordered_success_milestones_only_to_stderr(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config_path = write_valid_prerequisites(tmp_path)
+    stable = release.StableRelease(
+        release.Version("15.0.2"),
+        "https://dist.torproject.org/torbrowser/15.0.2/browser.tar.xz",
+        "https://dist.torproject.org/torbrowser/15.0.2/browser.tar.xz.asc",
+    )
+    progress = mock.Mock()
+
+    with (
+        mock.patch.object(core, "MANAGED_CONFIG_PATH", config_path),
+        mock.patch.object(
+            launcher.frontend,
+            "metadata_retrieval",
+            return_value=nullcontext(lambda: False),
+        ),
+        mock.patch.object(
+            launcher.frontend,
+            "bundle_installation",
+            return_value=nullcontext(progress),
+        ),
+        mock.patch.object(launcher.release, "discover_stable_release", return_value=stable),
+        mock.patch.object(
+            launcher.release,
+            "read_optional_version",
+            side_effect=[release.Version("15.0.1"), release.Version("15.0.1")],
+        ),
+        mock.patch.object(launcher.install, "install_verified_bundle"),
+        mock.patch.object(launcher.session, "run_browser_session", return_value=0),
+    ):
+        assert launcher.main() == 0
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    lines = captured.err.splitlines()
+    assert all(
+        re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z (INFO|WARNING|ERROR) [a-z-]+: .+", line)
+        for line in lines
+    )
+    phases = [line.split()[2].removesuffix(":") for line in lines]
+    assert phases == [
+        "lifecycle-lock",
+        "lifecycle-lock",
+        "managed-configuration",
+        "managed-configuration",
+        "release-check",
+        "release-check",
+        "installation",
+        "installation",
+        "session",
+        "session",
+    ]
+    assert "15.0.2" in captured.err
+    assert stable.bundle_url not in captured.err
+    assert stable.signature_url not in captured.err
+
+
+def test_launcher_reports_complete_workflow_in_order(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config_path = write_valid_prerequisites(tmp_path)
+    stable = release.StableRelease(
+        release.Version("15.0.2"),
+        "https://dist.torproject.org/torbrowser/15.0.2/browser.tar.xz",
+        "https://dist.torproject.org/torbrowser/15.0.2/browser.tar.xz.asc",
+    )
+    artifacts = {
+        stable.bundle_url: installable_bundle("15.0.2"),
+        stable.signature_url: b"private response content",
+    }
+
+    def download(
+        url: str,
+        destination: Path,
+        _cancelled: object,
+        *,
+        progress: object,
+    ) -> None:
+        destination.write_bytes(artifacts[url])
+
+    real_install = launcher.install.install_verified_bundle
+
+    def install_bundle(stable_release: release.StableRelease, **kwargs: object) -> None:
+        real_install(stable_release, **kwargs, verify=lambda *_args: None)  # type: ignore[arg-type]
+
+    class Process:
+        def __init__(self, returncode: int | None) -> None:
+            self.returncode = returncode
+
+        def poll(self) -> int | None:
+            return self.returncode
+
+        def terminate(self) -> None:
+            self.returncode = 0
+
+        def kill(self) -> None:
+            self.returncode = -9
+
+        def wait(self, timeout: float | None = None) -> int:
+            assert timeout is not None
+            assert self.returncode is not None
+            return self.returncode
+
+    process_count = 0
+
+    def popen(_command: list[str], **_kwargs: object) -> Process:
+        nonlocal process_count
+        process_count += 1
+        if process_count == 1:
+            runtime = launcher.session.RUNTIME_ROOT
+            (runtime / launcher.session.SOCKS_SOCKET_NAME).touch()
+            (runtime / launcher.session.CONTROL_SOCKET_NAME).touch()
+            (runtime / launcher.session.CONTROL_COOKIE_NAME).touch()
+            return Process(None)
+        return Process(0)
+
+    real_session = launcher.session.run_browser_session
+
+    def run_session(config: dict[str, object], state_root: Path) -> int:
+        return real_session(config, state_root, popen=popen, sleep=lambda _seconds: None)
+
+    monkeypatch.setattr(core, "MANAGED_CONFIG_PATH", config_path)
+    monkeypatch.setattr(
+        launcher.frontend,
+        "metadata_retrieval",
+        lambda: nullcontext(lambda: False),
+    )
+    monkeypatch.setattr(
+        launcher.frontend, "bundle_installation", lambda _version: nullcontext(mock.Mock())
+    )
+    monkeypatch.setattr(launcher.release, "discover_stable_release", lambda **_kwargs: stable)
+    monkeypatch.setattr(launcher.release, "read_optional_version", lambda _path: None)
+    monkeypatch.setattr(launcher.install, "download_file", download)
+    monkeypatch.setattr(launcher.install, "install_verified_bundle", install_bundle)
+    monkeypatch.setattr(launcher.session, "run_browser_session", run_session)
+
+    assert launcher.main() == 0
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    phases = [line.split()[2].removesuffix(":") for line in captured.err.splitlines()]
+    assert phases == [
+        "lifecycle-lock",
+        "lifecycle-lock",
+        "managed-configuration",
+        "managed-configuration",
+        "release-check",
+        "release-check",
+        "installation",
+        "download",
+        "download",
+        "signature-verification",
+        "signature-verification",
+        "installation",
+        "session",
+        "confinement",
+        "tor-startup",
+        "tor-readiness",
+        "browser",
+        "browser",
+        "cleanup",
+        "cleanup",
+        "session",
+    ]
+    assert stable.bundle_url not in captured.err
+    assert stable.signature_url not in captured.err
+    assert "private response content" not in captured.err
+
+
+def test_launcher_logs_sanitized_error_before_preserving_graphical_failure(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    secret = f"{'a' * 56}.onion:descriptor:x25519:{'B' * 52}"
+    missing_config = tmp_path / secret
+    events: list[str] = []
+    stderr_lines: list[str] = []
+
+    class RecordingStderr:
+        def write(self, message: str) -> int:
+            events.append("log")
+            stderr_lines.append(message)
+            return len(message)
+
+        def flush(self) -> None:
+            pass
+
+    def show_error(_title: str, _message: str) -> int:
+        events.append("dialog")
+        return 7
+
+    monkeypatch.setattr(sys, "stderr", RecordingStderr())
+    with (
+        mock.patch.object(core, "MANAGED_CONFIG_PATH", missing_config),
+        mock.patch.object(launcher.frontend, "show_error", side_effect=show_error),
+    ):
+        assert launcher.main() == 7
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    stderr = "".join(stderr_lines)
+    assert "ERROR managed-configuration: managed configuration validation failed" in stderr
+    assert events[-2:] == ["log", "dialog"]
+    assert secret not in stderr
+    assert str(missing_config) not in stderr
+    assert "Traceback" not in stderr
+
+
+def test_unwritable_stderr_does_not_change_launcher_result(monkeypatch: pytest.MonkeyPatch) -> None:
+    class BrokenStderr:
+        def write(self, _message: str) -> int:
+            raise BrokenPipeError("private stderr detail")
+
+        def flush(self) -> None:
+            raise BrokenPipeError("private stderr detail")
+
+    monkeypatch.setattr(sys, "stderr", BrokenStderr())
+    monkeypatch.setattr(launcher.lifecycle, "exclusive_lifecycle", lambda _root: nullcontext())
+    monkeypatch.setattr(launcher, "_run_locked_lifecycle", lambda _root: 0)
+
+    assert launcher.main() == 0
 
 
 @pytest.mark.parametrize(

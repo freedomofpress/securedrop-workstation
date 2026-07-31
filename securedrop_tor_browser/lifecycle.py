@@ -7,6 +7,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import IO
 
+from securedrop_tor_browser import eventlog
+
 LOCK_FILENAME = "lifecycle.lock"
 EPHEMERAL_RUNTIME_ROOT = Path("/run/user/1000/securedrop-tor-browser")
 RUNTIME_ROOT = EPHEMERAL_RUNTIME_ROOT
@@ -102,6 +104,7 @@ def _remove_path(path: Path) -> None:
 
 
 def _recover_durable_state(state_root: Path) -> None:
+    recovered = False
     browser = state_root / "browser"
     browser_exists = _validate_optional_directory(browser)
     if browser_exists:
@@ -112,6 +115,7 @@ def _recover_durable_state(state_root: Path) -> None:
     if len(retired) > 1:
         raise OSError("Tor Browser replacement is ambiguous: multiple retired browsers exist.")
     if retired:
+        recovered = True
         _validate_optional_directory(retired[0])
         if browser_exists:
             shutil.rmtree(retired[0])
@@ -120,7 +124,10 @@ def _recover_durable_state(state_root: Path) -> None:
 
     for pattern in ABANDONED_PATTERNS:
         for path in state_root.glob(pattern):
+            recovered = True
             _remove_path(path)
+    if recovered:
+        eventlog.warning(eventlog.Phase.RECOVERY, "interrupted installation state recovered")
 
 
 def cleanup_runtime(runtime_root: Path) -> None:

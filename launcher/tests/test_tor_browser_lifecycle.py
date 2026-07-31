@@ -27,7 +27,10 @@ def test_second_lifecycle_is_rejected_while_first_owns_kernel_lock(tmp_path: Pat
         pytest.fail("a second lifecycle must not start")
 
 
-def test_interrupted_replacement_restores_the_only_retired_browser(tmp_path: Path) -> None:
+def test_interrupted_replacement_restores_the_only_retired_browser(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     state_root, runtime_root = private_roots(tmp_path)
     retired = state_root / ".retired-crashed"
     retired.mkdir(parents=True)
@@ -41,6 +44,13 @@ def test_interrupted_replacement_restores_the_only_retired_browser(tmp_path: Pat
         assert (state_root / "browser" / ".securedrop-version").read_text() == "15.0.18\n"
         assert not retired.exists()
         assert not list(state_root.glob(".install-*"))
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "WARNING recovery: interrupted installation state recovered" in captured.err
+    assert ".retired-crashed" not in captured.err
+    assert ".install-abandoned" not in captured.err
+    assert str(state_root) not in captured.err
 
 
 def test_completed_replacement_discards_retired_browser_and_ephemeral_state(

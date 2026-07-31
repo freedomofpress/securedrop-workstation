@@ -57,6 +57,7 @@ class StreamingDownloadResponse:
 
 def test_first_installation_activates_only_the_verified_advertised_bundle(
     tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     stable = release.StableRelease(
         release.Version("15.0.19"),
@@ -65,7 +66,7 @@ def test_first_installation_activates_only_the_verified_advertised_bundle(
     )
     downloads = {
         stable.bundle_url: bundle("15.0.19"),
-        stable.signature_url: b"signature",
+        stable.signature_url: b"Set-Cookie: private-value\nraw signature output",
     }
 
     def download(url: str, destination: Path, cancelled: Callable[[], bool]) -> None:
@@ -98,6 +99,22 @@ def test_first_installation_activates_only_the_verified_advertised_bundle(
     assert not list((tmp_path / "state").glob(".install-*"))
     assert not list((tmp_path / "state").glob(".retired-*"))
     assert not (tmp_path / "state" / "installations").exists()
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    messages = [line.split(": ", 1)[1] for line in captured.err.splitlines()]
+    assert messages == [
+        "bundle download started for version 15.0.19",
+        "bundle download completed for version 15.0.19",
+        "signature verification started",
+        "signature verification succeeded",
+    ]
+    assert stable.bundle_url not in captured.err
+    assert stable.signature_url not in captured.err
+    assert "bytes" not in captured.err
+    assert "%" not in captured.err
+    assert "Set-Cookie" not in captured.err
+    assert "private-value" not in captured.err
+    assert "raw signature output" not in captured.err
 
 
 def test_upgrade_replaces_browser_and_retains_no_previous_installation(
@@ -411,11 +428,12 @@ def test_atomic_switch_failure_preserves_prior_browser_installation(tmp_path: Pa
 
 def test_signature_verifier_requires_valid_signature_from_pinned_primary_key(
     tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     fingerprint = "EF6E286DDA85EA2A4BA7DE684E2C6E8793298290"
     results = iter(
         [
-            subprocess.CompletedProcess([], 0, "", ""),
+            subprocess.CompletedProcess([], 0, "", "raw gpg stderr private-value"),
             subprocess.CompletedProcess(
                 [],
                 0,
@@ -424,18 +442,28 @@ def test_signature_verifier_requires_valid_signature_from_pinned_primary_key(
                     "2026-07-30 0 0 4 0 1 10 00 "
                     f"{fingerprint}\n"
                 ),
-                "",
+                "raw gpgv stderr private-value",
             ),
         ]
     )
+    calls: list[dict[str, object]] = []
+
+    def run(*_args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(kwargs)
+        return next(results)
 
     install.verify_bundle_signature(
         tmp_path / "bundle.tar.xz",
         tmp_path / "bundle.tar.xz.asc",
         tmp_path / "pinned-key.asc",
         fingerprint,
-        run=lambda *args, **kwargs: next(results),
+        run=run,
     )
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == ""
+    assert [call["capture_output"] for call in calls] == [True, True]
 
 
 @pytest.mark.parametrize(

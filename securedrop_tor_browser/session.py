@@ -6,7 +6,7 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any, Protocol
 
-from securedrop_tor_browser import lifecycle
+from securedrop_tor_browser import eventlog, lifecycle
 
 TOR_PROFILE_NAME = "securedrop-tor-browser-tor"
 FIREFOX_PROFILE_NAME = "securedrop-tor-browser-firefox"
@@ -214,6 +214,8 @@ def run_browser_session(
             "PATH": os.defpath,
             "TMPDIR": environment["TMPDIR"],
         }
+        eventlog.info(eventlog.Phase.CONFINEMENT, "confinement launch configuration verified")
+        eventlog.info(eventlog.Phase.TOR_STARTUP, "bundled Tor starting")
         tor_process = popen(
             [
                 str(AA_EXEC_PATH),
@@ -230,7 +232,9 @@ def run_browser_session(
             stderr=subprocess.DEVNULL,
         )
         _wait_for_tor(tor_process, runtime, monotonic=monotonic, sleep=sleep)
+        eventlog.info(eventlog.Phase.TOR_READINESS, "bundled Tor is ready")
 
+        eventlog.info(eventlog.Phase.BROWSER, "browser starting")
         browser_process = popen(
             [
                 str(AA_EXEC_PATH),
@@ -247,6 +251,10 @@ def run_browser_session(
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        return _supervise(tor_process, browser_process, sleep=sleep)
+        result = _supervise(tor_process, browser_process, sleep=sleep)
+        eventlog.info(eventlog.Phase.BROWSER, f"browser exited with status {result}")
+        return result
     finally:
+        eventlog.info(eventlog.Phase.CLEANUP, "session cleanup starting")
         _cleanup_session(browser_process, tor_process, runtime)
+        eventlog.info(eventlog.Phase.CLEANUP, "session cleanup completed")

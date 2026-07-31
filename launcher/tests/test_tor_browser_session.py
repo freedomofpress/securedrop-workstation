@@ -113,6 +113,7 @@ def test_apparmor_assets_separate_tor_secrets_from_ephemeral_browser_state() -> 
 def test_session_copies_pristine_profile_supervises_confined_processes_and_cleans_up(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     state_root = tmp_path / "state"
     write_bundle_layout(state_root)
@@ -166,6 +167,8 @@ def test_session_copies_pristine_profile_supervises_confined_processes_and_clean
         str(session.RUNTIME_ROOT / "profile"),
     ]
     assert tor_options["cwd"] == state_root / "browser/Browser"
+    assert tor_options["stdout"] is subprocess.DEVNULL
+    assert tor_options["stderr"] is subprocess.DEVNULL
     browser_environment = browser_options["env"]
     assert browser_environment["TOR_SKIP_LAUNCH"] == "1"
     assert browser_environment["TOR_SOCKS_IPC_PATH"].endswith(session.SOCKS_SOCKET_NAME)
@@ -173,6 +176,8 @@ def test_session_copies_pristine_profile_supervises_confined_processes_and_clean
     assert browser_environment["HOME"].startswith(str(session.RUNTIME_ROOT))
     assert browser_environment["DISPLAY"] == ":1"
     assert browser_environment["XAUTHORITY"].startswith(str(session.RUNTIME_ROOT))
+    assert browser_options["stdout"] is subprocess.DEVNULL
+    assert browser_options["stderr"] is subprocess.DEVNULL
     assert ONION_HOSTNAME not in " ".join(browser_command)
     assert tor_process.terminated
     assert list(session.RUNTIME_ROOT.iterdir()) == []
@@ -180,6 +185,23 @@ def test_session_copies_pristine_profile_supervises_confined_processes_and_clean
         state_root / "browser/Browser/TorBrowser/Data/Browser/profile.default/baseline-marker"
     )
     assert baseline_marker.is_file()
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    messages = [line.split(": ", 1)[1] for line in captured.err.splitlines()]
+    assert messages == [
+        "confinement launch configuration verified",
+        "bundled Tor starting",
+        "bundled Tor is ready",
+        "browser starting",
+        "browser exited with status 0",
+        "session cleanup starting",
+        "session cleanup completed",
+    ]
+    assert ONION_HOSTNAME not in captured.err
+    assert str(torrc) not in captured.err
+    assert str(xauthority) not in captured.err
+    assert "--profile" not in captured.err
+    assert "DISPLAY" not in captured.err
 
 
 def test_session_fails_closed_before_firefox_when_tor_does_not_create_managed_sockets(
