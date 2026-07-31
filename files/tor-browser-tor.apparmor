@@ -14,7 +14,7 @@ profile securedrop-tor-browser-tor flags=(attach_disconnected) {
   /home/user/.local/share/securedrop-tor-browser/onion-auth/ r,
   /home/user/.local/share/securedrop-tor-browser/onion-auth/app-journalist.auth_private r,
   owner /run/user/1000/securedrop-tor-browser/ rw,
-  owner /run/user/1000/securedrop-tor-browser/{socks.socket,control.socket,control.authcookie} rwk,
+  owner /run/user/1000/securedrop-tor-browser/{socks.socket,control.socket,control.authcookie,control.authcookie.tmp} rwk,
   owner /run/user/1000/securedrop-tor-browser/tor/ rw,
   owner /run/user/1000/securedrop-tor-browser/tor/** rwk,
 }

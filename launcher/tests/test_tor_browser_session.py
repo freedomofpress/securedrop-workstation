@@ -108,6 +108,7 @@ def test_apparmor_assets_separate_tor_secrets_from_ephemeral_browser_state() -> 
     assert "SocksPort unix:/run/user/1000/securedrop-tor-browser/socks.socket" in torrc
     assert "ControlPort unix:/run/user/1000/securedrop-tor-browser/control.socket" in torrc
     assert "CookieAuthFile /run/user/1000/securedrop-tor-browser/control.authcookie" in torrc
+    assert "control.authcookie.tmp" in tor_profile
 
 
 def test_session_copies_pristine_profile_supervises_confined_processes_and_cleans_up(
