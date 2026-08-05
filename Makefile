@@ -89,8 +89,8 @@ build-admin-rpm: ## Build admin RPM package (opt-in)
 	@mkdir -p build-log
 	@echo "Building SecureDrop Admin RPM..."
 	@export TERM=dumb
-	@USE_BUILD_CONTAINER=true script \
-		--command "$(CONTAINER) ./scripts/build-admin-rpm.sh" \
+	@USE_BUILD_CONTAINER=true WITH_ADMIN=true script \
+		--command "$(CONTAINER) ./scripts/build-rpm.sh" \
 		--return $(OUT)
 	@echo
 	@echo "Build log available at $(OUT)"

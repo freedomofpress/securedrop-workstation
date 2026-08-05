@@ -54,6 +54,7 @@ function oci_run() {
            --rm \
            -e LC_ALL=C.UTF-8 \
            -e LANG=C.UTF-8 \
+           -e WITH_ADMIN="${WITH_ADMIN:-}" \
            --user "${USER:-root}" \
            --volume "${TOPLEVEL}:${TOPLEVEL}:Z" \
            --workdir "${TOPLEVEL}" \
