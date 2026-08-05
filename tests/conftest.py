@@ -32,7 +32,7 @@ def proj_root() -> os.PathLike[Any]:
 
 
 @pytest.fixture(autouse=True)
-def load_non_standard_module() -> Callable:
+def load_non_standard_module() -> Callable[[os.PathLike[Any]], ModuleType]:
     """
     Fixture factory for loading a non-standard python modules
 
