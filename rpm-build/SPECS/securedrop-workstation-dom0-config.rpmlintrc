@@ -1,0 +1,27 @@
+# this file contains suppressions for rpmlint
+
+# we use /tmp for our migration flag system
+addFilter(r"use-tmp-in-%\w+")
+
+# our update-xfce-settings script
+addFilter(r"subdir-in-bin /usr/bin/securedrop/")
+
+# we don't want conffile semantics, our version should always win
+addFilter(r"non-conffile-in-etc /etc/qubes-rpc/")
+addFilter(r"non-conffile-in-etc /etc/qubes/policy.d/")
+addFilter(r"non-conffile-in-etc /etc/systemd/logind.conf.d/")
+
+# don't care about man pages
+addFilter(r"no-manual-page-for-binary")
+
+# FIXME: our versioning schema is a bit busted
+addFilter(r"incoherent-version-in-changelog")
+addFilter(r"invalid-version")
+
+# TODO: can we de-dupe these?
+addFilter(r"files-duplicate /usr/share/securedrop/icons/sd-logo.png")
+
+# we build in place from a git checkout, so there's nothing to unpack, and the
+# test suite runs outside of rpmbuild
+addFilter(r"no-%prep-section")
+addFilter(r"no-%check-section")

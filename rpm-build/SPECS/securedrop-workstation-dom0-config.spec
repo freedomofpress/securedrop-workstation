@@ -1,7 +1,7 @@
-Name:		securedrop-workstation-dom0-config
-Version:	1.10.0rc1
-Release:	1%{?dist}
-Summary:	SecureDrop Workstation
+Name:           securedrop-workstation-dom0-config
+Version:        1.10.0rc1
+Release:        1%{?dist}
+Summary:        SecureDrop Workstation
 
 # For reproducible builds:
 #
@@ -25,14 +25,12 @@ Summary:	SecureDrop Workstation
 # root policy.
 %undefine py_auto_byte_compile
 
-License:	AGPLv3
-URL:		https://github.com/freedomofpress/securedrop-workstation
-# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/SourceURL/#_troublesome_urls
-Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
+License:        AGPL-3.0-or-later
+URL:            https://github.com/freedomofpress/securedrop-workstation
 
-BuildArch:		noarch
-BuildRequires:	python3-devel
-BuildRequires:	systemd-rpm-macros
+BuildArch:      noarch
+BuildRequires:  python3-devel
+BuildRequires:  systemd-rpm-macros
 
 # This package installs all standard VMs in Qubes
 Requires:   qubes-mgmt-salt-dom0-virtual-machines
@@ -52,8 +50,8 @@ in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
 
 %package -n securedrop-admin-dom0-config
-Summary: SecureDrop Admin
-Requires: qubes-mgmt-salt-dom0-virtual-machines
+Summary:        SecureDrop Admin
+Requires:       qubes-mgmt-salt-dom0-virtual-machines
 %description -n securedrop-admin-dom0-config
 This package contains VM configuration files for the Qubes-based
 SecureDrop Admin project. The package should be installed
@@ -175,6 +173,7 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 
 %files -n securedrop-admin-dom0-config
 /srv/salt/admin_salt/*
+%doc README.md
 %license LICENSE
 
 %post
