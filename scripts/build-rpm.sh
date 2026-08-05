@@ -32,5 +32,10 @@ rpmbuild \
 # Check reproducibility
 python3 scripts/verify_rpm_mtime.py
 
+# Lint .spec and built RPMs
+rpmlint --strict --rpmlintrc "rpm-build/SPECS/${PROJECT}.rpmlintrc" \
+    "rpm-build/SPECS/${PROJECT}.spec" \
+    rpm-build/RPMS/noarch/*.rpm
+
 printf '\nBuild complete! RPMs and their checksums are:\n\n'
 find rpm-build/ -type f -iname "*.rpm" -print0 | sort -zV | xargs -r -0 sha256sum
