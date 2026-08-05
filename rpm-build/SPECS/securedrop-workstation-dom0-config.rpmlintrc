@@ -14,10 +14,6 @@ addFilter(r"non-conffile-in-etc /etc/systemd/logind.conf.d/")
 # don't care about man pages
 addFilter(r"no-manual-page-for-binary")
 
-# FIXME: our versioning schema is a bit busted
-addFilter(r"incoherent-version-in-changelog")
-addFilter(r"invalid-version")
-
 # TODO: can we de-dupe these?
 addFilter(r"files-duplicate /usr/share/securedrop/icons/sd-logo.png")
 

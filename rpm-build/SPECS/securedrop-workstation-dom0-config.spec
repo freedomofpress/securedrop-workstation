@@ -1,5 +1,5 @@
 Name:           securedrop-workstation-dom0-config
-Version:        1.10.0rc1
+Version:        1.10.0~rc1
 Release:        1%{?dist}
 Summary:        SecureDrop Workstation
 
@@ -215,7 +215,7 @@ touch /tmp/sdw-migrations/debian-13-bump
 qubesctl top.disable securedrop_salt.sd-workstation
 
 %changelog
-* Wed Sep 02 2026 SecureDrop Team <securedrop@freedom.press> - 1.10.0rc1
+* Wed Sep 02 2026 SecureDrop Team <securedrop@freedom.press> - 1.10.0~rc1-1
 - See changelog.md
 
 * Tue Sep 01 2026 SecureDrop Team <securedrop@freedom.press> - 1.9.0
