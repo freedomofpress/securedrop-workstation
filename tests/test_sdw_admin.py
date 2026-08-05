@@ -38,8 +38,8 @@ def template_upgrades_available(sdw_admin: Any, mocker: Any) -> None:
     Pretend that there are template upgrades available
     """
     mock_func = mocker.MagicMock()
-    mock_func.return_value = True
-    sdw_admin.template_upgrade_handler.template_upgrades_needed = mock_func
+    mock_func.return_value = False
+    sdw_admin.template_upgrade_handler.template_upgrades_skipped = mock_func
 
 
 @pytest.fixture
@@ -218,18 +218,18 @@ class TestTemplateUpgradesAvailable:
         sd_proxy.shutdown()
 
     @pytest.mark.parametrize(
-        ("template_ver", "expected_ver", "upgrades_needed"),
+        ("template_ver", "expected_ver", "should_upgrades_be_skipped"),
         [
-            ("11", "13", True),  # Version jump
-            ("12", "13", True),  # Regular version bump
-            ("13", "13", False),  # Same version; no upgrade needed
+            ("11", "13", False),  # Version jump
+            ("12", "13", False),  # Regular version bump
+            ("13", "13", True),  # Same version; no upgrade needed
         ],
     )
-    def test_template_upgrades_needed(
+    def test_template_upgrades_skipped(
         self,
         template_ver: str,
         expected_ver: str,
-        upgrades_needed: bool,
+        should_upgrades_be_skipped: bool,
         sdw_admin: Any,
         mock_qubes_app: QubesTestWrapper,
     ) -> None:
@@ -246,4 +246,4 @@ class TestTemplateUpgradesAvailable:
                 ] = b"0\x00" + template_ver.encode()
 
         upgrade_handler = sdw_admin.template_upgrade_handler()
-        assert upgrade_handler.template_upgrades_needed() == upgrades_needed
+        assert upgrade_handler.template_upgrades_skipped() == should_upgrades_be_skipped
