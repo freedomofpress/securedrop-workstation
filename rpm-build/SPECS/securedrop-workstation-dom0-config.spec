@@ -191,11 +191,6 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 # Update Salt Configuration
 qubesctl saltutil.clear_cache -l quiet --out quiet > /dev/null || true
 qubesctl saltutil.sync_all refresh=true -l quiet --out quiet > /dev/null || true
-qubesctl top.disable securedrop_salt.sd-workstation > /dev/null ||:
-
-# Force full run of all Salt states - uncomment in release branch
-mkdir -p /tmp/sdw-migrations
-touch /tmp/sdw-migrations/debian-13-bump
 
 # Enable service that conditionally removes our systemd-logind customizations
 # on dev machines only.
@@ -219,6 +214,16 @@ if [ $1 -eq 0 ]; then
     %systemd_user_preun securedrop-user-xfce-settings.service
     %systemd_user_preun sdw-notify.timer
 fi
+
+# This trigger allows us to conditionally run code based on the
+# version we are upgrading from. The version conditional should
+# be bumped whenever there is some change in the release that
+# requires a full `sdw-admin --apply` run.
+%triggerun -- %{name} < 1.8.0
+mkdir -p /tmp/sdw-migrations
+touch /tmp/sdw-migrations/debian-13-bump
+# Disable top to workaround a bug in the 1.8.0 upgrade; sdw-admin will re-enable it
+qubesctl top.disable securedrop_salt.sd-workstation
 
 %changelog
 * Mon Jul 20 2026 SecureDrop Team <securedrop@freedom.press> - 1.9.0rc1

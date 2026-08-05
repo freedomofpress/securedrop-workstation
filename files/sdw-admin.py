@@ -109,9 +109,9 @@ def provision_and_configure() -> None:
     Applies the salt state.highstate on dom0 and all VMs
     """
 
-    # HACK: enable top as a workaround for #1763. In release 1.8.0 post-inst disabled
-    # the top file and it gets re-enabled in sdw-admin. This may be removed after the
-    # release.
+    # HACK: Workaround for #1763 in which we disable the top file during RPM upgrade
+    # to workaround pre-1.8.1 updaters. This can be removed once we no longer support
+    # the old updater versions.
     run_cmd(["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"])
 
     provision("Provisioning Fedora-based system VMs", "securedrop_salt.sd-sys-vms")
