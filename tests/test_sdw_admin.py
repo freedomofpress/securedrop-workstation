@@ -27,7 +27,7 @@ def sdw_admin(
     name and also not currently being in its own python module.
     """
 
-    # FIXME this is a workaroud. A better approach is to have sdw-admin in
+    # FIXME this is a workaround. A better approach is to have sdw-admin in
     # a proper python module, trivially importable in tests. See #1750.
     return load_non_standard_module(proj_root / "files" / "sdw-admin.py")
 
