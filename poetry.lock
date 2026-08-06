@@ -532,14 +532,14 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "face"
-version = "26.0.0"
+version = "26.0.1"
 description = "A command-line application framework (and CLI parser). Friendly for users, full-featured for developers."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "face-26.0.0-py3-none-any.whl", hash = "sha256:6ec9cf271d8ee2447f04b14264209a09ec9cbe8252255e61fb7ab6b154e300f9"},
-    {file = "face-26.0.0.tar.gz", hash = "sha256:ae12136ff0052f124811f5319670a8d9d29b7d2caaaabe542813690967cc6bca"},
+    {file = "face-26.0.1-py3-none-any.whl", hash = "sha256:ab0a83c37c9789dce658a67a9a80eafaa113c9ec37c5a9d950ff5480542a062d"},
+    {file = "face-26.0.1.tar.gz", hash = "sha256:8183d94bc248baaea855a9f8445f97a22a9988908e60abddccc6e251da77c4c6"},
 ]
 
 [package.dependencies]
