@@ -120,18 +120,14 @@ def test_usb_policy_sd_workstation(sdw_tagged_vms: list[QubesVM]) -> None:
         for non_sdw_qube in non_sdw_sources:
             for usb_service in ["qubes.USBAttach", "qubes.USB"]:
                 # No external VM should be able to attach USB to an sd-workstation VM.
-                assert not policy_exists(
-                    non_sdw_qube, vm.name, usb_service
-                ), (
+                assert not policy_exists(non_sdw_qube, vm.name, usb_service), (
                     f"{usb_service} from {non_sdw_qube} to {vm.name} should be denied, "
                     f"but another policy route was found."
                 )
 
                 # No sd-workstation VM should be able to initiate a USB attach to
                 # an external VM either.
-                assert not policy_exists(
-                    vm.name, non_sdw_qube, usb_service
-                ), (
+                assert not policy_exists(vm.name, non_sdw_qube, usb_service), (
                     f"{usb_service} from {vm.name} to {non_sdw_qube} should be denied, "
                     f"but another policy route was found."
                 )
