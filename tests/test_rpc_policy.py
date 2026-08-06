@@ -122,7 +122,7 @@ def test_usbattach_policy_denies_sd_workstation(sdw_tagged_vms: list[QubesVM]) -
     for vm in sdw_tagged_vms:
         # Skip sd-export-target VMs: sys-usb -> @tag:sd-export-target is
         # intentionally allowed via an explicit allow rule above the deny rules.
-        if "sd-export" in vm.name:
+        if "sd-export-target" in vm.tags:
             continue
 
         # No external VM should be able to attach USB to an sd-workstation VM.
