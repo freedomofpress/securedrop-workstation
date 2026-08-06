@@ -125,22 +125,21 @@ def test_usbattach_policy_denies_sd_workstation(sdw_tagged_vms: list[QubesVM]) -
         if "sd-export-target" in vm.tags:
             continue
 
-        # No external VM should be able to attach USB to an sd-workstation VM.
-        for source in non_sdw_sources:
+        for non_sdw_qube in non_sdw_sources:
+            # No external VM should be able to attach USB to an sd-workstation VM.
             assert not policy_exists(
-                source, vm.name, "qubes.USBAttach"
+                non_sdw_qube, vm.name, "qubes.USBAttach"
             ), (
-                f"qubes.USBAttach from {source} to {vm.name} should be denied, "
+                f"qubes.USBAttach from {non_sdw_qube} to {vm.name} should be denied, "
                 f"but a policy route was found. The @anyvm @anyvm ask wildcard in "
                 f"31-securedrop-workstation.policy may be shadowing the deny rule."
             )
 
-        # No sd-workstation VM should be able to initiate a USB attach to
-        # an external VM either.
-        for target in non_sdw_sources:
+            # No sd-workstation VM should be able to initiate a USB attach to
+            # an external VM either.
             assert not policy_exists(
-                vm.name, target, "qubes.USBAttach"
+                vm.name, non_sdw_qube, "qubes.USBAttach"
             ), (
-                f"qubes.USBAttach from {vm.name} to {target} should be denied, "
+                f"qubes.USBAttach from {vm.name} to {non_sdw_qube} should be denied, "
                 f"but a policy route was found."
             )
