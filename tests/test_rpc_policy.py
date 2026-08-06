@@ -104,17 +104,7 @@ def test_policy_from_sdgpg_to_dom0_allowed(sdw_tagged_vms: list[QubesVM], qubes_
 
 
 @pytest.mark.provisioning
-def test_usbattach_policy_denies_sd_workstation(sdw_tagged_vms: list[QubesVM]) -> None:
-    """
-    Regression test: qubes.USBAttach to or from any @tag:sd-workstation VM must
-    be denied and must NOT resolve to an 'ask' prompt.
-
-    Previously, the wildcard 'qubes.USBAttach * @anyvm @anyvm ask' rule in
-    31-securedrop-workstation.policy was evaluated before the deny rules in
-    32-securedrop-workstation.policy (first-match-wins), making the deny rules
-    unreachable dead code. The fix adds explicit deny rules for @tag:sd-workstation
-    directly in file 31, before the wildcard ask rule.
-    """
+def test_usb_policy_sd_workstation(sdw_tagged_vms: list[QubesVM]) -> None:
     # Representative non-SDW VMs that should not be able to attach USB to an
     # sd-workstation-tagged VM (or have USB attached from one).
     non_sdw_sources = ["sys-net", "sys-firewall", "sys-usb"]
@@ -123,23 +113,25 @@ def test_usbattach_policy_denies_sd_workstation(sdw_tagged_vms: list[QubesVM]) -
         # Skip sd-export-target VMs: sys-usb -> @tag:sd-export-target is
         # intentionally allowed via an explicit allow rule above the deny rules.
         if "sd-export-target" in vm.tags:
+            assert policy_exists("sys-usb", vm.name, "qubes.USBAttach")
+            assert policy_exists(vm.name, "sys-usb", "qubes.USB")
             continue
 
         for non_sdw_qube in non_sdw_sources:
-            # No external VM should be able to attach USB to an sd-workstation VM.
-            assert not policy_exists(
-                non_sdw_qube, vm.name, "qubes.USBAttach"
-            ), (
-                f"qubes.USBAttach from {non_sdw_qube} to {vm.name} should be denied, "
-                f"but a policy route was found. The @anyvm @anyvm ask wildcard in "
-                f"31-securedrop-workstation.policy may be shadowing the deny rule."
-            )
+            for usb_service in ["qubes.USBAttach", "qubes.USB"]:
+                # No external VM should be able to attach USB to an sd-workstation VM.
+                assert not policy_exists(
+                    non_sdw_qube, vm.name, usb_service
+                ), (
+                    f"{usb_service} from {non_sdw_qube} to {vm.name} should be denied, "
+                    f"but another policy route was found."
+                )
 
-            # No sd-workstation VM should be able to initiate a USB attach to
-            # an external VM either.
-            assert not policy_exists(
-                vm.name, non_sdw_qube, "qubes.USBAttach"
-            ), (
-                f"qubes.USBAttach from {vm.name} to {non_sdw_qube} should be denied, "
-                f"but a policy route was found."
-            )
+                # No sd-workstation VM should be able to initiate a USB attach to
+                # an external VM either.
+                assert not policy_exists(
+                    vm.name, non_sdw_qube, usb_service
+                ), (
+                    f"{usb_service} from {vm.name} to {non_sdw_qube} should be denied, "
+                    f"but another policy route was found."
+                )
