@@ -109,7 +109,7 @@ build-deps: ## Install package dependencies to build RPMs
 
 .PHONY: test-deps
 test-deps: build-deps ## Install package dependencies for running tests
-	dnf install -y xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
+	dnf install -y xorg-x11-server-Xvfb rpmlint which libfaketime \
 		hostname python3-setuptools
 	dnf --setopt=install_weak_deps=False -y install reprotest
 

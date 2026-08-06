@@ -2019,6 +2019,21 @@ urllib3 = ">=2.0,<3.0"
 wcmatch = ">=8.3,<9.0"
 
 [[package]]
+name = "shellcheck-py"
+version = "0.11.0.1"
+description = "Python wrapper around invoking shellcheck (https://www.shellcheck.net/)"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "shellcheck_py-0.11.0.1-py2.py3-none-macosx_10_9_x86_64.whl", hash = "sha256:b6a3fee28efda2e16e38d6e6d59faf7224300256456639727370d404730849e8"},
+    {file = "shellcheck_py-0.11.0.1-py2.py3-none-macosx_11_0_arm64.whl", hash = "sha256:6b88d0a244c82ed07e06a53e444da841f69330ca59ae15d4a66c391655dae7a0"},
+    {file = "shellcheck_py-0.11.0.1-py2.py3-none-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:1b274df81de5b000ff78db433e7328b87e52e3c38481c60f8e488c3095beef05"},
+    {file = "shellcheck_py-0.11.0.1-py2.py3-none-win_amd64.whl", hash = "sha256:784156289ecb17e91c692cd783ab5152333309588cabb10032a047331c63e759"},
+    {file = "shellcheck_py-0.11.0.1.tar.gz", hash = "sha256:5c620c88901e8f1d3be5934b31ea99e3310065e1245253741eafd0a275c8c9cc"},
+]
+
+[[package]]
 name = "sse-starlette"
 version = "3.4.1"
 description = "SSE plugin for Starlette"
@@ -2301,4 +2316,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "d40c7caa3e9da74c4b26badd68813b6ee68c3ab8c7ae3fae4eef0ba5074bee8d"
+content-hash = "818f7360273535d3282af4ed1778e7e24a19333b6bb065fe73ef557c9f611350"
