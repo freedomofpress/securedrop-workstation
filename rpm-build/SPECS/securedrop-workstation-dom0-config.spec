@@ -1,7 +1,7 @@
-Name:		securedrop-workstation-dom0-config
-Version:	1.9.0rc1
-Release:	1%{?dist}
-Summary:	SecureDrop Workstation
+Name:           securedrop-workstation-dom0-config
+Version:        1.9.0~rc1
+Release:        1%{?dist}
+Summary:        SecureDrop Workstation
 
 # Build the admin subpackage only when explicitly requested:
 #   rpmbuild --with admin ...
@@ -29,17 +29,15 @@ Summary:	SecureDrop Workstation
 # root policy.
 %undefine py_auto_byte_compile
 
-License:	AGPLv3
-URL:		https://github.com/freedomofpress/securedrop-workstation
-# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/SourceURL/#_troublesome_urls
-Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
+License:        AGPL-3.0-or-later
+URL:            https://github.com/freedomofpress/securedrop-workstation
 
-BuildArch:		noarch
-BuildRequires:	python3-devel
-BuildRequires:	systemd-rpm-macros
+BuildArch:      noarch
+BuildRequires:  python3-devel
+BuildRequires:  systemd-rpm-macros
 
 # This package installs all standard VMs in Qubes
-Requires:		qubes-mgmt-salt-dom0-virtual-machines
+Requires:       qubes-mgmt-salt-dom0-virtual-machines
 Requires:       securedrop-workstation-keyring
 Requires:       grub2-xen-pvh
 Requires:       qubes-gpg-split-dom0
@@ -57,8 +55,8 @@ configuration over time.
 
 %if %{with admin}
 %package -n securedrop-admin-dom0-config
-Summary: SecureDrop Admin
-Requires: qubes-mgmt-salt-dom0-virtual-machines
+Summary:        SecureDrop Admin
+Requires:       qubes-mgmt-salt-dom0-virtual-machines
 %description -n securedrop-admin-dom0-config
 This package contains VM configuration files for the Qubes-based
 SecureDrop Admin project. The package should be installed
@@ -184,6 +182,7 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 %if %{with admin}
 %files -n securedrop-admin-dom0-config
 /srv/salt/admin_salt/*
+%doc README.md
 %license LICENSE
 %endif
 
@@ -226,7 +225,7 @@ touch /tmp/sdw-migrations/debian-13-bump
 qubesctl top.disable securedrop_salt.sd-workstation
 
 %changelog
-* Mon Jul 20 2026 SecureDrop Team <securedrop@freedom.press> - 1.9.0rc1
+* Mon Jul 20 2026 SecureDrop Team <securedrop@freedom.press> - 1.9.0~rc1-1
 - See changelog.md
 
 * Thu Jul 16 2026 SecureDrop Team <securedrop@freedom.press> - 1.8.0

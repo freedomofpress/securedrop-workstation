@@ -89,8 +89,8 @@ build-admin-rpm: ## Build admin RPM package (opt-in)
 	@mkdir -p build-log
 	@echo "Building SecureDrop Admin RPM..."
 	@export TERM=dumb
-	@USE_BUILD_CONTAINER=true script \
-		--command "$(CONTAINER) ./scripts/build-admin-rpm.sh" \
+	@USE_BUILD_CONTAINER=true WITH_ADMIN=true script \
+		--command "$(CONTAINER) ./scripts/build-rpm.sh" \
 		--return $(OUT)
 	@echo
 	@echo "Build log available at $(OUT)"
@@ -104,12 +104,12 @@ reprotest: ## Check RPM package reproducibility
 .PHONY: build-deps
 build-deps: ## Install package dependencies to build RPMs
 # Note: build dependencies are specified in the spec file, not here
-	dnf install -y git file rpmdevtools dnf-plugins-core rpm-build
+	dnf install -y git file rpmdevtools dnf-plugins-core rpm-build rpmlint
 	dnf builddep -y $(SPEC_FILE)
 
 .PHONY: test-deps
 test-deps: build-deps ## Install package dependencies for running tests
-	dnf install -y xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
+	dnf install -y xorg-x11-server-Xvfb which libfaketime ShellCheck \
 		hostname python3-setuptools
 	dnf --setopt=install_weak_deps=False -y install reprotest
 
@@ -225,7 +225,7 @@ venv: ## Provision a Python 3 virtualenv for development (ensure to also install
 check: lint test ## Runs linters and tests
 
 .PHONY: lint
-lint: check-ruff mypy rpmlint shellcheck zizmor semgrep ## Runs all linters
+lint: check-ruff mypy shellcheck zizmor semgrep ## Runs all linters
 
 
 ifneq ($(HOST),dom0)  # Not necessary in dom0
@@ -248,10 +248,6 @@ fix: ## Fix Python source code formatting with ruff
 .PHONY: mypy
 mypy:  ## Type check Python files
 	poetry run mypy .
-
-.PHONY: rpmlint
-rpmlint: ## Runs rpmlint on the spec file
-	$(CONTAINER) rpmlint rpm-build/SPECS/*.spec
 
 .PHONY: shellcheck
 shellcheck: ## Runs shellcheck on all shell scripts
