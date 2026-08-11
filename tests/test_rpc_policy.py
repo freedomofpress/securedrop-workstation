@@ -101,3 +101,33 @@ def test_policy_from_sdgpg_to_dom0_allowed(sdw_tagged_vms: list[QubesVM], qubes_
             assert allowed
         else:
             assert not allowed
+
+
+@pytest.mark.provisioning
+def test_usb_policy_sd_workstation(sdw_tagged_vms: list[QubesVM]) -> None:
+    # Representative non-SDW VMs that should not be able to attach USB to an
+    # sd-workstation-tagged VM (or have USB attached from one).
+    non_sdw_sources = ["sys-net", "sys-firewall", "sys-usb"]
+
+    for vm in sdw_tagged_vms:
+        # Skip sd-export-target VMs: sys-usb -> @tag:sd-export-target is
+        # intentionally allowed via an explicit allow rule above the deny rules.
+        if "sd-export-target" in vm.tags:
+            assert policy_exists("sys-usb", vm.name, "qubes.USBAttach")
+            assert policy_exists(vm.name, "sys-usb", "qubes.USB")
+            continue
+
+        for non_sdw_qube in non_sdw_sources:
+            for usb_service in ["qubes.USBAttach", "qubes.USB"]:
+                # No external VM should be able to attach USB to an sd-workstation VM.
+                assert not policy_exists(non_sdw_qube, vm.name, usb_service), (
+                    f"{usb_service} from {non_sdw_qube} to {vm.name} should be denied, "
+                    f"but another policy route was found."
+                )
+
+                # No sd-workstation VM should be able to initiate a USB attach to
+                # an external VM either.
+                assert not policy_exists(vm.name, non_sdw_qube, usb_service), (
+                    f"{usb_service} from {vm.name} to {non_sdw_qube} should be denied, "
+                    f"but another policy route was found."
+                )

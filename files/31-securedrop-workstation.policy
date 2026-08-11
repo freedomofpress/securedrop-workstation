@@ -32,7 +32,6 @@ qubes.GpgImportKey      *           @tag:sd-client sd-gpg allow
 qubes.Gpg2              *           @tag:sd-client sd-gpg allow target=sd-gpg
 
 qubes.USBAttach         *           sys-usb @tag:sd-export-target allow  user=root
-qubes.USBAttach         *           @anyvm @anyvm ask
 
 qubes.USB               *           @tag:sd-export-target sys-usb allow
 
