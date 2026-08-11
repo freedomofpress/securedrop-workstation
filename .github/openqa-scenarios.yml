@@ -1,0 +1,42 @@
+products:
+  qubesos-*-securedrop-x86_64:
+    distri: qubesos
+    flavor: securedrop
+    version: '*'
+    arch: "x86_64"
+    settings:
+      KERNEL_VERSION: "stable"
+      WORKER_CLASS: "local,smep"
+
+job_templates:
+  securedrop_install:
+    product: "qubesos-*-securedrop-x86_64"
+    machine: "64bit"
+    settings:
+      HDD_1: "disk_unencrypted_%VERSION%_%MACHINE%_%KERNEL_VERSION%.qcow2"
+      KERNEL_VERSION: "stable"
+      SECUREDROP_INSTALL: "1"
+      STORE_HDD_1: "disk_securedrop.qcow2"
+  securedrop_upgrade:
+    product: "qubesos-*-securedrop-x86_64"
+    machine: "64bit"
+    settings:
+      HDD_1: "disk_securedrop_installed.qcow2"
+      SECUREDROP_UPGRADE: "1"
+      START_AFTER_TEST: "securedrop_install"
+      STORE_HDD_1: "disk_securedrop.qcow2"
+      WORKER_CLASS: "local,smep"
+  securedrop_test_dom0:
+    product: "qubesos-*-securedrop-x86_64"
+    machine: "64bit"
+    settings:
+      HDD_1: "disk_securedrop.qcow2"
+      SECUREDROP_TEST: "test_dom0"
+      START_AFTER_TEST: "securedrop_install"
+  securedrop_test_gui:
+    product: "qubesos-*-securedrop-x86_64"
+    machine: "64bit"
+    settings:
+      HDD_1: "disk_securedrop.qcow2"
+      SECUREDROP_TEST: "test_dom0"
+      START_AFTER_TEST: "securedrop_install"
