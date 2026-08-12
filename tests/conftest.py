@@ -26,7 +26,7 @@ from tests.base import (
 )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def proj_root() -> os.PathLike[Any]:
     return Path(__file__).parent.parent
 
