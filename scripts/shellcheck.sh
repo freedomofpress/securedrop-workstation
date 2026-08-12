@@ -2,18 +2,7 @@
 
 set -e
 
-source "$(dirname "$0")/common.sh"
-
-function run_native_or_in_container () {
-    EXCLUDE_RULES="SC1090,SC1091"
-    if [ "$(command -v shellcheck)" ]; then
-        shellcheck -x --exclude="$EXCLUDE_RULES" "$@"
-    else
-        $OCI_BIN run --rm -v "$(pwd):/sd:Z" -w /sd \
-            -t docker.io/koalaman/shellcheck:stable \
-            -x --exclude=$EXCLUDE_RULES "$@"
-    fi
-}
+EXCLUDE_RULES="SC1090,SC1091"
 
 # Omitting:
 # - the `.git/` directory since its hooks won't pass # validation, and
@@ -37,4 +26,4 @@ readarray -t FILES <<<"$(find "." \
     | awk '$2 ~ /x-shellscript/ { print $1 }' \
     | sed 's/://')"
 
-run_native_or_in_container "${FILES[@]}"
+poetry run shellcheck -x --exclude="$EXCLUDE_RULES" "${FILES[@]}"
