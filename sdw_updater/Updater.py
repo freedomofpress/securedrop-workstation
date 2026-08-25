@@ -39,26 +39,50 @@ sdlog = Util.get_logger(module=__name__)
 detail_log = Util.get_logger(prefix=DETAIL_LOGGER_PREFIX, module=__name__)
 
 
-def _get_current_vms() -> dict[str, str]:
-    debian_version = "13"
-
-    # The are the TemplateVMs that require full patch level at boot in order to start the inbox,
-    # as well as their associated TemplateVMs.
-    # In the future, we could use qvm-prefs to extract this information.
-    return {
-        "fedora": "fedora-43-xfce",
-        "sd-viewer": f"sd-viewer-debian-{debian_version}",
-        "sd-app": f"sd-inbox-debian-{debian_version}",
-        "sd-log": f"sd-inbox-debian-{debian_version}",
-        "sd-devices": f"sd-viewer-debian-{debian_version}",
-        "sd-printers": f"sd-viewer-debian-{debian_version}",
-        "sd-proxy": f"sd-inbox-debian-{debian_version}",
-        "sd-gpg": f"sd-inbox-debian-{debian_version}",
-    }
+# sys-* VMs that we manage updates for, but aren't tagged with sd-workstation
+SYSTEM_VMS = ("sys-net", "sys-firewall", "sys-usb")
 
 
 def _get_current_templates() -> set[str]:
-    return set([val for key, val in _get_current_vms().items() if key != "dom0"])
+    """
+    Return the set of TemplateVMs that the updater should update.
+
+    Find:
+    * TemplateVMs tagged sd-workstation with derived_vms
+    * TemplateVMs that back hardcoded SYSTEM_VMS
+
+    Notably this excludes the sd-base-debian-XX template, because
+    nothing directly uses it.
+    """
+    # Lazy import: qubesadmin is a dom0-only system package, not available in
+    # the CI venv.
+    import qubesadmin
+
+    app = qubesadmin.Qubes()
+    app.cache_enabled = True
+
+    templates = set()
+
+    for vm in app.domains:
+        if vm.klass != "TemplateVM":
+            continue
+        if not vm.derived_vms:
+            # Nothing uses this template
+            continue
+        if "prohibit-start" in vm.features:
+            # Someone has disabled this VM
+            continue
+        # Check for sd-workstation tag
+        if "sd-workstation" in vm.tags:
+            templates.add(vm.name)
+
+    for name in SYSTEM_VMS:
+        vm = app.domains[name]
+        while vm.klass != "TemplateVM":
+            vm = vm.template
+        templates.add(vm.name)
+
+    return templates
 
 
 def get_dom0_path(folder: str) -> str:

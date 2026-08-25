@@ -12,6 +12,12 @@ import pytest
 from sdw_updater import Updater
 from sdw_updater.Updater import UpdateStatus
 
+skipif_no_qubesadmin = pytest.mark.skipif(
+    importlib.util.find_spec("qubesadmin") is None,
+    reason="qubesadmin module not available (only runs in dom0)",
+)
+
+
 debian_based_vms = [
     "sd-app",
     "sd-log",
@@ -50,12 +56,13 @@ TEST_RESULTS_UPDATES = {
 }
 
 
-def test__get_current_vms():
-    assert len(Updater._get_current_vms()) == 8
-
-
-def test__get_current_templates():
-    assert len(Updater._get_current_templates()) == 3
+@skipif_no_qubesadmin
+def test__get_current_templates(mocked_qubes_app):
+    assert Updater._get_current_templates() == {
+        "sd-inbox-debian-XX",
+        "sd-viewer-debian-XX",
+        "fedora-XX-xfce",
+    }
 
 
 @mock.patch("sdw_updater.Updater._write_updates_status_flag_to_disk")
@@ -356,10 +363,7 @@ def test_read_dom0_update_flag_from_disk_fails(mocked_info, mocked_error, tmp_pa
         ("4.4", "4.3", True),  # System in middle of 4.3 -> 4.4 upgrade
     ],
 )
-@pytest.mark.skipif(
-    importlib.util.find_spec("qubesadmin") is None,
-    reason="qubesadmin module not available (only runs in dom0)",
-)
+@skipif_no_qubesadmin
 def test_is_qubes_mid_upgrade(qubes_ver, agent_ver, is_mid_upgrade, mocker, mocked_qubes_app):
     # Overrding "dnf.rpm.detect_releasever" to simulate being on particular Qubes version
     mocker.patch("dnf.rpm").detect_releasever.return_value = qubes_ver

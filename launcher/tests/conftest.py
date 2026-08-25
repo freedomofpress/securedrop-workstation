@@ -56,35 +56,79 @@ skip_in_dom0 = pytest.mark.skipif(
 )
 
 
+SD_TAG = "sd-workstation"
+MOCK_FEDORA_TEMPLATE = "fedora-XX-xfce"
+
+# SecureDrop-managed TemplateVMs, all tagged `sd-workstation`.
+MOCK_SDW_TEMPLATES = [
+    "sd-base-debian-XX",
+    "sd-inbox-debian-XX",
+    "sd-viewer-debian-XX",
+]
+
+# SecureDrop-managed AppVMs (tagged) mapped to their template.
+MOCK_SDW_APPVMS = {
+    "sd-app": "sd-inbox-debian-XX",
+    "sd-log": "sd-inbox-debian-XX",
+    "sd-proxy": "sd-inbox-debian-XX",
+    "sd-gpg": "sd-inbox-debian-XX",
+    "sd-viewer": "sd-viewer-debian-XX",
+    "sd-devices": "sd-viewer-debian-XX",
+    "sd-printers": "sd-viewer-debian-XX",
+}
+
+
 @pytest.fixture
 def mocked_qubes_app(mocker):
+    from qubesadmin.tests import mock_app
     from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
+
+    # The mock only registers `admin.vm.tag.Get` calls for tags it knows about,
+    # so register `sd-workstation` to allow `"sd-workstation" in vm.tags` checks
+    # against untagged VMs (e.g. the Fedora template).
+    if SD_TAG not in mock_app.POSSIBLE_TAGS:
+        mock_app.POSSIBLE_TAGS.append(SD_TAG)
 
     class MockQubesWorkstation(QubesTestWrapper):
         def __init__(self):
             super().__init__()
 
-            # FIXME avoid using module under test. Obtain directly from main tests
-            current_vms = sdw_updater.Updater._get_current_vms()
-
-            # 1. create the templates
-            for template_name in set(current_vms.values()):
+            # 1. Create the SecureDrop templates (tagged `sd-workstation`)
+            for template_name in MOCK_SDW_TEMPLATES:
                 self._qubes[template_name] = MockQube(
                     name=template_name,
                     qapp=self,
                     klass="TemplateVM",
                     netvm="",
+                    tags=[SD_TAG],
                 )
 
-            # 2. create the app qubes
-            for qube_name, template_name in current_vms.items():
+            # 2. Create the Fedora template backing the sys-* VMs (NOT tagged)
+            self._qubes[MOCK_FEDORA_TEMPLATE] = MockQube(
+                name=MOCK_FEDORA_TEMPLATE,
+                qapp=self,
+                klass="TemplateVM",
+                netvm="",
+            )
+
+            # 3. Create the SecureDrop app qubes (tagged `sd-workstation`)
+            for qube_name, template_name in MOCK_SDW_APPVMS.items():
                 MockQube(
                     qube_name,
                     self,
                     template=template_name,
+                    tags=[SD_TAG],
                 )
 
-            # 3. TODO Lastly create the disposables
+            # 4. Create the sys-* VMs (NOT tagged) based on the Fedora template
+            for sys_vm in sdw_updater.Updater.SYSTEM_VMS:
+                MockQube(
+                    sys_vm,
+                    self,
+                    template=MOCK_FEDORA_TEMPLATE,
+                )
+
+            # 5. TODO Lastly create the disposables
 
             self.update_vm_calls()
 
