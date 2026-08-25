@@ -16,7 +16,8 @@ job_templates:
       HDD_1: "disk_unencrypted_%VERSION%_%MACHINE%_%KERNEL_VERSION%.qcow2"
       KERNEL_VERSION: "stable"
       SECUREDROP_INSTALL: "1"
-      STORE_HDD_1: "disk_securedrop.qcow2"
+      STORE_HDD_1: "disk_securedrop_installed.qcow2"
+      SECUREDROP_ENV: "prod"
   securedrop_upgrade:
     product: "qubesos-*-securedrop-x86_64"
     machine: "64bit"
@@ -32,11 +33,11 @@ job_templates:
     settings:
       HDD_1: "disk_securedrop.qcow2"
       SECUREDROP_TEST: "test_dom0"
-      START_AFTER_TEST: "securedrop_install"
+      START_AFTER_TEST: "securedrop_upgrade"
   securedrop_test_gui:
     product: "qubesos-*-securedrop-x86_64"
     machine: "64bit"
     settings:
       HDD_1: "disk_securedrop.qcow2"
       SECUREDROP_TEST: "test_dom0"
-      START_AFTER_TEST: "securedrop_install"
+      START_AFTER_TEST: "securedrop_upgrade"

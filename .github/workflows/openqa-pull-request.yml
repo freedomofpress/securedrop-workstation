@@ -76,6 +76,7 @@ jobs:
     secrets: inherit
     with:
       environment: "dev"
+      scenario: "upgrade-from-prod"
       git_ref: ${{ github.event.pull_request.head.sha }}
       qubes_ver: ${{ matrix.qubes_version }}
 

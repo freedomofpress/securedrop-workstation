@@ -7,6 +7,9 @@ on:
       environment:
         required: true
         type: string
+      scenario:
+        required: true
+        type: string
       git_ref:
         required: true
         type: string
@@ -51,6 +54,7 @@ jobs:
       SECUREDROP_OPENQA_REPO_BRANCH: "main"
       # The URL to clone the remote OpenQA repo from (useful for forks):
       SECUREDROP_OPENQA_REPO_URL: "https://github.com/freedomofpress/openqa-tests-qubesos"
+      SCENARIO_FILENAME: "${{ inputs.environment }}_${{ inputs.scenario }}.yml"
       QUBES_VER: ${{ inputs.qubes_ver }}
     container:
       image: debian:trixie
@@ -60,14 +64,24 @@ jobs:
           apt-get update
           apt-get install --yes openqa-client jq yq curl
 
+      - name: Fetch OpenQA scenario definition from repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.ref }}
+          path: sdw
+          sparse-checkout: .github/openqa-scenarios/${{ inputs.environment }}_${{ inputs.scenario }}.yml
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
       # Customize the test jobs and their configuration variables
       - name: Build OpenQA scenario definitions
         run: |
           set -euo pipefail
-          curl -fsSL -o openqa-scenarios.yml \
-            "https://raw.githubusercontent.com/${{ github.repository }}/${GIT_REF}/.github/openqa-scenarios.yml"
           curl -fsSL -o templates.json \
             "https://raw.githubusercontent.com/QubesOS/openqa-tests-qubesos/main/templates.json"
+
+          # Move to generic location
+          cp "${GITHUB_WORKSPACE}/sdw/.github/openqa-scenarios/${SCENARIO_FILENAME}" openqa-scenarios.yml
 
           # NOTE: scenarios.yml seems to be a standalone file that also needs the
           # OpenQA machines list, so we need to upstream worker machines list into it
