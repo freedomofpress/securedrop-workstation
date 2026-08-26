@@ -1,13 +1,3 @@
-products:
-  qubesos-*-securedrop-x86_64:
-    distri: qubesos
-    flavor: securedrop
-    version: '*'
-    arch: "x86_64"
-    settings:
-      KERNEL_VERSION: "stable"
-      WORKER_CLASS: "local,smep"
-
 job_templates:
   securedrop_install:
     product: "qubesos-*-securedrop-x86_64"

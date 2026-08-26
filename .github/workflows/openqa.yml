@@ -92,6 +92,13 @@ jobs:
             | {machines: {(.name): (del(.name) | .settings |= from_entries)}}
           ' templates.json >> openqa-scenarios.yml
 
+          # Build add products from templates.json (in the future we may hard-code these)
+          yq -y '
+            .Products
+            | INDEX(.flavor)["securedrop"]
+            | {products: {"\(.distri)-\(.version)-\(.flavor)-\(.arch)": (.settings |= from_entries)}}
+          ' templates.json >> openqa-scenarios.yml
+
       - name: Start openQA jobs
         run: |
           echo "Queuing openQA jobs for commit ${GIT_REF}"
