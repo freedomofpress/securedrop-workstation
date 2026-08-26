@@ -41,6 +41,7 @@ BuildRequires:	systemd-rpm-macros
 # This package installs all standard VMs in Qubes
 Requires:		qubes-mgmt-salt-dom0-virtual-machines
 Requires:       securedrop-workstation-keyring
+Requires:       securedrop-dom0-launcher
 Requires:       grub2-xen-pvh
 Requires:       qubes-gpg-split-dom0
 Requires:       python3-dnf
@@ -59,12 +60,24 @@ configuration over time.
 %package -n securedrop-admin-dom0-config
 Summary: SecureDrop Admin
 Requires: qubes-mgmt-salt-dom0-virtual-machines
+Requires:       securedrop-workstation-keyring
+Requires:       securedrop-dom0-launcher
+Requires:       grub2-xen-pvh
+Requires:       qubes-gpg-split-dom0
 %description -n securedrop-admin-dom0-config
 This package contains VM configuration files for the Qubes-based
 SecureDrop Admin project. The package should be installed
 in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
 %endif
+
+
+%package -n securedrop-dom0-launcher
+Summary: SecureDrop Qubes Launcher
+Requires: qubes-mgmt-salt-dom0-virtual-machines
+%description -n securedrop-dom0-launcher
+This package contains the launcher and updater for SecureDrop Qubes applications.
+The package is installed in dom0.
 
 %build
 # Nothing to build; rpmbuild is invoked with --build-in-place
@@ -148,9 +161,21 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 
 %{_datadir}/%{name}/config.json.example
 /srv/salt/securedrop_salt/*
+
+%attr(664, root, root) /etc/qubes/policy.d/31-securedrop-workstation.policy
+%attr(664, root, root) /etc/qubes/policy.d/32-securedrop-workstation.policy
+
+# qrexec service for journalist secret keys
+%attr(755, root, root) /etc/qubes-rpc/securedrop.GetSecretKeys
+%doc README.md
+%license LICENSE
+
+%files -n securedrop-dom0-launcher
 %attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/sdw-updater
+# TODO - there should probably be two icons, one for admin, one for workstation.
+# These will likely need to live in their respective packages.
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
@@ -164,12 +189,6 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 %{_unitdir}/securedrop-logind-override-disable.service
 %{_userpresetdir}/95-securedrop-systemd-user.preset
 
-%attr(664, root, root) /etc/qubes/policy.d/31-securedrop-workstation.policy
-%attr(664, root, root) /etc/qubes/policy.d/32-securedrop-workstation.policy
-
-# qrexec service for journalist secret keys
-%attr(755, root, root) /etc/qubes-rpc/securedrop.GetSecretKeys
-
 # Override systemd-logind settings on staging and prod systems
 /etc/systemd/logind.conf.d/10-securedrop-logind_override.conf
 
@@ -177,8 +196,6 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 /usr/share/securedrop/icons/sd-logo.png
 
 %attr(755, root, root) /usr/bin/securedrop/update-xfce-settings
-
-%doc README.md
 %license LICENSE
 
 %if %{with admin}
