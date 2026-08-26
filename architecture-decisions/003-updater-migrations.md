@@ -33,7 +33,7 @@ Any migration needs to be fully expressed via salt, or via Python code in `sdw-a
 
 * As noted above, the `%post` approach did not correctly handle skip updates.
 * `/tmp` is not persistent, so if something goes wrong and the user reboots mid upgrade, the migration flag will be lost.
-* Maintainers need to be aware of when a migration is needed rather than it being automatically detected. It is often forgotten until we reach QA, which is often the first time someone manually runs the updater.
+* Maintainers need to be aware of when a migration is needed rather than it being automatically detected. It is often forgotten until we reach QA, which is often the first time someone manually runs the updater, necessitating an extra RC.
 
 ## Alternatives considered
 
