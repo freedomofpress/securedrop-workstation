@@ -130,7 +130,9 @@ jobs:
       fail-fast: false
       matrix:
         qubes_version: ["4.3"]
+        scenario: ["upgrade-from-prod", "clean-install"]
     with:
       environment: "dev"
+      scenario: ${{ matrix.scenario }}
       git_ref: ${{ needs.get-main-commit.outputs.main-commit}}
       qubes_ver: ${{ matrix.qubes_version }}
