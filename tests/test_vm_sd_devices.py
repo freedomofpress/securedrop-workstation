@@ -3,6 +3,8 @@ Integration tests for validating SecureDrop Workstation config,
 specifically for the "sd-devices" VM and related functionality.
 """
 
+from collections.abc import Callable
+
 import pytest
 from qubesadmin.app import VMCollection
 
@@ -17,37 +19,51 @@ from tests.base import (
 # NOTE: this file needs includes tests for the functionally similar 'sd-devices'
 # and 'sd-printers'. Some tests overlap (tested on both through the 'qube' fixture)
 # and some only happen in one VM. In this last case dedicated qube fixtures are used
-_qubes = {
-    "sd-devices": QubeWrapper(
-        "sd-devices",
-        expected_config_keys={"SD_MIME_HANDLING"},
-        mime_types_handling=True,
-        devices_attachable=True,
-    ),
-    "sd-printers": QubeWrapper(
-        "sd-printers",
-        expected_config_keys={"SD_MIME_HANDLING"},
-        mime_types_handling=True,
-        mime_vars_vm_name="sd-devices",  # MIME-wise it behaves similarly
-        devices_attachable=True,
-    ),
+_qube_kwargs = {
+    "sd-devices": {
+        "expected_config_keys": {"SD_MIME_HANDLING"},
+        "mime_types_handling": True,
+        "devices_attachable": True,
+    },
+    "sd-printers": {
+        "expected_config_keys": {"SD_MIME_HANDLING"},
+        "mime_types_handling": True,
+        "mime_vars_vm_name": "sd-devices",  # MIME-wise it behaves similarly
+        "devices_attachable": True,
+    },
 }
 
 
 @pytest.fixture(scope="module")
-def qube_sd_devices() -> QubeWrapper:
-    return _qubes["sd-devices"]
+def qube_factory() -> Callable[[str], QubeWrapper]:
+    """
+    Build (and cache) QubeWrapper instances lazily, so that merely collecting
+    this module does not talk to qubesd or boot any VM.
+    """
+    cache: dict[str, QubeWrapper] = {}
+
+    def _get(name: str) -> QubeWrapper:
+        if name not in cache:
+            cache[name] = QubeWrapper(name, **_qube_kwargs[name])  # type: ignore[arg-type]
+        return cache[name]
+
+    return _get
 
 
 @pytest.fixture(scope="module")
-def qube_sd_printers() -> QubeWrapper:
-    return _qubes["sd-printers"]
+def qube_sd_devices(qube_factory: Callable[[str], QubeWrapper]) -> QubeWrapper:
+    return qube_factory("sd-devices")
+
+
+@pytest.fixture(scope="module")
+def qube_sd_printers(qube_factory: Callable[[str], QubeWrapper]) -> QubeWrapper:
+    return qube_factory("sd-printers")
 
 
 # Parameterize: tests calling this fixture will run for each qube
-@pytest.fixture(scope="module", params=list(_qubes.values()), ids=list(_qubes.keys()))
-def qube(request: pytest.FixtureRequest) -> QubeWrapper:
-    return request.param  # returns a fixture for each qube
+@pytest.fixture(scope="module", params=list(_qube_kwargs))
+def qube(request: pytest.FixtureRequest, qube_factory: Callable[[str], QubeWrapper]) -> QubeWrapper:
+    return qube_factory(request.param)  # returns a fixture for each qube
 
 
 def test_files_are_properly_copied(qube: QubeWrapper) -> None:
