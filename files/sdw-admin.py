@@ -8,6 +8,7 @@ does it handle the config.
 import argparse
 import json
 import os
+import pathlib
 import subprocess
 import sys
 from collections.abc import Callable, Iterator
@@ -34,10 +35,10 @@ BASE_TEMPLATE = f"debian-{DEBIAN_VERSION}-minimal"
 
 SUBMISSION_KEY = "sd-journalist.sec"
 TAILS_PATH = "/run/media/user/TailsData/"
-TAILS_GNUPG_PATH = TAILS_PATH + "gnupg/"
-TAILS_PKG_JOURNALIST_INTERFACE_CONFIG = TAILS_PATH + "securedrop-admin/app-journalist.auth_private"
-TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
-    TAILS_PATH + "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
+TAILS_GNUPG_SUBPATH = "gnupg/"
+TAILS_PKG_JOURNALIST_INTERFACE_CONFIG_SUBPATH = "securedrop-admin/app-journalist.auth_private"
+TAILS_GIT_JOURNALIST_INTERFACE_CONFIG_SUBPATH = (
+    "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
 
 # Salt pillar override to make sure dom0 states do not re-enable
@@ -87,6 +88,20 @@ def parse_args() -> argparse.Namespace:
         required=False,
         action="store_true",
         help="Configure SecureDrop Workstation",
+    )
+    parser.add_argument(
+        "--svs-tails-path",
+        default=TAILS_PATH,
+        metavar="PATH",
+        required=False,
+        help="Read SVS configuration from PATH in vault VM",
+    )
+    parser.add_argument(
+        "--journo-tails-path",
+        default=TAILS_PATH,
+        metavar="PATH",
+        required=False,
+        help="Read journalist workstation configuration from PATH in vault VM",
     )
     return parser.parse_args()
 
@@ -483,18 +498,19 @@ def _prompt_choose_submission_key(fingerprints: list[str]) -> str | None:
         return None
 
 
-def import_submission_key() -> str:
+def import_submission_key(tails_path: pathlib.Path) -> str:
     """
     Imports SecureDrop submission key from USB drive to dom0. Assumes that the USB drive
     is successfully attached to vault VM and decrypted.
     Returns the submission key fingerprint.
     """
+    tails_gnupg_path = tails_path / TAILS_GNUPG_SUBPATH
     gpg_output = subprocess.check_output(
         [
             "qvm-run",
             "--pass-io",
             "vault",
-            f"gpg --homedir {TAILS_GNUPG_PATH} -K --fingerprint --with-colon",
+            f"gpg --homedir {tails_gnupg_path} -K --fingerprint --with-colon",
         ],
         text=True,
     )
@@ -515,7 +531,7 @@ def import_submission_key() -> str:
             "qvm-run",
             "--pass-io",
             "vault",
-            f"gpg --homedir {TAILS_GNUPG_PATH} --export-secret-keys --armor {fingerprint}",
+            f"gpg --homedir {tails_gnupg_path} --export-secret-keys --armor {fingerprint}",
         ],
         text=True,
     )
@@ -529,12 +545,15 @@ def import_submission_key() -> str:
     return fingerprint
 
 
-def import_journalist_interface_config() -> tuple[str, str]:
+def import_journalist_interface_config(tails_path: pathlib.Path) -> tuple[str, str]:
     """
     Imports Journalist Interface address and authentication info from USB drive to dom0.
     Assumes that USB drive is attached to vault VM and decrypted.
     Returns (hostname, key) of the journalist interface hidserv
     """
+    pkg_path = tails_path / TAILS_PKG_JOURNALIST_INTERFACE_CONFIG_SUBPATH
+    git_path = tails_path / TAILS_GIT_JOURNALIST_INTERFACE_CONFIG_SUBPATH
+
     journalist_interface_config = ""
     try:
         # First, check for the 2.13.0+ location
@@ -543,7 +562,7 @@ def import_journalist_interface_config() -> tuple[str, str]:
                 "qvm-run",
                 "--pass-io",
                 "vault",
-                f"cat {TAILS_PKG_JOURNALIST_INTERFACE_CONFIG}",
+                f"cat {pkg_path}",
             ],
             text=True,
         )
@@ -555,7 +574,7 @@ def import_journalist_interface_config() -> tuple[str, str]:
                     "qvm-run",
                     "--pass-io",
                     "vault",
-                    f"cat {TAILS_GIT_JOURNALIST_INTERFACE_CONFIG}",
+                    f"cat {git_path}",
                 ],
                 text=True,
             )
@@ -571,7 +590,7 @@ def import_journalist_interface_config() -> tuple[str, str]:
     return addr, auth_token
 
 
-def import_config() -> None:
+def import_config(svs_tails_path: pathlib.Path, journo_tails_path: pathlib.Path) -> None:
     submission_key_fingerprint = _try_read_submission_key()
     if not submission_key_fingerprint:
         subprocess.Popen(
@@ -593,7 +612,7 @@ def import_config() -> None:
             print("Exiting.")
             return
         print("Importing submission key...")
-        submission_key_fingerprint = import_submission_key()
+        submission_key_fingerprint = import_submission_key(svs_tails_path)
         print(
             "Submission key import complete!\n"
             "Please detach and disconnect the USB containing the submission key\n\n"
@@ -622,7 +641,7 @@ def import_config() -> None:
             print("Exiting.")
             return
         try:
-            ji_addr, ji_auth_token = import_journalist_interface_config()
+            ji_addr, ji_auth_token = import_journalist_interface_config(journo_tails_path)
         except SDWAdminException as e:
             print(f"Error importing configuration: {e}")
             sys.exit(1)
@@ -729,7 +748,9 @@ def main() -> None:
             validate_config(SCRIPTS_PATH)
             print("Valid configuration found, configuration complete")
         except SDWAdminException:
-            import_config()
+            svs_tails_path = pathlib.Path(args.svs_tails_path)
+            journo_tails_path = pathlib.Path(args.journo_tails_path)
+            import_config(svs_tails_path, journo_tails_path)
     else:
         sys.exit(0)
 
