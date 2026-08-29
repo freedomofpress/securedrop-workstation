@@ -107,6 +107,11 @@ jobs:
             --apisecret "$OPENQA_SECRET" \
             $(jq -r '.ids[]' openqa.json) || :
       - name: Get result
+
+        # Update status even when cancelled (NOTE: can be removed after we
+        # implement more requent status updates - issue #1453)
+        if: always()
+
         run: |
           workflow_exit_status=0
 
@@ -162,12 +167,4 @@ jobs:
               --apikey "$OPENQA_KEY" \
               --apisecret "$OPENQA_SECRET" \
               -X POST "jobs/${id}/cancel" ||:
-
-            read TEST_NAME < "${id}_name.txt"
-            curl --fail -L -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GH_TOKEN"\
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
-            -d "{\"state\": \"error\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / ${QUBES_VER} / $TEST_NAME\"}" ||:
           done
