@@ -3,32 +3,18 @@
 Tests for securedrop.GetSecretKeys qrexec service.
 """
 
-import importlib.machinery
-import importlib.util
 import logging
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-MODULE_PATH = "/etc/qubes-rpc/securedrop.GetSecretKeys"
-MODULE_NAME = "securedrop_GetSecretKeys"
-
 
 @pytest.fixture
-def rpc_service() -> Any:
+def rpc_service(load_non_standard_module: Callable) -> Any:
     """Load the python RPC server module from its non-standard path"""
-
-    # NOTE: loader needed since 'importlib.util.spec_from_file_location' only
-    # works with '.py' files and RPC service does not have an extension
-    loader = importlib.machinery.SourceFileLoader(MODULE_NAME, MODULE_PATH)
-
-    spec = importlib.util.spec_from_loader(MODULE_NAME, loader)
-    assert spec is not None
-    assert spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    return load_non_standard_module(Path("/etc/qubes-rpc/securedrop.GetSecretKeys"))
 
 
 @pytest.fixture(autouse=True)

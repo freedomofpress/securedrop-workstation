@@ -1,9 +1,13 @@
+import importlib.machinery
+import importlib.util
 import json
 import os
 import warnings
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from datetime import datetime
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 import dnf
 import pytest
@@ -21,7 +25,50 @@ from tests.base import (
     is_workstation_qube,
 )
 
-PROJ_ROOT = Path(__file__).parent.parent
+
+@pytest.fixture(scope="session")
+def proj_root() -> os.PathLike[Any]:
+    return Path(__file__).parent.parent
+
+
+@pytest.fixture(autouse=True)
+def load_non_standard_module() -> Callable:
+    """
+    Fixture factory for loading a non-standard python modules
+
+    This is necessary as a workaround due to the fact that some files not
+    following the standard python naming inventions, in particular:
+      1. Files ending in '.py'
+      2. No dashes ('-') in file names
+
+    Example:
+
+    .. code-block:: python
+
+        @pytest.fixture()
+        def custom_module(load_non_standard_module):
+            return load_non_standard_module("custom_module", "/usr/bin/custom-module")
+
+        def test_foo(custom_module):
+            custom_module.custom_fn()
+    """
+
+    def _load_non_standard_module(module_path: os.PathLike) -> ModuleType:
+        # Optional: pythonify the module name. In practice this does not matter since
+        # the fixture effectively acts as the module reference
+        module_name = Path(module_path).stem.replace(".", "_").replace("-", "_")
+
+        # NOTE loader needed since 'importlib.util.spec_from_file_location' only
+        # works with '.py' files and RPC service does not have an extension
+        loader = importlib.machinery.SourceFileLoader(module_name, str(module_path))
+        spec = importlib.util.spec_from_loader(module_name, loader)
+        assert spec is not None
+        assert spec.loader is not None
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    return _load_non_standard_module
 
 
 @pytest.fixture
@@ -56,9 +103,9 @@ def mock_block_device(all_vms: VMCollection, worker_id: str, testrun_uid: str) -
 
 
 @pytest.fixture(scope="session")
-def dom0_config() -> Dom0Config:
+def dom0_config(proj_root: os.PathLike) -> Dom0Config:
     """Make the dom0 "config.json" available to tests."""
-    with open(os.path.join(PROJ_ROOT, "config.json")) as c:
+    with open(os.path.join(proj_root, "config.json")) as c:
         config = json.load(c)
         # TODO: in the future, when "config.json" does not include an env declaration,
         # If the "environment" key is absent from the "config.json" file, assume prod,
