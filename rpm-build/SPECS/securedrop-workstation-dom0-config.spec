@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	1.9.0rc1
+Version:	1.9.1rc0
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -219,13 +219,16 @@ fi
 # version we are upgrading from. The version conditional should
 # be bumped whenever there is some change in the release that
 # requires a full `sdw-admin --apply` run.
-%triggerun -- %{name} < 1.8.0
+%triggerun -- %{name} < 1.9.1
 mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/debian-13-bump
 # Disable top to workaround a bug in the 1.8.0 upgrade; sdw-admin will re-enable it
 qubesctl top.disable securedrop_salt.sd-workstation
 
 %changelog
+* Mon Aug 31 2026 SecureDrop Team <securedrop@freedom.press> - 1.9.1rc0
+- See changelog.md
+
 * Mon Jul 20 2026 SecureDrop Team <securedrop@freedom.press> - 1.9.0rc1
 - See changelog.md
 
