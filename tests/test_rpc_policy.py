@@ -55,9 +55,7 @@ def test_sdlog_from_other_to_sdlog_denied(
     """
 
     # Filter out preloaded disposables and side-effects from other tests
-    all_vms_set = set(
-        [vm for vm in all_vms if vm.name != "sd-viewer-disposable" and is_managed_qube(vm)]
-    )
+    all_vms_set = set([vm for vm in all_vms if is_managed_qube(vm)])
     non_sd_workstation_vms = all_vms_set.difference(set(sdw_tagged_vms))
     for vm in non_sd_workstation_vms:
         if vm.name == "sd-log":
