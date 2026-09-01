@@ -1,6 +1,6 @@
 # changelog
 
-## 1.9.0-rc1
+## 1.9.0
 
 This release focused on hardening some edge-cases updater issues discovered during
 the 1.8.0 release.
