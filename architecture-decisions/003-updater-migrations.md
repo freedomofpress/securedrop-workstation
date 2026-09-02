@@ -23,7 +23,7 @@ However, there are different times we need to do the full salt run, usually when
 During upgrade, the RPM may drop a file in `/tmp/sdw-migrations/`. The updater looks to see if any file exists in
 that folder, and if so, runs `sdw-admin --apply` to do the full salt run.
 
-Originally the RPM did so using `%post`, and it was up to maintainers to remember to uncomment the relevant line in the release branch. This did not handle skip updates correctly, e.g. if 0.2.0 was released with the `%post` migration flag, and 0.3.0 did not contain it, someone upgrading from 0.1.0 -> 0.3.0 would not see the migration flag.
+Originally the RPM did so using `%post`, and it was up to maintainers to remember [to uncomment the relevant line](https://github.com/freedomofpress/securedrop-workstation/commit/d25492106dff96b4f2dbd1554660795c40ecd449) in the release branch. This did not handle skip updates correctly, e.g. if 0.2.0 was released with the `%post` migration flag, and 0.3.0 did not contain it, someone upgrading from 0.1.0 -> 0.3.0 would not see the migration flag.
 
 In 1.8.1 we switched to using `%triggerun < {version}` so the maintainer merely needs to bump the version, and it correctly handles skip updates.
 
@@ -41,4 +41,4 @@ The main alternative we initially built but never deployed was a migration syste
 
 There is [full documentation](https://github.com/freedomofpress/securedrop-updater/blob/f7c52a5238457d2043b8cb628d95cacd51ab630d/migrations/README.md) as to how those migrations worked; in short each migration was a Python class, named after the version that needed it. The migration runner figured out which steps needed to be run, and then executed them.
 
-As the standalone updater work had not finished by the time the 4.2 migration came around, it was dropped due to the complexity and unclear need.
+As the standalone updater work had not finished by the time the 4.2 migration came around, [it was dropped](https://github.com/freedomofpress/securedrop-workstation/pull/974) due to the complexity and unclear need.
