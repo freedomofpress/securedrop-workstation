@@ -18,6 +18,8 @@ However, there are different times we need to do the full salt run, usually when
 * Installing a new package inside a TemplateVM
 * Resetting a VM's disk to take a backup
 
+Historically anything that need to change a file inside a VM also needed a migration, however nearly everything is now in Debian packages, which has mostly eliminated that scenario.
+
 ## Decision
 
 During upgrade, the RPM may drop a file in `/tmp/sdw-migrations/`. The updater looks to see if any file exists in
@@ -37,8 +39,12 @@ Any migration needs to be fully expressed via salt, or via Python code in `sdw-a
 
 ## Alternatives considered
 
+### Separate securedrop-updater
 The main alternative we initially built but never deployed was a migration system similar to alembic's database migrations as part of the abandoned standalone securedrop-updater work.
 
-There is [full documentation](https://github.com/freedomofpress/securedrop-updater/blob/f7c52a5238457d2043b8cb628d95cacd51ab630d/migrations/README.md) as to how those migrations worked; in short each migration was a Python class, named after the version that needed it. The migration runner figured out which steps needed to be run, and then executed them.
+There is [full documentation](https://github.com/freedomofpress/securedrop-updater/blob/f7c52a5238457d2043b8cb628d95cacd51ab630d/migrations/README.md) as to how those migrations worked ([example](https://github.com/freedomofpress/securedrop-updater/pull/28/changes)); in short each migration was a Python class, named after the version that needed it. The migration runner figured out which steps needed to be run, and then executed them.
 
 As the standalone updater work had not finished by the time the 4.2 migration came around, [it was dropped](https://github.com/freedomofpress/securedrop-workstation/pull/974) due to the complexity and unclear need.
+
+### OpenTofu
+We have prototyped using OpenTofu to do provisioning, which would mostly solve the issue because it can run every single time without a big performance hit. Conceptually this is the solution we do want, however it is not yet in a production-ready state.
