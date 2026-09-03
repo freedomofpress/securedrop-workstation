@@ -125,6 +125,13 @@ class QubeWrapper:
             devices_attachable -- VM can have devices attached to it
         """
 
+        if "PYTEST_CURRENT_TEST" not in os.environ:
+            raise RuntimeError(
+                f"QubeWrapper({name!r}) was instantiated outside a fixture or test "
+                "(likely at import/collection time). Instantiating it talks to qubesd "
+                "and starts the VM, so it must happen inside a fixture or a test."
+            )
+
         self.name = name
         self.app = Qubes()
         self.vm = self.app.domains[self.name]
