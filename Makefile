@@ -158,9 +158,24 @@ install-dom0-test-prereqs: assert-dom0 ## Installs pytest dependencies in dom0
 	rpm -q $(DOM0_TEST_PREREQS) || \
 		sudo qubes-dom0-update -y $(DOM0_TEST_PREREQS)
 
+
+# N.B. make sure to use "-vv" for max-length diffs on test failures
+PYTEST_CMD := pytest -vv --durations=5 tests launcher/tests
+
 test: test-prereqs ## Runs all application tests (no integration tests yet)
-	# N.B. make sure to use "-vv" for max-length diffs on test failures
-	pytest -vv tests launcher/tests -n auto --dist=loadfile --durations=5
+ifeq ($(CI),true)
+# In CI we want to:
+# 1. Run tests in series to give tests the best chance at not interfering with eachother
+# 2. Produce a JunitXML report for OpenQA to show the results
+	$(PYTEST_CMD) --cov-report term-missing --cov=sdw_notify --cov=sdw_updater --cov=sdw_util \
+	              --junitxml=test-data.xml
+else
+# Locally we want to prioritise parallelization for faster iterations
+# at the cost of needing to run some tests in sequence through a separate command
+	$(PYTEST_CMD) -m "run_alone"
+	$(PYTEST_CMD) -m "not run_alone"  -n auto --dist=loadfile --durations=5
+endif
+
 
 test-base: test-prereqs ## Runs tests for VMs layout
 	pytest -v tests/test_vms_exist.py

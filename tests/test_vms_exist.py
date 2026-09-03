@@ -20,9 +20,6 @@ def test_all_sdw_vms_present(all_vms: VMCollection, sdw_tagged_vms: list[QubesVM
     Seeks to detect errors in provisioning that result in VMs
     failing to be created. Compares to a hardcoded list in fixtures.
     """
-    # The integration test suite creates an ephemeral "sd-viewer-disposable" VM
-    # and destroys it post-run; `is_workstation_qube` already excludes it from
-    # `sdw_tagged_vms`, so we compare names directly here.
     sdw_tagged_vm_names = {vm.name for vm in sdw_tagged_vms}
     expected_vm_names = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
 

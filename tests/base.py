@@ -94,12 +94,9 @@ def is_managed_qube(qube: QubesVM) -> bool:
 def is_workstation_qube(qube: QubesVM) -> bool:
     """
     Is the qube a managed, workstation-tagged qube?
-
-    NOTE: filter out the "sd-viewer-disposable" qube, which is an ephemeral
-    DispVM, which will exist at certain points of the test suite
     """
 
-    return is_managed_qube(qube) and SD_TAG in qube.tags and qube.name != "sd-viewer-disposable"
+    return is_managed_qube(qube) and SD_TAG in qube.tags
 
 
 class QubeWrapper:

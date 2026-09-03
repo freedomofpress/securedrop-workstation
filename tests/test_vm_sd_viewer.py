@@ -87,58 +87,46 @@ def qube() -> Iterator[QubeWrapper]:
     _shutdown_test_qube(temp_qube_name)
 
 
-@pytest.mark.packages
+@pytest.mark.run_alone  # Named disposable fixture would interfere in parallel tests
 @pytest.mark.configuration
-def test_sd_viewer_metapackage_installed(qube: QubeWrapper) -> None:
-    assert qube.package_is_installed("securedrop-workstation-viewer")
-    assert not qube.package_is_installed("securedrop-workstation-svs-disp")
+class TestSDViewerConfiguration:
+    @pytest.mark.packages
+    def test_sd_viewer_metapackage_installed(self, qube: QubeWrapper) -> None:
+        assert qube.package_is_installed("securedrop-workstation-viewer")
+        assert not qube.package_is_installed("securedrop-workstation-svs-disp")
 
+    @pytest.mark.packages
+    def test_sd_viewer_evince_installed(self, qube: QubeWrapper) -> None:
+        pkg = "evince"
+        assert qube.package_is_installed(pkg)
 
-@pytest.mark.configuration
-@pytest.mark.packages
-def test_sd_viewer_evince_installed(qube: QubeWrapper) -> None:
-    pkg = "evince"
-    assert qube.package_is_installed(pkg)
+    @pytest.mark.packages
+    def test_sd_viewer_libreoffice_installed(self, qube: QubeWrapper) -> None:
+        assert qube.package_is_installed("libreoffice")
 
+    @pytest.mark.packages
+    def test_logging_configured(self, qube: QubeWrapper) -> None:
+        qube.logging_configured()
 
-@pytest.mark.configuration
-@pytest.mark.packages
-def test_sd_viewer_libreoffice_installed(qube: QubeWrapper) -> None:
-    assert qube.package_is_installed("libreoffice")
+    @pytest.mark.packages
+    def test_redis_packages_not_installed(self, qube: QubeWrapper) -> None:
+        """
+        Only the log collector, i.e. sd-log, needs redis, so redis will be
+        present in the inbox template, but not in the viewer.
+        """
+        assert not qube.package_is_installed("redis")
+        assert not qube.package_is_installed("redis-server")
 
+    def test_mimetypes_service(self, qube: QubeWrapper) -> None:
+        qube.service_is_active("securedrop-mime-handling")
 
-@pytest.mark.configuration
-@pytest.mark.packages
-def test_logging_configured(qube: QubeWrapper) -> None:
-    qube.logging_configured()
+    def test_mailcap_hardened(self, qube: QubeWrapper) -> None:
+        qube.mailcap_hardened()
 
-
-@pytest.mark.configuration
-@pytest.mark.packages
-def test_redis_packages_not_installed(qube: QubeWrapper) -> None:
-    """
-    Only the log collector, i.e. sd-log, needs redis, so redis will be
-    present in the inbox template, but not in the viewer.
-    """
-    assert not qube.package_is_installed("redis")
-    assert not qube.package_is_installed("redis-server")
-
-
-@pytest.mark.configuration
-def test_mimetypes_service(qube: QubeWrapper) -> None:
-    qube.service_is_active("securedrop-mime-handling")
-
-
-@pytest.mark.configuration
-def test_mailcap_hardened(qube: QubeWrapper) -> None:
-    qube.mailcap_hardened()
-
-
-@pytest.mark.configuration
-def test_mimetypes_symlink(qube: QubeWrapper) -> None:
-    assert qube.fileExists(".local/share/applications/mimeapps.list")
-    symlink_location = qube.get_symlink_location(".local/share/applications/mimeapps.list")
-    assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
+    def test_mimetypes_symlink(self, qube: QubeWrapper) -> None:
+        assert qube.fileExists(".local/share/applications/mimeapps.list")
+        symlink_location = qube.get_symlink_location(".local/share/applications/mimeapps.list")
+        assert symlink_location == "/opt/sdw/mimeapps.list.sd-viewer"
 
 
 @pytest.mark.provisioning
