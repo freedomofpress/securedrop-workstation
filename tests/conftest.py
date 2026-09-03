@@ -32,14 +32,14 @@ def proj_root() -> os.PathLike[Any]:
 
 
 @pytest.fixture(autouse=True)
-def load_non_standard_module() -> Callable:
+def load_non_standard_module() -> Callable[[os.PathLike[Any]], ModuleType]:
     """
     Fixture factory for loading a non-standard python modules
 
-    This is necessary as a workaround due to the fact that some files not
-    following the standard python naming inventions, in particular:
-      1. Files ending in '.py'
-      2. No dashes ('-') in file names
+     This is necessary as a workaround for files that do not follow standard Python
+     module naming conventions, in particular:
+       1. Files NOT ending in '.py'
+       2. Dashes ('-') in file names
 
     Example:
 
@@ -47,7 +47,7 @@ def load_non_standard_module() -> Callable:
 
         @pytest.fixture()
         def custom_module(load_non_standard_module):
-            return load_non_standard_module("custom_module", "/usr/bin/custom-module")
+            return load_non_standard_module("/usr/bin/custom-module")
 
         def test_foo(custom_module):
             custom_module.custom_fn()

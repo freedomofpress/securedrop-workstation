@@ -184,7 +184,7 @@ class template_upgrade_handler(ContextDecorator):
     def __enter__(self) -> Callable[..., ContextDecorator]:
         self.app = Qubes()
 
-        self.skip_upgrade_handler = self.template_upgrades_needed()
+        self.skip_upgrade_handler = self.template_upgrades_skipped()
         if self.skip_upgrade_handler:
             return self
 
@@ -236,7 +236,7 @@ class template_upgrade_handler(ContextDecorator):
             if ("sd-workstation" in q.tags and q not in self.excluded and is_managed(q))
         ]
 
-    def template_upgrades_needed(self) -> bool:
+    def template_upgrades_skipped(self) -> bool:
         # NOTE: a more clever detection is warranted, but inspecting what salt is going
         # to do is not a particular thing salt is good at. This is left here for when
         # re-implemented with another IaC tool that doesn't need wrapper scripts like these.
