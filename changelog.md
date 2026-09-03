@@ -1,5 +1,42 @@
 # changelog
 
+## 1.9.0
+
+This release focused on hardening some edge-cases updater issues discovered during
+the 1.8.0 release.
+
+* Obtain list of templates to update on the fly instead of hardcoding (#1793)
+* Do not run dom0 states independently if full migration is needed (#1784)
+* Use %triggerun to enable migration flag for all pre-1.8.0 upgrades (#1783)
+* Remove "whonix removal" code (#1748)
+* Prevent qubes.USBAttach ask from overwriting other policies by @mausamrijall (#1825)
+
+* Internal and development:
+  * Rename sd-admin's template use `debian-13` in name (#1749)
+  * release.md: add step about setting migration flag (#1760)
+  * Use Debian 13 in CI (#1808)
+  * Use shellcheck-py package (#1826)
+  * Have `make test-launcher` fully pass locally (#1802)
+  * Don't have any wildcard versions in pyproject.toml (#1809)
+  * Deploy locally built RPMs as a server (for updater testing) (#1804)
+  * ci: add semgrep workflow (#1770)
+  * ci: remove semgrep workflow (#1820)
+  * Skip test_mock_device_attach_deny for now because it's broken (#1774)
+  * Add retroactive ADR for the updater's purpose (#1832)
+  * Undo dependabot grouping (#1794)
+  * Bump requests from 2.33.1 to 2.34.2 (#1801)
+  * Bump mypy-extensions from 1.0.0 to 1.1.0 (#1798)
+  * Bump anyio from 4.13.0 to 4.14.2 (#1814)
+  * Bump pluggy from 1.5.0 to 1.6.0 (#1819)
+  * Bump markdown-it-py from 4.0.0 to 4.2.0 (#1812)
+  * Bump face from 26.0.0 to 26.0.1 (#1810)
+  * Bump tomli from 2.0.2 to 2.4.1 (#1811)
+  * Bump sse-starlette from 3.4.1 to 3.4.8 (#1830)
+  * Bump python-debian from 0.1.49 to 1.1.1 (#1829)
+  * Bump pydantic-settings from 2.14.0 to 2.14.2 (#1828)
+  * Bump certifi from 2026.4.22 to 2026.7.22 (#1827)
+  * Bump cryptography from 47.0.0 to 50.0.0 (#1835)
+
 ## 1.8.0
 
 This release focused on upgrading SecureDrop Workstation qubes from Debian 12 (Bookworm)
