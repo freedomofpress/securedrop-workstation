@@ -163,7 +163,7 @@ vm_main() {
     # Entry point in case this runs in a VM
 
     export GNUPGHOME=$SD_DEV_GNUPGHOME
-    check_pkgs createrepo_c gpg qubes-core-agent-dom0-updates
+    check_pkgs createrepo-c gpg qubes-core-agent-dom0-updates
 
     if [[ "$1" == "generate-key" ]]; then
         vm_gen_signing_key
