@@ -15,8 +15,7 @@ if [[ "$(hostname)" != "dom0" ]]; then
     exit 1
 fi
 
-# Call out to target AppVM, to build an RPM containing
-# the latest Salt config for dom0. The RPM will be included
+# Call out to target AppVM, to build RPMs for dom0. The RPMs will be included
 # in the subsequent tarball, which is fetched to dom0.
 function build-dom0-rpm() {
     printf "Building RPM on %s ...\n" "${DEV_VM}"
@@ -38,7 +37,7 @@ function unpack-tarball() {
     tar xf /tmp/sd-proj.tar -C "${DOM0_DEV_DIR}" --strip-components=1
 }
 
-# By default we build the RPM, but the step can be skipped, which is useful
+# By default we build the RPMs, but the step can be skipped, which is useful
 # for certain development tasks
 if [[ "${BUILD_RPM:-true}" == "true" ]]; then
   build-dom0-rpm
