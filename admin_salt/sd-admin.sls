@@ -23,9 +23,14 @@ sd-admin:
       - netvm: sys-firewall
       - autostart: false
       - default_dispvm: ""
+      - virt-mode: pvh
+      - kernel: "pvgrub2-pvh"
     - tags:
       - add:
         - sd-workstation
         - sd-admin
+    - features:
+      - enable:
+        - service.paxctld
     - require:
       - qvm: sd-admin-debian-13
