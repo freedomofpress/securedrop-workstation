@@ -3,10 +3,6 @@ Version:	1.10.0rc1
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
-# Build the admin subpackage only when explicitly requested:
-#   rpmbuild --with admin ...
-%bcond_with admin
-
 # For reproducible builds:
 #
 #   * Ensure that SOURCE_DATE_EPOCH env is honored and inherited from the
@@ -39,11 +35,11 @@ BuildRequires:	python3-devel
 BuildRequires:	systemd-rpm-macros
 
 # This package installs all standard VMs in Qubes
-Requires:		qubes-mgmt-salt-dom0-virtual-machines
-Requires:       securedrop-workstation-keyring
-Requires:       grub2-xen-pvh
-Requires:       qubes-gpg-split-dom0
-Requires:       python3-dnf
+Requires:   qubes-mgmt-salt-dom0-virtual-machines
+Requires:   securedrop-workstation-keyring
+Requires:   grub2-xen-pvh
+Requires:   qubes-gpg-split-dom0
+Requires:   python3-dnf
 # Qubes 4.3 dependencies:
 %{?fc41:Requires: python3-pyqt6}
 # Qubes 4.2 dependencies:
@@ -55,7 +51,6 @@ SecureDrop Workstation project. The package should be installed
 in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
 
-%if %{with admin}
 %package -n securedrop-admin-dom0-config
 Summary: SecureDrop Admin
 Requires: qubes-mgmt-salt-dom0-virtual-machines
@@ -64,7 +59,6 @@ This package contains VM configuration files for the Qubes-based
 SecureDrop Admin project. The package should be installed
 in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
-%endif
 
 %build
 # Nothing to build; rpmbuild is invoked with --build-in-place
@@ -129,7 +123,6 @@ install -m 644 files/10-securedrop-logind_override.conf %{buildroot}/etc/systemd
 install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}%{_userunitdir}/
 install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}%{_userunitdir}/
 
-%if %{with admin}
 cp -a admin_salt %{buildroot}/srv/salt/admin_salt
 
 # Install shared apt source templates into admin_salt so the admin package
@@ -137,7 +130,6 @@ cp -a admin_salt %{buildroot}/srv/salt/admin_salt
 # workstation package at runtime.
 install -m 644 securedrop_salt/apt_freedom_press.sources.j2 %{buildroot}/srv/salt/admin_salt/
 install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/srv/salt/admin_salt/
-%endif
 
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
@@ -181,11 +173,9 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 %doc README.md
 %license LICENSE
 
-%if %{with admin}
 %files -n securedrop-admin-dom0-config
 /srv/salt/admin_salt/*
 %license LICENSE
-%endif
 
 %post
 # Update Salt Configuration

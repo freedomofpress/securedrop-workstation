@@ -23,7 +23,7 @@ if [[ -z "$latest_rpm" ]]; then
 fi
 
 if [[ -z "$latest_rpm" ]]; then
-    echo "Could not find admin RPM! Run 'make build-admin-rpm' first."
+    echo "Could not find admin RPM! Run 'make build-rpm' first."
     exit 1
 fi
 

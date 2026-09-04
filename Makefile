@@ -75,22 +75,10 @@ endif
 build-rpm: OUT:=build-log/securedrop-workstation-$(shell date +%Y%m%d).log
 build-rpm: ## Build RPM package
 	@mkdir -p build-log
-	@echo "Building SecureDop Workstation RPM..."
+	@echo "Building SecureDop Workstation RPMs.."
 	@export TERM=dumb
 	@USE_BUILD_CONTAINER=true script \
 		--command "$(CONTAINER) ./scripts/build-rpm.sh" \
-		--return $(OUT)
-	@echo
-	@echo "Build log available at $(OUT)"
-
-.PHONY: build-admin-rpm
-build-admin-rpm: OUT:=build-log/securedrop-admin-$(shell date +%Y%m%d).log
-build-admin-rpm: ## Build admin RPM package (opt-in)
-	@mkdir -p build-log
-	@echo "Building SecureDrop Admin RPM..."
-	@export TERM=dumb
-	@USE_BUILD_CONTAINER=true script \
-		--command "$(CONTAINER) ./scripts/build-admin-rpm.sh" \
 		--return $(OUT)
 	@echo
 	@echo "Build log available at $(OUT)"
