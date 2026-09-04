@@ -20,6 +20,17 @@ log() {
     fi
 }
 
+check_pkgs() {
+    local missing=()
+    for pkg in "$@"; do
+        dpkg-query -W -f='${db:Status-Status}' "$pkg" 2>/dev/null | grep -qx installed \
+            || missing+=("$pkg")
+    done
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        echo "Error: missing packages: ${missing[*]}" >&2
+        exit 1
+    fi
+}
 # Tmp location for local signing keys (so we don't mess with existing keyrings)
 SD_DEV_GNUPGHOME="/tmp/local_dev_gnupg"
 LOCAL_SIG_KEY_NAME="SD dom0 local updates"
@@ -152,6 +163,7 @@ vm_main() {
     # Entry point in case this runs in a VM
 
     export GNUPGHOME=$SD_DEV_GNUPGHOME
+    check_pkgs createrepo-c gpg qubes-core-agent-dom0-updates
 
     if [[ "$1" == "generate-key" ]]; then
         vm_gen_signing_key
