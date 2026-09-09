@@ -72,6 +72,7 @@ install -m 644 sdw_util/*.py %{buildroot}%{python3_sitelib}/sdw_util/
 
 install -m 755 -d %{buildroot}/srv/salt/
 cp -a securedrop_salt %{buildroot}/srv/salt/
+chmod -R u=rwX,go=rX %{buildroot}/srv/salt/securedrop_salt
 
 install -m 755 -d %{buildroot}%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}%{_bindir}
@@ -122,6 +123,7 @@ install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}%{_userun
 install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}%{_userunitdir}/
 
 cp -a admin_salt %{buildroot}/srv/salt/admin_salt
+chmod -R u=rwX,go=rX %{buildroot}/srv/salt/admin_salt
 
 # Install shared apt source templates into admin_salt so the admin package
 # can reference them via salt://admin_salt/ without depending on the
