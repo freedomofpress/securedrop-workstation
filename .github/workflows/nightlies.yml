@@ -38,7 +38,7 @@ jobs:
       - name: Build RPM
         run: |
           git config --global --add safe.directory '*'
-          # Version format is "${VERSION}-0.YYYYMMDDHHMMSS.fXX", which sorts lower than "${VERSION}-1".
+          # Version format is "${version}-0.YYYYMMDDHHMMSS.fXX", which sorts lower than "${version}-1".
           version="$(rpmspec -q --srpm --qf '%{version}' rpm-build/SPECS/*.spec)"
           rpmdev-bumpspec --new="${version}-0.$(date +%Y%m%d%H%M%S)%{?dist}" rpm-build/SPECS/*.spec
           make build-rpm

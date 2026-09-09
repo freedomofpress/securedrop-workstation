@@ -25,7 +25,7 @@ Path("VERSION").write_text(new_version + "\n")
 spec_lines = spec.read_text().splitlines()
 for i, line in enumerate(spec_lines):
     if line.startswith("Version:"):
-        spec_lines[i] = f"Version:\t{rpm_version}"
+        spec_lines[i] = f"Version:        {rpm_version}"
     elif line.startswith("%changelog"):
         current_date = datetime.datetime.now().strftime("%a %b %d %Y")
         changelog_entry = f"* {current_date} {author} - {rpm_version}-1\n- {message}\n"
