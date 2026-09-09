@@ -8,6 +8,19 @@ from qubesadmin.vm import QubesVM
 
 from tests.base import is_managed_qube
 
+# Policies shipped by the opt-in securedrop-admin-dom0-config subpackage
+ADMIN_POLICY_FILES = [
+    "/etc/qubes/policy.d/31-securedrop-admin.policy",
+    "/etc/qubes/policy.d/32-securedrop-admin.policy",
+]
+
+# Clipboard pairings granted by 31-securedrop-admin.policy
+ADMIN_CLIPBOARD_PAIRS = [
+    ("sd-admin", "sd-vault"),
+    ("sd-firewall-setup", "sd-vault"),
+    ("sd-vault", "sd-app"),
+]
+
 
 @functools.cache
 def qrexec_policy_graph(service: str) -> str:
@@ -28,6 +41,53 @@ def test_policy_files_exist() -> None:
     """verify the policies are installed"""
     assert os.path.exists("/etc/qubes/policy.d/31-securedrop-workstation.policy")
     assert os.path.exists("/etc/qubes/policy.d/32-securedrop-workstation.policy")
+
+
+@pytest.mark.provisioning
+@pytest.mark.parametrize(("first", "second"), ADMIN_CLIPBOARD_PAIRS)
+def test_admin_clipboard_allowed(all_vms: VMCollection, first: str, second: str) -> None:
+    """
+    The admin needs to move credentials between the qube that stores them
+    (sd-vault) and the qubes that use them, in both directions.
+    """
+    if not all(os.path.exists(policy) for policy in ADMIN_POLICY_FILES):
+        pytest.skip("securedrop-admin-dom0-config is not installed")
+    for vm in (first, second):
+        if vm not in all_vms:
+            pytest.skip(f"{vm} does not exist")
+
+    assert policy_exists(first, second, "qubes.ClipboardPaste")
+    assert policy_exists(second, first, "qubes.ClipboardPaste")
+
+
+@pytest.mark.provisioning
+def test_admin_clipboard_from_other_denied(all_vms: VMCollection) -> None:
+    """
+    Clipboard access to and from admin qubes is otherwise denied, even for
+    qubes that are themselves part of SecureDrop Workstation.
+    """
+    if not all(os.path.exists(policy) for policy in ADMIN_POLICY_FILES):
+        pytest.skip("securedrop-admin-dom0-config is not installed")
+
+    allowed = {
+        pair
+        for first, second in ADMIN_CLIPBOARD_PAIRS
+        for pair in ((first, second), (second, first))
+    }
+    admin_vms = [vm for vm in all_vms if "sd-admin" in vm.tags]
+    if not admin_vms:
+        pytest.skip("no sd-admin-tagged qubes exist")
+
+    for admin_vm in admin_vms:
+        for vm in all_vms:
+            if vm.name == admin_vm.name:
+                continue
+            for pair in ((admin_vm.name, vm.name), (vm.name, admin_vm.name)):
+                if pair in allowed:
+                    continue
+                assert not policy_exists(
+                    pair[0], pair[1], "qubes.ClipboardPaste"
+                ), f"qubes.ClipboardPaste from {pair[0]} to {pair[1]} should be denied"
 
 
 @pytest.mark.provisioning
