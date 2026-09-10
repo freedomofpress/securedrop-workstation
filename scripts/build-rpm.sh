@@ -29,4 +29,4 @@ rpmlint --strict --rpmlintrc "rpm-build/SPECS/${PROJECT}.rpmlintrc" \
     rpm-build/RPMS/noarch/*.rpm
 
 printf '\nBuild complete! RPMs and their checksums are:\n\n'
-find rpm-build/ -type f -iname "securedrop-*-$(cat "${TOPLEVEL}/VERSION")*.rpm" -print0 | sort -zV | xargs -0 sha256sum
+find rpm-build/ -type f -iname "securedrop-*-$(cat "${TOPLEVEL}/VERSION")*.rpm" -print0 | sort -zV | xargs -r -0 sha256sum
