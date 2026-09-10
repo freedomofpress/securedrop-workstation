@@ -2,7 +2,7 @@
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
 ##
-# Configures the FPF apt repository and installs securedrop-admin
+# Configures the FPF apt repository and installs required packages
 # inside the sd-admin-debian-13 VM.
 #
 # Mirrors the approach in securedrop_salt/fpf-apt-repo.sls and
@@ -16,6 +16,17 @@
 update-apt-cache:
   cmd.run:
     - name: apt-get update --allow-releaseinfo-change
+
+# Install qubes VM kernel support here, activate PVH in the sd-admin AppVM later
+# TODO: add an fpf metapackage to manage these dependencies
+install-qubes-packages:
+  pkg.installed:
+    - pkgs:
+      - qubes-vm-recommended
+      - linux-image-amd64
+      - grub2
+      - qubes-kernel-vm-support
+      - xfce4-terminal
 
 autoremove-old-packages:
   cmd.run:
@@ -34,16 +45,19 @@ configure-fpf-apt-repo:
     - require:
       - cmd: autoremove-old-packages
 
-# TODO: there's no keyring for trixie yet
-# install-securedrop-keyring:
-#   pkg.installed:
-#     - pkgs:
-#       - securedrop-keyring
-#     - require:
-#       - file: configure-fpf-apt-repo
+update-apt-cache-with-fpf:
+  cmd.run:
+    - name: apt-get update --allow-releaseinfo-change
+    - require:
+      - file: configure-fpf-apt-repo
 
-install-securedrop-admin:
+# additional packages (eg. tor, keepassxc) are installed as securedrop-admin dependencies
+# See https://github.com/freedomofpress/securedrop/blob/develop/admin/debian/control
+install-securedrop-packages:
   pkg.installed:
     - pkgs:
+      - securedrop-keyring
       - securedrop-admin
-    - refresh: True
+      - securedrop-workstation-grsec
+    - require:
+      - cmd: update-apt-cache-with-fpf
