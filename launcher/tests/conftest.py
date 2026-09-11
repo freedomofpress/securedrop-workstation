@@ -78,9 +78,19 @@ MOCK_SDW_APPVMS = {
     "sd-printers": "sd-viewer-debian-XX",
 }
 
+# The admin-only TemplateVM and AppVM (also tagged `sd-workstation`).
+MOCK_SDW_ADMIN_TEMPLATE = "sd-admin-debian-XX"
+MOCK_SDW_ADMIN_APPVMS = {
+    "sd-admin": MOCK_SDW_ADMIN_TEMPLATE,
+}
 
-@pytest.fixture
-def mocked_qubes_app(mocker):
+
+def _make_mocked_qubes_app(mocker, journalist: bool, admin: bool):
+    """
+    Build a mock Qubes app with the journalist qubes, the admin qubes, or both.
+
+    The Fedora template and the sys-* VMs it backs are always present.
+    """
     from qubesadmin.tests import mock_app
     from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
@@ -95,16 +105,24 @@ def mocked_qubes_app(mocker):
         def __init__(self):
             super().__init__()
 
-            # 1. Create the SecureDrop templates (tagged `sd-workstation`)
-            self._qubes[MOCK_SDW_BASE_TEMPLATE] = MockQube(
-                name=MOCK_SDW_BASE_TEMPLATE,
-                qapp=self,
-                klass="TemplateVM",
-                netvm="",
-                tags=[SD_TAG],
-            )
+            templates = []
+            appvms = {}
+            if journalist:
+                self._qubes[MOCK_SDW_BASE_TEMPLATE] = MockQube(
+                    name=MOCK_SDW_BASE_TEMPLATE,
+                    qapp=self,
+                    klass="TemplateVM",
+                    netvm="",
+                    tags=[SD_TAG],
+                )
+                templates.extend(MOCK_SDW_TEMPLATES)
+                appvms.update(MOCK_SDW_APPVMS)
+            if admin:
+                templates.append(MOCK_SDW_ADMIN_TEMPLATE)
+                appvms.update(MOCK_SDW_ADMIN_APPVMS)
 
-            for template_name in MOCK_SDW_TEMPLATES:
+            # 1. Create the SecureDrop templates (tagged `sd-workstation`)
+            for template_name in templates:
                 self._qubes[template_name] = MockQube(
                     name=template_name,
                     qapp=self,
@@ -122,7 +140,7 @@ def mocked_qubes_app(mocker):
             )
 
             # 3. Create the SecureDrop app qubes (tagged `sd-workstation`)
-            for qube_name, template_name in MOCK_SDW_APPVMS.items():
+            for qube_name, template_name in appvms.items():
                 MockQube(
                     qube_name,
                     self,
@@ -147,5 +165,23 @@ def mocked_qubes_app(mocker):
     # Patch "Qubes()" to allow tests to run on this fake mock
     mocker.patch("qubesadmin.Qubes").return_value = mock_qubes_app
 
-    # yield the mock to allow for further modifications in tests
+    # return the mock to allow for further modifications in tests
     return mock_qubes_app
+
+
+@pytest.fixture
+def mocked_journalist_qubes(mocker):
+    """A journalist workstation: no admin qubes."""
+    return _make_mocked_qubes_app(mocker, journalist=True, admin=False)
+
+
+@pytest.fixture
+def mocked_admin_qubes(mocker):
+    """An admin-only workstation: no journalist qubes."""
+    return _make_mocked_qubes_app(mocker, journalist=False, admin=True)
+
+
+@pytest.fixture
+def mocked_combined_qubes(mocker):
+    """A workstation with both the journalist and the admin qubes."""
+    return _make_mocked_qubes_app(mocker, journalist=True, admin=True)
