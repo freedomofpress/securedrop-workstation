@@ -29,6 +29,8 @@ LOG_FILE = "updater.log"
 DETAIL_LOG_FILE = "updater-detail.log"
 DETAIL_LOGGER_PREFIX = "detail"  # For detailed logs such as Salt states
 
+SD_UPDATER_TAG = "sd-updater"  # We update all templates with this tag
+
 # We use a hardcoded temporary directory path in dom0. As dom0 is not
 # a multi-user environment, we can safely assume that only the Updater is
 # managing that filepath. Later on, we should consider porting the check-migration
@@ -48,7 +50,7 @@ def _get_current_templates() -> set[str]:
     Return the set of TemplateVMs that the updater should update.
 
     Find:
-    * TemplateVMs tagged sd-workstation with derived_vms
+    * TemplateVMs tagged with SD_UPDATER_TAG ("sd-updater")
     * TemplateVMs that back hardcoded SYSTEM_VMS
 
     Notably this excludes the sd-base-debian-XX template, because
@@ -66,14 +68,11 @@ def _get_current_templates() -> set[str]:
     for vm in app.domains:
         if vm.klass != "TemplateVM":
             continue
-        if not vm.derived_vms:
-            # Nothing uses this template
-            continue
         if "prohibit-start" in vm.features:
             # Someone has disabled this VM
             continue
-        # Check for sd-workstation tag
-        if "sd-workstation" in vm.tags:
+        # Check for updater tag
+        if SD_UPDATER_TAG in vm.tags:
             templates.add(vm.name)
 
     for name in SYSTEM_VMS:

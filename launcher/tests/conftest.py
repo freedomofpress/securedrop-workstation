@@ -5,6 +5,7 @@ import tempfile
 import pytest
 
 import sdw_updater.Updater
+from sdw_updater.Updater import SD_UPDATER_TAG
 
 
 @pytest.fixture
@@ -60,8 +61,8 @@ SD_TAG = "sd-workstation"
 MOCK_FEDORA_TEMPLATE = "fedora-XX-xfce"
 
 # SecureDrop-managed TemplateVMs, all tagged `sd-workstation`.
+MOCK_SDW_BASE_TEMPLATE = "sd-base-debian-XX"
 MOCK_SDW_TEMPLATES = [
-    "sd-base-debian-XX",
     "sd-inbox-debian-XX",
     "sd-viewer-debian-XX",
 ]
@@ -77,30 +78,57 @@ MOCK_SDW_APPVMS = {
     "sd-printers": "sd-viewer-debian-XX",
 }
 
+# The admin-only TemplateVM and AppVM (also tagged `sd-workstation`).
+MOCK_SDW_ADMIN_TEMPLATE = "sd-admin-debian-XX"
+MOCK_SDW_ADMIN_APPVMS = {
+    "sd-admin": MOCK_SDW_ADMIN_TEMPLATE,
+}
 
-@pytest.fixture
-def mocked_qubes_app(mocker):
+
+def _make_mocked_qubes_app(mocker, journalist: bool, admin: bool):
+    """
+    Build a mock Qubes app with the journalist qubes, the admin qubes, or both.
+
+    The Fedora template and the sys-* VMs it backs are always present.
+    """
     from qubesadmin.tests import mock_app
     from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
     # The mock only registers `admin.vm.tag.Get` calls for tags it knows about,
-    # so register `sd-workstation` to allow `"sd-workstation" in vm.tags` checks
-    # against untagged VMs (e.g. the Fedora template).
-    if SD_TAG not in mock_app.POSSIBLE_TAGS:
-        mock_app.POSSIBLE_TAGS.append(SD_TAG)
+    # so register our tags to allow `"sd-workstation" in vm.tags` checks against
+    # untagged VMs (e.g. the Fedora template).
+    for tag in (SD_TAG, SD_UPDATER_TAG):
+        if tag not in mock_app.POSSIBLE_TAGS:
+            mock_app.POSSIBLE_TAGS.append(tag)
 
     class MockQubesWorkstation(QubesTestWrapper):
         def __init__(self):
             super().__init__()
 
+            templates = []
+            appvms = {}
+            if journalist:
+                self._qubes[MOCK_SDW_BASE_TEMPLATE] = MockQube(
+                    name=MOCK_SDW_BASE_TEMPLATE,
+                    qapp=self,
+                    klass="TemplateVM",
+                    netvm="",
+                    tags=[SD_TAG],
+                )
+                templates.extend(MOCK_SDW_TEMPLATES)
+                appvms.update(MOCK_SDW_APPVMS)
+            if admin:
+                templates.append(MOCK_SDW_ADMIN_TEMPLATE)
+                appvms.update(MOCK_SDW_ADMIN_APPVMS)
+
             # 1. Create the SecureDrop templates (tagged `sd-workstation`)
-            for template_name in MOCK_SDW_TEMPLATES:
+            for template_name in templates:
                 self._qubes[template_name] = MockQube(
                     name=template_name,
                     qapp=self,
                     klass="TemplateVM",
                     netvm="",
-                    tags=[SD_TAG],
+                    tags=[SD_TAG, SD_UPDATER_TAG],
                 )
 
             # 2. Create the Fedora template backing the sys-* VMs (NOT tagged)
@@ -112,7 +140,7 @@ def mocked_qubes_app(mocker):
             )
 
             # 3. Create the SecureDrop app qubes (tagged `sd-workstation`)
-            for qube_name, template_name in MOCK_SDW_APPVMS.items():
+            for qube_name, template_name in appvms.items():
                 MockQube(
                     qube_name,
                     self,
@@ -137,5 +165,23 @@ def mocked_qubes_app(mocker):
     # Patch "Qubes()" to allow tests to run on this fake mock
     mocker.patch("qubesadmin.Qubes").return_value = mock_qubes_app
 
-    # yield the mock to allow for further modifications in tests
+    # return the mock to allow for further modifications in tests
     return mock_qubes_app
+
+
+@pytest.fixture
+def mocked_journalist_qubes(mocker):
+    """A journalist workstation: no admin qubes."""
+    return _make_mocked_qubes_app(mocker, journalist=True, admin=False)
+
+
+@pytest.fixture
+def mocked_admin_qubes(mocker):
+    """An admin-only workstation: no journalist qubes."""
+    return _make_mocked_qubes_app(mocker, journalist=False, admin=True)
+
+
+@pytest.fixture
+def mocked_combined_qubes(mocker):
+    """A workstation with both the journalist and the admin qubes."""
+    return _make_mocked_qubes_app(mocker, journalist=True, admin=True)
