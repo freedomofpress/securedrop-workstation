@@ -17,17 +17,6 @@ update-apt-cache:
   cmd.run:
     - name: apt-get update --allow-releaseinfo-change
 
-# Install qubes VM kernel support here, activate PVH in the sd-admin AppVM later
-# TODO: add an fpf metapackage to manage these dependencies
-install-qubes-packages:
-  pkg.installed:
-    - pkgs:
-      - qubes-vm-recommended
-      - linux-image-amd64
-      - grub2
-      - qubes-kernel-vm-support
-      - xfce4-terminal
-
 autoremove-old-packages:
   cmd.run:
     - name: apt-get autoremove -y
@@ -57,7 +46,7 @@ install-securedrop-packages:
   pkg.installed:
     - pkgs:
       - securedrop-keyring
-      - securedrop-admin
+      - securedrop-admin-qubes
       - securedrop-workstation-grsec
     - require:
       - cmd: update-apt-cache-with-fpf
