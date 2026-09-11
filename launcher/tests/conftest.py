@@ -5,6 +5,7 @@ import tempfile
 import pytest
 
 import sdw_updater.Updater
+from sdw_updater.Updater import SD_UPDATER_TAG
 
 
 @pytest.fixture
@@ -60,8 +61,8 @@ SD_TAG = "sd-workstation"
 MOCK_FEDORA_TEMPLATE = "fedora-XX-xfce"
 
 # SecureDrop-managed TemplateVMs, all tagged `sd-workstation`.
+MOCK_SDW_BASE_TEMPLATE = "sd-base-debian-XX"
 MOCK_SDW_TEMPLATES = [
-    "sd-base-debian-XX",
     "sd-inbox-debian-XX",
     "sd-viewer-debian-XX",
 ]
@@ -84,23 +85,32 @@ def mocked_qubes_app(mocker):
     from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
     # The mock only registers `admin.vm.tag.Get` calls for tags it knows about,
-    # so register `sd-workstation` to allow `"sd-workstation" in vm.tags` checks
-    # against untagged VMs (e.g. the Fedora template).
-    if SD_TAG not in mock_app.POSSIBLE_TAGS:
-        mock_app.POSSIBLE_TAGS.append(SD_TAG)
+    # so register our tags to allow `"sd-workstation" in vm.tags` checks against
+    # untagged VMs (e.g. the Fedora template).
+    for tag in (SD_TAG, SD_UPDATER_TAG):
+        if tag not in mock_app.POSSIBLE_TAGS:
+            mock_app.POSSIBLE_TAGS.append(tag)
 
     class MockQubesWorkstation(QubesTestWrapper):
         def __init__(self):
             super().__init__()
 
             # 1. Create the SecureDrop templates (tagged `sd-workstation`)
+            self._qubes[MOCK_SDW_BASE_TEMPLATE] = MockQube(
+                name=MOCK_SDW_BASE_TEMPLATE,
+                qapp=self,
+                klass="TemplateVM",
+                netvm="",
+                tags=[SD_TAG],
+            )
+
             for template_name in MOCK_SDW_TEMPLATES:
                 self._qubes[template_name] = MockQube(
                     name=template_name,
                     qapp=self,
                     klass="TemplateVM",
                     netvm="",
-                    tags=[SD_TAG],
+                    tags=[SD_TAG, SD_UPDATER_TAG],
                 )
 
             # 2. Create the Fedora template backing the sys-* VMs (NOT tagged)

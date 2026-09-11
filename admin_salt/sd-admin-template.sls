@@ -20,6 +20,6 @@ sd-admin-debian-13:
         - sd-workstation
         - sd-workstation-trixie
         - sd-admin
+        - sd-updater
     - require:
       - qvm: dom0-install-debian-13-template
-
