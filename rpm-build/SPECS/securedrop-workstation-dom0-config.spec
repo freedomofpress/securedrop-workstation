@@ -1,7 +1,7 @@
-Name:		securedrop-workstation-dom0-config
-Version:	1.10.0rc1
-Release:	1%{?dist}
-Summary:	SecureDrop Workstation
+Name:           securedrop-workstation-dom0-config
+Version:        1.10.0~rc1
+Release:        1%{?dist}
+Summary:        SecureDrop Workstation
 
 # For reproducible builds:
 #
@@ -25,14 +25,12 @@ Summary:	SecureDrop Workstation
 # root policy.
 %undefine py_auto_byte_compile
 
-License:	AGPLv3
-URL:		https://github.com/freedomofpress/securedrop-workstation
-# See: https://docs.fedoraproject.org/en-US/packaging-guidelines/SourceURL/#_troublesome_urls
-Source:		%{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
+License:        AGPL-3.0-or-later
+URL:            https://github.com/freedomofpress/securedrop-workstation
 
-BuildArch:		noarch
-BuildRequires:	python3-devel
-BuildRequires:	systemd-rpm-macros
+BuildArch:      noarch
+BuildRequires:  python3-devel
+BuildRequires:  systemd-rpm-macros
 
 # This package installs all standard VMs in Qubes
 Requires:   qubes-mgmt-salt-dom0-virtual-machines
@@ -52,8 +50,8 @@ in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
 
 %package -n securedrop-admin-dom0-config
-Summary: SecureDrop Admin
-Requires: qubes-mgmt-salt-dom0-virtual-machines
+Summary:        SecureDrop Admin
+Requires:       qubes-mgmt-salt-dom0-virtual-machines
 %description -n securedrop-admin-dom0-config
 This package contains VM configuration files for the Qubes-based
 SecureDrop Admin project. The package should be installed
@@ -74,6 +72,7 @@ install -m 644 sdw_util/*.py %{buildroot}%{python3_sitelib}/sdw_util/
 
 install -m 755 -d %{buildroot}/srv/salt/
 cp -a securedrop_salt %{buildroot}/srv/salt/
+chmod -R u=rwX,go=rX %{buildroot}/srv/salt/securedrop_salt
 
 install -m 755 -d %{buildroot}%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}%{_bindir}
@@ -124,6 +123,7 @@ install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}%{_userun
 install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}%{_userunitdir}/
 
 cp -a admin_salt %{buildroot}/srv/salt/admin_salt
+chmod -R u=rwX,go=rX %{buildroot}/srv/salt/admin_salt
 
 # Install shared apt source templates into admin_salt so the admin package
 # can reference them via salt://admin_salt/ without depending on the
@@ -175,6 +175,7 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 
 %files -n securedrop-admin-dom0-config
 /srv/salt/admin_salt/*
+%doc README.md
 %license LICENSE
 
 %post
@@ -216,7 +217,7 @@ touch /tmp/sdw-migrations/debian-13-bump
 qubesctl top.disable securedrop_salt.sd-workstation
 
 %changelog
-* Wed Sep 02 2026 SecureDrop Team <securedrop@freedom.press> - 1.10.0rc1
+* Wed Sep 02 2026 SecureDrop Team <securedrop@freedom.press> - 1.10.0~rc1-1
 - See changelog.md
 
 * Tue Sep 01 2026 SecureDrop Team <securedrop@freedom.press> - 1.9.0
