@@ -1,0 +1,61 @@
+## Configure Qubes RPC "deny" policies for SecureDrop Admin.
+#
+# This file is provisioned by securedrop-admin-dom0-config.
+# Do not modify this file!
+#
+# As a general strategy, in addition to explicit grants, we provide
+# catch-all deny policies for SDW-provisioned VMs.
+#
+# Mostly a mirror of 32-securedrop-workstation.policy.
+
+qubes.GpgImportKey      *           @anyvm @tag:sd-admin deny
+qubes.GpgImportKey      *           @tag:sd-admin @anyvm deny
+
+qubes.Gpg               *           @anyvm @tag:sd-admin deny
+qubes.Gpg               *           @tag:sd-admin @anyvm deny
+
+# Future: qubes-app-linux-split-gpg2
+qubes.Gpg2              *           @anyvm @tag:sd-admin deny
+qubes.Gpg2              *           @tag:sd-admin @anyvm deny
+
+qubes.USBAttach         *           @anyvm @tag:sd-admin deny
+qubes.USBAttach         *           @tag:sd-admin @anyvm deny
+
+qubes.USB               *           @anyvm @tag:sd-admin deny
+qubes.USB               *           @tag:sd-admin @anyvm deny
+
+qubes.PdfConvert        *           @anyvm @tag:sd-admin deny
+qubes.PdfConvert        *           @tag:sd-admin @anyvm deny
+
+qubes.ClipboardPaste    *           @anyvm @tag:sd-admin deny
+qubes.ClipboardPaste    *           @tag:sd-admin @anyvm deny
+
+qubes.FeaturesRequest   *           @anyvm @tag:sd-admin deny
+qubes.FeaturesRequest   *           @tag:sd-admin @anyvm deny
+
+qubes.Filecopy          *           @anyvm @tag:sd-admin deny
+qubes.Filecopy          *           @tag:sd-admin @anyvm deny
+
+qubes.GetImageRGBA      *           @anyvm @tag:sd-admin deny
+qubes.GetImageRGBA      *           @tag:sd-admin @anyvm deny
+
+qubes.OpenInVM          *           @anyvm @tag:sd-admin deny
+qubes.OpenInVM          *           @tag:sd-admin @anyvm deny
+
+qubes.OpenURL           *           @anyvm @tag:sd-admin deny
+qubes.OpenURL           *           @tag:sd-admin @anyvm deny
+
+qubes.StartApp          *           @anyvm @tag:sd-admin deny
+qubes.StartApp          *           @tag:sd-admin @anyvm deny
+
+qubes.VMRootShell       *           @anyvm @tag:sd-admin deny
+qubes.VMRootShell       *           @tag:sd-admin @anyvm deny
+
+qubes.VMShell           *           @anyvm @tag:sd-admin deny
+qubes.VMShell           *           @tag:sd-admin @anyvm deny
+
+qubes.VMExec            *           @anyvm @tag:sd-admin deny
+qubes.VMExec            *           @tag:sd-admin @anyvm deny
+
+qubes.VMExecGUI         *           @anyvm @tag:sd-admin deny
+qubes.VMExecGUI         *           @tag:sd-admin @anyvm deny

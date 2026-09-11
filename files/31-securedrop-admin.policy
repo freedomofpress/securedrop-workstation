@@ -1,0 +1,19 @@
+## Configure Qubes RPC "allow" policies for SecureDrop Admin.
+#
+# This file is provisioned by securedrop-admin-dom0-config.
+# Do not modify this file!
+#
+# See 31-securedrop-workstation.policy for details about numbering.
+
+# sd-admin: copy/paste to and from sd-vault
+qubes.ClipboardPaste    *           sd-admin sd-vault allow
+qubes.ClipboardPaste    *           sd-vault sd-admin allow
+
+# sd-firewall-setup: copy/paste to and from sd-vault
+qubes.ClipboardPaste    *           sd-firewall-setup sd-vault allow
+qubes.ClipboardPaste    *           sd-vault sd-firewall-setup allow
+
+# sd-vault: copy/paste to and from sd-app, for combined journalist+admin
+# workstations
+qubes.ClipboardPaste    *           sd-vault sd-app allow
+qubes.ClipboardPaste    *           sd-app sd-vault allow

@@ -131,6 +131,10 @@ chmod -R u=rwX,go=rX %{buildroot}/srv/salt/admin_salt
 install -m 644 securedrop_salt/apt_freedom_press.sources.j2 %{buildroot}/srv/salt/admin_salt/
 install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/srv/salt/admin_salt/
 
+install -m 755 -d %{buildroot}/etc/qubes/policy.d/
+install -m 644 files/31-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
+install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
+
 %files
 %attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
 %attr(755, root, root) %{_datadir}/%{name}/scripts/destroy-vm
@@ -175,6 +179,8 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 
 %files -n securedrop-admin-dom0-config
 /srv/salt/admin_salt/*
+%attr(664, root, root) /etc/qubes/policy.d/31-securedrop-admin.policy
+%attr(664, root, root) /etc/qubes/policy.d/32-securedrop-admin.policy
 %doc README.md
 %license LICENSE
 
