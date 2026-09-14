@@ -9,8 +9,11 @@ from pathlib import Path
 
 from systemd.journal import JournalHandler
 
+# XDG_CONFIG_HOME is not set in 4.3 Qubes - set it manually
+config_dir = Path.home() / ".config/securedrop-manage"
+
 # TODO: add support for multiple keys
-SECRET_KEY_PATH = Path("/usr/share/securedrop-workstation-dom0-config/sd-journalist.sec")
+SECRET_KEY_PATH = config_dir / "sd-journalist.sec"
 
 # Logging set up
 RPC_POLICY_NAME = Path(__name__).name
@@ -38,7 +41,7 @@ def main() -> None:
 
     # Output the contents of the secret keys file
     # This will be sent back to the calling VM via stdout
-    with open(SECRET_KEY_PATH) as secret_key_f:
+    with open(str(SECRET_KEY_PATH)) as secret_key_f:
         print(secret_key_f.read().strip())
 
 
