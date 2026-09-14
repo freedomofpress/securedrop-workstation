@@ -72,10 +72,12 @@ jobs:
       fail-fast: false
       matrix:
         qubes_version: ${{ fromJSON(needs.check.outputs.qubes-versions) }}
+        scenario: ["upgrade-from-prod", "clean-install"]
     uses: ./.github/workflows/openqa.yml
     secrets: inherit
     with:
       environment: "dev"
+      scenario: ${{ matrix.scenario }}
       git_ref: ${{ github.event.pull_request.head.sha }}
       qubes_ver: ${{ matrix.qubes_version }}
 
