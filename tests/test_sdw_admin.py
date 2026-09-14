@@ -158,6 +158,7 @@ def test_is_managed(sdw_admin: ModuleType) -> None:
     assert sdw_admin.is_managed("sd-app")
 
 
+@pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
 @pytest.mark.provisioning
 def test_suppress_preloaded_disposables(sdw_admin: Any) -> None:
     def get_preloaded_qubes() -> list["QubesVM"]:
@@ -187,6 +188,7 @@ def test_suppress_preloaded_disposables(sdw_admin: Any) -> None:
     assert new_preload_dispvm_max == int(app.domains["dom0"].features["preload-dispvm-max"])
 
 
+@pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
 class TestTemplateUpgradesAvailable:
     def test_template_upgrade_handler(
         self,
