@@ -5,6 +5,10 @@ base:
   dom0:
     - admin_salt.sd-admin-template
     - admin_salt.sd-admin
+    - admin_salt.sd-admin-vault
 
   sd-admin-debian-13:
     - admin_salt.sd-admin-packages
+
+  sd-admin-vault:
+    - admin_salt.sd-admin-vault-setup
