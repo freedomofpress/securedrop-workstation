@@ -38,10 +38,8 @@ Requires:   securedrop-workstation-keyring
 Requires:   grub2-xen-pvh
 Requires:   qubes-gpg-split-dom0
 Requires:   python3-dnf
-# Qubes 4.3 dependencies:
-%{?fc41:Requires: python3-pyqt6}
-# Qubes 4.2 dependencies:
-%{?fc37:Requires: python3-qt5}
+Requires:   python3-pyqt6
+Requires:   securedrop-dom0-manager
 
 %description
 This package contains VM configuration files for the Qubes-based
@@ -52,11 +50,18 @@ configuration over time.
 %package -n securedrop-admin-dom0-config
 Summary:        SecureDrop Admin
 Requires:       qubes-mgmt-salt-dom0-virtual-machines
+Requires:       securedrop-dom0-manager
 %description -n securedrop-admin-dom0-config
 This package contains VM configuration files for the Qubes-based
 SecureDrop Admin project. The package should be installed
 in dom0, or AdminVM, context, in order to manage updates to the VM
 configuration over time.
+
+%package -n securedrop-dom0-manager
+Summary:        SecureDrop Manager
+%description -n securedrop-dom0-manager
+Shared management, updating and launching code for the SecureDrop
+Journalist and Admin Workstations.
 
 %build
 # Nothing to build; rpmbuild is invoked with --build-in-place
@@ -181,6 +186,10 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 /srv/salt/admin_salt/*
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-admin.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-admin.policy
+%doc README.md
+%license LICENSE
+
+%files -n securedrop-dom0-manager
 %doc README.md
 %license LICENSE
 
