@@ -11,7 +11,6 @@ from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 from tests.base import SD_TAG
 
 if TYPE_CHECKING:
-    from qubesadmin.app import VMCollection
     from qubesadmin.vm import QubesVM
 
 
@@ -43,12 +42,12 @@ def template_upgrades_available(sdw_admin: Any, mocker: Any) -> None:
 
 
 @pytest.fixture
-def cleanup_prohibit_start(sdw_tagged_vms: "VMCollection") -> Generator:
+def cleanup_prohibit_start() -> Generator:
     """
     Ensure cleanup in case of a test failure when testing with prohibit-start feature
     """
     yield
-    for qube in sdw_tagged_vms:
+    for qube in qubesadmin.Qubes().domains:
         if qube.features.get("prohibit-start") == "disabled during set up":
             del qube.features["prohibit-start"]
 

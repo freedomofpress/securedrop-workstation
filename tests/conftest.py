@@ -116,20 +116,20 @@ def dom0_config(proj_root: os.PathLike) -> Dom0Config:
     return Dom0Config.parse(config)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def all_vms() -> VMCollection:
     """Obtain all qubes present in the system"""
     return Qubes().domains
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def sdw_tagged_vms(all_vms: VMCollection) -> list[QubesVM]:
     """Obtain all SecureDrop Workstation-exclusive qubes"""
     return list(filter(is_workstation_qube, all_vms))
 
 
 @pytest.fixture(scope="session", autouse=True)
-def cleanup(request: pytest.FixtureRequest, sdw_tagged_vms: list[QubesVM]) -> Iterator[None]:
+def cleanup(request: pytest.FixtureRequest) -> Iterator[None]:
     """
     Handles all post-test teardown logic. Mostly that's just shutting down TemplateVMs
     that may have been booted to inspect package state.
