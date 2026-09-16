@@ -6,31 +6,35 @@ set -euo pipefail
 
 source "$(dirname "$0")/common.sh"
 
-# Substring to ensure that the primary dom0 config RPM is selected;
-# used to differentiate between the the default RPM and the WIP sd-admin RPM.
-rpm_name="securedrop-workstation-dom0-config"
+RPM_NAME="${RPM_NAME:-securedrop-workstation-dom0-config}"
 
 function find_latest_rpm() {
     # Look up which version of dom0 we're using.
     fedora_version="$(rpm --eval '%{fedora}')"
-    find "${DOM0_DEV_DIR}/rpm-build/RPMS/" -type f -iname "${rpm_name}*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
+    # TODO: Use proper RPM parsing / sorting to handle this
+    find "${DOM0_DEV_DIR}/rpm-build/RPMS/" -type f -iname "${1}*fc${fedora_version}.noarch.rpm" -print0 | xargs -r -0 ls -t | head -n 1
 }
 
-latest_rpm="$(find_latest_rpm)"
-if [[ -z "$latest_rpm" ]]; then
-    echo "Could not find RPM!"
-    exit 1
-fi
+function install_latest() {
+    latest_rpm="$(find_latest_rpm "$1")"
+    if [[ -z "$latest_rpm" ]]; then
+        echo "Could not find RPM!"
+        exit 1
+    fi
+    # Full name needed to compare against installed version
+    pkg_full_name=$(basename "$latest_rpm" | sed -e 's/.rpm//g')
+    if rpm -q "$pkg_full_name" > /dev/null 2>&1; then
+        echo "Reinstalling $latest_rpm ..."
+        sudo dnf reinstall -y "$latest_rpm"
+    else
+        echo "Installing $latest_rpm ..."
+        sudo dnf install -y "$latest_rpm"
+    fi
+}
 
 echo "Deploying Salt config..."
 sudo dnf clean all
-
-# Full name needed to compare against installed version
-pkg_full_name=$(basename "$latest_rpm" | sed -e 's/.rpm//g')
-if rpm -q "$pkg_full_name" > /dev/null 2>&1; then
-    echo "Reinstalling $latest_rpm ..."
-    sudo dnf reinstall -y "$latest_rpm"
-else
-    echo "Installing $latest_rpm ..."
-    sudo dnf install -y "$latest_rpm"
-fi
+install_latest securedrop-dom0-manager
+install_latest "${RPM_NAME}"
+# Mark it as installed as a dependency so its autoremoved on --uninstall
+sudo dnf -y mark dependency securedrop-dom0-manager
