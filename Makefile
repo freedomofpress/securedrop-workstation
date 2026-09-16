@@ -107,7 +107,7 @@ test-deps: build-deps ## Install package dependencies for running tests
 .PHONY: install-admin-rpm
 install-admin-rpm: assert-dom0 ## Install locally-built admin RPM (opt-in)
 	@echo "Installing securedrop-admin-dom0-config RPM..."
-	@scripts/install-admin-rpm
+	@RPM_NAME=securedrop-admin-dom0-config ./scripts/prep-dev
 
 .PHONY: sd-admin
 sd-admin: assert-dom0 ## Provision sd-admin VM and install securedrop-admin
