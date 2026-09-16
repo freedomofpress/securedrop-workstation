@@ -56,13 +56,32 @@ TEST_RESULTS_UPDATES = {
 }
 
 
+@pytest.mark.parametrize(
+    ("fixture_name", "expected"),
+    [
+        (
+            "mocked_journalist_qubes",
+            {"sd-inbox-debian-XX", "sd-viewer-debian-XX", "fedora-XX-xfce"},
+        ),
+        (
+            "mocked_admin_qubes",
+            {"sd-admin-debian-XX", "fedora-XX-xfce"},
+        ),
+        (
+            "mocked_combined_qubes",
+            {
+                "sd-inbox-debian-XX",
+                "sd-viewer-debian-XX",
+                "sd-admin-debian-XX",
+                "fedora-XX-xfce",
+            },
+        ),
+    ],
+)
 @skipif_no_qubesadmin
-def test__get_current_templates(mocked_qubes_app):
-    assert Updater._get_current_templates() == {
-        "sd-inbox-debian-XX",
-        "sd-viewer-debian-XX",
-        "fedora-XX-xfce",
-    }
+def test__get_current_templates(fixture_name, expected, request):
+    request.getfixturevalue(fixture_name)
+    assert Updater._get_current_templates() == expected
 
 
 @mock.patch("sdw_updater.Updater._write_updates_status_flag_to_disk")
@@ -364,14 +383,16 @@ def test_read_dom0_update_flag_from_disk_fails(mocked_info, mocked_error, tmp_pa
     ],
 )
 @skipif_no_qubesadmin
-def test_is_qubes_mid_upgrade(qubes_ver, agent_ver, is_mid_upgrade, mocker, mocked_qubes_app):
+def test_is_qubes_mid_upgrade(
+    qubes_ver, agent_ver, is_mid_upgrade, mocker, mocked_journalist_qubes
+):
     # Overrding "dnf.rpm.detect_releasever" to simulate being on particular Qubes version
     mocker.patch("dnf.rpm").detect_releasever.return_value = qubes_ver
 
     # Make templates return the version set by the test (MockQubes is just a mock)
-    for qube in mocked_qubes_app.domains:
+    for qube in mocked_journalist_qubes.domains:
         if qube.klass == "TemplateVM":
-            mocked_qubes_app.expected_calls[
+            mocked_journalist_qubes.expected_calls[
                 (qube.name, "admin.vm.feature.Get", "qubes-agent-version", None)
             ] = b"0\x00" + agent_ver.encode()
 

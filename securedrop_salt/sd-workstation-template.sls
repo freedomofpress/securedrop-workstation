@@ -24,6 +24,7 @@ include:
       - add:
         - sd-workstation
         - sd-{{ sdvars.distribution }}
+        - sd-updater
     - features:
       - enable:
         - service.paxctld
