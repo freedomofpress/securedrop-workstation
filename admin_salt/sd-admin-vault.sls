@@ -32,7 +32,6 @@ sd-admin-vault:
         - menu-items: "org.keepassxc.KeePassXC.desktop"
     - tags:
       - add:
-        - sd-workstation
         - sd-admin
     - require:
       - qvm: sd-admin-debian-13

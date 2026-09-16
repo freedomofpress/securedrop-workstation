@@ -27,7 +27,6 @@ sd-admin:
       - kernel: "pvgrub2-pvh"
     - tags:
       - add:
-        - sd-workstation
         - sd-admin
     - features:
       - enable:
