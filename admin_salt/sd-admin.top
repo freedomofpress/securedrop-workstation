@@ -3,6 +3,7 @@
 
 base:
   dom0:
+    - admin_salt.sd-sys-vms
     - admin_salt.sd-admin-template
     - admin_salt.sd-admin
 
