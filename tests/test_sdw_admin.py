@@ -1,4 +1,5 @@
 import os
+import time
 from collections.abc import Callable, Generator
 from pathlib import Path
 from types import ModuleType
@@ -6,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 import qubesadmin
+from qubesadmin.app import VMCollection
 from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
 from tests.base import SD_TAG
@@ -157,9 +159,48 @@ def test_is_managed(sdw_admin: ModuleType) -> None:
     assert sdw_admin.is_managed("sd-app")
 
 
+@pytest.fixture
+def let_sd_viewer_preloads_settle(all_vms: VMCollection) -> Any:
+    """
+    Wait for preloaded qubes to be fully settled before next test
+
+    The way to set preloaded disposables in Qubes (preload-dispvm-max feature)
+    is non-blocking. This means that disposables may still be in the process
+    of being created. This teardown makes sure they are ready for the next
+    test (assumed sequential).
+    """
+    yield
+
+    all_vms.refresh_cache(force=True)
+    max_preloads = int(all_vms["dom0"].features["preload-dispvm-max"])
+    expected_preload_names = set(all_vms["sd-viewer"].features.get("preload-dispvm", "").split())
+
+    # OpenQA takes much longer to start/stop qubes
+    timeout = 90 if os.environ.get("CI") else 30
+
+    for attempt in range(timeout):
+        all_vms.refresh_cache(force=True)
+
+        # Preload completeness needs multiple conditions to be true
+        ready_preloads = [
+            p
+            for p in all_vms["sd-viewer"].appvms
+            if p.is_running()
+            and p.features.get("preload-dispvm-completed", "") != ""
+            and getattr(p, "is_preload")
+            and p.name in expected_preload_names  # ignore "zombie" preloads (qubes-issues#11129)
+        ]
+        if len(ready_preloads) == max_preloads:
+            return
+
+        time.sleep(1)
+
+    pytest.fail("Failed to clean up preloaded disposables")
+
+
 @pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
 @pytest.mark.provisioning
-def test_suppress_preloaded_disposables(sdw_admin: Any) -> None:
+def test_suppress_preloaded_disposables(sdw_admin: Any, let_sd_viewer_preloads_settle: Any) -> None:
     def get_preloaded_qubes() -> list["QubesVM"]:
         return list(filter(lambda q: getattr(q, "is_preload", False), app.domains))
 
