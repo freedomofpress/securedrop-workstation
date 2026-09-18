@@ -1,0 +1,3 @@
+# Type stubs for the `qubesadmin.exc` package.
+
+class QubesException(Exception): ...
