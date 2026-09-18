@@ -113,6 +113,8 @@ install-admin-rpm: assert-dom0 ## Install locally-built admin RPM (opt-in)
 sd-admin: assert-dom0 ## Provision sd-admin VM and install securedrop-admin
 	sudo rm -rf /var/cache/salt
 	sudo qubesctl saltutil.sync_all refresh=true
+	@echo "Provisioning Fedora-based system VMs..."
+	sudo qubesctl --show-output -- state.sls admin_salt.sd-sys-vms
 	@echo "Creating sd-admin template and AppVM..."
 	sudo qubesctl --show-output -- state.sls admin_salt.sd-admin
 	@echo "Installing packages inside sd-admin-debian-13..."
