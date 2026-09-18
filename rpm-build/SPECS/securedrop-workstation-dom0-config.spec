@@ -117,6 +117,9 @@ install -m 755 files/securedrop.GetSecretKeys.py %{buildroot}/etc/qubes-rpc/secu
 install -m 755 -d %{buildroot}/usr/share/securedrop/icons
 install -m 644 files/securedrop-128x128.png %{buildroot}/usr/share/securedrop/icons/sd-logo.png
 
+install -m 755 -d %{buildroot}/usr/share/securedrop/products
+install -m 644 files/products/*.json %{buildroot}/usr/share/securedrop/products/
+
 install -m 755 -d %{buildroot}/etc/systemd/logind.conf.d/
 install -m 644 files/10-securedrop-logind_override.conf %{buildroot}/etc/systemd/logind.conf.d/
 install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}%{_userunitdir}/
@@ -172,6 +175,9 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 #TODO: this is the same 128x128 icon "securedrop.png" in the datadir
 /usr/share/securedrop/icons/sd-logo.png
 
+%dir /usr/share/securedrop/products
+/usr/share/securedrop/products/journalist-workstation.json
+
 %attr(755, root, root) /usr/bin/securedrop/update-xfce-settings
 
 %doc README.md
@@ -181,6 +187,8 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 /srv/salt/admin_salt/*
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-admin.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-admin.policy
+%dir /usr/share/securedrop/products
+/usr/share/securedrop/products/admin-workstation.json
 %doc README.md
 %license LICENSE
 
