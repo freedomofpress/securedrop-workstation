@@ -79,7 +79,6 @@ install -m 755 -d %{buildroot}%{_bindir}
 install -m 755 -d %{buildroot}/opt/securedrop
 install -m 755 -d %{buildroot}/usr/bin/securedrop
 install -m 755 files/update-xfce-settings %{buildroot}/usr/bin/securedrop/
-install -m 755 files/clean-salt %{buildroot}%{_datadir}/%{name}/scripts/
 install -m 755 files/destroy-vm.py %{buildroot}%{_datadir}/%{name}/scripts/destroy-vm
 install -m 755 files/validate_config.py %{buildroot}%{_datadir}/%{name}/scripts/
 install -m 755 files/sdw-admin.py %{buildroot}%{_bindir}/sdw-admin
@@ -139,14 +138,17 @@ install -m 644 files/31-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 
 %files
-%attr(755, root, root) %{_datadir}/%{name}/scripts/clean-salt
 %attr(755, root, root) %{_datadir}/%{name}/scripts/destroy-vm
 %attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
 %attr(755, root, root) %{_bindir}/sdw-admin
 %attr(755, root, root) %{_bindir}/sdw-upgrade
 
 %{_datadir}/%{name}/config.json.example
+%dir /srv/salt/securedrop_salt
 /srv/salt/securedrop_salt/*
+# Copied into place by sdw-admin at provisioning time
+%ghost %attr(0644, root, root) /srv/salt/securedrop_salt/config.json
+%ghost %attr(0644, root, root) /srv/salt/securedrop_salt/sd-journalist.sec
 %attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/sdw-updater
@@ -214,6 +216,7 @@ systemctl enable securedrop-logind-override-disable.service ||:
 %preun
 # If we're uninstalling (vs upgrading)
 if [ $1 -eq 0 ]; then
+    qubesctl top.disable securedrop_salt.sd-workstation ||:
     %systemd_preun securedrop-logind-override-disable.service
     %systemd_user_preun securedrop-user-xfce-icon-size.service
     %systemd_user_preun securedrop-user-xfce-settings.service
