@@ -16,7 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-CONFIG_JSON = Path("/usr/share/securedrop-workstation-dom0-config/config.json")
+CONFIG_JSON = Path.home() / ".config/securedrop-manage/config.json"
 SOURCES_DIR = Path(__file__).parent.parent / "securedrop_salt"
 
 OPTIONS = ["dev", "staging", "prod"]
