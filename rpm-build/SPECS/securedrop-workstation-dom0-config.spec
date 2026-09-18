@@ -39,7 +39,7 @@ Requires:   grub2-xen-pvh
 Requires:   qubes-gpg-split-dom0
 Requires:   python3-dnf
 Requires:   python3-pyqt6
-Requires:   securedrop-dom0-manager
+Requires:   securedrop-dom0-manager = %{version}-%{release}
 
 %description
 This package contains VM configuration files for the Qubes-based
@@ -50,7 +50,7 @@ configuration over time.
 %package -n securedrop-admin-dom0-config
 Summary:        SecureDrop Admin
 Requires:       qubes-mgmt-salt-dom0-virtual-machines
-Requires:       securedrop-dom0-manager
+Requires:       securedrop-dom0-manager = %{version}-%{release}
 %description -n securedrop-admin-dom0-config
 This package contains VM configuration files for the Qubes-based
 SecureDrop Admin project. The package should be installed
