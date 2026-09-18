@@ -107,7 +107,7 @@ test-deps: build-deps ## Install package dependencies for running tests
 .PHONY: install-admin-rpm
 install-admin-rpm: assert-dom0 ## Install locally-built admin RPM (opt-in)
 	@echo "Installing securedrop-admin-dom0-config RPM..."
-	@scripts/install-admin-rpm
+	@RPM_NAME=securedrop-admin-dom0-config ./scripts/prep-dev
 
 .PHONY: sd-admin
 sd-admin: assert-dom0 ## Provision sd-admin VM and install securedrop-admin
@@ -130,7 +130,7 @@ clean: assert-dom0 ## Destroys all SD VMs
 # Use the local script path, since system PATH location will be absent
 # if clean has already been run.
 	./files/sdw-admin.py --uninstall --force
-	rpm -qa | grep '^securedrop-workstation' | xargs -r sudo dnf remove -y
+	rpm -qa | grep '^securedrop-' | xargs -r sudo dnf remove -y
 	find /etc/yum.repos.d -type f -iname 'securedrop-workstation*.repo' -exec sudo rm -v {} +
 
 DOM0_TEST_PREREQS = python3-pytest python3-pytest-cov python3-pytest-xdist python3-pytest-mock python3-systemd
