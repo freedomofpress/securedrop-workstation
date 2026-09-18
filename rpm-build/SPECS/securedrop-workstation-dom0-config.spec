@@ -189,6 +189,7 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 %license LICENSE
 
 %files -n securedrop-admin-dom0-config
+%dir /srv/salt/admin_salt
 /srv/salt/admin_salt/*
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-admin.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-admin.policy
@@ -239,6 +240,12 @@ mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/debian-13-bump
 # Disable top to workaround a bug in the 1.8.0 upgrade; sdw-admin will re-enable it
 qubesctl top.disable securedrop_salt.sd-workstation
+
+%preun -n securedrop-admin-dom0-config
+# If we're uninstalling (vs upgrading)
+if [ $1 -eq 0 ]; then
+    qubesctl top.disable admin_salt.sd-admin ||:
+fi
 
 %changelog
 * Wed Sep 02 2026 SecureDrop Team <securedrop@freedom.press> - 1.10.0~rc1-1
