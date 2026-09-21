@@ -8,10 +8,12 @@ does it handle the config.
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 from collections.abc import Callable, Iterator
 from contextlib import ContextDecorator, contextmanager
+from pathlib import Path
 from typing import Literal
 
 from qubesadmin import Qubes
@@ -26,18 +28,20 @@ MAX_CONCURRENCY = 2
 DEFAULT_SD_APP_GB = 10
 DEFAULT_SD_LOG_GB = 5
 
-SCRIPTS_PATH = "/usr/share/securedrop-workstation-dom0-config/"
-SALT_PATH = "/srv/salt/securedrop_salt/"
+SCRIPTS_PATH = Path("/usr/share/securedrop-workstation-dom0-config/")
+SALT_PATH = Path("/srv/salt/securedrop_salt/")
+CONFIG_PATH = Path.home() / ".config/securedrop-manage"
+LEGACY_CONFIG_PATH = SCRIPTS_PATH
 
 DEBIAN_VERSION = "13"
 BASE_TEMPLATE = f"debian-{DEBIAN_VERSION}-minimal"
 
 SUBMISSION_KEY = "sd-journalist.sec"
-TAILS_PATH = "/run/media/user/TailsData/"
-TAILS_GNUPG_PATH = TAILS_PATH + "gnupg/"
-TAILS_PKG_JOURNALIST_INTERFACE_CONFIG = TAILS_PATH + "securedrop-admin/app-journalist.auth_private"
+TAILS_PATH = Path("/run/media/user/TailsData/")
+TAILS_GNUPG_PATH = TAILS_PATH / "gnupg/"
+TAILS_PKG_JOURNALIST_INTERFACE_CONFIG = TAILS_PATH / "securedrop-admin/app-journalist.auth_private"
 TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
-    TAILS_PATH + "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
+    TAILS_PATH / "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
 
 # Salt pillar override to make sure dom0 states do not re-enable
@@ -47,7 +51,7 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
 # FIXME: https://github.com/freedomofpress/securedrop-workstation/issues/1523
 PILLAR_DISABLE_PRELOAD = {"qvm": {"dom0": {"preload": False}}}
 
-sys.path.insert(1, os.path.join(SCRIPTS_PATH, "scripts/"))
+sys.path.insert(1, str(SCRIPTS_PATH / "scripts/"))
 from validate_config import SDWConfigValidator  # noqa: E402
 
 
@@ -91,15 +95,43 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def move_legacy_config(old_location: Path, new_location: Path) -> None:
+    """
+    Checks for config files in CONFIG_PATH, and tries to copy them from
+    LEGACY_CONFIG_PATH if they're not there.
+    """
+    # make the config directory if it doesn't exist already
+    new_location.mkdir(parents=True, exist_ok=True)
+
+    config_files = ["config.json", "sd-journalist.sec"]
+    files_were_copied = False
+
+    for filename in config_files:
+        expected_location = new_location / filename
+        legacy_location = old_location / filename
+
+        if not expected_location.is_file() and legacy_location.is_file():
+            try:
+                shutil.copy(legacy_location, expected_location)
+                files_were_copied = True
+                subprocess.check_call(["sudo", "rm", legacy_location])
+            except Exception as e:
+                raise SDWAdminException(f"Error moving legacy configuration: {e}")
+
+    if files_were_copied:
+        print(
+            f"Note: Configuration files were found in the legacy location"
+            f" {old_location} and have been moved to {new_location}.\n\n"
+        )
+
+
 def copy_config() -> None:
     """
     Copies config.json and sd-journalist.sec to /srv/salt/securedrop_salt
     """
     try:
-        subprocess.check_call(["sudo", "cp", os.path.join(SCRIPTS_PATH, "config.json"), SALT_PATH])
-        subprocess.check_call(
-            ["sudo", "cp", os.path.join(SCRIPTS_PATH, "sd-journalist.sec"), SALT_PATH]
-        )
+        subprocess.check_call(["sudo", "cp", CONFIG_PATH / "config.json", SALT_PATH])
+        subprocess.check_call(["sudo", "cp", CONFIG_PATH / "sd-journalist.sec", SALT_PATH])
     except subprocess.CalledProcessError:
         raise SDWAdminException("Error copying configuration")
 
@@ -334,7 +366,7 @@ def sync_appmenus() -> None:
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-log"])
 
 
-def validate_config(path: str) -> None:
+def validate_config(path: Path) -> None:
     """
     Calls the validate_config script to validate the config present in the staging/prod directory
     """
@@ -404,7 +436,7 @@ def perform_uninstall() -> None:
         destroy_all_tagged(tag="sd-workstation")
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
-        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/clean-salt")])
+        subprocess.check_call([SCRIPTS_PATH / "scripts/clean-salt"])
         print("Uninstalling dom0 config package")
         subprocess.check_call(
             ["sudo", "dnf", "-y", "-q", "remove", "securedrop-workstation-dom0-config"]
@@ -414,7 +446,7 @@ def perform_uninstall() -> None:
 
     print(
         "Instance secrets (Journalist Interface token and Submission private key) are still "
-        "present on disk. You can delete them in /usr/share/securedrop-workstation-dom0-config"
+        f"present on disk. You can delete them in {CONFIG_PATH}"
     )
 
 
@@ -462,10 +494,10 @@ def _try_read_submission_key() -> str | None:
     Checks if SecureDrop submission key is written to dom0. If so, returns
     submission key fingerprint
     """
-    if not os.path.exists(SCRIPTS_PATH + SUBMISSION_KEY):
+    if not (CONFIG_PATH / SUBMISSION_KEY).exists():
         return None
     gpg_output = subprocess.check_output(
-        ["gpg", "--show-keys", "--with-fingerprint", "--with-colon", SCRIPTS_PATH + SUBMISSION_KEY],
+        ["gpg", "--show-keys", "--with-fingerprint", "--with-colon", CONFIG_PATH / SUBMISSION_KEY],
         text=True,
     )
     fingerprints = extract_secret_key_fingerprints(gpg_output)
@@ -544,7 +576,7 @@ def import_submission_key() -> str:
     with open(temp_file, "w") as f:
         f.write(gpg_privkey)
 
-    subprocess.check_call(["sudo", "cp", temp_file, SCRIPTS_PATH])
+    subprocess.check_call(["cp", temp_file, CONFIG_PATH])
 
     return fingerprint
 
@@ -622,7 +654,7 @@ def import_config() -> None:
         print("Found submission key file, proceeding")
 
     try:
-        validate_config(SCRIPTS_PATH)
+        validate_config(CONFIG_PATH)
         print("Valid configuration found, configuration complete")
     except SDWAdminException:
         subprocess.Popen(
@@ -679,13 +711,13 @@ def import_config() -> None:
         temp_file = "/tmp/config.json"
         with open(temp_file, "w") as f:
             json.dump(config, f, indent=2)
-        subprocess.check_call(["sudo", "cp", temp_file, SCRIPTS_PATH])
+        subprocess.check_call(["cp", temp_file, CONFIG_PATH])
         print(
             "Journalist Interface import complete!\n"
             "Please detach and disconnect the USB drive.\n\n"
         )
         print("Validating configuration...")
-        validate_config(SCRIPTS_PATH)
+        validate_config(CONFIG_PATH)
         print("Validation successful!")
     return
 
@@ -694,10 +726,15 @@ def main() -> None:
     if os.geteuid() == 0:
         print("Please do not run this script as root.")
         sys.exit(0)
+
+    # check for config files under ~/.config/, try to copy them across from
+    # the old /usr/share location if they're missing.
+    move_legacy_config(LEGACY_CONFIG_PATH, CONFIG_PATH)
+
     args = parse_args()
     if args.validate:
         print("Validating...", end="")
-        validate_config(SCRIPTS_PATH)
+        validate_config(CONFIG_PATH)
         print("OK")
     elif args.apply:
         print(
@@ -719,7 +756,7 @@ def main() -> None:
                 print("Exiting.")
                 sys.exit(0)
         print("Applying configuration...")
-        validate_config(SCRIPTS_PATH)
+        validate_config(CONFIG_PATH)
         copy_config()
         refresh_salt()
         with suppress_preloaded_disposables():
@@ -746,7 +783,7 @@ def main() -> None:
             "Admin Workstation or Journalist Workstation USB drive accessible.\n\n\n"
         )
         try:
-            validate_config(SCRIPTS_PATH)
+            validate_config(CONFIG_PATH)
             print("Valid configuration found, configuration complete")
         except SDWAdminException:
             import_config()

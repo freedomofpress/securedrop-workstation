@@ -60,13 +60,16 @@ def apply_config(config_path: str) -> None:
     """Copying config secrets into place"""
     config_source = Path(config_path).parent
 
+    user_config_dir = Path.home() / ".config/securedrop-manage/"
+    salt_config_dir = Path("/srv/salt/securedrop_salt")
+
+    user_config_dir.mkdir(parents=True, exist_ok=True)
+
     for file in ["config.json", "sd-journalist.sec"]:
-        for target_dir in [
-            Path("/usr/share/securedrop-workstation-dom0-config/"),
-            Path("/srv/salt/securedrop_salt/"),
-        ]:
-            subprocess.run(["sudo", "cp", "-v", config_source / file, target_dir], check=True)
-            subprocess.run(["sudo", "chmod", "ugo+r", target_dir / file], check=True)
+        subprocess.run(["cp", "-v", config_source / file, user_config_dir], check=True)
+        subprocess.run(["chmod", "ugo+r", user_config_dir / file], check=True)
+        subprocess.run(["sudo", "cp", "-v", config_source / file, salt_config_dir], check=True)
+        subprocess.run(["sudo", "chmod", "ugo+r", salt_config_dir / file], check=True)
 
 
 if __name__ == "__main__":
