@@ -8,7 +8,7 @@ During the Debian 12 (bookworm) -> Debian 13 (trixie) migration, we encountered 
 
 The Debian 13 migration had been delayed until the SecureDrop Inbox finished its rollout, so we were on a compressed timeline.
 
-We expected to be able to obsolete the `securedrop-handle-upgrade` script that was previously used, which we did; however we learned that it had bitrotted and was broken since the previous Debian 11 (bullseye) -> Debian 12 migration was done along side a fresh install and was never actually upgraded to.
+We expected to be able to [obsolete the `securedrop-handle-upgrade` script](https://github.com/freedomofpress/securedrop-workstation/issues/1225) that was previously used, which we did; however we learned that it had bitrotted and was broken since the previous Debian 11 (bullseye) -> Debian 12 migration was done along side a fresh install and was never actually upgraded to.
 
 Part of the reason it broke was because as part of the Debian 12 migration, we stopped shipping an RPM containing a TemplateVM and instead switched to building it on the fly.
 
@@ -21,7 +21,8 @@ We encountered the following specific issues:
 1. The updater [runs dom0 salt states unconditionally](https://github.com/freedomofpress/securedrop-workstation/issues/1762) before the migration kicks in to run a full `sdw-admin --apply`. So either the upgrade needs to happen fully in the dom0 state or the dom0 state has to be compatible with both Debian 12 + Debian 13.
 2. Preloaded disposables interfered with switching the template for sd-viewer.
 3. The 1.7.1 updater [hardcoded the names of the Debian 12 templates](https://github.com/freedomofpress/securedrop-workstation/issues/1771) to update at the end, which meant they needed to be present on the system.
-4. `sd-log` would start up because it was receiving log entries from the newly created templates.
+4. `sd-log` would start up because it was receiving log entries from the newly created templates (and preloaded disposables).
+5. The migration flag is dropped in RPM `%post`, which meant that until we were confident everyone had upgraded to 1.8.0, any subsequent release would also need to drop the migration flag or users would miss out on the migration.
 
 ## Decision
 
@@ -43,7 +44,7 @@ We implemented the following long-term fixes in the following 1.9.0 release:
 
 Additionally, we [switched](https://github.com/freedomofpress/securedrop-workstation/issues/1815) to using `%triggerun` instead of `%post` for dropping the migration flag to make it work for "skip" updates.
 
-We are in the process of adding an OpenQA scenario that performs the upgrade process, which likely would simplified identifying these bugs initially and then verifying the fixes.
+We are in the process of adding an OpenQA scenario that performs the upgrade process, which likely would have simplified identifying these bugs initially and then verifying the fixes.
 
 ## Consequences
 
@@ -54,6 +55,6 @@ If we didn't make any other changes to provision or upgrading logic, we are prob
 But we likely do want to overhaul the updater to make it easier for us to develop with and have [started brainstorming a redesign](https://github.com/freedomofpress/securedrop-workstation/issues/1766).
 
 ## Alternatives considered
-
-* There is an open feature request for Qubes to support deferred template switches, so that you can change templates while the VM is running.
+* For issue 4 we also considered the possibility of temporarily disabling `securedrop.Log`  as that was the reason reason `sd-log` was getting restarted mid-upgrade. This was not chosen due to the other solutions already solving it and the tight deadline. It could have been equally viable.
+* There is an open feature request for Qubes to support [deferred template switches](https://github.com/qubesos/qubes-issues/issues/8070), so that you can change templates while the VM is running. This would have only been available in the upcoming Qubes version.
 * We tried to have a way to [inject the updater's version](https://github.com/freedomofpress/securedrop-workstation/pull/1785) through to salt and `sdw-admin --apply` to enable them to work around any future updater bugs, but the implementation ended up being quite hacky that we deferred it to the aforementioned updater redesign.
