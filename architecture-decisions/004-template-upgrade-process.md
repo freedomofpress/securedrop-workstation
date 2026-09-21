@@ -1,4 +1,4 @@
-# Debian 13 upgrade's updater woes
+# Template upgrade process
 
 ## Summary
 
