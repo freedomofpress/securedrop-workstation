@@ -14,7 +14,7 @@ Part of the reason it broke was because as part of the Debian 12 migration, we s
 
 ### Problems
 
-The largest issue was that the upgrade had to be fully compatible with the old version of the updater (1.7.1), because that's the version of the updater that will actually execute the Debian upgrade.
+The largest issue was that the upgrade had to be fully compatible with the old version of the updater (1.7.1), because that's the version of the updater that will actually execute the Debian upgrade. Additionally because the updater is our update delivery mechanism, it must be resilient to most kind of failures.
 
 We encountered the following specific issues:
 
@@ -26,23 +26,17 @@ We encountered the following specific issues:
 
 ## Decision
 
-We implemented a series of short-term fixes in the 1.8.0 release, so we could get the Debian 13 release out:
+We implemented a series of short-term fixes in the 1.8.0 release, so we could get the Debian 13 release out, and then a set of long-term fixes in 1.9.0.
 
-1. In the RPM postinst, we [disabled the dom0 top state](https://github.com/freedomofpress/securedrop-workstation/pull/1769), so the updater's invocation of the dom0 state would be a no-op. Then because the migration flag was set, `sdw-admin --apply` would be executed, which re-enabled the top state and applied the upgrade.
-2. We temporarily [disable preloaded disposables](https://github.com/freedomofpress/securedrop-workstation/pull/1744) during the Debian upgrade.
-3. We [did not delete](https://github.com/freedomofpress/securedrop-workstation/commit/efa08077bf881d1894569b57b4934cc58e2325ea) the hardcoded Debian 12 templates, so the updater would still update them, even though they were no longer in use.
-4. We temporarily [set the `prohibit-start` feature](https://github.com/freedomofpress/securedrop-workstation/pull/1744) on all of our VMs to ensure they don't start up for any reason.
+| Problem | Short-term Fix (1.8.0) | Long-term Fix (1.9.0)|
+|:--:|----|----|
+|  **1** | In the RPM postinst, we [disabled the dom0 top state](https://github.com/freedomofpress/securedrop-workstation/pull/1769), so the updater's invocation of the dom0 state would be a no-op. Then because the migration flag was set, `sdw-admin --apply` would be executed, which re-enabled the top state and applied the upgrade. |[Only run the dom0 salt states](https://github.com/freedomofpress/securedrop-workstation/pull/1784) if there is no migration flag instead of unconditionally. |
+| **2** | We temporarily [disable preloaded disposables](https://github.com/freedomofpress/securedrop-workstation/pull/1744) during the Debian upgrade. |  n/a|
+| **3** | We [did not delete](https://github.com/freedomofpress/securedrop-workstation/commit/efa08077bf881d1894569b57b4934cc58e2325ea) the hardcoded Debian 12 templates, so the updater would still update them, even though they were no longer in use. |[Fetch the template names to update dynamically](https://github.com/freedomofpress/securedrop-workstation/pull/1793), so it should just work for the next Debian upgrade. |
+| **4** | We temporarily [set the `prohibit-start` feature](https://github.com/freedomofpress/securedrop-workstation/pull/1744) on all of our VMs to ensure they don't start up for any reason. | n/a|
+| **5** | n/a | We [switched](https://github.com/freedomofpress/securedrop-workstation/issues/1815) to using `%triggerun` instead of `%post` for dropping the migration flag to make it work for "skip" updates.
 
 One more issue that surfaced after 1.8.0 was released was that if the Debian upgrade fails mid-way (e.g. network hiccup), then it cannot be [resumed via the updater](https://github.com/freedomofpress/securedrop-workstation/issues/1796).
-
-We implemented the following long-term fixes in the following 1.9.0 release:
-
-1. [Only run the dom0 salt states](https://github.com/freedomofpress/securedrop-workstation/pull/1784) if there is no migration flag instead of unconditionally.
-2. n/a
-3. [Fetch the template names to update dynamically](https://github.com/freedomofpress/securedrop-workstation/pull/1793), so it should just work for the next Debian upgrade.
-4. n/a
-
-Additionally, we [switched](https://github.com/freedomofpress/securedrop-workstation/issues/1815) to using `%triggerun` instead of `%post` for dropping the migration flag to make it work for "skip" updates.
 
 We are in the process of adding an OpenQA scenario that performs the upgrade process, which likely would have simplified identifying these bugs initially and then verifying the fixes.
 
