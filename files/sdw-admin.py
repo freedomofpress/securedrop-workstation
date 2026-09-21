@@ -374,6 +374,26 @@ def refresh_salt() -> None:
         raise SDWAdminException("Error while synchronizing Salt")
 
 
+def destroy_all_tagged(tag: str) -> None:
+    """
+    Destroys all VMs marked with the specified tag, in the following order:
+    DispVMs, AppVMs, then TemplateVMs. Excludes VMs for which
+    installed_by_rpm=true.
+    """
+    sdw_vms = [vm for vm in Qubes().domains if tag in vm.tags]
+    sdw_template_vms = [
+        vm for vm in sdw_vms if vm.klass == "TemplateVM" and not vm.installed_by_rpm
+    ]
+    sdw_disp_vms = [vm for vm in sdw_vms if vm.klass == "DispVM"]
+    sdw_app_vms = [vm for vm in sdw_vms if vm.klass == "AppVM"]
+
+    # Remove DispVMs first, then AppVMs, then TemplateVMs last.
+    for vm in sdw_disp_vms + sdw_app_vms + sdw_template_vms:
+        if vm.is_running():
+            vm.kill()
+        run_cmd(["qvm-remove", "-f", "--", vm.name])
+
+
 def perform_uninstall() -> None:
     try:
         subprocess.check_call(
@@ -381,7 +401,7 @@ def perform_uninstall() -> None:
         )
         print("Destroying all VMs")
         provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-unused-qubes")
-        subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/destroy-vm"), "--all-tagged"])
+        destroy_all_tagged(tag="sd-workstation")
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
         subprocess.check_call([os.path.join(SCRIPTS_PATH, "scripts/clean-salt")])

@@ -207,9 +207,6 @@ run-app: assert-dom0 run-deps ## Run SecureDrop Inbox (automatic login)
 # Not requiring dom0 for linting as that requires extra packages, which we're
 # not installing on dom0, so are only in the developer environment, i.e. Work VM
 
-destroy-all-tagged: ## Destroys all VMs managed by Workstation salt config (may exclude untagged VMs)
-	./scripts/destroy-vm.py --all-tagged
-
 .PHONY: update-pip-requirements
 update-pip-requirements: ## Updates all Python requirements files via pip-compile.
 	pip-compile --allow-unsafe --generate-hashes --output-file=requirements/dev-requirements.txt requirements/dev-requirements.in
