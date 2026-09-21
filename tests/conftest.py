@@ -32,14 +32,14 @@ def proj_root() -> os.PathLike[Any]:
 
 
 @pytest.fixture(autouse=True)
-def load_non_standard_module() -> Callable:
+def load_non_standard_module() -> Callable[[os.PathLike[Any]], ModuleType]:
     """
     Fixture factory for loading a non-standard python modules
 
-    This is necessary as a workaround due to the fact that some files not
-    following the standard python naming inventions, in particular:
-      1. Files ending in '.py'
-      2. No dashes ('-') in file names
+     This is necessary as a workaround for files that do not follow standard Python
+     module naming conventions, in particular:
+       1. Files NOT ending in '.py'
+       2. Dashes ('-') in file names
 
     Example:
 
@@ -47,7 +47,7 @@ def load_non_standard_module() -> Callable:
 
         @pytest.fixture()
         def custom_module(load_non_standard_module):
-            return load_non_standard_module("custom_module", "/usr/bin/custom-module")
+            return load_non_standard_module("/usr/bin/custom-module")
 
         def test_foo(custom_module):
             custom_module.custom_fn()
@@ -116,20 +116,20 @@ def dom0_config(proj_root: os.PathLike) -> Dom0Config:
     return Dom0Config.parse(config)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def all_vms() -> VMCollection:
     """Obtain all qubes present in the system"""
     return Qubes().domains
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def sdw_tagged_vms(all_vms: VMCollection) -> list[QubesVM]:
     """Obtain all SecureDrop Workstation-exclusive qubes"""
     return list(filter(is_workstation_qube, all_vms))
 
 
 @pytest.fixture(scope="session", autouse=True)
-def cleanup(request: pytest.FixtureRequest, sdw_tagged_vms: list[QubesVM]) -> Iterator[None]:
+def cleanup(request: pytest.FixtureRequest) -> Iterator[None]:
     """
     Handles all post-test teardown logic. Mostly that's just shutting down TemplateVMs
     that may have been booted to inspect package state.
