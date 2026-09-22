@@ -32,6 +32,7 @@ sd-devices-dvm:
     - tags:
       - add:
         - sd-workstation
+        - sd-journalist
         - sd-{{ sdvars.distribution }}
     - features:
       - enable:
@@ -57,6 +58,7 @@ sd-devices-create-named-dispvm:
     - tags:
       - add:
         - sd-workstation
+        - sd-journalist
         - sd-export-target
     - features:
       - enable:

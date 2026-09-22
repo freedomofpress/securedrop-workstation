@@ -39,6 +39,7 @@ sd-proxy-dvm:
     - tags:
       - add:
         - sd-workstation
+        - sd-journalist
         - sd-{{ sdvars.distribution }}
     - require:
       - qvm: sd-inbox-debian-{{ sdvars.debian_version }}
@@ -67,6 +68,7 @@ sd-proxy-create-named-dispvm:
     - tags:
       - add:
         - sd-workstation
+        - sd-journalist
         - sd-{{ sdvars.distribution }}
     - require:
       - qvm: sd-proxy-dvm
