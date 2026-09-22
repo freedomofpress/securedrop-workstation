@@ -304,3 +304,47 @@ def test_legacy_config_is_migrated(tmp_path: Path) -> None:
 
     # other files should not be moved
     assert not new_dummy_file.exists()
+
+
+def test_get_installed_product(tmp_path: Path) -> None:
+    with pytest.raises(manage.SDWAdminException):
+        # nothing installed in our tmp_path yet
+        manage.get_installed_product(tmp_path)
+
+    (tmp_path / "admin-workstation.json").write_text("{}")
+    assert manage.get_installed_product(tmp_path) is manage.Product.ADMIN
+
+    (tmp_path / "journalist-workstation.json").write_text("{}")
+    assert manage.get_installed_product(tmp_path) is manage.Product.ALL
+
+    (tmp_path / "admin-workstation.json").unlink()
+    assert manage.get_installed_product(tmp_path) is manage.Product.JOURNALIST
+
+
+@pytest.mark.parametrize(
+    ("requested", "installed", "expected"),
+    [
+        # Default to the only installed product
+        (None, manage.Product.JOURNALIST, manage.Product.JOURNALIST),
+        (None, manage.Product.ADMIN, manage.Product.ADMIN),
+        # Explicitly requesting an installed product
+        (manage.Product.JOURNALIST, manage.Product.JOURNALIST, manage.Product.JOURNALIST),
+        (manage.Product.JOURNALIST, manage.Product.ALL, manage.Product.JOURNALIST),
+        (manage.Product.ADMIN, manage.Product.ALL, manage.Product.ADMIN),
+        # --all selects everything installed
+        (manage.Product.ALL, manage.Product.JOURNALIST, manage.Product.JOURNALIST),
+        (manage.Product.ALL, manage.Product.ALL, manage.Product.ALL),
+        # Errors
+        (None, manage.Product.ALL, None),
+        (manage.Product.ADMIN, manage.Product.JOURNALIST, None),
+        (manage.Product.JOURNALIST, manage.Product.ADMIN, None),
+    ],
+)
+def test_select_product(
+    requested: manage.Product | None, installed: manage.Product, expected: manage.Product | None
+) -> None:
+    if expected is None:
+        with pytest.raises(manage.SDWAdminException):
+            manage.select_product(requested, installed)
+    else:
+        assert manage.select_product(requested, installed) is expected

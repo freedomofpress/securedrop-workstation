@@ -12,6 +12,7 @@ import subprocess
 import sys
 from collections.abc import Callable, Iterator
 from contextlib import ContextDecorator, contextmanager
+from enum import Enum
 from pathlib import Path
 from typing import Literal
 
@@ -32,6 +33,7 @@ SCRIPTS_PATH = Path("/usr/share/securedrop-workstation-dom0-config/")
 SALT_PATH = Path("/srv/salt/securedrop_salt/")
 CONFIG_PATH = Path.home() / ".config/securedrop-manage"
 LEGACY_CONFIG_PATH = SCRIPTS_PATH
+PRODUCTS_PATH = Path("/usr/share/securedrop/products/")
 
 DEBIAN_VERSION = "13"
 BASE_TEMPLATE = f"debian-{DEBIAN_VERSION}-minimal"
@@ -50,6 +52,54 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
 # disposables are disabled. Just that they don't get enabled on provisioning.
 # FIXME: https://github.com/freedomofpress/securedrop-workstation/issues/1523
 PILLAR_DISABLE_PRELOAD = {"qvm": {"dom0": {"preload": False}}}
+
+
+class Product(Enum):
+    JOURNALIST = "journalist"
+    ADMIN = "admin"
+    ALL = "all"
+
+    @property
+    def contains_journalist(self) -> bool:
+        return self in (Product.JOURNALIST, Product.ALL)
+
+    @property
+    def contains_admin(self) -> bool:
+        return self in (Product.ADMIN, Product.ALL)
+
+
+def get_installed_product(products_path: Path = PRODUCTS_PATH) -> Product:
+    journalist = (products_path / "journalist-workstation.json").is_file()
+    admin = (products_path / "admin-workstation.json").is_file()
+    if journalist and admin:
+        return Product.ALL
+    if journalist:
+        return Product.JOURNALIST
+    if admin:
+        return Product.ADMIN
+    raise SDWAdminException(f"No SecureDrop products are installed (checked {products_path})")
+
+
+def select_product(requested: Product | None, installed: Product) -> Product:
+    """
+    Return the product we're operating on, based on CLI flags and what's installed.
+    """
+    if requested is None:
+        if installed is Product.ALL:
+            raise SDWAdminException(
+                "Multiple SecureDrop products are installed, please specify one of "
+                "--journalist, --admin or --all"
+            )
+        return installed
+    if requested is Product.ALL:
+        # Everything that's installed
+        return installed
+    if installed not in (requested, Product.ALL):
+        raise SDWAdminException(
+            f"--{requested.value} was specified, but the {requested.value} workstation "
+            "is not installed"
+        )
+    return requested
 
 
 def parse_args() -> argparse.Namespace:
@@ -89,6 +139,28 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Configure SecureDrop Workstation",
     )
+    product_group = parser.add_mutually_exclusive_group()
+    product_group.add_argument(
+        "--journalist",
+        dest="product",
+        action="store_const",
+        const=Product.JOURNALIST,
+        help="Operate on the journalist workstation (default if it's the only one installed)",
+    )
+    product_group.add_argument(
+        "--admin",
+        dest="product",
+        action="store_const",
+        const=Product.ADMIN,
+        help="Operate on the admin workstation (default if it's the only one installed)",
+    )
+    product_group.add_argument(
+        "--all",
+        dest="product",
+        action="store_const",
+        const=Product.ALL,
+        help="Operate on both the journalist and admin workstations",
+    )
     return parser.parse_args()
 
 
@@ -96,6 +168,8 @@ def move_legacy_config(old_location: Path, new_location: Path) -> None:
     """
     Checks for config files in CONFIG_PATH, and tries to copy them from
     LEGACY_CONFIG_PATH if they're not there.
+
+    This only runs on journalist or combined workstations.
     """
     # make the config directory if it doesn't exist already
     new_location.mkdir(parents=True, exist_ok=True)
@@ -718,21 +792,34 @@ def import_config() -> None:
     return
 
 
-def main() -> None:
+def main() -> None:  # noqa: PLR0912
     if os.geteuid() == 0:
         print("Please do not run this script as root.")
         sys.exit(0)
 
+    installed_product = get_installed_product()
+
     # check for config files under ~/.config/, try to copy them across from
     # the old /usr/share location if they're missing.
-    move_legacy_config(LEGACY_CONFIG_PATH, CONFIG_PATH)
+    if installed_product.contains_journalist:
+        move_legacy_config(LEGACY_CONFIG_PATH, CONFIG_PATH)
 
     args = parse_args()
+    try:
+        product = select_product(args.product, installed_product)
+    except SDWAdminException as err:
+        print(f"{err}")
+        sys.exit(1)
+
     if args.validate:
+        if product.contains_admin:
+            raise NotImplementedError("Validating the admin workstation is not implemented yet")
         print("Validating...", end="")
         validate_config(CONFIG_PATH)
         print("OK")
     elif args.apply:
+        if product.contains_admin:
+            raise NotImplementedError("Provisioning the admin workstation is not implemented yet")
         print(
             "SecureDrop Workstation should be installed on a fresh Qubes OS install.\n"
             "The installation process will overwrite any user modifications to the\n"
@@ -760,6 +847,8 @@ def main() -> None:
         print("Provisioning complete. Please reboot to complete the installation.")
 
     elif args.uninstall:
+        if product.contains_admin:
+            raise NotImplementedError("Uninstalling the admin workstation is not implemented yet")
         print(
             "Uninstalling will remove all packages and destroy all VMs associated\n"
             "with SecureDrop Workstation. It will also remove all SecureDrop tags\n"
@@ -773,6 +862,8 @@ def main() -> None:
         refresh_salt()
         perform_uninstall()
     elif args.configure:
+        if product.contains_admin:
+            raise NotImplementedError("Configuring the admin workstation is not implemented yet")
         print(
             "Preparing to import SecureDrop Workstation configuration...\n\n"
             "Make sure you have the USB with the submission key and an\n"
