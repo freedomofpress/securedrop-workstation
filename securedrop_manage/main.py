@@ -483,22 +483,26 @@ def destroy_all_tagged(tag: str) -> None:
         run_cmd(["qvm-remove", "-f", "--", vm.name])
 
 
-def perform_uninstall() -> None:
-    try:
+def perform_uninstall(product: Product) -> None:
+    packages = []
+    if product.contains_admin:
+        print("Destroying all admin VMs")
+        destroy_all_tagged("sd-admin")
+        packages.append("securedrop-admin-dom0-config")
+
+    if product.contains_journalist:
         subprocess.check_call(
             ["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-default-dispvm"]
         )
-        print("Destroying all VMs")
+        print("Destroying all journalist VMs")
         provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-unused-qubes")
-        destroy_all_tagged(tag="sd-workstation")
+        destroy_all_tagged(tag="sd-journalist")
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
-        print("Uninstalling dom0 config package")
-        subprocess.check_call(
-            ["sudo", "dnf", "-y", "-q", "remove", "securedrop-workstation-dom0-config"]
-        )
-    except subprocess.CalledProcessError:
-        raise SDWAdminException("Error during uninstall")
+        packages.append("securedrop-workstation-dom0-config")
+
+    print("Uninstalling RPM package(s)")
+    subprocess.check_call(["sudo", "dnf", "-y", "-q", "remove", *packages])
 
     print(
         "Instance secrets (Journalist Interface token and Submission private key) are still "
@@ -828,12 +832,9 @@ def main() -> None:  # noqa: PLR0912
         print("Provisioning complete. Please reboot to complete the installation.")
 
     elif args.uninstall:
-        if args.product.contains_admin:
-            raise NotImplementedError("Uninstalling the admin workstation is not implemented yet")
         print(
             "Uninstalling will remove all packages and destroy all VMs associated\n"
-            "with SecureDrop Workstation. It will also remove all SecureDrop tags\n"
-            "from other VMs on the system."
+            f"with {args.product.as_text()}."
         )
         if not args.force:
             response = input("Are you sure you want to uninstall (y/N)? ")
@@ -841,7 +842,7 @@ def main() -> None:  # noqa: PLR0912
                 print("Exiting.")
                 sys.exit(0)
         refresh_salt()
-        perform_uninstall()
+        perform_uninstall(args.product)
     elif args.configure:
         if args.product.contains_admin:
             raise NotImplementedError("Configuring the admin workstation is not implemented yet")

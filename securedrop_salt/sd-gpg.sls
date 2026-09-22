@@ -44,6 +44,7 @@ sd-gpg:
     - tags:
       - add:
         - sd-workstation
+        - sd-journalist
     - require:
       - sls: securedrop_salt.sd-workstation-template
 
