@@ -109,8 +109,13 @@ install-admin-rpm: assert-dom0 ## Install locally-built admin RPM (opt-in)
 	@echo "Installing securedrop-admin-dom0-config RPM..."
 	@RPM_NAME=securedrop-admin-dom0-config ./scripts/prep-dev
 
+# TODO: move this into securedrop-manage
 .PHONY: sd-admin
 sd-admin: assert-dom0 ## Provision sd-admin VM and install securedrop-admin
+	@echo "Copying environment from ~/.config/securedrop-manage/config.json..."
+	@config=$$(jq -e '{environment: .environment | values}' ~/.config/securedrop-manage/config.json) || \
+		{ echo "Failed to read \"environment\" from ~/.config/securedrop-manage/config.json" >&2; exit 1; }; \
+		echo "$$config" | sudo tee /srv/salt/admin_salt/config.json
 	sudo rm -rf /var/cache/salt
 	sudo qubesctl saltutil.sync_all refresh=true
 	@echo "Creating sd-admin template and AppVM..."

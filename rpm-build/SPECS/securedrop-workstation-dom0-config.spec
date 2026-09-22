@@ -188,6 +188,7 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 
 %files -n securedrop-admin-dom0-config
 /srv/salt/admin_salt/*
+%ghost %attr(0644, root, root) /srv/salt/admin_salt/config.json
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-admin.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-admin.policy
 %dir /usr/share/securedrop/products

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 #
-# NOTE: this is duplicated to admin_salt/fpf-apt-repo.sls
+# NOTE: this is duplicated to securedrop_salt/fpf-apt-repo.sls
 
 # Don't start with the Qubes-maintained Salt logic for upgrading VM packages:
 #
@@ -12,10 +12,10 @@
 # the subsequent tasks will fail. For reference
 # include:
 #  - update.qubes-vm
-#  - securedrop_salt.sd-default-config
+#  - admin_salt.sd-admin-config
 
 # Imports "sdvars" for environment config
-{% from 'securedrop_salt/sd-default-config.sls' import sdvars with context %}
+{% from 'admin_salt/sd-admin-config.sls' import admin_vars as sdvars with context %}
 
 # Using apt-get requires manual approval when releaseinfo changes,
 # just get it over with in the beginning
@@ -31,7 +31,7 @@ autoremove-old-packages:
 
 # If we're on a prod environment, ensure there isn't a test .sources
 # file. (Should never happen in real usage, but may in testing)
-{% import_json "securedrop_salt/config.json" as d %}
+{% import_json "admin_salt/config.json" as d %}
 {% if d.environment == "prod" %}
 clean-old-test-sources:
   file.absent:
@@ -42,7 +42,7 @@ clean-old-test-sources:
 configure-fpf-apt-repo:
   file.managed:
     - name: "/etc/apt/sources.list.d/{{ sdvars.apt_sources_filename }}"
-    - source: "salt://securedrop_salt/{{ sdvars.apt_sources_filename }}.j2"
+    - source: "salt://admin_salt/{{ sdvars.apt_sources_filename }}.j2"
     - template: jinja
     - context:
         codename: {{ grains['oscodename'] }}
