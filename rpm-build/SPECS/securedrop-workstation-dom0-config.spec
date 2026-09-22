@@ -142,8 +142,6 @@ install -m 644 files/31-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 
 %files
-%attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
-%attr(755, root, root) %{_bindir}/sdw-admin
 %attr(755, root, root) %{_bindir}/sdw-upgrade
 
 %{_datadir}/%{name}/config.json.example
@@ -199,6 +197,8 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 %license LICENSE
 
 %files -n securedrop-dom0-manager
+%attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
+%attr(755, root, root) %{_bindir}/sdw-admin
 %doc README.md
 %license LICENSE
 
