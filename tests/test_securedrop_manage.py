@@ -304,3 +304,68 @@ def test_legacy_config_is_migrated(tmp_path: Path) -> None:
 
     # other files should not be moved
     assert not new_dummy_file.exists()
+
+
+def test_get_installed_product(tmp_path: Path) -> None:
+    with pytest.raises(manage.SDWAdminException):
+        # nothing installed in our tmp_path yet
+        manage.get_installed_product(tmp_path)
+
+    (tmp_path / "admin-workstation.json").write_text("{}")
+    assert manage.get_installed_product(tmp_path) is manage.Product.ADMIN
+
+    (tmp_path / "journalist-workstation.json").write_text("{}")
+    assert manage.get_installed_product(tmp_path) is manage.Product.ALL
+
+    (tmp_path / "admin-workstation.json").unlink()
+    assert manage.get_installed_product(tmp_path) is manage.Product.JOURNALIST
+
+
+@pytest.mark.parametrize(
+    ("installed", "argv", "expected"),
+    [
+        # only one product installed, --target defaults to it
+        (manage.Product.JOURNALIST, ["--apply"], manage.Product.JOURNALIST),
+        (manage.Product.ADMIN, ["--apply"], manage.Product.ADMIN),
+        (
+            manage.Product.JOURNALIST,
+            ["--apply", "--target", "journalist"],
+            manage.Product.JOURNALIST,
+        ),
+        # both installed, --target must be explicit
+        (manage.Product.ALL, ["--apply", "--target", "journalist"], manage.Product.JOURNALIST),
+        (manage.Product.ALL, ["--apply", "--target", "admin"], manage.Product.ADMIN),
+        (manage.Product.ALL, ["--apply", "--target", "all"], manage.Product.ALL),
+    ],
+)
+def test_parse_args_target(
+    mocker: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    installed: "manage.Product",
+    argv: list[str],
+    expected: "manage.Product",
+) -> None:
+    mocker.patch.object(manage, "get_installed_product", return_value=installed)
+    monkeypatch.setattr("sys.argv", ["securedrop-manage", *argv])
+    args = manage.parse_args()
+    assert args.product is expected
+
+
+@pytest.mark.parametrize(
+    ("installed", "argv"),
+    [
+        # both installed, but no --target given
+        (manage.Product.ALL, ["--apply"]),
+        # --target for a product that isn't installed
+        (manage.Product.JOURNALIST, ["--apply", "--target", "admin"]),
+        (manage.Product.JOURNALIST, ["--apply", "--target", "all"]),
+        (manage.Product.ADMIN, ["--apply", "--target", "journalist"]),
+    ],
+)
+def test_parse_args_target_invalid(
+    mocker: Any, monkeypatch: pytest.MonkeyPatch, installed: "manage.Product", argv: list[str]
+) -> None:
+    mocker.patch.object(manage, "get_installed_product", return_value=installed)
+    monkeypatch.setattr("sys.argv", ["securedrop-manage", *argv])
+    with pytest.raises(SystemExit):
+        manage.parse_args()
