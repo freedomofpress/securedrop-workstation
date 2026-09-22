@@ -51,7 +51,7 @@ def test_parse_good_config() -> None:
 # --- Fixture-based: structural & format errors ------------------------------
 #
 # Each fixture is one mutation from `testconfig.json`. The expected error
-# message is the contract that `validate_config.py` and downstream operators
+# message is the contract that `securedrop_manage.validate` and downstream operators
 # rely on, so we pin it here.
 
 

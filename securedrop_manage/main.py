@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Admin wrapper script for applying salt states for staging and prod scenarios. The rpm
 packages only puts the files in place `/srv/salt` but does not apply the state, nor
@@ -20,6 +19,7 @@ from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
 from sdw_util.config_types import ValidationError
+from securedrop_manage.validate import SDWConfigValidator
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
 # errors from qubesctl. It may be possible to raise this again.
@@ -50,9 +50,6 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
 # disposables are disabled. Just that they don't get enabled on provisioning.
 # FIXME: https://github.com/freedomofpress/securedrop-workstation/issues/1523
 PILLAR_DISABLE_PRELOAD = {"qvm": {"dom0": {"preload": False}}}
-
-sys.path.insert(1, str(SCRIPTS_PATH / "scripts/"))
-from validate_config import SDWConfigValidator  # noqa: E402
 
 
 def parse_args() -> argparse.Namespace:
@@ -368,7 +365,7 @@ def sync_appmenus() -> None:
 
 def validate_config(path: Path) -> None:
     """
-    Calls the validate_config script to validate the config present in the staging/prod directory
+    Runs securedrop_manage.validate over the config present in the staging/prod directory
     """
     try:
         validator = SDWConfigValidator(path)  # noqa: F841
@@ -792,7 +789,3 @@ def main() -> None:
 
 class SDWAdminException(Exception):
     pass
-
-
-if __name__ == "__main__":
-    main()

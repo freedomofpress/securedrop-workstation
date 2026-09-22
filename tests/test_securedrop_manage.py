@@ -1,8 +1,7 @@
 import os
 import time
-from collections.abc import Callable, Generator
+from collections.abc import Generator
 from pathlib import Path
-from types import ModuleType
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -10,6 +9,7 @@ import qubesadmin
 from qubesadmin.app import VMCollection
 from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
+from securedrop_manage import main as manage
 from tests.base import SD_TAG
 
 if TYPE_CHECKING:
@@ -17,30 +17,13 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture
-def sdw_admin(
-    proj_root: Path,
-    load_non_standard_module: Callable[[Path], ModuleType],
-) -> ModuleType:
-    """
-    Equivalent to 'import sdw_admin', except as a pytest fixture.
-
-    Workaround needed due to 'sdw-admin.py' having a non-pythonic '-' in its
-    name and also not currently being in its own python module.
-    """
-
-    # FIXME this is a workaround. A better approach is to have sdw-admin in
-    # a proper python module, trivially importable in tests. See #1750.
-    return load_non_standard_module(proj_root / "files" / "sdw-admin.py")
-
-
-@pytest.fixture
-def template_upgrades_available(sdw_admin: Any, mocker: Any) -> None:
+def template_upgrades_available(mocker: Any) -> None:
     """
     Pretend that there are template upgrades available
     """
-    mock_func = mocker.MagicMock()
-    mock_func.return_value = False
-    sdw_admin.template_upgrade_handler.template_upgrades_skipped = mock_func
+    mocker.patch.object(
+        manage.template_upgrade_handler, "template_upgrades_skipped", return_value=False
+    )
 
 
 @pytest.fixture
@@ -78,9 +61,9 @@ def suppress_policies() -> Generator:
 
 
 @pytest.fixture
-def mock_qubes_app(sdw_admin: Any, mocker: Any) -> QubesTestWrapper:
+def mock_qubes_app(mocker: Any) -> QubesTestWrapper:
     """
-    Simulate a qubesadmin.Qubes() object called by sdw_admin
+    Simulate a qubesadmin.Qubes() object called by securedrop_manage
     """
 
     class MockQubesWorkstation(QubesTestWrapper):
@@ -147,16 +130,14 @@ def mock_qubes_app(sdw_admin: Any, mocker: Any) -> QubesTestWrapper:
     mock_qubes_app = MockQubesWorkstation()
 
     # Patch "Qubes()" to allow tests to run on this fake mock
-    qubes_mock = mocker.MagicMock()
-    qubes_mock.return_value = mock_qubes_app
-    sdw_admin.Qubes = qubes_mock
+    mocker.patch.object(manage, "Qubes", return_value=mock_qubes_app)
 
     # yield the mock to allow for further modifications in tests
     return mock_qubes_app
 
 
-def test_is_managed(sdw_admin: ModuleType) -> None:
-    assert sdw_admin.is_managed("sd-app")
+def test_is_managed() -> None:
+    assert manage.is_managed("sd-app")
 
 
 @pytest.fixture
@@ -200,7 +181,7 @@ def let_sd_viewer_preloads_settle(all_vms: VMCollection) -> Any:
 
 @pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
 @pytest.mark.provisioning
-def test_suppress_preloaded_disposables(sdw_admin: Any, let_sd_viewer_preloads_settle: Any) -> None:
+def test_suppress_preloaded_disposables(let_sd_viewer_preloads_settle: Any) -> None:
     def get_preloaded_qubes() -> list["QubesVM"]:
         return list(filter(lambda q: getattr(q, "is_preload", False), app.domains))
 
@@ -211,7 +192,7 @@ def test_suppress_preloaded_disposables(sdw_admin: Any, let_sd_viewer_preloads_s
     old_preload_disposables = get_preloaded_qubes()
     assert old_preload_dispvm_max == len(old_preload_disposables) != 0
 
-    with sdw_admin.suppress_preloaded_disposables():
+    with manage.suppress_preloaded_disposables():
         app.domains.refresh_cache(force=True)
 
         # Ensure set back to 0 during contextual execution
@@ -232,7 +213,6 @@ def test_suppress_preloaded_disposables(sdw_admin: Any, let_sd_viewer_preloads_s
 class TestTemplateUpgradesAvailable:
     def test_template_upgrade_handler(
         self,
-        sdw_admin: Any,
         template_upgrades_available: None,
         suppress_policies: None,
         cleanup_prohibit_start: None,
@@ -243,7 +223,7 @@ class TestTemplateUpgradesAvailable:
         if sd_proxy.is_halted():
             sd_proxy.start()
 
-        with sdw_admin.template_upgrade_handler():
+        with manage.template_upgrade_handler():
             # SDW qubes should have all be shut down
             assert sd_proxy.is_halted()
 
@@ -272,11 +252,11 @@ class TestTemplateUpgradesAvailable:
         template_ver: str,
         expected_ver: str,
         should_upgrades_be_skipped: bool,
-        sdw_admin: Any,
         mock_qubes_app: QubesTestWrapper,
+        mocker: Any,
     ) -> None:
-        # Patch sdw-admin to expect a certain Debian version
-        sdw_admin.DEBIAN_VERSION = expected_ver
+        # Patch securedrop-manage to expect a certain Debian version
+        mocker.patch.object(manage, "DEBIAN_VERSION", expected_ver)
 
         # Make templates return report a specific 'os-version' without
         # actually messing with the system
@@ -287,11 +267,11 @@ class TestTemplateUpgradesAvailable:
                     (qube.name, "admin.vm.feature.Get", "os-version", None)
                 ] = b"0\x00" + template_ver.encode()
 
-        upgrade_handler = sdw_admin.template_upgrade_handler()
+        upgrade_handler = manage.template_upgrade_handler()
         assert upgrade_handler.template_upgrades_skipped() == should_upgrades_be_skipped
 
 
-def test_legacy_config_is_migrated(sdw_admin: ModuleType, tmp_path: Path) -> None:
+def test_legacy_config_is_migrated(tmp_path: Path) -> None:
     CONFIG_PATH: Path = tmp_path / "new_config"
     LEGACY_CONFIG_PATH: Path = tmp_path / "old_config"
 
@@ -309,7 +289,7 @@ def test_legacy_config_is_migrated(sdw_admin: ModuleType, tmp_path: Path) -> Non
     for source_file in [config_file, key_file, dummy_file]:
         source_file.write_text(str(source_file))
 
-    sdw_admin.move_legacy_config(LEGACY_CONFIG_PATH, CONFIG_PATH)
+    manage.move_legacy_config(LEGACY_CONFIG_PATH, CONFIG_PATH)
 
     # config files should be moved
     for source_file in [config_file, key_file]:

@@ -127,9 +127,13 @@ clone-norpm: assert-dom0 ## As above, but skip creating RPM
 
 .PHONY: clean
 clean: assert-dom0 ## Destroys all SD VMs
-# Use the local script path, since system PATH location will be absent
-# if clean has already been run.
-	./files/sdw-admin.py --uninstall --force
+# Skip the uninstall if the package isn't installed because it means
+# it's most likely already happened
+	@if [ -x /usr/bin/sdw-admin ]; then \
+		sdw-admin --uninstall --force; \
+	else \
+		echo "sdw-admin not installed, skipping --uninstall"; \
+	fi
 	rpm -qa | grep '^securedrop-' | xargs -r sudo dnf remove -y
 	find /etc/yum.repos.d -type f -iname 'securedrop-workstation*.repo' -exec sudo rm -v {} +
 

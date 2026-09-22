@@ -68,9 +68,11 @@ Journalist and Admin Workstations.
 
 
 %install
+install -m 755 -d %{buildroot}%{python3_sitelib}/securedrop_manage
 install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_notify
 install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_updater
 install -m 755 -d %{buildroot}%{python3_sitelib}/sdw_util
+install -m 644 securedrop_manage/*.py %{buildroot}%{python3_sitelib}/securedrop_manage/
 install -m 644 sdw_notify/*.py %{buildroot}%{python3_sitelib}/sdw_notify/
 install -m 644 sdw_updater/*.py %{buildroot}%{python3_sitelib}/sdw_updater/
 install -m 644 sdw_util/*.py %{buildroot}%{python3_sitelib}/sdw_util/
@@ -79,13 +81,14 @@ install -m 755 -d %{buildroot}/srv/salt/
 cp -a securedrop_salt %{buildroot}/srv/salt/
 chmod -R u=rwX,go=rX %{buildroot}/srv/salt/securedrop_salt
 
-install -m 755 -d %{buildroot}%{_datadir}/%{name}/scripts
 install -m 755 -d %{buildroot}%{_bindir}
+install -m 755 -d %{buildroot}%{_datadir}/%{name}
 install -m 755 -d %{buildroot}/opt/securedrop
 install -m 755 -d %{buildroot}/usr/bin/securedrop
 install -m 755 files/update-xfce-settings %{buildroot}/usr/bin/securedrop/
-install -m 755 files/validate_config.py %{buildroot}%{_datadir}/%{name}/scripts/
-install -m 755 files/sdw-admin.py %{buildroot}%{_bindir}/sdw-admin
+install -m 755 files/securedrop-manage.py %{buildroot}%{_bindir}/securedrop-manage
+# keep `sdw-admin` working for journalist workstations
+ln -s securedrop-manage %{buildroot}%{_bindir}/sdw-admin
 install -m 755 files/sdw-upgrade.py %{buildroot}%{_bindir}/sdw-upgrade
 install -m 644 files/config.json.example %{buildroot}%{_datadir}/%{name}/
 
@@ -143,11 +146,12 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 
 %files
 %attr(755, root, root) %{_bindir}/sdw-upgrade
+%{_bindir}/sdw-admin
 
 %{_datadir}/%{name}/config.json.example
 %dir /srv/salt/securedrop_salt
 /srv/salt/securedrop_salt/*
-# Copied into place by sdw-admin at provisioning time
+# Copied into place by securedrop-manage at provisioning time
 %ghost %attr(0644, root, root) /srv/salt/securedrop_salt/config.json
 %ghost %attr(0644, root, root) /srv/salt/securedrop_salt/sd-journalist.sec
 %attr(755, root, root) %{_bindir}/sdw-login
@@ -197,8 +201,8 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 %license LICENSE
 
 %files -n securedrop-dom0-manager
-%attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
-%attr(755, root, root) %{_bindir}/sdw-admin
+%attr(755, root, root) %{_bindir}/securedrop-manage
+%{python3_sitelib}/securedrop_manage/*.py
 %doc README.md
 %license LICENSE
 
