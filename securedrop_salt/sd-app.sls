@@ -35,6 +35,7 @@ sd-app:
       - add:
         - sd-client
         - sd-workstation
+        - sd-journalist
     - features:
       - set:
         - vm-config.SD_MIME_HANDLING: sd-app
