@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Utility to verify that SecureDrop Workstation config is properly structured.
 
@@ -113,7 +112,3 @@ class SDWConfigValidator:
             vol = vm.volumes["private"]
             if not (vol.size <= self.config.vmsizes.sd_log * 1024 * 1024 * 1024):
                 raise ValidationError("sd-log private volume is already bigger than configuration.")
-
-
-if __name__ == "__main__":
-    validator = SDWConfigValidator()

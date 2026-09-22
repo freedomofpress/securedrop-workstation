@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from files.validate_config import SDWConfigValidator
 from sdw_util.config_types import ValidationError
+from securedrop_manage.validate import SDWConfigValidator
 
 
 @pytest.fixture

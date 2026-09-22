@@ -1,14 +1,15 @@
 """
-Integration tests for "sdw-admin --configure"
+Integration tests for "securedrop-manage --configure"
 """
 
 import json
 import subprocess
 from collections.abc import Callable, Iterator
 from pathlib import Path
-from types import ModuleType
 
 import pytest
+
+from securedrop_manage import main as manage
 
 FAKE_JI_ADDRESS = "sdwfaketestonionaddressforintegrationtests22222222222222"
 FAKE_JI_AUTH_TOKEN = "SDWFAKETESTAUTHTOKENFORINTEGRATIONTESTS2222222222222"
@@ -32,12 +33,12 @@ def vault_run(command: str, stdin: bytes | None = None) -> str:
 
 class FakeTailsDrive:
     """
-    Stand-in for the Tails USB drives that "sdw-admin --configure" reads from.
+    Stand-in for the Tails USB drives that "securedrop-manage --configure" reads from.
     """
 
-    def __init__(self, sdw_admin: ModuleType, submission_key: bytes) -> None:
-        self.mountpoint: Path = sdw_admin.TAILS_PATH
-        self.gnupg_path: Path = sdw_admin.TAILS_GNUPG_PATH
+    def __init__(self, submission_key: bytes) -> None:
+        self.mountpoint: Path = manage.TAILS_PATH
+        self.gnupg_path: Path = manage.TAILS_GNUPG_PATH
         self.submission_key = submission_key
 
     def insert_secure_viewing_station(self) -> None:
@@ -62,13 +63,13 @@ class FakeTailsDrive:
 
 
 @pytest.fixture
-def tails_drive(sdw_admin: ModuleType, proj_root: Path) -> Iterator[FakeTailsDrive]:
+def tails_drive(proj_root: Path) -> Iterator[FakeTailsDrive]:
     # Never touch an actually-mounted Tails drive: ejecting deletes its contents
-    mountpoint: Path = sdw_admin.TAILS_PATH
+    mountpoint: Path = manage.TAILS_PATH
     if vault_run(f"test -e {mountpoint} && echo present || echo absent").strip() == "present":
         pytest.fail(f"{mountpoint} already exists in vault; refusing to overwrite it")
 
-    drive = FakeTailsDrive(sdw_admin, (proj_root / "sd-journalist.sec").read_bytes())
+    drive = FakeTailsDrive((proj_root / "sd-journalist.sec").read_bytes())
 
     yield drive
 
@@ -76,7 +77,7 @@ def tails_drive(sdw_admin: ModuleType, proj_root: Path) -> Iterator[FakeTailsDri
 
 
 @pytest.fixture
-def ji_config_path(request: pytest.FixtureRequest, sdw_admin: ModuleType) -> Path:
+def ji_config_path(request: pytest.FixtureRequest) -> Path:
     """
     Where the Journalist Interface details live on the Workstation drive.
 
@@ -84,16 +85,16 @@ def ji_config_path(request: pytest.FixtureRequest, sdw_admin: ModuleType) -> Pat
     fixture indirectly to test the legacy (git) location instead.
     """
     attribute = getattr(request, "param", "TAILS_PKG_JOURNALIST_INTERFACE_CONFIG")
-    path: Path = getattr(sdw_admin, attribute)
+    path: Path = getattr(manage, attribute)
     return path
 
 
 @pytest.fixture
-def config_path(sdw_admin: ModuleType, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+def config_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     """Redirect the dom0 config directory, so tests don't clobber the real one"""
     config_path = tmp_path / "securedrop-manage"
     config_path.mkdir()
-    monkeypatch.setattr(sdw_admin, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(manage, "CONFIG_PATH", config_path)
     return config_path
 
 
@@ -121,11 +122,11 @@ def answer_prompts(monkeypatch: pytest.MonkeyPatch) -> Callable[[list[Answer]], 
     return _answer_prompts
 
 
-def submission_key_fingerprint(sdw_admin: ModuleType, key_file: Path) -> str:
+def submission_key_fingerprint(key_file: Path) -> str:
     gpg_output = subprocess.check_output(
         ["gpg", "--show-keys", "--with-fingerprint", "--with-colon", key_file], text=True
     )
-    fingerprints = sdw_admin.extract_secret_key_fingerprints(gpg_output)
+    fingerprints = manage.extract_secret_key_fingerprints(gpg_output)
     assert len(fingerprints) == 1
     return fingerprints[0]
 
@@ -139,7 +140,6 @@ def submission_key_fingerprint(sdw_admin: ModuleType, key_file: Path) -> str:
     indirect=True,
 )
 def test_import_config(
-    sdw_admin: ModuleType,
     tails_drive: FakeTailsDrive,
     ji_config_path: Path,
     config_path: Path,
@@ -163,13 +163,13 @@ def test_import_config(
         ]
     )
 
-    sdw_admin.import_config()
+    manage.import_config()
 
     # The submission key was fetched off the Secure Viewing Station drive
     imported_key = config_path / "sd-journalist.sec"
     assert imported_key.is_file()
-    expected_fpr = submission_key_fingerprint(sdw_admin, proj_root / "sd-journalist.sec")
-    assert submission_key_fingerprint(sdw_admin, imported_key) == expected_fpr
+    expected_fpr = submission_key_fingerprint(proj_root / "sd-journalist.sec")
+    assert submission_key_fingerprint(imported_key) == expected_fpr
 
     # ...and the Journalist Interface details off the Workstation drive
     config = json.loads((config_path / "config.json").read_text())
@@ -183,11 +183,10 @@ def test_import_config(
         "vmsizes": {"sd_app": SD_APP_GB, "sd_log": SD_LOG_GB},
     }
 
-    sdw_admin.validate_config(config_path)
+    manage.validate_config(config_path)
 
 
 def test_import_config_keeps_existing_submission_key(
-    sdw_admin: ModuleType,
     tails_drive: FakeTailsDrive,
     ji_config_path: Path,
     config_path: Path,
@@ -204,18 +203,17 @@ def test_import_config_keeps_existing_submission_key(
 
     answer_prompts(["y", "y", str(SD_APP_GB), str(SD_LOG_GB)])
 
-    sdw_admin.import_config()
+    manage.import_config()
 
     assert existing_key.read_bytes() == (proj_root / "sd-journalist.sec").read_bytes()
     config = json.loads((config_path / "config.json").read_text())
-    assert config["submission_key_fpr"] == submission_key_fingerprint(sdw_admin, existing_key)
+    assert config["submission_key_fpr"] == submission_key_fingerprint(existing_key)
     assert config["hidserv"]["hostname"] == f"{FAKE_JI_ADDRESS}.onion"
 
-    sdw_admin.validate_config(config_path)
+    manage.validate_config(config_path)
 
 
 def test_import_config_aborts_without_confirmation(
-    sdw_admin: ModuleType,
     tails_drive: FakeTailsDrive,
     config_path: Path,
     answer_prompts: Callable[[list[Answer]], None],
@@ -225,6 +223,6 @@ def test_import_config_aborts_without_confirmation(
 
     answer_prompts(["n"])
 
-    sdw_admin.import_config()
+    manage.import_config()
 
     assert list(config_path.iterdir()) == []
