@@ -29,10 +29,9 @@ MAX_CONCURRENCY = 2
 DEFAULT_SD_APP_GB = 10
 DEFAULT_SD_LOG_GB = 5
 
-SCRIPTS_PATH = Path("/usr/share/securedrop-workstation-dom0-config/")
 SALT_PATH = Path("/srv/salt/securedrop_salt/")
 CONFIG_PATH = Path.home() / ".config/securedrop-manage"
-LEGACY_CONFIG_PATH = SCRIPTS_PATH
+LEGACY_CONFIG_PATH = Path("/usr/share/securedrop-workstation-dom0-config/")
 PRODUCTS_PATH = Path("/usr/share/securedrop/products/")
 
 DEBIAN_VERSION = "13"
