@@ -164,6 +164,9 @@ else
 	$(PYTEST_CMD) -m "not run_alone"  -n auto --dist=loadfile --durations=5
 endif
 
+.PHONY: test-uninstall
+test-uninstall: test-prereqs ## Checks that uninstall left no SDW state
+	pytest -v -m "uninstall" tests/test_dom0_uninstall.py
 
 test-base: test-prereqs ## Runs tests for VMs layout
 	pytest -v tests/test_vms_exist.py
