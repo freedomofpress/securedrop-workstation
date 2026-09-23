@@ -1,6 +1,7 @@
 import subprocess
 import sys
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
 
 try:
@@ -18,16 +19,35 @@ from sdw_util import Util
 logger = Util.get_logger(module=__name__)
 
 
-def launch_securedrop_inbox() -> None:
+@dataclass(frozen=True)
+class LaunchTarget:
     """
-    Helper function to launch the SecureDrop Inbox
+    Definition for an application to launch
+    """
+
+    name: str
+    vm: str
+    desktop: str
+
+
+InboxTarget = LaunchTarget(
+    name="SecureDrop Inbox", vm="sd-app", desktop="press.freedom.SecureDropApp"
+)
+
+
+def launch_in_vm(target: LaunchTarget) -> None:
+    """
+    Helper function to launch the specified application in a VM
     """
     try:
-        logger.info("Launching SecureDrop Inbox")
-        subprocess.Popen(["qvm-start", "sd-proxy"])
-        subprocess.Popen(["qvm-run", "sd-app", "gtk-launch press.freedom.SecureDropApp"])
+        logger.info(f"Launching {target.name}")
+        if target == InboxTarget:
+            # Hack: ensure sd-proxy is running so Tor is connected
+            # before a login request comes in
+            subprocess.Popen(["qvm-start", "sd-proxy"])
+        subprocess.Popen(["qvm-run", target.vm, f"gtk-launch {target.desktop}"])
     except subprocess.CalledProcessError as e:
-        logger.error("Error while launching SecureDrop Inbox")
+        logger.error(f"Error while launching {target.name}")
         logger.error(str(e))
     sys.exit(0)
 
@@ -37,9 +57,11 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self,
         should_skip_netcheck: bool = False,
         parent: Any = None,
+        launch_target: LaunchTarget = InboxTarget,
     ) -> None:
         super().__init__(parent)
 
+        self.launch_target = launch_target
         self.progress = 0
         self._skip_netcheck = should_skip_netcheck
         self.setupUi(self)
@@ -58,7 +80,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
 
         self.inboxOpenButton.setEnabled(False)
         self.inboxOpenButton.hide()
-        self.inboxOpenButton.clicked.connect(launch_securedrop_inbox)
+        self.inboxOpenButton.clicked.connect(lambda: launch_in_vm(self.launch_target))
 
         self.rebootButton.setEnabled(False)
         self.rebootButton.hide()
@@ -67,7 +89,9 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self.show()
 
         self.headline.setText(strings.headline_introduction)
-        self.proposedActionDescription.setText(strings.description_introduction)
+        self.proposedActionDescription.setText(
+            strings.description_introduction.format(app_name=self.launch_target.name)
+        )
 
         self.progress += 1
         self.progressBar.setProperty("value", self.progress)
@@ -98,13 +122,17 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
             self.headline.setText(strings.headline_status_updates_complete)
-            self.proposedActionDescription.setText(strings.description_status_updates_complete)
+            self.proposedActionDescription.setText(
+                strings.description_status_updates_complete.format(app_name=self.launch_target.name)
+            )
         else:
             logger.info("Error upgrading VMs")
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
             self.headline.setText(strings.headline_status_updates_failed)
-            self.proposedActionDescription.setText(strings.description_status_updates_failed)
+            self.proposedActionDescription.setText(
+                strings.description_status_updates_failed.format(app_name=self.launch_target.name)
+            )
 
     @pyqtSlot(int)
     def update_progress_bar(self, value: int) -> None:

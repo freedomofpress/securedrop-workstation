@@ -10,7 +10,7 @@ except ImportError:
 
 from sdw_updater import Updater
 from sdw_updater.Updater import is_qubes_mid_upgrade, should_launch_updater
-from sdw_updater.UpdaterApp import UpdaterApp, launch_securedrop_inbox
+from sdw_updater.UpdaterApp import InboxTarget, LaunchTarget, UpdaterApp, launch_in_vm
 from sdw_util import Util
 
 DEFAULT_INTERVAL = 28800  # 8hr default for update interval
@@ -20,16 +20,29 @@ def parse_argv(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--skip-delta", type=int)
     parser.add_argument("--skip-netcheck", action="store_true")
-    return parser.parse_args(argv)
+    # --name, --vm and --desktop must be specified together; if none are, launch the Inbox
+    parser.add_argument("--name", help="Name of the application to launch")
+    parser.add_argument("--vm", help="VM to launch the application in")
+    parser.add_argument("--desktop", help="Desktop file of the application to launch")
+    args = parser.parse_args(argv)
+
+    target_args = [args.name, args.vm, args.desktop]
+    if all(arg is None for arg in target_args):
+        args.launch_target = InboxTarget
+    elif any(arg is None for arg in target_args):
+        parser.error("--name, --vm and --desktop must be specified together")
+    else:
+        args.launch_target = LaunchTarget(name=args.name, vm=args.vm, desktop=args.desktop)
+    return args
 
 
-def launch_updater(should_skip_netcheck: bool = False) -> None:
+def launch_updater(launch_target: LaunchTarget, should_skip_netcheck: bool = False) -> None:
     """
     Start the updater GUI.
     """
 
     app = QApplication(sys.argv)
-    form = UpdaterApp(should_skip_netcheck)
+    form = UpdaterApp(should_skip_netcheck, launch_target=launch_target)
     form.show()
     sys.exit(app.exec())
 
@@ -64,9 +77,9 @@ def main(argv: list[str]) -> None:
     interval = int(args.skip_delta)
 
     if should_launch_updater(interval):
-        launch_updater(args.skip_netcheck)
+        launch_updater(args.launch_target, args.skip_netcheck)
     else:
-        launch_securedrop_inbox()
+        launch_in_vm(args.launch_target)
 
 
 if __name__ == "__main__":
