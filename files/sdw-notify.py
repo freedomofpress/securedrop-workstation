@@ -71,9 +71,7 @@ def show_update_warning() -> None:
         updater.show()
         sys.exit(app.exec())
     elif result == NotifyApp.NotifyStatus.DEFER_UPDATES:
-        # Currently, `DEFER_UPDATES` is a no-op, because the deferral period is
-        # simply the period before the next run of the notify script (defined in
-        # `securedrop-workstation/securedrop_salt/sd-dom0-crontab.sls`).
+        # Do nothing; it'll pop up again the next time the systemd timer fires.
         log.info(
             "User has deferred update check. sdw-notify will run "
             "again at the next scheduled interval."
