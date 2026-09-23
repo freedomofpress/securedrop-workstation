@@ -129,6 +129,11 @@ install -m 644 files/10-securedrop-logind_override.conf %{buildroot}/etc/systemd
 install -m 644 files/securedrop-user-xfce-settings.service %{buildroot}%{_userunitdir}/
 install -m 644 files/securedrop-user-xfce-icon-size.service %{buildroot}%{_userunitdir}/
 
+# Shared salt configuration
+cp -a securedrop_shared %{buildroot}/srv/salt/securedrop_shared
+chmod -R u=rwX,go=rX %{buildroot}/srv/salt/securedrop_shared
+
+# Admin salt configuration
 cp -a admin_salt %{buildroot}/srv/salt/admin_salt
 chmod -R u=rwX,go=rX %{buildroot}/srv/salt/admin_salt
 
@@ -198,6 +203,7 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 %files -n securedrop-dom0-manager
 %doc README.md
 %license LICENSE
+/srv/salt/securedrop_shared/*
 
 %post
 # Update Salt Configuration

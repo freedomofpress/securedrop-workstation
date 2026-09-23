@@ -3,6 +3,7 @@
 
 base:
   dom0:
+    - securedrop_shared.sd-sys-vms
     - admin_salt.sd-admin-template
     - admin_salt.sd-admin
 
