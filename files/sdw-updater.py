@@ -2,11 +2,7 @@
 import argparse
 import sys
 
-try:
-    from PyQt6.QtWidgets import QApplication
-except ImportError:
-    from PyQt5.QtWidgets import QApplication  # type: ignore [no-redef]
-
+from PyQt6.QtWidgets import QApplication
 
 from sdw_updater import Updater
 from sdw_updater.Updater import is_qubes_mid_upgrade, should_launch_updater
