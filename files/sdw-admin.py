@@ -436,7 +436,6 @@ def perform_uninstall() -> None:
         destroy_all_tagged(tag="sd-workstation")
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
-        subprocess.check_call([SCRIPTS_PATH / "scripts/clean-salt"])
         print("Uninstalling dom0 config package")
         subprocess.check_call(
             ["sudo", "dnf", "-y", "-q", "remove", "securedrop-workstation-dom0-config"]
