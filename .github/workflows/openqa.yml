@@ -13,6 +13,9 @@ on:
       qubes_ver:
         required: true
         type: string
+      securedrop_product:  # admin, journalist or all
+        required: true
+        type: string
       cancel:
         required: false
         type: boolean
@@ -25,7 +28,7 @@ on:
 #      in a no-op, but importantly, the previous OpenQA job is cancelled since
 #      through concurrency there can only be one
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.environment }}-${{ inputs.qubes_ver }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.environment }}-${{ inputs.qubes_ver }}-${{ inputs.securedrop_product }}
   cancel-in-progress: true
 
 jobs:
@@ -35,7 +38,7 @@ jobs:
     steps:
       - name: Cancel OpenQA job # zizmor: ignore[template-injection]
         run: |
-          echo "Canceling previous OpenQA job for Qubes ${{ inputs.qubes_ver }}"
+          echo "Canceling previous OpenQA job for Qubes ${{ inputs.qubes_ver }} (${{ inputs.securedrop_product }})"
   openqa:
     runs-on: ubuntu-latest
     if: ${{ ! inputs.cancel }}  # Concurrency does the actual cancellation
@@ -52,6 +55,7 @@ jobs:
       # The URL to clone the remote OpenQA repo from (useful for forks):
       SECUREDROP_OPENQA_REPO_URL: "https://github.com/freedomofpress/openqa-tests-qubesos"
       QUBES_VER: ${{ inputs.qubes_ver }}
+      SECUREDROP_PRODUCT: ${{ inputs.securedrop_product }}
     container:
       image: debian:trixie
     steps:
@@ -75,6 +79,7 @@ jobs:
             DISTRI=qubesos ARCH=x86_64 \
             GIT_REF="$GIT_REF" \
             SECUREDROP_ENV="$SECUREDROP_ENV" \
+            SECUREDROP_PRODUCT="$SECUREDROP_PRODUCT" \
             XRES=1920 YRES=1080 \
             FLAVOR=securedrop \
             CASEDIR="${SECUREDROP_OPENQA_REPO_URL}#${SECUREDROP_OPENQA_REPO_BRANCH}" \
