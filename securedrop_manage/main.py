@@ -18,7 +18,7 @@ from typing import Literal
 from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
-from sdw_util.config_types import ValidationError
+from securedrop_manage.config_types import ValidationError
 from securedrop_manage.validate import SDWConfigValidator
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"

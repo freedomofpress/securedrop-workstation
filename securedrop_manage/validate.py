@@ -1,7 +1,7 @@
 """
 Utility to verify that SecureDrop Workstation config is properly structured.
 
-Structural validation of `config.json` lives in `sdw_util.config_types`; see
+Structural validation of `config.json` lives in `securedrop_manage.config_types`; see
 `Dom0Config.parse`. The class below additionally cross-checks the config
 against on-disk state: the Submission secret key file and existing
 private volumes for Qubes AppVMs.
@@ -17,7 +17,7 @@ from typing import Any
 
 from qubesadmin import Qubes
 
-from sdw_util.config_types import Dom0Config, ValidationError
+from securedrop_manage.config_types import Dom0Config, ValidationError
 
 # CONFIG_FILEPATH = "/srv/salt/securedrop_salt/config.json"
 CONFIG_FILEPATH = "config.json"

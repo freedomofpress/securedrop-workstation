@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from sdw_util.config_types import ValidationError
+from securedrop_manage.config_types import ValidationError
 from securedrop_manage.validate import SDWConfigValidator
 
 
