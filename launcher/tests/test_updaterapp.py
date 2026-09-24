@@ -7,6 +7,8 @@ from PyQt6.QtWidgets import QApplication
 from sdw_updater import UpdaterApp, strings
 from sdw_updater.Updater import UpdateStatus, overall_update_status
 
+TEST_TARGET = UpdaterApp.LaunchTarget(name="Test App", vm="test-vm", desktop="org.example.TestApp")
+
 
 @pytest.fixture(scope="module", autouse=True)
 def app():
@@ -188,7 +190,7 @@ def test_updater_app_with_no_connectivity_should_error(
      And the network check is unsuccessful
     Then the network error view should be visible
     """
-    updater_app_dialog = UpdaterApp.UpdaterApp()
+    updater_app_dialog = UpdaterApp.UpdaterApp(launch_target=TEST_TARGET)
     updater_app_dialog._check_network_and_update()
     assert is_network_fail_view(updater_app_dialog)
 
@@ -206,7 +208,7 @@ def test_updater_app_with_connectivity_should_succeed(
     Then the Preflight Updater should begin to check for updates
      And the progress view should be visible
     """
-    updater_app_dialog = UpdaterApp.UpdaterApp()
+    updater_app_dialog = UpdaterApp.UpdaterApp(launch_target=TEST_TARGET)
     updater_app_dialog._check_network_and_update()
     assert is_progress_view(updater_app_dialog)
 
@@ -219,9 +221,61 @@ def test_updater_app_with_override(mocked_thread):
     Then `apply updates` should still be called
      And the progress bar should be visible
     """
-    updater_app_dialog = UpdaterApp.UpdaterApp(should_skip_netcheck=True)
+    updater_app_dialog = UpdaterApp.UpdaterApp(should_skip_netcheck=True, launch_target=TEST_TARGET)
     updater_app_dialog._check_network_and_update()
     assert is_progress_view(updater_app_dialog)
+
+
+def test_updater_app_uses_target_name():
+    """
+    When the updater is started for a launch target
+    Then the introduction should refer to that target by name
+    """
+    updater_app_dialog = UpdaterApp.UpdaterApp(launch_target=TEST_TARGET)
+    assert "Test App" in updater_app_dialog.proposedActionDescription.text()
+    assert "SecureDrop Inbox" not in updater_app_dialog.proposedActionDescription.text()
+
+
+@mock.patch("sdw_updater.UpdaterApp.launch_in_vm")
+def test_updater_app_continue_launches_target(mocked_launch):
+    """
+    When updates complete successfully
+    Then the completion message should refer to the launch target
+     And clicking Continue should launch the launch target
+    """
+    updater_app_dialog = UpdaterApp.UpdaterApp(launch_target=TEST_TARGET)
+    updater_app_dialog.upgrade_status({"recommended_action": UpdateStatus.UPDATES_OK})
+    assert "Test App" in updater_app_dialog.proposedActionDescription.text()
+
+    updater_app_dialog.inboxOpenButton.click()
+    mocked_launch.assert_called_once_with(TEST_TARGET)
+
+
+@mock.patch("sdw_updater.UpdaterApp.subprocess.Popen")
+def test_launch_in_vm(mocked_popen):
+    """
+    When launching a target other than the Inbox
+    Then its desktop file should be launched in its VM
+     And sd-proxy should not be started
+    """
+    with pytest.raises(SystemExit):
+        UpdaterApp.launch_in_vm(TEST_TARGET)
+    mocked_popen.assert_called_once_with(["qvm-run", "test-vm", "gtk-launch org.example.TestApp"])
+
+
+@mock.patch("sdw_updater.UpdaterApp.subprocess.Popen")
+def test_launch_in_vm_inbox_starts_proxy(mocked_popen):
+    """
+    When launching the Inbox
+    Then sd-proxy should be started
+     And the Inbox should be launched in sd-app
+    """
+    with pytest.raises(SystemExit):
+        UpdaterApp.launch_in_vm(UpdaterApp.InboxTarget)
+    assert mocked_popen.call_args_list == [
+        mock.call(["qvm-start", "sd-proxy"]),
+        mock.call(["qvm-run", "sd-app", "gtk-launch press.freedom.SecureDropApp"]),
+    ]
 
 
 def is_progress_view(dialog: UpdaterApp.UpdaterApp) -> bool:
