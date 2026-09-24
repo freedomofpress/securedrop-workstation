@@ -5,11 +5,49 @@ import contextlib
 import os
 import subprocess
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 
 BUILD_VM = os.environ.get("SECUREDROP_DEV_VM", "sd-dev")
 INBOX_TEMPLATE = "sd-inbox-debian-13"
 VIEWER_TEMPLATE = "sd-viewer-debian-13"
+ADMIN_TEMPLATE = "sd-admin-debian-13"
+
+
+@dataclass
+class Target:
+    """A repository to build packages from and the templates to install them into."""
+
+    repo: str
+    default_branch: str
+    make_target: str
+    templates: list[str]
+    # Running VMs with this tag are shut down after installing
+    tag: str
+    # VMs to start after shutdown
+    start_vms: list[str]
+    done_message: str
+
+
+CLIENT = Target(
+    repo="securedrop-client",
+    default_branch="main",
+    make_target="build-debs",
+    templates=[INBOX_TEMPLATE, VIEWER_TEMPLATE],
+    tag="sd-workstation",
+    # Manually start sd-proxy so Tor can start up early
+    start_vms=["sd-proxy"],
+    done_message="You can start the app with `make run-app`.",
+)
+ADMIN = Target(
+    repo="securedrop",
+    default_branch="develop",
+    make_target="build-debs-admin-notest",
+    templates=[ADMIN_TEMPLATE],
+    tag="sd-admin",
+    start_vms=[],
+    done_message="You can now start sd-admin.",
+)
 
 
 def run_in_vm(command: list[str], vmname: str, capture_output: bool = False) -> str | None:
@@ -23,42 +61,42 @@ def run_in_vm(command: list[str], vmname: str, capture_output: bool = False) -> 
         return None
 
 
-def check_out_pr(pr_id: int) -> None:
+def check_out_pr(pr_id: int, target: Target) -> None:
     """Check out the PR into the local repository in build VM."""
-    print(f"Checking out PR #{pr_id} in {BUILD_VM} VM...")
+    print(f"Checking out {target.repo} PR #{pr_id} in {BUILD_VM} VM...")
     branch = f"pr-{pr_id}"
-    # first switch to main, removing the PR branch if it exists
-    run_in_vm(["git", "-C", "securedrop-client", "checkout", "main"], BUILD_VM)
+    # first switch to the default branch, removing the PR branch if it exists
+    run_in_vm(["git", "-C", target.repo, "checkout", target.default_branch], BUILD_VM)
     with contextlib.suppress(subprocess.CalledProcessError):
-        run_in_vm(["git", "-C", "securedrop-client", "branch", "-D", branch], BUILD_VM)
+        run_in_vm(["git", "-C", target.repo, "branch", "-D", branch], BUILD_VM)
     # Fetch and checkout the PR
     # TODO: this doesn't seem to work with SSH remotes
     run_in_vm(
-        ["git", "-C", "securedrop-client", "fetch", "origin", f"pull/{pr_id}/head:{branch}"],
+        ["git", "-C", target.repo, "fetch", "origin", f"pull/{pr_id}/head:{branch}"],
         BUILD_VM,
     )
-    run_in_vm(["git", "-C", "securedrop-client", "checkout", branch], BUILD_VM)
+    run_in_vm(["git", "-C", target.repo, "checkout", branch], BUILD_VM)
 
     print(f"Successfully checked out PR #{pr_id}")
 
 
-def build_debs() -> None:
-    """Run make build-debs in build VM to build the Debian packages."""
+def build_debs(target: Target) -> None:
+    """Run make build-debs (or equivalent) in build VM to build the Debian packages."""
     # TODO: we should download these from CI instead of building them ourselves
     # TODO: an option to also update securedrop-builder?
     print(f"Building Debian packages in {BUILD_VM} VM...")
-    run_in_vm(["rm", "-rf", "securedrop-client/build"], BUILD_VM)
-    build_args = ["FAST=1", "make", "-C", "securedrop-client", "build-debs"]
+    run_in_vm(["rm", "-rf", f"{target.repo}/build"], BUILD_VM)
+    build_args = ["FAST=1", "make", "-C", target.repo, target.make_target]
     run_in_vm(build_args, BUILD_VM)
     print("Successfully built Debian packages")
 
 
-def find_debs_in_build_vm() -> list[str]:
+def find_debs_in_build_vm(target: Target) -> list[str]:
     """Find all .deb files in the build folder of build VM."""
     print(f"Finding .deb files in {BUILD_VM} VM...")
     # List all .deb files in the build directory
     output = run_in_vm(
-        ["find", "securedrop-client/build", "-name", '"*.deb"'], BUILD_VM, capture_output=True
+        ["find", f"{target.repo}/build", "-name", '"*.deb"'], BUILD_VM, capture_output=True
     )
     assert output is not None  # noqa: S101
 
@@ -132,34 +170,40 @@ def install_debs_in_template(all_deb_paths: list[str], template_vm: str) -> None
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("pr_id", type=int, help="ID of the Pull Request to test")
+    parser.add_argument(
+        "--admin",
+        action="store_true",
+        help="Test a securedrop PR by building admin packages and installing them into sd-admin",
+    )
     args = parser.parse_args()
+    target = ADMIN if args.admin else CLIENT
 
     print(f"Using build VM: {BUILD_VM}")
 
     # Run the workflow
-    check_out_pr(args.pr_id)
-    build_debs()
+    check_out_pr(args.pr_id, target)
+    build_debs(target)
 
     # Find deb files and get their names
-    deb_files = find_debs_in_build_vm()
+    deb_files = find_debs_in_build_vm(target)
 
     for deb_file in deb_files:
         package_name = get_package_name_from_build_vm(deb_file)
         print(f"Package: {package_name} - {deb_file}")
 
     # Install the deb files in template VMs
-    install_debs_in_template(deb_files, INBOX_TEMPLATE)
-    install_debs_in_template(deb_files, VIEWER_TEMPLATE)
+    for template in target.templates:
+        install_debs_in_template(deb_files, template)
 
     # Shutdown
-    all_vms = subprocess.check_output(
-        ["qvm-ls", "--tags", "sd-workstation", "--raw-list", "--running"], text=True
+    running_vms = subprocess.check_output(
+        ["qvm-ls", "--tags", target.tag, "--raw-list", "--running"], text=True
     ).splitlines()
-    subprocess.check_call(["qvm-shutdown", "--wait"] + all_vms)
-    # Manually start sd-proxy so Tor can start up early
-    subprocess.check_call(["qvm-start", "sd-proxy"])
-    print(f"\n\nYour workstation is provisioned with PR #{args.pr_id}.")
-    print("\n\nYou can start the app with `make run-app`.")
+    subprocess.check_call(["qvm-shutdown", "--wait"] + running_vms)
+    for vm in target.start_vms:
+        subprocess.check_call(["qvm-start", vm])
+    print(f"\n\nYour VMs are provisioned with {target.repo} PR #{args.pr_id}.")
+    print(f"\n\n{target.done_message}")
 
 
 if __name__ == "__main__":
