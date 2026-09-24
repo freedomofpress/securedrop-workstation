@@ -1,18 +1,28 @@
 # -*- coding: utf-8 -*-
 # vim: set syntax=yaml ts=2 sw=2 sts=2 et :
 
-##
-# Minimal config for sd-admin, decoupled from securedrop_salt/sd-default-config.sls
-# during prototyping. The main SDW config imports config.json (which contains
-# SDW-specific fields like submission_key_fpr and vmsizes) and hardcodes
-# distribution=bookworm. We hardcode trixie here instead.
-#
-# TODO: Post-spike, consider extracting shared apt config into a common location
-# to avoid duplication with securedrop_salt/sd-default-config.sls.
-##
+# APT config for sd-admin
 
-{% set admin_vars = {
-    "apt_sources_filename": "apt_freedom_press.sources",
-    "component": "main",
-    "distribution": "trixie"
-} %}
+{% import_json "admin_salt/config.json" as d %}
+
+# Respect "dev" and "staging" envs if provided, default to "prod"
+{% if d.environment == "dev" %}
+  # use apt-test and nightlies
+  {% set admin_vars = {
+      "apt_sources_filename": "apt-test_freedom_press.sources",
+      "component": "main nightlies",
+  } %}
+{% elif d.environment == "staging" %}
+  # use apt-test and main (RC/test builds)
+  {% set admin_vars = {
+      "apt_sources_filename": "apt-test_freedom_press.sources",
+      "component": "main",
+  } %}
+{% else %}
+  {% set admin_vars = {
+      "apt_sources_filename": "apt_freedom_press.sources",
+      "component": "main",
+  } %}
+{% endif %}
+
+{% set _ = admin_vars.update({"distribution": "trixie"}) %}
