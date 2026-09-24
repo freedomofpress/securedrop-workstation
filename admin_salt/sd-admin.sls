@@ -27,7 +27,7 @@ sd-admin:
       - kernel: "pvgrub2-pvh"
     - tags:
       - add:
-        - sd-workstation
+        # TODO: update tags once taxonomy finalised
         - sd-admin
     - features:
       - enable:
