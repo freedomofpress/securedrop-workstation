@@ -307,7 +307,7 @@ def test_legacy_config_is_migrated(tmp_path: Path) -> None:
 
 
 def test_get_installed_product(tmp_path: Path) -> None:
-    with pytest.raises(manage.SDWAdminException):
+    with pytest.raises(manage.ManageException):
         # nothing installed in our tmp_path yet
         manage.get_installed_product(tmp_path)
 
@@ -344,7 +344,114 @@ def test_select_product(
     requested: manage.Product | None, installed: manage.Product, expected: manage.Product | None
 ) -> None:
     if expected is None:
-        with pytest.raises(manage.SDWAdminException):
+        with pytest.raises(manage.ManageException):
             manage.select_product(requested, installed)
     else:
         assert manage.select_product(requested, installed) is expected
+
+
+@pytest.fixture
+def fake_qubes(tmp_path: Path, mocker: Any, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
+    """
+    Stand in for vault and sd-admin with local directories: a fake qvm-run on PATH runs
+    the command locally, and the config paths on both ends point into tmp_path.
+    """
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    qvm_run = bin_dir / "qvm-run"
+    # qvm-run --pass-io <vm> <command>
+    qvm_run.write_text('#!/bin/sh\nexec sh -c "$3"\n')
+    qvm_run.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+
+    usb = tmp_path / "TailsData/securedrop-admin"
+    sd_admin = tmp_path / "sd-admin/.config/securedrop-admin"
+    usb.mkdir(parents=True)
+    sd_admin.parent.mkdir(parents=True)
+    mocker.patch.object(manage, "TAILS_ADMIN_CONFIG_PATH", usb)
+    mocker.patch.object(manage, "SD_ADMIN_CONFIG_PATH", str(sd_admin))
+    mocker.patch.object(manage, "Qubes").return_value.domains = [manage.SD_ADMIN_VM, "vault"]
+    return {"usb": usb, "sd_admin": sd_admin}
+
+
+def _start_vault_is_skipped(mocker: Any) -> None:
+    # qvm-start vault is fire-and-forget; don't try to run it
+    real_popen = manage.subprocess.Popen
+
+    def popen(args: list[str], **kwargs: Any) -> Any:
+        if args[0] == "qvm-start":
+            return mocker.Mock()
+        return real_popen(args, **kwargs)
+
+    mocker.patch.object(manage.subprocess, "Popen", side_effect=popen)
+
+
+class TestImportAdminConfig:
+    def test_copies_config_into_sd_admin(self, fake_qubes: dict[str, Path], mocker: Any) -> None:
+        _start_vault_is_skipped(mocker)
+        usb = fake_qubes["usb"]
+        (usb / "site-specific").write_text("app_hostname: app\n")
+        (usb / "app-journalist.auth_private").write_text("abc:descriptor:x25519:key\n")
+        mocker.patch("builtins.input", return_value="y")
+
+        manage.import_admin_config()
+
+        sd_admin = fake_qubes["sd_admin"]
+        assert sorted(p.name for p in sd_admin.iterdir()) == [
+            "app-journalist.auth_private",
+            "site-specific",
+        ]
+        assert (sd_admin / "site-specific").read_text() == "app_hostname: app\n"
+        assert sd_admin.stat().st_mode & 0o777 == 0o700
+        assert (sd_admin / "site-specific").stat().st_mode & 0o777 == 0o600
+        assert not Path(f"{sd_admin}.new").exists()
+
+    def test_requires_sd_admin(self, fake_qubes: dict[str, Path], mocker: Any) -> None:
+        mocker.patch.object(manage, "Qubes").return_value.domains = ["vault"]
+        with pytest.raises(manage.ManageException, match="does not exist"):
+            manage.import_admin_config()
+
+    def test_rejects_journalist_usb(self, fake_qubes: dict[str, Path], mocker: Any) -> None:
+        _start_vault_is_skipped(mocker)
+        (fake_qubes["usb"] / "app-journalist.auth_private").write_text("abc\n")
+        mocker.patch("builtins.input", return_value="y")
+        copy = mocker.patch.object(manage, "copy_admin_config")
+
+        with pytest.raises(manage.ManageException, match="Journalist Workstation USB"):
+            manage.import_admin_config()
+        copy.assert_not_called()
+
+    def test_rejects_locked_usb(self, fake_qubes: dict[str, Path], mocker: Any) -> None:
+        _start_vault_is_skipped(mocker)
+        fake_qubes["usb"].rmdir()
+        mocker.patch("builtins.input", return_value="y")
+
+        with pytest.raises(manage.ManageException, match="No securedrop-admin configuration"):
+            manage.import_admin_config()
+
+    def test_keeps_existing_config_unless_confirmed(
+        self, fake_qubes: dict[str, Path], mocker: Any
+    ) -> None:
+        fake_qubes["sd_admin"].mkdir()
+        (fake_qubes["sd_admin"] / "site-specific").write_text("existing\n")
+        mocker.patch("builtins.input", return_value="n")
+        copy = mocker.patch.object(manage, "copy_admin_config")
+
+        manage.import_admin_config()
+
+        copy.assert_not_called()
+        assert (fake_qubes["sd_admin"] / "site-specific").read_text() == "existing\n"
+
+    def test_failed_transfer_leaves_existing_config(
+        self, fake_qubes: dict[str, Path], mocker: Any
+    ) -> None:
+        fake_qubes["sd_admin"].mkdir()
+        (fake_qubes["sd_admin"] / "site-specific").write_text("existing\n")
+        # tar fails on the vault end
+        mocker.patch.object(manage, "TAILS_ADMIN_CONFIG_PATH", fake_qubes["usb"] / "missing")
+
+        with pytest.raises(manage.ManageException, match="Error copying"):
+            manage.copy_admin_config()
+
+        assert (fake_qubes["sd_admin"] / "site-specific").read_text() == "existing\n"
+        assert not Path(f"{fake_qubes['sd_admin']}.new").exists()
