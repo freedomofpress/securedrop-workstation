@@ -146,7 +146,7 @@ def provision_and_configure() -> None:
     # the old updater versions.
     run_cmd(["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"])
 
-    provision("Provisioning Fedora-based system VMs", "securedrop_salt.sd-sys-vms")
+    provision("Provisioning Fedora-based system VMs", "securedrop_shared.sd-sys-vms")
     provision("Provisioning base template", "securedrop_salt.sd-base-template")
     configure("Configuring base template", ["sd-base-debian-13"])
     provision_all()
