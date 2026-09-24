@@ -2,6 +2,9 @@
 """
 Updates the config.json in-place in dom0 to set the environment to 'dev' or
 'staging'.
+
+With --admin, only the environment is set in the user's config.json (creating
+it if necessary), since the admin workstation doesn't need any other config.
 """
 
 import argparse
@@ -10,6 +13,8 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+
+USER_CONFIG_DIR = Path.home() / ".config/securedrop-manage/"
 
 
 def parse_args() -> argparse.Namespace:
@@ -28,8 +33,15 @@ def parse_args() -> argparse.Namespace:
         action="store",
         help="Target deploy strategy, i.e. 'dev', or 'staging'",
     )
+    parser.add_argument(
+        "--admin",
+        default=False,
+        required=False,
+        action="store_true",
+        help="Configure the admin workstation (ignores --config)",
+    )
     args = parser.parse_args()
-    if not os.path.exists(args.config):
+    if not args.admin and not os.path.exists(args.config):
         msg = f"Config file not found: {args.config}\n"
         sys.stderr.write(msg)
         parser.print_help(sys.stderr)
@@ -60,7 +72,7 @@ def apply_config(config_path: str) -> None:
     """Copying config secrets into place"""
     config_source = Path(config_path).parent
 
-    user_config_dir = Path.home() / ".config/securedrop-manage/"
+    user_config_dir = USER_CONFIG_DIR
     salt_config_dir = Path("/srv/salt/securedrop_salt")
 
     user_config_dir.mkdir(parents=True, exist_ok=True)
@@ -72,8 +84,22 @@ def apply_config(config_path: str) -> None:
         subprocess.run(["sudo", "chmod", "ugo+r", salt_config_dir / file], check=True)
 
 
+def configure_admin(environment: str) -> None:
+    """Set the environment in the user's config.json, which is all the admin workstation needs"""
+    USER_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    config_path = USER_CONFIG_DIR / "config.json"
+    config = json.loads(config_path.read_text()) if config_path.exists() else {}
+    if config.get("environment") != environment:
+        sys.stderr.write(f"Updated {config_path} environment to '{environment}'...\n")
+        config["environment"] = environment
+        config_path.write_text(json.dumps(config))
+
+
 if __name__ == "__main__":
     args = parse_args()
 
-    set_env_in_config(args)
-    apply_config(args.config)
+    if args.admin:
+        configure_admin(args.environment)
+    else:
+        set_env_in_config(args)
+        apply_config(args.config)

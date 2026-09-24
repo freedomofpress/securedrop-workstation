@@ -23,6 +23,8 @@ all: assert-dom0
 	@echo
 	@echo "make dev"
 	@echo "make staging"
+	@echo "make dev-admin"
+	@echo "make staging-admin"
 	@echo
 	@echo "These targets will set your config.json to the appropriate environment."
 	@false
@@ -38,12 +40,27 @@ dev staging: assert-dom0 ## Installs, configures and builds a dev or staging env
 	$(MAKE) configure-env-$@
 	sdw-admin --apply
 
+# Same as above, but for the admin workstation
+.PHONY: dev-admin staging-admin
+dev-admin staging-admin: %-admin: assert-dom0 ## Installs, configures and builds a dev or staging admin environment
+	@./scripts/bootstrap-keyring.py --env $*
+	$(MAKE) assert-keyring-$*
+	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$* RPM_NAME=securedrop-admin-dom0-config
+	$(MAKE) configure-admin-env-$*
+	securedrop-manage --admin --apply
+
 # Places configuration details its installed directory
 .PHONY: configure-env-%
 configure-env-%:
 	@echo "Configuring $* environment"
 	./scripts/configure-environment.py --env $*
 	sdw-admin --validate
+
+.PHONY: configure-admin-env-%
+configure-admin-env-%:
+	@echo "Configuring $* environment for the admin workstation"
+	./scripts/configure-environment.py --env $* --admin
+	securedrop-manage --admin --validate
 
 .PHONY: assert-keyring-%
 assert-keyring-%: ## Correct keyring pkg installed
@@ -57,6 +74,7 @@ assert-keyring-%: ## Correct keyring pkg installed
 		fi \
 	fi
 
+RPM_NAME ?= securedrop-workstation-dom0-config
 install-rpm: assert-dom0 ## Install locally-built rpm (dev) or download published rpm
 	# All environments depend on the prod keyring package
 	@echo "Installing prod keyring package"
@@ -64,10 +82,10 @@ install-rpm: assert-dom0 ## Install locally-built rpm (dev) or download publishe
 ifeq ($(RPM_INSTALL_STRATEGY),dev)
 	@echo "Install dependencies and locally-built rpm"
 	@rpm -q grub2-xen-pvh || sudo qubes-dom0-update --clean -y grub2-xen-pvh
-	@./scripts/prep-dev
+	@RPM_NAME=$(RPM_NAME) ./scripts/prep-dev
 else
 	@echo "Install published rpm"
-	@rpm -q securedrop-workstation-dom0-config || sudo qubes-dom0-update -y securedrop-workstation-dom0-config
+	@rpm -q $(RPM_NAME) || sudo qubes-dom0-update -y $(RPM_NAME)
 endif
 	@echo "Provide instance-specific configuration and run sdw-admin --apply."
 
@@ -103,36 +121,6 @@ test-deps: build-deps ## Install package dependencies for running tests
 
 	@echo "Installing python package dependencies (e.g. PyQt)"
 	dnf install -y `rpmspec --parse $(SPEC_FILE) | sed -n "s/^Requires:.*python3/python3/p"`
-
-.PHONY: install-admin-rpm
-install-admin-rpm: assert-dom0 ## Install locally-built admin RPM (opt-in)
-	@echo "Installing securedrop-admin-dom0-config RPM..."
-	@RPM_NAME=securedrop-admin-dom0-config ./scripts/prep-dev
-
-# TODO: move this into securedrop-manage
-.PHONY: sd-admin
-sd-admin: assert-dom0 ## Provision sd-admin VM and install securedrop-admin
-	@echo "Copying environment from ~/.config/securedrop-manage/config.json..."
-	@config=$$(jq -e '{environment: .environment | values}' ~/.config/securedrop-manage/config.json) || \
-		{ echo "Failed to read \"environment\" from ~/.config/securedrop-manage/config.json" >&2; exit 1; }; \
-		echo "$$config" | sudo tee /srv/salt/admin_salt/config.json
-	sudo rm -rf /var/cache/salt
-	sudo qubesctl saltutil.sync_all refresh=true
-	@echo "Creating sd-admin template and AppVM..."
-	sudo qubesctl --show-output -- state.sls admin_salt.sd-admin
-	@echo "Installing packages inside sd-admin-debian-13..."
-	sudo qubesctl --show-output --skip-dom0 --targets sd-admin-debian-13 -- state.sls admin_salt.sd-admin-packages
-	qvm-shutdown --wait -- sd-admin-debian-13
-
-.PHONY: sd-admin-vault
-sd-admin-vault: assert-dom0 ## Provision sd-admin-vault VM
-	sudo rm -rf /var/cache/salt
-	sudo qubesctl saltutil.sync_all refresh=true
-	@echo "Creating sd-admin-vault template and AppVM..."
-	sudo qubesctl --show-output -- state.sls admin_salt.sd-admin-vault
-	@echo "Installing packages inside sd-admin-debian-13..."
-	sudo qubesctl --show-output --skip-dom0 --targets sd-admin-debian-13 -- state.sls admin_salt.sd-admin-packages
-	qvm-shutdown --wait -- sd-admin-debian-13
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
