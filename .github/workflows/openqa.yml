@@ -16,6 +16,9 @@ on:
       cancel:
         required: false
         type: boolean
+      extra_params:  # KEY1=value1 KEY2=value2
+        required: false
+        type: string
 
 # NOTE Concurrency serves two purposes:
 #   1. When starting a new OpenQA job
@@ -52,6 +55,7 @@ jobs:
       # The URL to clone the remote OpenQA repo from (useful for forks):
       SECUREDROP_OPENQA_REPO_URL: "https://github.com/freedomofpress/openqa-tests-qubesos"
       QUBES_VER: ${{ inputs.qubes_ver }}
+      EXTRA_PARAMS: ${{ inputs.extra_params }}
     container:
       image: debian:trixie
     steps:
@@ -78,7 +82,8 @@ jobs:
             XRES=1920 YRES=1080 \
             FLAVOR=securedrop \
             CASEDIR="${SECUREDROP_OPENQA_REPO_URL}#${SECUREDROP_OPENQA_REPO_BRANCH}" \
-            MAX_JOB_TIME=10800 | tee openqa.json
+            MAX_JOB_TIME=10800 \
+            $EXTRA_PARAMS | tee openqa.json
 
           for id in $(jq -r '.ids[]' openqa.json); do
 
