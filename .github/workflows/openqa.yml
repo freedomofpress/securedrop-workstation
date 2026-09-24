@@ -13,6 +13,9 @@ on:
       qubes_ver:
         required: true
         type: string
+      securedrop_product:  # admin, journalist or all
+        required: true
+        type: string
       cancel:
         required: false
         type: boolean
@@ -25,7 +28,7 @@ on:
 #      in a no-op, but importantly, the previous OpenQA job is cancelled since
 #      through concurrency there can only be one
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.environment }}-${{ inputs.qubes_ver }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.environment }}-${{ inputs.qubes_ver }}-${{ inputs.securedrop_product }}
   cancel-in-progress: true
 
 jobs:
@@ -35,7 +38,7 @@ jobs:
     steps:
       - name: Cancel OpenQA job # zizmor: ignore[template-injection]
         run: |
-          echo "Canceling previous OpenQA job for Qubes ${{ inputs.qubes_ver }}"
+          echo "Canceling previous OpenQA job for Qubes ${{ inputs.qubes_ver }} (${{ inputs.securedrop_product }})"
   openqa:
     runs-on: ubuntu-latest
     if: ${{ ! inputs.cancel }}  # Concurrency does the actual cancellation
@@ -45,13 +48,15 @@ jobs:
       OPENQA_SECRET: ${{ secrets.OPENQA_SECRET }}
       GIT_REF: ${{ inputs.git_ref }}
       GH_TOKEN: ${{ github.token }}
+      GH_STATUS_PREFIX: "Qubes ${{ inputs.qubes_ver }} / ${{ inputs.securedrop_product }} (${{ inputs.environment }}) / "
       SECUREDROP_ENV: ${{ inputs.environment }}
       # The branch to clone on the FPF-managed remote OpenQA repo:
       # https://github.com/freedomofpress/openqa-tests-qubesos
-      SECUREDROP_OPENQA_REPO_BRANCH: "main"
+      SECUREDROP_OPENQA_REPO_BRANCH: "admin-tools"
       # The URL to clone the remote OpenQA repo from (useful for forks):
       SECUREDROP_OPENQA_REPO_URL: "https://github.com/freedomofpress/openqa-tests-qubesos"
       QUBES_VER: ${{ inputs.qubes_ver }}
+      SECUREDROP_PRODUCT: ${{ inputs.securedrop_product }}
     container:
       image: debian:trixie
     steps:
@@ -75,6 +80,7 @@ jobs:
             DISTRI=qubesos ARCH=x86_64 \
             GIT_REF="$GIT_REF" \
             SECUREDROP_ENV="$SECUREDROP_ENV" \
+            SECUREDROP_PRODUCT="$SECUREDROP_PRODUCT" \
             XRES=1920 YRES=1080 \
             FLAVOR=securedrop \
             CASEDIR="${SECUREDROP_OPENQA_REPO_URL}#${SECUREDROP_OPENQA_REPO_BRANCH}" \
@@ -96,7 +102,7 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
-            -d "{\"state\": \"pending\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / ${QUBES_VER} / $TEST_NAME\"}"
+            -d "{\"state\": \"pending\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"${GH_STATUS_PREFIX} $TEST_NAME\"}"
 
           done
       - name: Wait for openQA
@@ -147,7 +153,7 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
-            -d "{\"state\": \"$github_state\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / ${QUBES_VER} / $TEST_NAME\"}"
+            -d "{\"state\": \"$github_state\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"${GH_STATUS_PREFIX} $TEST_NAME\"}"
 
           done
           exit $workflow_exit_status
@@ -169,5 +175,5 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/commits/$GIT_REF/statuses \
-            -d "{\"state\": \"error\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"OpenQA / ${QUBES_VER} / $TEST_NAME\"}" ||:
+            -d "{\"state\": \"error\", \"target_url\": \"${OPENQA_HOST}tests/${id}\", \"context\": \"${GH_STATUS_PREFIX} $TEST_NAME\"}" ||:
           done

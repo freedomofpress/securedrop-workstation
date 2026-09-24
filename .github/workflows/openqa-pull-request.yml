@@ -10,8 +10,8 @@ on:
       - synchronize # Re-run against new HEAD when commits are pushed to the PR
 
 # Collapse rapid toggles of the same label into a single run of the job.
-# Different labels (4.2 vs 4.3) and synchronize events stay in separate groups,
-# so they run independently.
+# Different labels (e.g. 4.3-openqa-admin vs 4.3-openqa-all)
+# and synchronize events stay in separate groups, so they run independently.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.label.name || github.event.action }}
   cancel-in-progress: true
@@ -21,9 +21,9 @@ jobs:
     name: 'Check OpenQA triggers'
     runs-on: ubuntu-latest
     outputs:
-      qubes-versions: ${{ steps.find_labels.outputs.qubes-versions }}
+      qa-settings: ${{ steps.find_labels.outputs.qa-settings }}
     steps:
-      - name: Find all openqa-pending labels on this PR  # zizmor: ignore[template-injection]
+      - name: Find all openqa labels on this PR  # zizmor: ignore[template-injection]
         id: find_labels
         uses: actions/github-script@v9
         with:
@@ -46,38 +46,36 @@ jobs:
                 process.exit(1);
             }
 
-            // Find all '*-openqa-pending' labels
-            const openqaLabels = labels.filter(label =>
-              label.name && label.name.match(/^[0-9]+\.[0-9]+-openqa-pending$/)
-            );
+            // Find all '<version>-openqa-<product>' labels
+            const labelRegex = /^([0-9]+\.[0-9]+)-openqa-(admin|journalist|all)$/;
+            const qaSettings = labels
+              .map(label => label.name && label.name.match(labelRegex))
+              .filter(match => match)
+              .map(match => ({ qubes_version: match[1], securedrop_product: match[2] }));
 
-            if (openqaLabels.length === 0) {
-              console.log('No valid *-openqa-pending labels found');
+            if (qaSettings.length === 0) {
+              console.log('No valid *-openqa-* labels found');
               return;
             }
 
-            // Extract Qubes versions
-            const qubesVersions = openqaLabels.map(label =>
-              label.name.replace('-openqa-pending', '')
-            );
+            console.log(`Found openqa tests settings: ${JSON.stringify(qaSettings)}`);
+            core.setOutput('qa-settings', JSON.stringify(qaSettings));
 
-            console.log(`Found openqa-pending labels for versions: ${qubesVersions.join(', ')}`);
-            core.setOutput('qubes-versions', JSON.stringify(qubesVersions));
-
-  # Runs/Cancels OpenQA job for each Qubes version found in labels
+  # Runs/Cancels OpenQA job for each (Qubes version, product) found in labels
   openqa:
     needs: [check]
-    if: ${{ needs.check.outputs.qubes-versions != '' }}
+    if: ${{ needs.check.outputs.qa-settings != '' }}
     strategy:
       fail-fast: false
       matrix:
-        qubes_version: ${{ fromJSON(needs.check.outputs.qubes-versions) }}
+        include: ${{ fromJSON(needs.check.outputs.qa-settings) }}
     uses: ./.github/workflows/openqa.yml
     secrets: inherit
     with:
       environment: "dev"
       git_ref: ${{ github.event.pull_request.head.sha }}
       qubes_ver: ${{ matrix.qubes_version }}
+      securedrop_product: ${{ matrix.securedrop_product }}
 
       # NOTE: cancellation is done through concurrency: by starting another job
       # with the same conditions as the one we want to cancel, it necessarily

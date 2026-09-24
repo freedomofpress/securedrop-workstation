@@ -135,3 +135,6 @@ jobs:
       environment: "dev"
       git_ref: ${{ needs.get-main-commit.outputs.main-commit}}
       qubes_ver: ${{ matrix.qubes_version }}
+
+      # FIXME: add other variants to nightlies when install / tests pass
+      securedrop_product: "journalist"
