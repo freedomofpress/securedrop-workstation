@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from securedrop_manage.config_types import ValidationError
-from securedrop_manage.validate import SDWConfigValidator
+from securedrop_manage.validate import AdminConfigValidator, SDWConfigValidator
 
 
 @pytest.fixture
@@ -69,3 +69,26 @@ def test_config_mismatched_fpr(test_resources_dir: Path, tmp_path: Path) -> None
         SDWConfigValidator(tmp_path)
 
     assert "Configured fingerprint does not match key!" in exc_info.exconly()
+
+
+def test_admin_good_config(test_resources_dir: Path, tmp_path: Path) -> None:
+    # No submission key needed for the admin workstation
+    shutil.copy(f"{test_resources_dir}/testconfig.json", f"{tmp_path}/config.json")
+
+    assert AdminConfigValidator(tmp_path).config.environment == "prod"
+
+
+def test_admin_missing_config(tmp_path: Path) -> None:
+    # config.json is optional, defaulting to prod
+    assert AdminConfigValidator(tmp_path).config.environment == "prod"
+
+
+def test_admin_invalid_environment(test_resources_dir: Path, tmp_path: Path) -> None:
+    shutil.copy(
+        f"{test_resources_dir}/testconfig.json.invalid_environment", f"{tmp_path}/config.json"
+    )
+
+    with pytest.raises(ValidationError) as exc_info:
+        AdminConfigValidator(tmp_path)
+
+    assert "Invalid environment: production" in exc_info.exconly()

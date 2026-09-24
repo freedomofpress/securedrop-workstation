@@ -183,7 +183,7 @@ def test_import_config(
         "vmsizes": {"sd_app": SD_APP_GB, "sd_log": SD_LOG_GB},
     }
 
-    manage.validate_config(config_path)
+    manage.validate_config(config_path, manage.Product.JOURNALIST)
 
 
 def test_import_config_keeps_existing_submission_key(
@@ -210,7 +210,7 @@ def test_import_config_keeps_existing_submission_key(
     assert config["submission_key_fpr"] == submission_key_fingerprint(existing_key)
     assert config["hidserv"]["hostname"] == f"{FAKE_JI_ADDRESS}.onion"
 
-    manage.validate_config(config_path)
+    manage.validate_config(config_path, manage.Product.JOURNALIST)
 
 
 def test_import_config_aborts_without_confirmation(
