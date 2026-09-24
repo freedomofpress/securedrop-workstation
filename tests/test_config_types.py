@@ -22,6 +22,7 @@ from typing import Any
 import pytest
 
 from securedrop_manage.config_types import (
+    AdminConfig,
     Dom0Config,
     HidservConfig,
     ValidationError,
@@ -196,3 +197,35 @@ def test_hidserv_parse_rejects_non_dict() -> None:
 def test_vmsizes_parse_rejects_non_dict() -> None:
     with pytest.raises(ValidationError, match=re.escape("'vmsizes' must be a JSON object")):
         VmSizes.parse(42)
+
+
+# --- AdminConfig --------------------------------------------------------------
+
+
+def test_admin_parse_good_config() -> None:
+    assert AdminConfig.parse(_load("testconfig.json")).environment == "prod"
+    # Only "environment" is required
+    assert AdminConfig.parse({"environment": "dev"}).environment == "dev"
+
+
+@pytest.mark.parametrize(
+    ("fixture", "expected"),
+    [
+        (
+            "testconfig.json.missing_environment",
+            "'environment' is not defined in config.json",
+        ),
+        (
+            "testconfig.json.invalid_environment",
+            "Invalid environment: production",
+        ),
+    ],
+)
+def test_admin_parse_rejects_fixture(fixture: str, expected: str) -> None:
+    with pytest.raises(ValidationError, match=re.escape(expected)):
+        AdminConfig.parse(_load(fixture))
+
+
+def test_admin_parse_rejects_non_dict_top_level() -> None:
+    with pytest.raises(ValidationError, match="must contain a JSON object"):
+        AdminConfig.parse([])

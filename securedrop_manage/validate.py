@@ -1,10 +1,5 @@
 """
-Utility to verify that SecureDrop Workstation config is properly structured.
-
-Structural validation of `config.json` lives in `securedrop_manage.config_types`; see
-`Dom0Config.parse`. The class below additionally cross-checks the config
-against on-disk state: the Submission secret key file and existing
-private volumes for Qubes AppVMs.
+Utility to verify that SecureDrop Journalist and Admin Workstation configs are properly structured
 """
 
 import json
@@ -17,7 +12,7 @@ from typing import Any
 
 from qubesadmin import Qubes
 
-from securedrop_manage.config_types import Dom0Config, ValidationError
+from securedrop_manage.config_types import AdminConfig, Dom0Config, ValidationError
 
 # CONFIG_FILEPATH = "/srv/salt/securedrop_salt/config.json"
 CONFIG_FILEPATH = "config.json"
@@ -25,6 +20,13 @@ SECRET_KEY_FILEPATH = "sd-journalist.sec"
 
 
 class SDWConfigValidator:
+    """
+    Structural validation of `config.json` lives in `securedrop_manage.config_types`; see
+    `Dom0Config.parse`. The class below additionally cross-checks the config
+    against on-disk state: the Submission secret key file and existing
+    private volumes for Qubes AppVMs.
+    """
+
     def __init__(self, config_base_dir: str | os.PathLike[str] | None = None) -> None:
         if config_base_dir:
             self.config_filepath = os.path.join(config_base_dir, CONFIG_FILEPATH)
@@ -112,3 +114,21 @@ class SDWConfigValidator:
             vol = vm.volumes["private"]
             if not (vol.size <= self.config.vmsizes.sd_log * 1024 * 1024 * 1024):
                 raise ValidationError("sd-log private volume is already bigger than configuration.")
+
+
+class AdminConfigValidator:
+    """
+    The admin workstation only needs a subset of `config.json`, which is
+    validated by `AdminConfigValidator`. The file is optional there, defaulting
+    to the prod environment.
+    """
+
+    def __init__(self, config_base_dir: str | os.PathLike[str]) -> None:
+        self.config_filepath = os.path.join(config_base_dir, CONFIG_FILEPATH)
+        self.config: AdminConfig
+        if not os.path.exists(self.config_filepath):
+            # config.json is optional for the admin workstation
+            self.config = AdminConfig(environment="prod")
+            return
+        with open(self.config_filepath) as f:
+            self.config = AdminConfig.parse(json.load(f))

@@ -23,6 +23,15 @@ class ValidationError(Exception):
     """Raised when a raw config dict cannot be parsed into a typed config object."""
 
 
+def _parse_environment(raw: dict[str, Any]) -> Environment:
+    if "environment" not in raw:
+        raise ValidationError("'environment' is not defined in config.json")
+    env_raw = raw["environment"]
+    if env_raw not in _ENVIRONMENTS:
+        raise ValidationError(f"Invalid environment: {env_raw}")
+    return cast(Environment, env_raw)
+
+
 @dataclass(frozen=True)
 class HidservConfig:
     """Information about the Onion service for the Journalist Interface"""
@@ -93,12 +102,7 @@ class Dom0Config:
         if "hidserv" not in raw:
             raise ValidationError("'hidserv' is not defined in config.json")
         hidserv = HidservConfig.parse(raw["hidserv"])
-        if "environment" not in raw:
-            raise ValidationError("'environment' is not defined in config.json")
-        env_raw = raw["environment"]
-        if env_raw not in _ENVIRONMENTS:
-            raise ValidationError(f"Invalid environment: {env_raw}")
-        environment = cast(Environment, env_raw)
+        environment = _parse_environment(raw)
         if "vmsizes" not in raw:
             raise ValidationError("Private volume sizes ('vmsizes') are not defined in config.json")
         vmsizes = VmSizes.parse(raw["vmsizes"])
@@ -108,3 +112,16 @@ class Dom0Config:
             environment=environment,
             vmsizes=vmsizes,
         )
+
+
+@dataclass(frozen=True)
+class AdminConfig:
+    """The subset of config.json used by the admin workstation"""
+
+    environment: Environment
+
+    @classmethod
+    def parse(cls, raw: Any) -> "AdminConfig":
+        if not isinstance(raw, dict):
+            raise ValidationError("config.json must contain a JSON object at the top level")
+        return cls(environment=_parse_environment(raw))
