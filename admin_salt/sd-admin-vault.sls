@@ -31,8 +31,7 @@ sd-admin-vault:
         - service.securedrop-setup-admin-vault
     - tags:
       - add:
-        # TODO: update tags once taxonomy finalized
+        - sd-workstation
         - sd-admin
     - require:
       - qvm: sd-admin-debian-13
-
