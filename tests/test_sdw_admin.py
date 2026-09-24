@@ -1,6 +1,6 @@
 import os
 import time
-from collections.abc import Callable, Generator
+from collections.abc import Generator
 from pathlib import Path
 from types import ModuleType
 from typing import TYPE_CHECKING, Any
@@ -14,23 +14,6 @@ from tests.base import SD_TAG
 
 if TYPE_CHECKING:
     from qubesadmin.vm import QubesVM
-
-
-@pytest.fixture
-def sdw_admin(
-    proj_root: Path,
-    load_non_standard_module: Callable[[Path], ModuleType],
-) -> ModuleType:
-    """
-    Equivalent to 'import sdw_admin', except as a pytest fixture.
-
-    Workaround needed due to 'sdw-admin.py' having a non-pythonic '-' in its
-    name and also not currently being in its own python module.
-    """
-
-    # FIXME this is a workaround. A better approach is to have sdw-admin in
-    # a proper python module, trivially importable in tests. See #1750.
-    return load_non_standard_module(proj_root / "files" / "sdw-admin.py")
 
 
 @pytest.fixture

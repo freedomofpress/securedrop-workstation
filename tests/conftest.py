@@ -72,6 +72,23 @@ def load_non_standard_module() -> Callable[[os.PathLike[Any]], ModuleType]:
 
 
 @pytest.fixture
+def sdw_admin(
+    proj_root: Path,
+    load_non_standard_module: Callable[[Path], ModuleType],
+) -> ModuleType:
+    """
+    Equivalent to 'import sdw_admin', except as a pytest fixture.
+
+    Workaround needed due to 'sdw-admin.py' having a non-pythonic '-' in its
+    name and also not currently being in its own python module.
+    """
+
+    # FIXME this is a workaroud. A better approach is to have sdw-admin in
+    # a proper python module, trivially importable in tests. See #1750.
+    return load_non_standard_module(proj_root / "files" / "sdw-admin.py")
+
+
+@pytest.fixture
 def qubes_ver() -> str:
     return dnf.rpm.detect_releasever("/")
 
