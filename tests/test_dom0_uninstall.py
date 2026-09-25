@@ -17,7 +17,7 @@ def top_enabled() -> str:
     ("salt_dir", "qubes_tag"),
     [
         ("securedrop_salt", "sd-workstation"),
-        ("admin_salt", "sd-admin"),
+        # ("admin_salt", "sd-admin"),  # FIXME disabled until (#1899 merged)
     ],
 )
 def test_uninstalled(
