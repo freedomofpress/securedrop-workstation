@@ -151,4 +151,5 @@ markers = [
   "provisioning: checks that VMs exist and their extra-VM prefs are set correctly",
   "configuration: assumes that VMs exist inspects their intra-VM files and folders",
   "run_alone: tests that must not run in parallel due to dom0 state mutation",
+  "uninstall: test that cover uninsinstallation (should be off by default)",
 ]

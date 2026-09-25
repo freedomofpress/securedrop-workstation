@@ -26,6 +26,21 @@ from tests.base import (
 )
 
 
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    """
+    Skip uninstall tests unless explicitly asked for
+
+    Uninstalled system for obvious reasons isn't a state that can be tested
+    just like everything else
+    """
+    if "uninstall" in (config.getoption("-m") or ""):
+        return
+    skip = pytest.mark.skip(reason='Tests marked with "uninstall" must be explicitly run')
+    for item in items:
+        if "uninstall" in item.keywords:
+            item.add_marker(skip)
+
+
 @pytest.fixture(scope="session")
 def proj_root() -> os.PathLike[Any]:
     return Path(__file__).parent.parent
