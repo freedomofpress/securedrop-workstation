@@ -20,7 +20,7 @@ from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
 from securedrop_manage.config_types import ValidationError
-from securedrop_manage.validate import SDWConfigValidator
+from securedrop_manage.validate import AdminConfigValidator, SDWConfigValidator
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
 # errors from qubesctl. It may be possible to raise this again.
@@ -445,12 +445,15 @@ def sync_appmenus() -> None:
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-log"])
 
 
-def validate_config(path: Path) -> None:
+def validate_config(path: Path, product: Product) -> None:
     """
     Runs securedrop_manage.validate over the config present in the staging/prod directory
     """
     try:
-        validator = SDWConfigValidator(path)  # noqa: F841
+        if product.contains_journalist:
+            SDWConfigValidator(path)
+        if product.contains_admin:
+            AdminConfigValidator(path)
     except ValidationError:
         raise SDWAdminException("Error while validating configuration")
 
@@ -736,7 +739,7 @@ def import_config() -> None:
         print("Found submission key file, proceeding")
 
     try:
-        validate_config(CONFIG_PATH)
+        validate_config(CONFIG_PATH, Product.JOURNALIST)
         print("Valid configuration found, configuration complete")
     except SDWAdminException:
         subprocess.Popen(
@@ -799,7 +802,7 @@ def import_config() -> None:
             "Please detach and disconnect the USB drive.\n\n"
         )
         print("Validating configuration...")
-        validate_config(CONFIG_PATH)
+        validate_config(CONFIG_PATH, Product.JOURNALIST)
         print("Validation successful!")
     return
 
@@ -824,10 +827,8 @@ def main() -> None:  # noqa: PLR0912
         sys.exit(1)
 
     if args.validate:
-        if product.contains_admin:
-            raise NotImplementedError("Validating the admin workstation is not implemented yet")
         print("Validating...", end="")
-        validate_config(CONFIG_PATH)
+        validate_config(CONFIG_PATH, product)
         print("OK")
     elif args.apply:
         if product.contains_admin:
@@ -851,7 +852,7 @@ def main() -> None:  # noqa: PLR0912
                 print("Exiting.")
                 sys.exit(0)
         print("Applying configuration...")
-        validate_config(CONFIG_PATH)
+        validate_config(CONFIG_PATH, Product.JOURNALIST)
         copy_config()
         refresh_salt()
         with suppress_preloaded_disposables():
@@ -879,7 +880,7 @@ def main() -> None:  # noqa: PLR0912
             "Admin Workstation or Journalist Workstation USB drive accessible.\n\n\n"
         )
         try:
-            validate_config(CONFIG_PATH)
+            validate_config(CONFIG_PATH, Product.JOURNALIST)
             print("Valid configuration found, configuration complete")
         except SDWAdminException:
             import_config()
