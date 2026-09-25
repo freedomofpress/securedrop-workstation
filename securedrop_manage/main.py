@@ -5,6 +5,7 @@ does it handle the config.
 """
 
 import argparse
+import dataclasses
 import json
 import os
 import shutil
@@ -30,6 +31,7 @@ DEFAULT_SD_APP_GB = 10
 DEFAULT_SD_LOG_GB = 5
 
 SALT_PATH = Path("/srv/salt/securedrop_salt/")
+ADMIN_SALT_PATH = Path("/srv/salt/admin_salt/")
 CONFIG_PATH = Path.home() / ".config/securedrop-manage"
 LEGACY_CONFIG_PATH = Path("/usr/share/securedrop-workstation-dom0-config/")
 PRODUCTS_PATH = Path("/usr/share/securedrop/products/")
@@ -213,6 +215,37 @@ def copy_config() -> None:
         subprocess.check_call(["sudo", "cp", CONFIG_PATH / "sd-journalist.sec", SALT_PATH])
     except subprocess.CalledProcessError:
         raise SDWAdminException("Error copying configuration")
+
+
+def copy_admin_config() -> None:
+    """
+    Copies the subset of config.json used by the admin workstation to /srv/salt/admin_salt
+    """
+    config = AdminConfigValidator(CONFIG_PATH).config
+    try:
+        subprocess.run(
+            ["sudo", "tee", ADMIN_SALT_PATH / "config.json"],
+            input=json.dumps(dataclasses.asdict(config)),
+            text=True,
+            stdout=subprocess.DEVNULL,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        raise SDWAdminException("Error copying admin configuration")
+
+
+def provision_and_configure_admin() -> None:
+    """
+    Applies the admin salt states on dom0 and the admin template
+    """
+    run_cmd(["sudo", "qubesctl", "top.enable", "admin_salt.sd-admin"])
+
+    # Apply the dom0 states individually rather than via state.highstate, which
+    # would also apply the journalist workstation's states if it's installed.
+    provision("Provisioning Fedora-based system VMs", "securedrop_shared.sd-sys-vms")
+    provision("Provisioning admin template and sd-admin", "admin_salt.sd-admin")
+    provision("Provisioning sd-admin-vault", "admin_salt.sd-admin-vault")
+    configure("Configuring admin template", ["sd-admin-debian-13"])
 
 
 def provision_and_configure() -> None:
@@ -831,33 +864,41 @@ def main() -> None:  # noqa: PLR0912
         validate_config(CONFIG_PATH, product)
         print("OK")
     elif args.apply:
-        if product.contains_admin:
-            raise NotImplementedError("Provisioning the admin workstation is not implemented yet")
-        print(
-            "SecureDrop Workstation should be installed on a fresh Qubes OS install.\n"
-            "The installation process will overwrite any user modifications to the\n"
-            f"{BASE_TEMPLATE} TemplateVM, and will disable old-format qubes-rpc\n"
-            "policy directives.\n"
-        )
-        affected_appvms = get_appvms_for_template(BASE_TEMPLATE)
-        if len(affected_appvms) > 0:
+        if product.contains_journalist:
             print(
-                f"{BASE_TEMPLATE} is already in use by the following AppVMS:\n"
-                f"{affected_appvms}\n"
-                "Applications and configurations in use by these AppVMs will be\n"
-                f"removed from {BASE_TEMPLATE}."
+                "SecureDrop Workstation should be installed on a fresh Qubes OS install.\n"
+                "The installation process will overwrite any user modifications to the\n"
+                f"{BASE_TEMPLATE} TemplateVM, and will disable old-format qubes-rpc\n"
+                "policy directives.\n"
             )
-            response = input("Are you sure you want to proceed (y/N)? ")
-            if response.lower() != "y":
-                print("Exiting.")
-                sys.exit(0)
+            affected_appvms = get_appvms_for_template(BASE_TEMPLATE)
+            if len(affected_appvms) > 0:
+                print(
+                    f"{BASE_TEMPLATE} is already in use by the following AppVMS:\n"
+                    f"{affected_appvms}\n"
+                    "Applications and configurations in use by these AppVMs will be\n"
+                    f"removed from {BASE_TEMPLATE}."
+                )
+                response = input("Are you sure you want to proceed (y/N)? ")
+                if response.lower() != "y":
+                    print("Exiting.")
+                    sys.exit(0)
         print("Applying configuration...")
-        validate_config(CONFIG_PATH, Product.JOURNALIST)
-        copy_config()
+        validate_config(CONFIG_PATH, product)
+        if product.contains_journalist:
+            copy_config()
+        if product.contains_admin:
+            copy_admin_config()
         refresh_salt()
         with suppress_preloaded_disposables():
-            provision_and_configure()
-        print("Provisioning complete. Please reboot to complete the installation.")
+            if product.contains_journalist:
+                provision_and_configure()
+            if product.contains_admin:
+                provision_and_configure_admin()
+        if product.contains_journalist:
+            print("Provisioning complete. Please reboot to complete the installation.")
+        else:
+            print("Provisioning complete.")
 
     elif args.uninstall:
         print(
