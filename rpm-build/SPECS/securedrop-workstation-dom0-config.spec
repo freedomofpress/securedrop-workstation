@@ -106,6 +106,7 @@ install -m 755 files/sdw-notify.py %{buildroot}%{_bindir}/sdw-notify
 install -m 755 files/sdw-login.py %{buildroot}%{_bindir}/sdw-login
 install -m 644 files/sdw-notify.service %{buildroot}%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}%{_userunitdir}/
+install -m 755 files/securedrop-generate-submission-key.py %{buildroot}%{_bindir}/securedrop-generate-submission-key
 install -m 644 files/securedrop-logind-override-disable.service %{buildroot}%{_unitdir}/
 install -m 644 files/95-securedrop-systemd-user.preset %{buildroot}%{_userpresetdir}/
 
@@ -160,6 +161,7 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 %attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/sdw-updater
+%attr(755, root, root) %{_bindir}/securedrop-generate-submission-key
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
 %{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
