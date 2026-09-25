@@ -22,6 +22,7 @@ sd-base-template:
     - tags:
       - add:
         - sd-workstation
+        - sd-journalist
         - sd-{{ sdvars.distribution }}
     - features:
       - enable:

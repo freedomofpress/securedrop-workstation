@@ -6,7 +6,7 @@ import pytest
 from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
-from sdw_util.config_types import Dom0Config
+from securedrop_manage.config_types import Dom0Config
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     DEBIAN_CODENAME,

@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 """
 Admin wrapper script for applying salt states for staging and prod scenarios. The rpm
 packages only puts the files in place `/srv/salt` but does not apply the state, nor
@@ -13,13 +12,15 @@ import subprocess
 import sys
 from collections.abc import Callable, Iterator
 from contextlib import ContextDecorator, contextmanager
+from enum import Enum
 from pathlib import Path
 from typing import Literal
 
 from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
-from sdw_util.config_types import ValidationError
+from securedrop_manage.config_types import ValidationError
+from securedrop_manage.validate import SDWConfigValidator
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
 # errors from qubesctl. It may be possible to raise this again.
@@ -28,10 +29,10 @@ MAX_CONCURRENCY = 2
 DEFAULT_SD_APP_GB = 10
 DEFAULT_SD_LOG_GB = 5
 
-SCRIPTS_PATH = Path("/usr/share/securedrop-workstation-dom0-config/")
 SALT_PATH = Path("/srv/salt/securedrop_salt/")
 CONFIG_PATH = Path.home() / ".config/securedrop-manage"
-LEGACY_CONFIG_PATH = SCRIPTS_PATH
+LEGACY_CONFIG_PATH = Path("/usr/share/securedrop-workstation-dom0-config/")
+PRODUCTS_PATH = Path("/usr/share/securedrop/products/")
 
 DEBIAN_VERSION = "13"
 BASE_TEMPLATE = f"debian-{DEBIAN_VERSION}-minimal"
@@ -51,8 +52,62 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
 # FIXME: https://github.com/freedomofpress/securedrop-workstation/issues/1523
 PILLAR_DISABLE_PRELOAD = {"qvm": {"dom0": {"preload": False}}}
 
-sys.path.insert(1, str(SCRIPTS_PATH / "scripts/"))
-from validate_config import SDWConfigValidator  # noqa: E402
+
+class Product(Enum):
+    JOURNALIST = "journalist"
+    ADMIN = "admin"
+    ALL = "all"
+
+    @property
+    def contains_journalist(self) -> bool:
+        return self in (Product.JOURNALIST, Product.ALL)
+
+    @property
+    def contains_admin(self) -> bool:
+        return self in (Product.ADMIN, Product.ALL)
+
+    def as_text(self) -> str:
+        match self:
+            case Product.JOURNALIST:
+                return "Journalist Workstation"
+            case Product.ADMIN:
+                return "Admin Workstation"
+            case Product.ALL:
+                return "SecureDrop Workstation"
+
+
+def get_installed_product(products_path: Path = PRODUCTS_PATH) -> Product:
+    journalist = (products_path / "journalist-workstation.json").is_file()
+    admin = (products_path / "admin-workstation.json").is_file()
+    if journalist and admin:
+        return Product.ALL
+    if journalist:
+        return Product.JOURNALIST
+    if admin:
+        return Product.ADMIN
+    raise SDWAdminException(f"No SecureDrop products are installed (checked {products_path})")
+
+
+def select_product(requested: Product | None, installed: Product) -> Product:
+    """
+    Return the product we're operating on, based on CLI flags and what's installed.
+    """
+    if requested is None:
+        if installed is Product.ALL:
+            raise SDWAdminException(
+                "Multiple SecureDrop products are installed, please specify one of "
+                "--journalist, --admin or --all"
+            )
+        return installed
+    if requested is Product.ALL:
+        # Everything that's installed
+        return installed
+    if installed not in (requested, Product.ALL):
+        raise SDWAdminException(
+            f"--{requested.value} was specified, but the {requested.value} workstation "
+            "is not installed"
+        )
+    return requested
 
 
 def parse_args() -> argparse.Namespace:
@@ -92,6 +147,28 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Configure SecureDrop Workstation",
     )
+    product_group = parser.add_mutually_exclusive_group()
+    product_group.add_argument(
+        "--journalist",
+        dest="product",
+        action="store_const",
+        const=Product.JOURNALIST,
+        help="Operate on the journalist workstation (default if it's the only one installed)",
+    )
+    product_group.add_argument(
+        "--admin",
+        dest="product",
+        action="store_const",
+        const=Product.ADMIN,
+        help="Operate on the admin workstation (default if it's the only one installed)",
+    )
+    product_group.add_argument(
+        "--all",
+        dest="product",
+        action="store_const",
+        const=Product.ALL,
+        help="Operate on both the journalist and admin workstations",
+    )
     return parser.parse_args()
 
 
@@ -99,6 +176,8 @@ def move_legacy_config(old_location: Path, new_location: Path) -> None:
     """
     Checks for config files in CONFIG_PATH, and tries to copy them from
     LEGACY_CONFIG_PATH if they're not there.
+
+    This only runs on journalist or combined workstations.
     """
     # make the config directory if it doesn't exist already
     new_location.mkdir(parents=True, exist_ok=True)
@@ -368,7 +447,7 @@ def sync_appmenus() -> None:
 
 def validate_config(path: Path) -> None:
     """
-    Calls the validate_config script to validate the config present in the staging/prod directory
+    Runs securedrop_manage.validate over the config present in the staging/prod directory
     """
     try:
         validator = SDWConfigValidator(path)  # noqa: F841
@@ -426,22 +505,26 @@ def destroy_all_tagged(tag: str) -> None:
         run_cmd(["qvm-remove", "-f", "--", vm.name])
 
 
-def perform_uninstall() -> None:
-    try:
+def perform_uninstall(product: Product) -> None:
+    packages = []
+    if product.contains_admin:
+        print("Destroying all admin VMs")
+        destroy_all_tagged("sd-admin")
+        packages.append("securedrop-admin-dom0-config")
+
+    if product.contains_journalist:
         subprocess.check_call(
             ["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-default-dispvm"]
         )
-        print("Destroying all VMs")
+        print("Destroying all journalist VMs")
         provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-unused-qubes")
-        destroy_all_tagged(tag="sd-workstation")
+        destroy_all_tagged(tag="sd-journalist")
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
-        print("Uninstalling dom0 config package")
-        subprocess.check_call(
-            ["sudo", "dnf", "-y", "-q", "remove", "securedrop-workstation-dom0-config"]
-        )
-    except subprocess.CalledProcessError:
-        raise SDWAdminException("Error during uninstall")
+        packages.append("securedrop-workstation-dom0-config")
+
+    print("Uninstalling RPM package(s)")
+    subprocess.check_call(["sudo", "dnf", "-y", "-q", "remove", *packages])
 
     print(
         "Instance secrets (Journalist Interface token and Submission private key) are still "
@@ -721,21 +804,34 @@ def import_config() -> None:
     return
 
 
-def main() -> None:
+def main() -> None:  # noqa: PLR0912
     if os.geteuid() == 0:
         print("Please do not run this script as root.")
         sys.exit(0)
 
+    installed_product = get_installed_product()
+
     # check for config files under ~/.config/, try to copy them across from
     # the old /usr/share location if they're missing.
-    move_legacy_config(LEGACY_CONFIG_PATH, CONFIG_PATH)
+    if installed_product.contains_journalist:
+        move_legacy_config(LEGACY_CONFIG_PATH, CONFIG_PATH)
 
     args = parse_args()
+    try:
+        product = select_product(args.product, installed_product)
+    except SDWAdminException as err:
+        print(f"{err}")
+        sys.exit(1)
+
     if args.validate:
+        if product.contains_admin:
+            raise NotImplementedError("Validating the admin workstation is not implemented yet")
         print("Validating...", end="")
         validate_config(CONFIG_PATH)
         print("OK")
     elif args.apply:
+        if product.contains_admin:
+            raise NotImplementedError("Provisioning the admin workstation is not implemented yet")
         print(
             "SecureDrop Workstation should be installed on a fresh Qubes OS install.\n"
             "The installation process will overwrite any user modifications to the\n"
@@ -765,8 +861,7 @@ def main() -> None:
     elif args.uninstall:
         print(
             "Uninstalling will remove all packages and destroy all VMs associated\n"
-            "with SecureDrop Workstation. It will also remove all SecureDrop tags\n"
-            "from other VMs on the system."
+            f"with {product.as_text()}."
         )
         if not args.force:
             response = input("Are you sure you want to uninstall (y/N)? ")
@@ -774,8 +869,10 @@ def main() -> None:
                 print("Exiting.")
                 sys.exit(0)
         refresh_salt()
-        perform_uninstall()
+        perform_uninstall(product)
     elif args.configure:
+        if product.contains_admin:
+            raise NotImplementedError("Configuring the admin workstation is not implemented yet")
         print(
             "Preparing to import SecureDrop Workstation configuration...\n\n"
             "Make sure you have the USB with the submission key and an\n"
@@ -792,7 +889,3 @@ def main() -> None:
 
 class SDWAdminException(Exception):
     pass
-
-
-if __name__ == "__main__":
-    main()

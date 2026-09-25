@@ -25,6 +25,7 @@ sd-printers-create-named-dispvm:
     - tags:
       - add:
         - sd-workstation
+        - sd-journalist
         - sd-export-target
     - features:
       - enable:

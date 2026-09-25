@@ -21,3 +21,6 @@ addFilter(r"files-duplicate /usr/share/securedrop/icons/sd-logo.png")
 # test suite runs outside of rpmbuild
 addFilter(r"no-%prep-section")
 addFilter(r"no-%check-section")
+
+# rpmlint cannot properly track cross-package symlinks
+addFilter(r"dangling-relative-symlink /usr/bin/sdw-admin securedrop-manage")
