@@ -16,7 +16,7 @@ from qubesadmin import Qubes
 from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
-from sdw_util.config_types import Dom0Config
+from securedrop_manage.config_types import Dom0Config
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     SD_INBOX_TEMPLATE,
@@ -84,23 +84,6 @@ def load_non_standard_module() -> Callable[[os.PathLike[Any]], ModuleType]:
         return mod
 
     return _load_non_standard_module
-
-
-@pytest.fixture
-def sdw_admin(
-    proj_root: Path,
-    load_non_standard_module: Callable[[Path], ModuleType],
-) -> ModuleType:
-    """
-    Equivalent to 'import sdw_admin', except as a pytest fixture.
-
-    Workaround needed due to 'sdw-admin.py' having a non-pythonic '-' in its
-    name and also not currently being in its own python module.
-    """
-
-    # FIXME this is a workaroud. A better approach is to have sdw-admin in
-    # a proper python module, trivially importable in tests. See #1750.
-    return load_non_standard_module(proj_root / "files" / "sdw-admin.py")
 
 
 @pytest.fixture

@@ -1,5 +1,5 @@
 """
-Unit tests for the parsers in `sdw_util.config_types`.
+Unit tests for the parsers in `securedrop_manage.config_types`.
 
 `Dom0Config.parse` and its component parsers convert raw `json.load`-style
 dicts into validated, frozen typed objects. These tests exercise each branch
@@ -21,7 +21,7 @@ from typing import Any
 
 import pytest
 
-from sdw_util.config_types import (
+from securedrop_manage.config_types import (
     Dom0Config,
     HidservConfig,
     ValidationError,
@@ -51,7 +51,7 @@ def test_parse_good_config() -> None:
 # --- Fixture-based: structural & format errors ------------------------------
 #
 # Each fixture is one mutation from `testconfig.json`. The expected error
-# message is the contract that `validate_config.py` and downstream operators
+# message is the contract that `securedrop_manage.validate` and downstream operators
 # rely on, so we pin it here.
 
 

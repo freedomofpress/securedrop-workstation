@@ -10,7 +10,7 @@ import tempfile
 import pytest
 from qubesadmin.app import VMCollection
 
-from sdw_util.config_types import Dom0Config
+from securedrop_manage.config_types import Dom0Config
 from tests.base import (
     SD_INBOX_TEMPLATE,
     SD_TAG,

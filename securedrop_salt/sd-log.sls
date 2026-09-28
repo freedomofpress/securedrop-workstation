@@ -61,6 +61,7 @@ install-sd-log:
     - tags:
       - add:
         - sd-workstation
+        - sd-journalist
     - features:
       - enable:
         - service.paxctld

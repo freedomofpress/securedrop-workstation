@@ -17,6 +17,7 @@ sd-admin-debian-13:
       - label: red
     - tags:
       - add:
+        - sd-workstation
         - sd-admin
         - sd-updater
     - require:

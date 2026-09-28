@@ -3,7 +3,7 @@ import subprocess
 import dnf  # Implicit dom0 dependency
 import pytest
 
-from sdw_util.config_types import Dom0Config
+from securedrop_manage.config_types import Dom0Config
 
 REPO_CONFIG = {
     "prod": {

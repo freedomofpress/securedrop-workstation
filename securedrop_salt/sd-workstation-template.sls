@@ -23,6 +23,7 @@ include:
     - tags:
       - add:
         - sd-workstation
+        - sd-journalist
         - sd-{{ sdvars.distribution }}
         - sd-updater
     - features:

@@ -39,6 +39,7 @@ sd-viewer:
     - tags:
       - add:
         - sd-workstation
+        - sd-journalist
         - sd-viewer-vm
         - sd-{{ sdvars.distribution }}
     - features:
