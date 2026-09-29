@@ -137,9 +137,9 @@ def parse_args() -> argparse.Namespace:
         default = None
         choices = [Product.ADMIN, Product.JOURNALIST, Product.ALL]
     else:
-        # just one installed, default to it
+        # just one installed, default to it; "all" is accepted as an alias for it
         default = installed_product
-        choices = [installed_product]
+        choices = [installed_product, Product.ALL]
     parser.add_argument(
         "--target",
         default=default,
@@ -149,7 +149,11 @@ def parse_args() -> argparse.Namespace:
         dest="product",
         help="Whether to operate on the journalist, admin, or both workstations",
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.product is Product.ALL:
+        # "all" means whatever is installed
+        args.product = installed_product
+    return args
 
 
 def move_legacy_config(old_location: Path, new_location: Path) -> None:
