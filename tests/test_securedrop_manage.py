@@ -332,6 +332,9 @@ def test_get_installed_product(tmp_path: Path) -> None:
             ["--apply", "--target", "journalist"],
             manage.Product.JOURNALIST,
         ),
+        # only one product installed, --target all means just that product
+        (manage.Product.JOURNALIST, ["--apply", "--target", "all"], manage.Product.JOURNALIST),
+        (manage.Product.ADMIN, ["--apply", "--target", "all"], manage.Product.ADMIN),
         # both installed, --target must be explicit
         (manage.Product.ALL, ["--apply", "--target", "journalist"], manage.Product.JOURNALIST),
         (manage.Product.ALL, ["--apply", "--target", "admin"], manage.Product.ADMIN),
@@ -358,7 +361,6 @@ def test_parse_args_target(
         (manage.Product.ALL, ["--apply"]),
         # --target for a product that isn't installed
         (manage.Product.JOURNALIST, ["--apply", "--target", "admin"]),
-        (manage.Product.JOURNALIST, ["--apply", "--target", "all"]),
         (manage.Product.ADMIN, ["--apply", "--target", "journalist"]),
     ],
 )
