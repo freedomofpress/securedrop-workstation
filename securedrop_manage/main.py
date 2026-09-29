@@ -838,6 +838,11 @@ def main() -> None:  # noqa: PLR0912
         validate_config(CONFIG_PATH, args.product)
         print("OK")
     elif args.apply:
+        if installed_product is Product.ALL and args.product is not Product.ALL:
+            # if we're on a combined workstation, require the use of --all so all VMs
+            # are provisioned at the same time
+            print("--apply can only be used with --target all")
+            sys.exit(1)
         if args.product.contains_journalist:
             print(
                 "SecureDrop Workstation should be installed on a fresh Qubes OS install.\n"
