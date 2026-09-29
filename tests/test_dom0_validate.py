@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from securedrop_manage.config_types import ValidationError
-from securedrop_manage.validate import AdminConfigValidator, SDWConfigValidator
+from securedrop_manage.validate import AdminConfigValidator, JournalistConfigValidator
 
 
 @pytest.fixture
@@ -20,12 +20,12 @@ def test_good_config(resources_dir: Path, tmp_path: Path) -> None:
     shutil.copy(f"{resources_dir}/example_key.asc", f"{tmp_path}/sd-journalist.sec")
 
     # Validator currently runs checks in constructor
-    SDWConfigValidator(tmp_path)
+    JournalistConfigValidator(tmp_path)
 
 
 def test_missing_config(tmp_path: Path) -> None:
     with pytest.raises(ValidationError) as exc_info:
-        SDWConfigValidator(tmp_path)
+        JournalistConfigValidator(tmp_path)
 
     assert "Config file does not exist" in exc_info.exconly()
 
@@ -35,7 +35,7 @@ def test_config_malformed_key(resources_dir: Path, tmp_path: Path) -> None:
     shutil.copy(f"{resources_dir}/example_key.asc.malformed", f"{tmp_path}/sd-journalist.sec")
 
     with pytest.raises(ValidationError) as exc_info:
-        SDWConfigValidator(tmp_path)
+        JournalistConfigValidator(tmp_path)
 
     assert "PGP secret key file provided is not an armored private key" in exc_info.exconly()
 
@@ -45,7 +45,7 @@ def test_config_malformed_onion_json(resources_dir: Path, tmp_path: Path) -> Non
     shutil.copy(f"{resources_dir}/example_key.asc", f"{tmp_path}/sd-journalist.sec")
 
     with pytest.raises(ValidationError) as exc_info:
-        SDWConfigValidator(tmp_path)
+        JournalistConfigValidator(tmp_path)
 
     assert "Invalid hidden service hostname specified" in exc_info.exconly()
 
@@ -55,7 +55,7 @@ def test_config_malformed_fpr_json(resources_dir: Path, tmp_path: Path) -> None:
     shutil.copy(f"{resources_dir}/example_key.asc", f"{tmp_path}/sd-journalist.sec")
 
     with pytest.raises(ValidationError) as exc_info:
-        SDWConfigValidator(tmp_path)
+        JournalistConfigValidator(tmp_path)
 
     assert "Invalid PGP key fingerprint specified" in exc_info.exconly()
 
@@ -66,7 +66,7 @@ def test_config_mismatched_fpr(resources_dir: Path, tmp_path: Path) -> None:
     shutil.copy(f"{resources_dir}/example_key.asc", f"{tmp_path}/sd-journalist.sec")
 
     with pytest.raises(ValidationError) as exc_info:
-        SDWConfigValidator(tmp_path)
+        JournalistConfigValidator(tmp_path)
 
     assert "Configured fingerprint does not match key!" in exc_info.exconly()
 

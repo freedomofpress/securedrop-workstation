@@ -20,7 +20,7 @@ from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
 from securedrop_manage.config_types import ValidationError
-from securedrop_manage.validate import AdminConfigValidator, SDWConfigValidator
+from securedrop_manage.validate import AdminConfigValidator, JournalistConfigValidator
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
 # errors from qubesctl. It may be possible to raise this again.
@@ -429,7 +429,7 @@ def validate_config(path: Path, product: Product) -> None:
     """
     try:
         if product.contains_journalist:
-            SDWConfigValidator(path)
+            JournalistConfigValidator(path)
         if product.contains_admin:
             AdminConfigValidator(path)
     except ValidationError:

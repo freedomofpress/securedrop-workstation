@@ -19,7 +19,7 @@ CONFIG_FILEPATH = "config.json"
 SECRET_KEY_FILEPATH = "sd-journalist.sec"
 
 
-class SDWConfigValidator:
+class JournalistConfigValidator:
     """
     Structural validation of `config.json` lives in `securedrop_manage.config_types`; see
     `Dom0Config.parse`. The class below additionally cross-checks the config
