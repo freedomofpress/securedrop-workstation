@@ -118,7 +118,7 @@ class TestSDViewerConfiguration:
         assert not qube.package_is_installed("redis-server")
 
     def test_mimetypes_service(self, qube: QubeWrapper) -> None:
-        qube.service_is_active("securedrop-mime-handling")
+        assert qube.service_is_active("securedrop-mime-handling")
 
     def test_mailcap_hardened(self, qube: QubeWrapper) -> None:
         qube.mailcap_hardened()

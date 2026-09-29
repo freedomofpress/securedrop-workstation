@@ -120,7 +120,7 @@ def test_logging_disabled(qube: QubeWrapper) -> None:
 
 
 @pytest.mark.configuration
-def test_sd_proxy_services(qube: QubeWrapper) -> None:
+def test_sd_gpg_services(qube: QubeWrapper) -> None:
     assert qube.service_is_active("securedrop-get-secret-keys")
 
 
