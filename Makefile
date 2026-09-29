@@ -38,7 +38,7 @@ dev staging: assert-dom0 ## Installs, configures and builds a dev or staging env
 	$(MAKE) assert-keyring-$@
 	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$@
 	$(MAKE) configure-env-$@
-	sdw-admin --apply
+	securedrop-manage --apply --target all
 
 # Same as above, but for the admin workstation
 .PHONY: dev-admin staging-admin
@@ -54,7 +54,7 @@ dev-admin staging-admin: %-admin: assert-dom0 ## Installs, configures and builds
 configure-env-%:
 	@echo "Configuring $* environment"
 	./scripts/configure-environment.py --env $*
-	sdw-admin --validate
+	securedrop-manage --validate --target journalist
 
 .PHONY: configure-admin-env-%
 configure-admin-env-%:
@@ -87,7 +87,7 @@ else
 	@echo "Install published rpm"
 	@rpm -q $(RPM_NAME) || sudo qubes-dom0-update -y $(RPM_NAME)
 endif
-	@echo "Provide instance-specific configuration and run sdw-admin --apply."
+	@echo "Provide instance-specific configuration and run securedrop-manage --apply."
 
 .PHONY: build-rpm
 build-rpm: OUT:=build-log/securedrop-workstation-$(shell date +%Y%m%d).log
@@ -132,10 +132,10 @@ clone-norpm: assert-dom0 ## As above, but skip creating RPM
 clean: assert-dom0 ## Destroys all SD VMs
 # Skip the uninstall if the package isn't installed because it means
 # it's most likely already happened
-	@if [ -x /usr/bin/sdw-admin ]; then \
-		sdw-admin --uninstall --force; \
+	@if [ -x /usr/bin/securedrop-manage ]; then \
+		securedrop-manage --uninstall --force --target all; \
 	else \
-		echo "sdw-admin not installed, skipping --uninstall"; \
+		echo "securedrop-manage not installed, skipping --uninstall"; \
 	fi
 	rpm -qa | grep '^securedrop-' | xargs -r sudo dnf remove -y
 	find /etc/yum.repos.d -type f -iname 'securedrop-workstation*.repo' -exec sudo rm -v {} +
