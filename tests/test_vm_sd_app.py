@@ -15,6 +15,9 @@ from tests.base import (
 from tests.base import (
     Test_SD_VM_Common as Test_SD_App_Common,  # noqa: F401 [HACK: import so base tests run]
 )
+from tests.markers import needs_journalist
+
+pytestmark = needs_journalist
 
 
 @pytest.fixture(scope="module")
