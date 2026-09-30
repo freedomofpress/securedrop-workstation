@@ -4,4 +4,4 @@ Type=Application
 Terminal=false
 Icon=securedrop
 Name=SecureDrop Inbox
-Exec=sdw-updater
+Exec=sdw-updater --name "SecureDrop Inbox" --vm sd-app --desktop press.freedom.SecureDropApp
