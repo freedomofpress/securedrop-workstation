@@ -17,6 +17,7 @@ from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
 from securedrop_manage.config_types import Dom0Config
+from securedrop_manage.products import PRODUCTS_PATH
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     SD_INBOX_TEMPLATE,
@@ -24,6 +25,7 @@ from tests.base import (
     SD_VIEWER_TEMPLATE,
     is_workstation_qube,
 )
+from tests.dom0_stubs import IN_DOM0
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
@@ -39,6 +41,32 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     for item in items:
         if "uninstall" in item.keywords:
             item.add_marker(skip)
+
+
+@pytest.fixture(scope="session")
+def needs_dom0() -> None:
+    """
+    Skip the test unless running in dom0
+
+    Fixtures that need dom0 should depend on this. Tests that need dom0 without
+    using such a fixture can use `@needs_dom0` from tests.markers.
+    """
+    if not IN_DOM0:
+        pytest.skip("requires dom0")
+
+
+@pytest.fixture(scope="session")
+def needs_journalist(needs_dom0: None) -> None:
+    """Skip the test unless the Journalist Workstation product is installed"""
+    if not (PRODUCTS_PATH / "journalist-workstation.json").is_file():
+        pytest.skip("requires Journalist Workstation")
+
+
+@pytest.fixture(scope="session")
+def needs_admin(needs_dom0: None) -> None:
+    """Skip the test unless the Admin Workstation product is installed"""
+    if not (PRODUCTS_PATH / "admin-workstation.json").is_file():
+        pytest.skip("requires Admin Workstation")
 
 
 @pytest.fixture(scope="session")
@@ -87,7 +115,7 @@ def load_non_standard_module() -> Callable[[os.PathLike[Any]], ModuleType]:
 
 
 @pytest.fixture
-def qubes_ver() -> str:
+def qubes_ver(needs_dom0: None) -> str:
     return dnf.rpm.detect_releasever("/")
 
 
@@ -118,7 +146,7 @@ def mock_block_device(all_vms: VMCollection, worker_id: str, testrun_uid: str) -
 
 
 @pytest.fixture(scope="session")
-def dom0_config(proj_root: os.PathLike) -> Dom0Config:
+def dom0_config(needs_journalist: None, proj_root: os.PathLike) -> Dom0Config:
     """Make the dom0 "config.json" available to tests."""
     with open(os.path.join(proj_root, "config.json")) as c:
         config = json.load(c)
@@ -132,13 +160,13 @@ def dom0_config(proj_root: os.PathLike) -> Dom0Config:
 
 
 @pytest.fixture
-def all_vms() -> VMCollection:
+def all_vms(needs_dom0: None) -> VMCollection:
     """Obtain all qubes present in the system"""
     return Qubes().domains
 
 
 @pytest.fixture
-def sdw_tagged_vms(all_vms: VMCollection) -> list[QubesVM]:
+def sdw_tagged_vms(needs_journalist: None, all_vms: VMCollection) -> list[QubesVM]:
     """Obtain all SecureDrop Workstation-exclusive qubes"""
     return list(filter(is_workstation_qube, all_vms))
 
@@ -151,6 +179,9 @@ def cleanup(request: pytest.FixtureRequest) -> Iterator[None]:
     """
     # Yield to wait for test execution to finish
     yield
+
+    if not IN_DOM0:
+        return
 
     # After test suite finishes, run teardown logic.
     app = Qubes()
@@ -169,7 +200,7 @@ def cleanup(request: pytest.FixtureRequest) -> Iterator[None]:
 
 
 @pytest.fixture
-def qubesd_log() -> Iterator[str]:
+def qubesd_log(needs_dom0: None) -> Iterator[str]:
     # Obtain journal entries to dig down into expected Qubes-daemon error
     journal = systemd.journal.Reader()
     journal.add_match(_SYSTEMD_UNIT="qubesd.service")

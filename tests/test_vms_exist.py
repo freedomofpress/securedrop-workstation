@@ -11,6 +11,9 @@ from tests.base import (
     SD_VIEWER_TEMPLATE,
     SD_VMS,
 )
+from tests.markers import needs_journalist
+
+pytestmark = needs_journalist
 
 
 @pytest.mark.provisioning

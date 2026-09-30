@@ -6,6 +6,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from pytest_mock import MockerFixture
+
+from securedrop_manage.products import Product
 
 SCRIPT_PATH = Path(__file__).parent.parent / "files/securedrop-submission-key.py"
 
@@ -18,9 +21,14 @@ def home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 
 @pytest.fixture
-def run_main(load_non_standard_module: Callable, monkeypatch: pytest.MonkeyPatch) -> Callable:
+def run_main(
+    load_non_standard_module: Callable, monkeypatch: pytest.MonkeyPatch, mocker: MockerFixture
+) -> Callable:
     """Load the python RPC server module from its non-standard path"""
     generate_submission_key = load_non_standard_module(SCRIPT_PATH)
+    mocker.patch.object(
+        generate_submission_key, "get_installed_product", return_value=Product.JOURNALIST
+    )
 
     def run(*args: Any) -> None:
         monkeypatch.setattr(sys, "argv", ["securedrop-submission-key", *args])
