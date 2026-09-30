@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures("needs_dom0")
+
 DESKTOP_FILE_NAME = "press.freedom.SecureDropUpdater.desktop"
 
 

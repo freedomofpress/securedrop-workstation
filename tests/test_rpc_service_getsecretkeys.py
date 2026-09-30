@@ -10,6 +10,8 @@ from typing import Any
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures("needs_dom0")
+
 
 @pytest.fixture
 def rpc_service(load_non_standard_module: Callable) -> Any:

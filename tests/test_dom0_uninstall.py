@@ -5,7 +5,7 @@ from qubesadmin.app import VMCollection
 
 # All tests marked with "uninstall" by default and should be skipped
 # unless explicitly called with: pytest -m "uninstall"
-pytestmark = pytest.mark.uninstall
+pytestmark = [pytest.mark.uninstall, pytest.mark.usefixtures("needs_dom0")]
 
 
 @pytest.fixture

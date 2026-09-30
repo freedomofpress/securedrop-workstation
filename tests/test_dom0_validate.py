@@ -15,6 +15,7 @@ def resources_dir() -> Path:
     return Path(__file__).parent.resolve() / "files"
 
 
+@pytest.mark.usefixtures("needs_dom0")
 def test_good_config(resources_dir: Path, tmp_path: Path) -> None:
     shutil.copy(f"{resources_dir}/testconfig.json", f"{tmp_path}/config.json")
     shutil.copy(f"{resources_dir}/example_key.asc", f"{tmp_path}/sd-journalist.sec")

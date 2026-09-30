@@ -136,6 +136,7 @@ def mock_qubes_app(mocker: Any) -> QubesTestWrapper:
     return mock_qubes_app
 
 
+@pytest.mark.usefixtures("needs_dom0")
 def test_is_managed() -> None:
     assert manage.is_managed("sd-app")
 
@@ -210,6 +211,7 @@ def test_suppress_preloaded_disposables(let_sd_viewer_preloads_settle: Any) -> N
 
 
 @pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
+@pytest.mark.usefixtures("needs_dom0")
 class TestTemplateUpgradesAvailable:
     def test_template_upgrade_handler(
         self,

@@ -12,6 +12,8 @@ from tests.base import (
     Test_SD_VM_Common as Test_SD_SysUSB_Common,  # noqa: F401 [HACK: import so base tests run]
 )
 
+pytestmark = pytest.mark.usefixtures("needs_dom0")
+
 
 @pytest.fixture(scope="module")
 def qube() -> QubeWrapper:

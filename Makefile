@@ -253,9 +253,12 @@ lint: check-ruff mypy shellcheck zizmor semgrep ## Runs all linters
 ifneq ($(HOST),dom0)  # Not necessary in dom0
 RUN_WRAPPERS=xvfb-run poetry run
 endif
+.PHONY: test-local
+test-local: ## Runs all tests that don't need dom0 (skipping the rest)
+	$(RUN_WRAPPERS) python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater/ --cov=sdw_util --cov=securedrop_manage -v tests launcher/tests
+
 .PHONY: test-launcher
-test-launcher: ## Runs launcher tests
-	$(RUN_WRAPPERS) python3 -m pytest --cov-report term-missing --cov=sdw_notify --cov=sdw_updater/ --cov=sdw_util -v launcher/tests/
+test-launcher: test-local ## Alias for test-local
 
 .PHONY: check-ruff
 check-ruff: ## Check Python source code formatting with ruff

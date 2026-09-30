@@ -8,6 +8,8 @@ from qubesadmin.vm import QubesVM
 
 from tests.base import is_managed_qube
 
+pytestmark = pytest.mark.usefixtures("needs_dom0")
+
 # Policies shipped by the opt-in securedrop-admin-dom0-config subpackage
 ADMIN_POLICY_FILES = [
     "/etc/qubes/policy.d/31-securedrop-admin.policy",
