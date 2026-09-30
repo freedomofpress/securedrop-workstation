@@ -2,6 +2,8 @@
 Utility to verify that SecureDrop Journalist and Admin Workstation configs are properly structured
 """
 
+from __future__ import annotations
+
 import json
 import os
 import re
