@@ -7,12 +7,9 @@ from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
 from tests.base import is_managed_qube
+from tests.markers import needs_admin, needs_dom0, needs_journalist
 
-# Policies shipped by the opt-in securedrop-admin-dom0-config subpackage
-ADMIN_POLICY_FILES = [
-    "/etc/qubes/policy.d/31-securedrop-admin.policy",
-    "/etc/qubes/policy.d/32-securedrop-admin.policy",
-]
+pytestmark = needs_dom0
 
 # Clipboard pairings granted by 31-securedrop-admin.policy
 ADMIN_CLIPBOARD_PAIRS = [
@@ -37,6 +34,7 @@ def policy_exists(source: str, target: str, service: str) -> bool:
 
 
 @pytest.mark.provisioning
+@needs_journalist
 def test_policy_files_exist() -> None:
     """verify the policies are installed"""
     assert os.path.exists("/etc/qubes/policy.d/31-securedrop-workstation.policy")
@@ -45,13 +43,12 @@ def test_policy_files_exist() -> None:
 
 @pytest.mark.provisioning
 @pytest.mark.parametrize(("first", "second"), ADMIN_CLIPBOARD_PAIRS)
+@needs_admin
 def test_admin_clipboard_allowed(all_vms: VMCollection, first: str, second: str) -> None:
     """
     The admin needs to move credentials between the qube that stores them
     (sd-vault) and the qubes that use them, in both directions.
     """
-    if not all(os.path.exists(policy) for policy in ADMIN_POLICY_FILES):
-        pytest.skip("securedrop-admin-dom0-config is not installed")
     for vm in (first, second):
         if vm not in all_vms:
             pytest.skip(f"{vm} does not exist")
@@ -61,13 +58,12 @@ def test_admin_clipboard_allowed(all_vms: VMCollection, first: str, second: str)
 
 
 @pytest.mark.provisioning
+@needs_admin
 def test_admin_clipboard_from_other_denied(all_vms: VMCollection) -> None:
     """
     Clipboard access to and from admin qubes is otherwise denied, even for
     qubes that are themselves part of SecureDrop Workstation.
     """
-    if not all(os.path.exists(policy) for policy in ADMIN_POLICY_FILES):
-        pytest.skip("securedrop-admin-dom0-config is not installed")
 
     allowed = {
         pair
@@ -127,12 +123,14 @@ def test_sdlog_from_other_to_sdlog_denied(
 
 # securedrop.Proxy from sd-app to sd-proxy should be allowed
 @pytest.mark.provisioning
+@needs_journalist
 def test_sdproxy_from_sdapp_to_sdproxy_allowed() -> None:
     assert policy_exists("sd-app", "sd-proxy", "securedrop.Proxy")
 
 
 # securedrop.Proxy from anything else to sd-proxy should be denied
 @pytest.mark.provisioning
+@needs_journalist
 def test_sdproxy_from_other_to_sdproxy_denied() -> None:
     assert not policy_exists("sys-net", "sd-proxy", "securedrop.Proxy")
     assert not policy_exists("sys-firewall", "sd-proxy", "securedrop.Proxy")
@@ -140,6 +138,7 @@ def test_sdproxy_from_other_to_sdproxy_denied() -> None:
 
 # qubes.Gpg, qubes.GpgImportKey, and qubes.Gpg2 from anything else to sd-gpg should be denied
 @pytest.mark.provisioning
+@needs_journalist
 def test_qubesgpg_from_other_to_sdgpg_denied() -> None:
     assert not policy_exists("sys-net", "sd-gpg", "qubes.Gpg")
     assert not policy_exists("sys-firewall", "sd-gpg", "qubes.Gpg")

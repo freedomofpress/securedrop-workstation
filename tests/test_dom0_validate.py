@@ -5,6 +5,7 @@ import pytest
 
 from securedrop_manage.config_types import ValidationError
 from securedrop_manage.validate import AdminConfigValidator, JournalistConfigValidator
+from tests.markers import needs_dom0
 
 
 @pytest.fixture
@@ -15,6 +16,7 @@ def resources_dir() -> Path:
     return Path(__file__).parent.resolve() / "files"
 
 
+@needs_dom0
 def test_good_config(resources_dir: Path, tmp_path: Path) -> None:
     shutil.copy(f"{resources_dir}/testconfig.json", f"{tmp_path}/config.json")
     shutil.copy(f"{resources_dir}/example_key.asc", f"{tmp_path}/sd-journalist.sec")
