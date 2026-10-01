@@ -310,20 +310,20 @@ def test_legacy_config_is_migrated(tmp_path: Path) -> None:
     ("installed", "argv", "expected"),
     [
         # only one product installed, --target defaults to it
-        (manage.Product.JOURNALIST, ["--apply"], manage.Product.JOURNALIST),
-        (manage.Product.ADMIN, ["--apply"], manage.Product.ADMIN),
+        (manage.Product.JOURNALIST, ["apply"], manage.Product.JOURNALIST),
+        (manage.Product.ADMIN, ["apply"], manage.Product.ADMIN),
         (
             manage.Product.JOURNALIST,
-            ["--apply", "--target", "journalist"],
+            ["apply", "--target", "journalist"],
             manage.Product.JOURNALIST,
         ),
         # only one product installed, --target all means just that product
-        (manage.Product.JOURNALIST, ["--apply", "--target", "all"], manage.Product.JOURNALIST),
-        (manage.Product.ADMIN, ["--apply", "--target", "all"], manage.Product.ADMIN),
+        (manage.Product.JOURNALIST, ["apply", "--target", "all"], manage.Product.JOURNALIST),
+        (manage.Product.ADMIN, ["apply", "--target", "all"], manage.Product.ADMIN),
         # both installed, --target must be explicit
-        (manage.Product.ALL, ["--apply", "--target", "journalist"], manage.Product.JOURNALIST),
-        (manage.Product.ALL, ["--apply", "--target", "admin"], manage.Product.ADMIN),
-        (manage.Product.ALL, ["--apply", "--target", "all"], manage.Product.ALL),
+        (manage.Product.ALL, ["apply", "--target", "journalist"], manage.Product.JOURNALIST),
+        (manage.Product.ALL, ["apply", "--target", "admin"], manage.Product.ADMIN),
+        (manage.Product.ALL, ["apply", "--target", "all"], manage.Product.ALL),
     ],
 )
 def test_parse_args_target(
@@ -343,10 +343,10 @@ def test_parse_args_target(
     ("installed", "argv"),
     [
         # both installed, but no --target given
-        (manage.Product.ALL, ["--apply"]),
+        (manage.Product.ALL, ["apply"]),
         # --target for a product that isn't installed
-        (manage.Product.JOURNALIST, ["--apply", "--target", "admin"]),
-        (manage.Product.ADMIN, ["--apply", "--target", "journalist"]),
+        (manage.Product.JOURNALIST, ["apply", "--target", "admin"]),
+        (manage.Product.ADMIN, ["apply", "--target", "journalist"]),
     ],
 )
 def test_parse_args_target_invalid(
@@ -356,3 +356,95 @@ def test_parse_args_target_invalid(
     monkeypatch.setattr("sys.argv", ["securedrop-manage", *argv])
     with pytest.raises(SystemExit):
         manage.parse_args()
+
+
+@pytest.mark.parametrize(
+    ("argv", "expected"),
+    [
+        ([], []),
+        (["apply", "--target", "all"], ["apply", "--target", "all"]),
+        (["--apply"], ["apply"]),
+        (["--apply", "--target", "admin"], ["apply", "--target", "admin"]),
+        (["--target", "admin", "--validate"], ["validate", "--target", "admin"]),
+        (["--configure"], ["configure"]),
+        (["--uninstall", "--force"], ["uninstall", "--force"]),
+        (
+            ["--force", "--uninstall", "--target", "all"],
+            ["uninstall", "--force", "--target", "all"],
+        ),
+        # --force is passed through as-is, argparse rejects it for non-uninstall
+        (["--apply", "--force"], ["apply", "--force"]),
+    ],
+)
+def test_rewrite_legacy_args(argv: list[str], expected: list[str]) -> None:
+    assert manage.rewrite_legacy_args(argv) == expected
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["--apply", "--validate"],
+        ["--configure", "--uninstall", "--target", "all"],
+        # repeating the same flag is also an error
+        ["--apply", "--apply"],
+    ],
+)
+def test_rewrite_legacy_args_multiple(argv: list[str]) -> None:
+    with pytest.raises(SystemExit):
+        manage.rewrite_legacy_args(argv)
+
+
+@pytest.mark.parametrize(
+    ("argv", "command", "force"),
+    [
+        (["--apply"], manage.Command.APPLY, None),
+        (["--validate"], manage.Command.VALIDATE, None),
+        (["--configure"], manage.Command.CONFIGURE, None),
+        (["--uninstall"], manage.Command.UNINSTALL, False),
+        (["--uninstall", "--force"], manage.Command.UNINSTALL, True),
+        (["uninstall", "--force"], manage.Command.UNINSTALL, True),
+    ],
+)
+def test_parse_args_legacy(
+    mocker: Any, argv: list[str], command: "manage.Command", force: bool | None
+) -> None:
+    mocker.patch.object(manage, "get_installed_product", return_value=manage.Product.JOURNALIST)
+    args = manage.parse_args("sdw-admin", argv)
+    assert args.command is command
+    assert args.product is manage.Product.JOURNALIST
+    assert getattr(args, "force", None) is force
+
+
+@pytest.mark.parametrize(
+    ("argv0", "command"),
+    [
+        ("/usr/bin/sdw-admin", manage.Command.APPLY),
+        ("sdw-admin", manage.Command.APPLY),
+    ],
+)
+def test_parse_args_legacy_argv0(
+    mocker: Any, monkeypatch: pytest.MonkeyPatch, argv0: str, command: "manage.Command"
+) -> None:
+    mocker.patch.object(manage, "get_installed_product", return_value=manage.Product.JOURNALIST)
+    monkeypatch.setattr("sys.argv", [argv0, "--apply"])
+    assert manage.parse_args().command is command
+
+
+@pytest.mark.parametrize(
+    ("prog", "argv"),
+    [
+        # a subcommand is required
+        ("securedrop-manage", []),
+        ("sdw-admin", []),
+        # --force is only valid for uninstall
+        ("securedrop-manage", ["apply", "--force"]),
+        ("sdw-admin", ["--apply", "--force"]),
+        # legacy flags are only accepted via sdw-admin
+        ("securedrop-manage", ["--apply"]),
+        ("securedrop-manage", ["--uninstall", "--force"]),
+    ],
+)
+def test_parse_args_invalid(mocker: Any, prog: str, argv: list[str]) -> None:
+    mocker.patch.object(manage, "get_installed_product", return_value=manage.Product.JOURNALIST)
+    with pytest.raises(SystemExit):
+        manage.parse_args(prog, argv)
