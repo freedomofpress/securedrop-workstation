@@ -139,7 +139,7 @@ def submission_key_fingerprint(key_file: Path) -> str:
     ],
     indirect=True,
 )
-def test_import_config(
+def test_import_journalist_interface_config(
     tails_drive: FakeTailsDrive,
     ji_config_path: Path,
     config_path: Path,
@@ -163,7 +163,7 @@ def test_import_config(
         ]
     )
 
-    manage.import_config()
+    manage.import_journalist_interface_config()
 
     # The submission key was fetched off the Secure Viewing Station drive
     imported_key = config_path / "sd-journalist.sec"
@@ -203,7 +203,7 @@ def test_import_config_keeps_existing_submission_key(
 
     answer_prompts(["y", "y", str(SD_APP_GB), str(SD_LOG_GB)])
 
-    manage.import_config()
+    manage.import_journalist_interface_config()
 
     assert existing_key.read_bytes() == (proj_root / "sd-journalist.sec").read_bytes()
     config = json.loads((config_path / "config.json").read_text())
@@ -223,6 +223,6 @@ def test_import_config_aborts_without_confirmation(
 
     answer_prompts(["n"])
 
-    manage.import_config()
+    manage.import_journalist_interface_config()
 
     assert list(config_path.iterdir()) == []

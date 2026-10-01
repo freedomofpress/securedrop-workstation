@@ -7,6 +7,7 @@ does it handle the config.
 import argparse
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -40,10 +41,14 @@ BASE_TEMPLATE = f"debian-{DEBIAN_VERSION}-minimal"
 SUBMISSION_KEY = "sd-journalist.sec"
 TAILS_PATH = Path("/run/media/user/TailsData/")
 TAILS_GNUPG_PATH = TAILS_PATH / "gnupg/"
-TAILS_PKG_JOURNALIST_INTERFACE_CONFIG = TAILS_PATH / "securedrop-admin/app-journalist.auth_private"
+TAILS_ADMIN_CONFIG_PATH = TAILS_PATH / "securedrop-admin/"
+TAILS_PKG_JOURNALIST_INTERFACE_CONFIG = TAILS_ADMIN_CONFIG_PATH / "app-journalist.auth_private"
 TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
     TAILS_PATH / "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
+
+SD_ADMIN_VM = "sd-admin"
+SD_ADMIN_CONFIG_PATH = "/home/user/.config/securedrop-admin"
 
 # Salt pillar override to make sure dom0 states do not re-enable
 # preloaded dispvms. Needed due to inclusion of 'qvm.preload-disposables'
@@ -89,7 +94,7 @@ def get_installed_product(products_path: Path = PRODUCTS_PATH) -> Product:
         return Product.JOURNALIST
     if admin:
         return Product.ADMIN
-    raise SDWAdminException(f"No SecureDrop products are installed (checked {products_path})")
+    raise ManageException(f"No SecureDrop products are installed (checked {products_path})")
 
 
 def parse_args() -> argparse.Namespace:
@@ -120,7 +125,7 @@ def parse_args() -> argparse.Namespace:
         default=False,
         required=False,
         action="store_true",
-        help="During uninstall action, don't prompt for confirmation, proceed immediately",
+        help=("During uninstall action, don't prompt for confirmation, proceed immediately"),
     )
     parser.add_argument(
         "--configure",
@@ -173,7 +178,7 @@ def move_legacy_config(old_location: Path, new_location: Path) -> None:
                 files_were_copied = True
                 subprocess.check_call(["sudo", "rm", legacy_location])
             except Exception as e:
-                raise SDWAdminException(f"Error moving legacy configuration: {e}")
+                raise ManageException(f"Error moving legacy configuration: {e}")
 
     if files_were_copied:
         print(
@@ -190,7 +195,7 @@ def copy_config() -> None:
         subprocess.check_call(["sudo", "cp", CONFIG_PATH / "config.json", SALT_PATH])
         subprocess.check_call(["sudo", "cp", CONFIG_PATH / "sd-journalist.sec", SALT_PATH])
     except subprocess.CalledProcessError:
-        raise SDWAdminException("Error copying configuration")
+        raise ManageException("Error copying configuration")
 
 
 def provision_and_configure() -> None:
@@ -228,11 +233,11 @@ def provision_and_configure() -> None:
 
 
 def run_cmd(args: list[str]) -> None:
-    print(f"Running \"{' '.join(args)}\"")
+    print(f'Running "{" ".join(args)}"')
     try:
         subprocess.check_call(args)
     except subprocess.CalledProcessError:
-        raise SDWAdminException(f"Error while running {' '.join(args)}")
+        raise ManageException(f"Error while running {' '.join(args)}")
 
 
 @contextmanager
@@ -393,12 +398,12 @@ def qubesctl_call(step_description: str, args: list[str]) -> None:
     qubesctl_cmd = ["sudo", "qubesctl", "--show-output"] + args
     print("\n..........................................................................")
     print(step_description)
-    print(f"Running \"{' '.join(qubesctl_cmd)}\"")
+    print(f'Running "{" ".join(qubesctl_cmd)}"')
 
     try:
         subprocess.check_call(qubesctl_cmd)
     except subprocess.CalledProcessError:
-        raise SDWAdminException(f"Error in step {step_description}")
+        raise ManageException(f"Error in step {step_description}")
 
 
 def sync_appmenus() -> None:
@@ -433,7 +438,7 @@ def validate_config(path: Path, product: Product) -> None:
         if product.contains_admin:
             AdminConfigValidator(path)
     except ValidationError:
-        raise SDWAdminException("Error while validating configuration")
+        raise ManageException("Error while validating configuration")
 
 
 def get_appvms_for_template(vm_name: str) -> list[str]:
@@ -458,12 +463,12 @@ def refresh_salt() -> None:
     try:
         subprocess.check_call(["sudo", "rm", "-rf", "/var/cache/salt"])
     except subprocess.CalledProcessError:
-        raise SDWAdminException("Error while clearing Salt cache")
+        raise ManageException("Error while clearing Salt cache")
 
     try:
         subprocess.check_call(["sudo", "qubesctl", "saltutil.sync_all", "refresh=true"])
     except subprocess.CalledProcessError:
-        raise SDWAdminException("Error while synchronizing Salt")
+        raise ManageException("Error while synchronizing Salt")
 
 
 def destroy_all_tagged(tag: str) -> None:
@@ -565,11 +570,11 @@ def _try_read_submission_key() -> str | None:
     )
     fingerprints = extract_secret_key_fingerprints(gpg_output)
     if len(fingerprints) == 0:
-        raise SDWAdminException("Error reading submission key: no private keys found")
+        raise ManageException("Error reading submission key: no private keys found")
     if len(fingerprints) > 1:
         fingerprint = _prompt_choose_submission_key(fingerprints)
         if not fingerprint:
-            raise SDWAdminException(
+            raise ManageException(
                 "Error reading submission key: unable to select from multiple eligible keys"
             )
         return fingerprint
@@ -615,11 +620,11 @@ def import_submission_key() -> str:
     )
     fingerprints = extract_secret_key_fingerprints(gpg_output)
     if len(fingerprints) == 0:
-        raise SDWAdminException("Error reading submission key fingerprint: no private keys found")
+        raise ManageException("Error reading submission key fingerprint: no private keys found")
     if len(fingerprints) > 1:
         fingerprint = _prompt_choose_submission_key(fingerprints)
         if not fingerprint:
-            raise SDWAdminException(
+            raise ManageException(
                 "Error importing submission key: unable to select from multiple eligible keys"
             )
     else:
@@ -675,7 +680,7 @@ def import_journalist_interface_config() -> tuple[str, str]:
                 text=True,
             )
         except subprocess.CalledProcessError:
-            raise SDWAdminException(
+            raise ManageException(
                 "Failed to find a valid journalist interface config.\n"
                 "Check the attached USB key and try again."
             )
@@ -686,7 +691,7 @@ def import_journalist_interface_config() -> tuple[str, str]:
     return addr, auth_token
 
 
-def import_config() -> None:
+def import_workstation_config() -> None:
     submission_key_fingerprint = _try_read_submission_key()
     if not submission_key_fingerprint:
         subprocess.Popen(
@@ -719,7 +724,7 @@ def import_config() -> None:
     try:
         validate_config(CONFIG_PATH, Product.JOURNALIST)
         print("Valid configuration found, configuration complete")
-    except SDWAdminException:
+    except ManageException:
         subprocess.Popen(
             ["qvm-start", "vault"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
@@ -738,7 +743,7 @@ def import_config() -> None:
             return
         try:
             ji_addr, ji_auth_token = import_journalist_interface_config()
-        except SDWAdminException as e:
+        except ManageException as e:
             print(f"Error importing configuration: {e}")
             sys.exit(1)
 
@@ -776,13 +781,148 @@ def import_config() -> None:
             json.dump(config, f, indent=2)
         subprocess.check_call(["cp", temp_file, CONFIG_PATH])
         print(
-            "Journalist Interface import complete!\n"
-            "Please detach and disconnect the USB drive.\n\n"
+            "Journalist Interface import complete!\nPlease detach and disconnect the USB drive.\n\n"
         )
         print("Validating configuration...")
         validate_config(CONFIG_PATH, Product.JOURNALIST)
         print("Validation successful!")
     return
+
+
+def _check_in_qube(vm: str, command: str) -> bool:
+    """
+    Runs a shell command in the given qube, returning whether it exited successfully
+    """
+    result = subprocess.run(
+        ["qvm-run", "--pass-io", vm, command],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+    )
+    return result.returncode == 0
+
+
+def copy_admin_config() -> list[str]:
+    """
+    Streams the securedrop-admin configuration from the Tails USB in vault to sd-admin.
+    Returns the names of the files now in sd-admin's config directory.
+    """
+    config = shlex.quote(SD_ADMIN_CONFIG_PATH)
+
+    # Unpack into staging directory so that a failed transfer doesn't touch existing config
+    staging = shlex.quote(f"{SD_ADMIN_CONFIG_PATH}.new")
+
+    source = subprocess.Popen(
+        [
+            "qvm-run",
+            "--pass-io",
+            "vault",
+            f"tar -C {shlex.quote(str(TAILS_ADMIN_CONFIG_PATH))} -cf - .",
+        ],
+        stdout=subprocess.PIPE,
+    )
+    try:
+        destination = subprocess.run(
+            [
+                "qvm-run",
+                "--pass-io",
+                SD_ADMIN_VM,
+                f"rm -rf {staging} && mkdir -p -m 700 {staging} && "
+                f"tar -C {staging} --no-same-owner -xf -",
+            ],
+            stdin=source.stdout,
+            check=False,
+        )
+    finally:
+        # Let vault see a closed pipe if sd-admin stops reading early
+        if source.stdout:
+            source.stdout.close()
+        source_returncode = source.wait()
+
+    if source_returncode != 0 or destination.returncode != 0:
+        _check_in_qube(SD_ADMIN_VM, f"rm -rf {staging}")
+        raise ManageException(f"Error copying securedrop-admin configuration to {SD_ADMIN_VM}")
+
+    # rewrite the config_path in site-specific to Qubes home directory instead of the Tails one
+    site_specific = shlex.quote(f"{SD_ADMIN_CONFIG_PATH}.new/site-specific")
+    try:
+        files = subprocess.check_output(
+            [
+                "qvm-run",
+                "--pass-io",
+                SD_ADMIN_VM,
+                f"{{ [ ! -f {site_specific} ] || "
+                f"sed -i '/^config_path:/s|/home/amnesia/|/home/user/|' {site_specific}; }} && "
+                f"chmod -R u=rwX,go= {staging} && rm -rf {config} && mv {staging} {config} && "
+                f"ls -1A {config}",
+            ],
+            text=True,
+        )
+    except subprocess.CalledProcessError:
+        raise ManageException(f"Error installing securedrop-admin configuration in {SD_ADMIN_VM}")
+    return files.split()
+
+
+def import_admin_config() -> None:
+    """
+    Imports the securedrop-admin configuration from an Admin Workstation Tails USB into
+    sd-admin. Assumes the USB will be attached to vault and its persistent storage unlocked.
+    """
+    if SD_ADMIN_VM not in Qubes().domains:
+        raise ManageException(
+            f"{SD_ADMIN_VM} does not exist. Provision the Admin Workstation before configuring it."
+        )
+
+    config = shlex.quote(SD_ADMIN_CONFIG_PATH)
+    if _check_in_qube(SD_ADMIN_VM, f'[ -n "$(ls -A {config} 2>/dev/null)" ]'):
+        print(f"{SD_ADMIN_VM} already has securedrop-admin configuration in {SD_ADMIN_CONFIG_PATH}")
+        response = input("Replace it with the configuration from the USB (y/N)? ")
+        if response.lower() != "y":
+            print("Exiting.")
+            return
+
+    subprocess.Popen(["qvm-start", "vault"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    print(
+        "Preparing to import Admin Workstation configuration from USB...\n\n\n"
+        "Ensure that the Admin Workstation USB is connected.\n\n"
+        "1. Attach the USB to the vault VM\n"
+        "2. Open File Manager in the vault VM\n"
+        "3. Select the USB drive in the left sidebar of the file manager.\n"
+        "It should be listed under Devices as 'N GB Encrypted'.\n"
+        "Enter the correct passphrase when prompted.\n\n"
+        "Note: you may see an error 'Failed to open directory TailsData'.\n"
+        "This can safely be ignored and the import can still proceed.\n\n"
+    )
+    response = input("Are you ready to proceed (y/N)? ")
+    if response.lower() != "y":
+        print("Exiting.")
+        return
+
+    print("Importing Admin Workstation configuration...")
+    tails_config = shlex.quote(str(TAILS_ADMIN_CONFIG_PATH))
+    if not _check_in_qube("vault", f"test -d {tails_config}"):
+        raise ManageException(
+            f"No securedrop-admin configuration found at {TAILS_ADMIN_CONFIG_PATH} in vault.\n"
+            "Check that the USB is attached to vault and unlocked. If this Admin Workstation\n"
+            "still uses the git-based installer, migrate it to the securedrop-admin package\n"
+            "in Tails first."
+        )
+    if not _check_in_qube("vault", f"test -f {tails_config}/site-specific"):
+        raise ManageException(
+            f"No site-specific file found in {TAILS_ADMIN_CONFIG_PATH}.\n"
+            "This looks like a Journalist Workstation USB; attach an Admin Workstation USB instead."
+        )
+
+    print(f"Copying configuration to {SD_ADMIN_VM}...")
+    files = copy_admin_config()
+    print(
+        f"Admin Workstation configuration imported into {SD_ADMIN_VM}:\n"
+        + "".join(f"  - {name}\n" for name in files)
+        + "\nPlease detach and disconnect the USB drive.\n\n"
+        f"Next, open a terminal in {SD_ADMIN_VM} and run:\n\n"
+        "  securedrop-admin qubesconfig\n\n"
+        "to set up Tor access and SSH aliases for the SecureDrop servers."
+    )
 
 
 def main() -> None:  # noqa: PLR0912
@@ -845,21 +985,23 @@ def main() -> None:  # noqa: PLR0912
         refresh_salt()
         perform_uninstall(args.product)
     elif args.configure:
+        if args.product.contains_journalist:
+            print(
+                "Preparing to import SecureDrop Workstation configuration...\n\n"
+                "Make sure you have the USB with the submission key and an\n"
+                "Admin Workstation or Journalist Workstation USB drive accessible.\n\n\n"
+            )
+            try:
+                validate_config(CONFIG_PATH, Product.JOURNALIST)
+                print("Valid configuration found, configuration complete")
+            except ManageException:
+                import_workstation_config()
         if args.product.contains_admin:
-            raise NotImplementedError("Configuring the admin workstation is not implemented yet")
-        print(
-            "Preparing to import SecureDrop Workstation configuration...\n\n"
-            "Make sure you have the USB with the submission key and an\n"
-            "Admin Workstation or Journalist Workstation USB drive accessible.\n\n\n"
-        )
-        try:
-            validate_config(CONFIG_PATH, Product.JOURNALIST)
-            print("Valid configuration found, configuration complete")
-        except SDWAdminException:
-            import_config()
+            validate_config(CONFIG_PATH, Product.ADMIN)
+            import_admin_config()
     else:
         sys.exit(0)
 
 
-class SDWAdminException(Exception):
+class ManageException(Exception):
     pass
