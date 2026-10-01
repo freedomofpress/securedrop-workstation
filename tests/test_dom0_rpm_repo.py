@@ -5,6 +5,8 @@ import pytest
 
 from securedrop_manage.config_types import Dom0Config
 
+pytestmark = pytest.mark.usefixtures("needs_dom0")
+
 REPO_CONFIG = {
     "prod": {
         "signing_key": "/etc/pki/rpm-gpg/RPM-GPG-KEY-securedrop-workstation",

@@ -2,6 +2,7 @@ import importlib.util
 import json
 import os
 import subprocess
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from unittest import mock
@@ -13,7 +14,9 @@ from sdw_updater import Updater
 from sdw_updater.Updater import UpdateStatus
 
 skipif_no_qubesadmin = pytest.mark.skipif(
-    importlib.util.find_spec("qubesadmin") is None,
+    # tests/dom0_stubs.py may have stubbed out qubesadmin, which isn't good enough
+    getattr(sys.modules.get("qubesadmin"), "__dom0_stub__", False)
+    or importlib.util.find_spec("qubesadmin") is None,
     reason="qubesadmin module not available (only runs in dom0)",
 )
 

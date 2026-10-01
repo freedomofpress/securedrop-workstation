@@ -11,6 +11,8 @@ import pytest
 
 from securedrop_manage import main as manage
 
+pytestmark = pytest.mark.usefixtures("needs_dom0")
+
 FAKE_JI_ADDRESS = "sdwfaketestonionaddressforintegrationtests22222222222222"
 FAKE_JI_AUTH_TOKEN = "SDWFAKETESTAUTHTOKENFORINTEGRATIONTESTS2222222222222"
 FAKE_JI_CONFIG = f"{FAKE_JI_ADDRESS}:descriptor:x25519:{FAKE_JI_AUTH_TOKEN}"

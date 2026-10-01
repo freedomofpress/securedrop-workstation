@@ -15,6 +15,8 @@ from tests.base import (
     SD_VMS,
 )
 
+pytestmark = pytest.mark.usefixtures("needs_dom0")
+
 IS_CI = os.environ.get("CI") == "true"
 
 

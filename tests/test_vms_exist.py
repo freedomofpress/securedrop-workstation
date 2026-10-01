@@ -12,6 +12,8 @@ from tests.base import (
     SD_VMS,
 )
 
+pytestmark = pytest.mark.usefixtures("needs_dom0")
+
 
 @pytest.mark.provisioning
 def test_all_sdw_vms_present(all_vms: VMCollection, sdw_tagged_vms: list[QubesVM]) -> None:

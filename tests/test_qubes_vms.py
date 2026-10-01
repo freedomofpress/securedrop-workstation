@@ -3,6 +3,8 @@ from qubesadmin.app import VMCollection
 
 from tests.base import CURRENT_FEDORA_TEMPLATE
 
+pytestmark = pytest.mark.usefixtures("needs_dom0")
+
 """
 Ensures that the upstream, Qubes-maintained VMs are
 sufficiently up to date.

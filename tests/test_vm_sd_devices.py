@@ -16,6 +16,8 @@ from tests.base import (
     Test_SD_VM_Common as Test_SD_Devices_Common,  # noqa: F401 [HACK: import so base tests run]
 )
 
+pytestmark = pytest.mark.usefixtures("needs_dom0")
+
 # NOTE: this file needs includes tests for the functionally similar 'sd-devices'
 # and 'sd-printers'. Some tests overlap (tested on both through the 'qube' fixture)
 # and some only happen in one VM. In this last case dedicated qube fixtures are used
