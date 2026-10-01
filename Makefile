@@ -39,7 +39,7 @@ dev-journalist staging-journalist: %-journalist: assert-dom0 ## Installs, config
 	$(MAKE) assert-keyring-$*
 	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$*
 	$(MAKE) configure-env-$*
-	securedrop-manage --apply --target all
+	securedrop-manage apply --target all
 
 # Same as above, but for the admin workstation
 .PHONY: dev-admin staging-admin
@@ -48,7 +48,7 @@ dev-admin staging-admin: %-admin: assert-dom0 ## Installs, configures and builds
 	$(MAKE) assert-keyring-$*
 	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$* RPM_NAME=securedrop-admin-dom0-config
 	$(MAKE) configure-admin-env-$*
-	securedrop-manage --apply --target all
+	securedrop-manage apply --target all
 
 .PHONY: dev staging
 dev: dev-journalist ## Alias for dev-journalist
@@ -59,13 +59,13 @@ staging: staging-journalist ## Alias for staging-journalist
 configure-env-%:
 	@echo "Configuring $* environment"
 	./scripts/configure-environment.py --env $*
-	securedrop-manage --validate --target journalist
+	securedrop-manage validate --target journalist
 
 .PHONY: configure-admin-env-%
 configure-admin-env-%:
 	@echo "Configuring $* environment for the admin workstation"
 	./scripts/configure-environment.py --env $* --admin
-	securedrop-manage --validate --target admin
+	securedrop-manage validate --target admin
 
 .PHONY: assert-keyring-%
 assert-keyring-%: ## Correct keyring pkg installed
@@ -92,7 +92,7 @@ else
 	@echo "Install published rpm"
 	@rpm -q $(RPM_NAME) || sudo qubes-dom0-update -y $(RPM_NAME)
 endif
-	@echo "Provide instance-specific configuration and run securedrop-manage --apply."
+	@echo "Provide instance-specific configuration and run securedrop-manage apply."
 
 .PHONY: build-rpm
 build-rpm: OUT:=build-log/securedrop-workstation-$(shell date +%Y%m%d).log
@@ -138,9 +138,9 @@ clean: assert-dom0 ## Destroys all SD VMs
 # Skip the uninstall if the package isn't installed because it means
 # it's most likely already happened
 	@if [ -x /usr/bin/securedrop-manage ]; then \
-		securedrop-manage --uninstall --force --target all; \
+		securedrop-manage uninstall --force --target all; \
 	else \
-		echo "securedrop-manage not installed, skipping --uninstall"; \
+		echo "securedrop-manage not installed, skipping uninstall"; \
 	fi
 	rpm -qa | grep '^securedrop-' | xargs -r sudo dnf remove -y
 	find /etc/yum.repos.d -type f -iname 'securedrop-workstation*.repo' -exec sudo rm -v {} +
