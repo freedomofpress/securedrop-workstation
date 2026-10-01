@@ -33,11 +33,12 @@ all: assert-dom0
 # (required), and installs the dom0 config rpm.
 # To switch keyrings, remove the dev or staging keyring package and delete the file
 # /etc/yum.repos.d/securedrop-workstation-keyring-{dev|staging}.repo.
-dev staging: assert-dom0 ## Installs, configures and builds a dev or staging environment
-	@./scripts/bootstrap-keyring.py --env $@
-	$(MAKE) assert-keyring-$@
-	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$@
-	$(MAKE) configure-env-$@
+.PHONY: dev-journalist staging-journalist
+dev-journalist staging-journalist: %-journalist: assert-dom0 ## Installs, configures and builds a dev or staging journalist environment
+	@./scripts/bootstrap-keyring.py --env $*
+	$(MAKE) assert-keyring-$*
+	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$*
+	$(MAKE) configure-env-$*
 	securedrop-manage --apply --target all
 
 # Same as above, but for the admin workstation
@@ -48,6 +49,10 @@ dev-admin staging-admin: %-admin: assert-dom0 ## Installs, configures and builds
 	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$* RPM_NAME=securedrop-admin-dom0-config
 	$(MAKE) configure-admin-env-$*
 	securedrop-manage --apply --target all
+
+.PHONY: dev staging
+dev: dev-journalist ## Alias for dev-journalist
+staging: staging-journalist ## Alias for staging-journalist
 
 # Places configuration details its installed directory
 .PHONY: configure-env-%
