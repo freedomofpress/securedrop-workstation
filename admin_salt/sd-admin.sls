@@ -34,3 +34,13 @@ sd-admin:
         - service.paxctld
     - require:
       - qvm: sd-admin-debian-13
+
+sd-admin-custom-persist:
+  qvm.features:
+    - name: sd-admin
+    - enable:
+      - service.custom-persist
+    - set:
+      - custom-persist.tor_data: dir:debian-tor:debian-tor:0700:/var/lib/tor
+      - custom-persist.tor_config: dir:root:root:0700:/etc/tor
+      - custom-persist.home: /home
