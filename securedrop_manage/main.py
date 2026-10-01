@@ -82,6 +82,13 @@ class Product(Enum):
                 return "SecureDrop Workstation"
 
 
+class Command(Enum):
+    APPLY = "apply"
+    VALIDATE = "validate"
+    UNINSTALL = "uninstall"
+    CONFIGURE = "configure"
+
+
 def get_installed_product(products_path: Path = PRODUCTS_PATH) -> Product:
     journalist = (products_path / "journalist-workstation.json").is_file()
     admin = (products_path / "admin-workstation.json").is_file()
@@ -94,43 +101,36 @@ def get_installed_product(products_path: Path = PRODUCTS_PATH) -> Product:
     raise SDWAdminException(f"No SecureDrop products are installed (checked {products_path})")
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--apply",
-        default=False,
-        required=False,
-        action="store_true",
-        help="Apply workstation configuration with Salt",
+def rewrite_legacy_args(argv: list[str]) -> list[str]:
+    """
+    Rewrite the legacy flag-style invocation (e.g. `--apply --target all`) into
+    the subcommand form (`apply --target all`), for backwards compatibility.
+    """
+    legacy = ("--apply", "--validate", "--configure", "--uninstall")
+    flags = [arg for arg in argv if arg in legacy]
+    if not flags:
+        return argv
+    if len(flags) > 1:
+        sys.exit(f"error: only one of {', '.join(flags)} may be specified")
+    flag = flags[0]
+    command = flag[2:]
+    print(
+        f"Warning: {flag} is deprecated, use `securedrop-manage {command}` instead",
+        file=sys.stderr,
     )
-    parser.add_argument(
-        "--validate",
-        default=False,
-        required=False,
-        action="store_true",
-        help="Validate the configuration",
-    )
-    parser.add_argument(
-        "--uninstall",
-        default=False,
-        required=False,
-        action="store_true",
-        help="Completely Uninstalls the SecureDrop Workstation",
-    )
-    parser.add_argument(
-        "--force",
-        default=False,
-        required=False,
-        action="store_true",
-        help="During uninstall action, don't prompt for confirmation, proceed immediately",
-    )
-    parser.add_argument(
-        "--configure",
-        default=False,
-        required=False,
-        action="store_true",
-        help="Configure SecureDrop Workstation",
-    )
+    rest = [arg for arg in argv if arg != flag]
+    return [command, *rest]
+
+
+def parse_args(prog: str | None = None, argv: list[str] | None = None) -> argparse.Namespace:
+    if prog is None:
+        prog = Path(sys.argv[0]).name
+    if argv is None:
+        argv = sys.argv[1:]
+    if prog == "sdw-admin":
+        # only the legacy name accepts the legacy flags
+        argv = rewrite_legacy_args(argv)
+
     installed_product = get_installed_product()
     if installed_product is Product.ALL:
         # both admin + journalist installed, must explicitly select one or both
@@ -140,7 +140,8 @@ def parse_args() -> argparse.Namespace:
         # just one installed, default to it; "all" is accepted as an alias for it
         default = installed_product
         choices = [installed_product, Product.ALL]
-    parser.add_argument(
+    target_parser = argparse.ArgumentParser(add_help=False)
+    target_parser.add_argument(
         "--target",
         default=default,
         required=(default is None),
@@ -149,7 +150,38 @@ def parse_args() -> argparse.Namespace:
         dest="product",
         help="Whether to operate on the journalist, admin, or both workstations",
     )
-    args = parser.parse_args()
+
+    parser = argparse.ArgumentParser(prog=prog)
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers.add_parser(
+        Command.APPLY.value,
+        parents=[target_parser],
+        help="Apply workstation configuration with Salt",
+    )
+    subparsers.add_parser(
+        Command.VALIDATE.value,
+        parents=[target_parser],
+        help="Validate the configuration",
+    )
+    uninstall_parser = subparsers.add_parser(
+        Command.UNINSTALL.value,
+        parents=[target_parser],
+        help="Completely Uninstalls the SecureDrop Workstation",
+    )
+    uninstall_parser.add_argument(
+        "--force",
+        default=False,
+        required=False,
+        action="store_true",
+        help="Don't prompt for confirmation, proceed immediately",
+    )
+    subparsers.add_parser(
+        Command.CONFIGURE.value,
+        parents=[target_parser],
+        help="Configure SecureDrop Workstation",
+    )
+    args = parser.parse_args(argv)
+    args.command = Command(args.command)
     if args.product is Product.ALL:
         # "all" means whatever is installed
         args.product = installed_product
@@ -837,15 +869,15 @@ def main() -> None:  # noqa: PLR0912
 
     args = parse_args()
 
-    if args.validate:
+    if args.command is Command.VALIDATE:
         print("Validating...", end="")
         validate_config(CONFIG_PATH, args.product)
         print("OK")
-    elif args.apply:
+    elif args.command is Command.APPLY:
         if installed_product is Product.ALL and args.product is not Product.ALL:
-            # if we're on a combined workstation, require the use of --all so all VMs
+            # if we're on a combined workstation, require the use of --target all so all VMs
             # are provisioned at the same time
-            print("--apply can only be used with --target all")
+            print("apply can only be used with --target all")
             sys.exit(1)
         if args.product.contains_journalist:
             print(
@@ -877,7 +909,7 @@ def main() -> None:  # noqa: PLR0912
             provision_and_configure(args.product)
         print("Provisioning complete. Please reboot to complete the installation.")
 
-    elif args.uninstall:
+    elif args.command is Command.UNINSTALL:
         print(
             "Uninstalling will remove all packages and destroy all VMs associated\n"
             f"with {args.product.as_text()}."
@@ -889,7 +921,7 @@ def main() -> None:  # noqa: PLR0912
                 sys.exit(0)
         refresh_salt()
         perform_uninstall(args.product)
-    elif args.configure:
+    elif args.command is Command.CONFIGURE:
         if args.product.contains_admin:
             raise NotImplementedError("Configuring the admin workstation is not implemented yet")
         print(
@@ -902,8 +934,6 @@ def main() -> None:  # noqa: PLR0912
             print("Valid configuration found, configuration complete")
         except SDWAdminException:
             import_config()
-    else:
-        sys.exit(0)
 
 
 class SDWAdminException(Exception):

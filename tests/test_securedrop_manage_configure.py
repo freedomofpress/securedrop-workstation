@@ -1,5 +1,5 @@
 """
-Integration tests for "securedrop-manage --configure"
+Integration tests for "securedrop-manage configure"
 """
 
 import json
@@ -33,7 +33,7 @@ def vault_run(command: str, stdin: bytes | None = None) -> str:
 
 class FakeTailsDrive:
     """
-    Stand-in for the Tails USB drives that "securedrop-manage --configure" reads from.
+    Stand-in for the Tails USB drives that "securedrop-manage configure" reads from.
     """
 
     def __init__(self, submission_key: bytes) -> None:
