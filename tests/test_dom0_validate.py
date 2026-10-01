@@ -71,9 +71,9 @@ def test_config_mismatched_fpr(resources_dir: Path, tmp_path: Path) -> None:
     assert "Configured fingerprint does not match key!" in exc_info.exconly()
 
 
-def test_admin_good_config(test_resources_dir: Path, tmp_path: Path) -> None:
+def test_admin_good_config(resources_dir: Path, tmp_path: Path) -> None:
     # No submission key needed for the admin workstation
-    shutil.copy(f"{test_resources_dir}/testconfig.json", f"{tmp_path}/config.json")
+    shutil.copy(f"{resources_dir}/testconfig.json", f"{tmp_path}/config.json")
 
     assert AdminConfigValidator(tmp_path).config.environment == "prod"
 
@@ -83,10 +83,8 @@ def test_admin_missing_config(tmp_path: Path) -> None:
     assert AdminConfigValidator(tmp_path).config.environment == "prod"
 
 
-def test_admin_invalid_environment(test_resources_dir: Path, tmp_path: Path) -> None:
-    shutil.copy(
-        f"{test_resources_dir}/testconfig.json.invalid_environment", f"{tmp_path}/config.json"
-    )
+def test_admin_invalid_environment(resources_dir: Path, tmp_path: Path) -> None:
+    shutil.copy(f"{resources_dir}/testconfig.json.invalid_environment", f"{tmp_path}/config.json")
 
     with pytest.raises(ValidationError) as exc_info:
         AdminConfigValidator(tmp_path)
