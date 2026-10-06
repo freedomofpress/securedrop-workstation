@@ -8,15 +8,28 @@ import re
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 from typing import Any
 
 from qubesadmin import Qubes
 
+from securedrop_manage.common import (
+    CONFIG_FILENAME,
+    SUBMISSION_KEY_FILENAME,
+    ManageException,
+    Product,
+)
 from securedrop_manage.config_types import AdminConfig, Dom0Config, ValidationError
 
-# CONFIG_FILEPATH = "/srv/salt/securedrop_salt/config.json"
-CONFIG_FILEPATH = "config.json"
-SECRET_KEY_FILEPATH = "sd-journalist.sec"
+
+def validate_config(path: Path, product: Product) -> None:
+    try:
+        if product.contains_journalist:
+            JournalistConfigValidator(path)
+        if product.contains_admin:
+            AdminConfigValidator(path)
+    except ValidationError:
+        raise ManageException("Error while validating configuration")
 
 
 class JournalistConfigValidator:
@@ -29,11 +42,11 @@ class JournalistConfigValidator:
 
     def __init__(self, config_base_dir: str | os.PathLike[str] | None = None) -> None:
         if config_base_dir:
-            self.config_filepath = os.path.join(config_base_dir, CONFIG_FILEPATH)
-            self.secret_key_filepath = os.path.join(config_base_dir, SECRET_KEY_FILEPATH)
+            self.config_filepath = os.path.join(config_base_dir, CONFIG_FILENAME)
+            self.secret_key_filepath = os.path.join(config_base_dir, SUBMISSION_KEY_FILENAME)
         else:
-            self.config_filepath = CONFIG_FILEPATH
-            self.secret_key_filepath = SECRET_KEY_FILEPATH
+            self.config_filepath = CONFIG_FILENAME
+            self.secret_key_filepath = SUBMISSION_KEY_FILENAME
         self.confirm_config_file_exists()
         self.config: Dom0Config = Dom0Config.parse(self.read_config_file())
         self.confirm_submission_privkey_file()
@@ -124,7 +137,7 @@ class AdminConfigValidator:
     """
 
     def __init__(self, config_base_dir: str | os.PathLike[str]) -> None:
-        self.config_filepath = os.path.join(config_base_dir, CONFIG_FILEPATH)
+        self.config_filepath = os.path.join(config_base_dir, CONFIG_FILENAME)
         self.config: AdminConfig
         if not os.path.exists(self.config_filepath):
             # config.json is optional for the admin workstation

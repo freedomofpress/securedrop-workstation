@@ -9,7 +9,9 @@ from pathlib import Path
 
 import pytest
 
-from securedrop_manage import main as manage
+from securedrop_manage import configure
+from securedrop_manage.common import Product
+from securedrop_manage.validate import validate_config
 
 FAKE_JI_ADDRESS = "sdwfaketestonionaddressforintegrationtests22222222222222"
 FAKE_JI_AUTH_TOKEN = "SDWFAKETESTAUTHTOKENFORINTEGRATIONTESTS2222222222222"
@@ -37,8 +39,8 @@ class FakeTailsDrive:
     """
 
     def __init__(self, submission_key: bytes) -> None:
-        self.mountpoint: Path = manage.TAILS_PATH
-        self.gnupg_path: Path = manage.TAILS_GNUPG_PATH
+        self.mountpoint: Path = configure.TAILS_PATH
+        self.gnupg_path: Path = configure.TAILS_GNUPG_PATH
         self.submission_key = submission_key
 
     def insert_secure_viewing_station(self) -> None:
@@ -65,7 +67,7 @@ class FakeTailsDrive:
 @pytest.fixture
 def tails_drive(proj_root: Path) -> Iterator[FakeTailsDrive]:
     # Never touch an actually-mounted Tails drive: ejecting deletes its contents
-    mountpoint: Path = manage.TAILS_PATH
+    mountpoint: Path = configure.TAILS_PATH
     if vault_run(f"test -e {mountpoint} && echo present || echo absent").strip() == "present":
         pytest.fail(f"{mountpoint} already exists in vault; refusing to overwrite it")
 
@@ -85,7 +87,7 @@ def ji_config_path(request: pytest.FixtureRequest) -> Path:
     fixture indirectly to test the legacy (git) location instead.
     """
     attribute = getattr(request, "param", "TAILS_PKG_JOURNALIST_INTERFACE_CONFIG")
-    path: Path = getattr(manage, attribute)
+    path: Path = getattr(configure, attribute)
     return path
 
 
@@ -94,7 +96,7 @@ def config_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     """Redirect the dom0 config directory, so tests don't clobber the real one"""
     config_path = tmp_path / "securedrop-manage"
     config_path.mkdir()
-    monkeypatch.setattr(manage, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(configure, "CONFIG_PATH", config_path)
     return config_path
 
 
@@ -126,7 +128,7 @@ def submission_key_fingerprint(key_file: Path) -> str:
     gpg_output = subprocess.check_output(
         ["gpg", "--show-keys", "--with-fingerprint", "--with-colon", key_file], text=True
     )
-    fingerprints = manage.extract_secret_key_fingerprints(gpg_output)
+    fingerprints = configure.extract_secret_key_fingerprints(gpg_output)
     assert len(fingerprints) == 1
     return fingerprints[0]
 
@@ -163,7 +165,7 @@ def test_import_journalist_interface_config(
         ]
     )
 
-    manage.import_journalist_interface_config()
+    configure.import_workstation_config()
 
     # The submission key was fetched off the Secure Viewing Station drive
     imported_key = config_path / "sd-journalist.sec"
@@ -183,7 +185,7 @@ def test_import_journalist_interface_config(
         "vmsizes": {"sd_app": SD_APP_GB, "sd_log": SD_LOG_GB},
     }
 
-    manage.validate_config(config_path, manage.Product.JOURNALIST)
+    validate_config(config_path, Product.JOURNALIST)
 
 
 def test_import_config_keeps_existing_submission_key(
@@ -203,14 +205,14 @@ def test_import_config_keeps_existing_submission_key(
 
     answer_prompts(["y", "y", str(SD_APP_GB), str(SD_LOG_GB)])
 
-    manage.import_journalist_interface_config()
+    configure.import_workstation_config()
 
     assert existing_key.read_bytes() == (proj_root / "sd-journalist.sec").read_bytes()
     config = json.loads((config_path / "config.json").read_text())
     assert config["submission_key_fpr"] == submission_key_fingerprint(existing_key)
     assert config["hidserv"]["hostname"] == f"{FAKE_JI_ADDRESS}.onion"
 
-    manage.validate_config(config_path, manage.Product.JOURNALIST)
+    validate_config(config_path, Product.JOURNALIST)
 
 
 def test_import_config_aborts_without_confirmation(
@@ -223,6 +225,6 @@ def test_import_config_aborts_without_confirmation(
 
     answer_prompts(["n"])
 
-    manage.import_journalist_interface_config()
+    configure.import_workstation_config()
 
     assert list(config_path.iterdir()) == []
