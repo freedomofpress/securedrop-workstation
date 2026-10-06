@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon=securedrop
+Name=SecureDrop Journalist Interface
+Exec=sdw-updater --launch "SecureDrop Journalist Interface" sd-admin press.freedom.SecureDropJournalistInterface
