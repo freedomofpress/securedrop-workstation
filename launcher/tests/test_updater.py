@@ -11,6 +11,7 @@ import pytest
 
 from sdw_updater import Updater
 from sdw_updater.Updater import UpdateStatus
+from securedrop_manage.products import Product
 
 skipif_no_qubesadmin = pytest.mark.skipif(
     importlib.util.find_spec("qubesadmin") is None,
@@ -594,35 +595,57 @@ def test_apply_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
     mocked_error.assert_has_calls(log_error_calls)
 
 
-@mock.patch("subprocess.check_output", side_effect=[b""])
+JOURNALIST_TOP = "securedrop_salt.sd-workstation"
+ADMIN_TOP = "admin_salt.sd-admin"
+
+
+@pytest.mark.parametrize(
+    ("product", "tops"),
+    [
+        (Product.JOURNALIST, [JOURNALIST_TOP]),
+        (Product.ADMIN, [ADMIN_TOP]),
+        (Product.ALL, [JOURNALIST_TOP, ADMIN_TOP]),
+    ],
+)
+@mock.patch("subprocess.check_output", return_value=b"")
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
-def test_enable_dom0_state_success(mocked_info, mocked_error, mocked_subprocess):
-    assert Updater.enable_dom0_state() == UpdateStatus.UPDATES_OK
-    log_call_list = [call("Enabling dom0 top file"), call("dom0 top file enabled")]
-    mocked_subprocess.assert_called_once_with(
-        ["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"]
-    )
-    mocked_info.assert_has_calls(log_call_list)
+def test_enable_dom0_state_success(mocked_info, mocked_error, mocked_subprocess, product, tops):
+    with mock.patch("sdw_updater.Updater.get_installed_product", return_value=product):
+        assert Updater.enable_dom0_state() == UpdateStatus.UPDATES_OK
+    assert mocked_subprocess.call_args_list == [
+        call(["sudo", "qubesctl", "top.enable", top]) for top in tops
+    ]
+    log_call_list = []
+    for top in tops:
+        log_call_list += [
+            call(f"Enabling dom0 top file {top}"),
+            call(f"dom0 top file {top} enabled"),
+        ]
+    assert mocked_info.call_args_list == log_call_list
     assert not mocked_error.called
 
 
+@mock.patch("sdw_updater.Updater.get_installed_product", return_value=Product.ALL)
 @mock.patch(
     "subprocess.check_output",
     side_effect=[subprocess.CalledProcessError(1, cmd="check_output", output=b"")],
 )
 @mock.patch("sdw_updater.Updater.sdlog.error")
 @mock.patch("sdw_updater.Updater.sdlog.info")
-def test_enable_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess):
+def test_enable_dom0_state_failure(mocked_info, mocked_error, mocked_subprocess, mocked_product):
+    """
+    When enabling the first top file fails, we stop without trying the rest
+    """
     assert Updater.enable_dom0_state() == UpdateStatus.UPDATES_FAILED
     log_error_calls = [
-        call("Failed to enable dom0 top file. See updater-detail.log for details."),
+        call(
+            f"Failed to enable dom0 top file {JOURNALIST_TOP}. See updater-detail.log for details."
+        ),
         call("Command 'check_output' returned non-zero exit status 1."),
     ]
-    mocked_subprocess.assert_called_once_with(
-        ["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"]
-    )
-    mocked_info.assert_called_once_with("Enabling dom0 top file")
+    mocked_subprocess.assert_called_once_with(["sudo", "qubesctl", "top.enable", JOURNALIST_TOP])
+    mocked_info.assert_called_once_with(f"Enabling dom0 top file {JOURNALIST_TOP}")
     mocked_error.assert_has_calls(log_error_calls)
 
 
@@ -659,7 +682,7 @@ def test_run_full_install(mocked_call, mocked_output, mocked_info):
     MIGRATION_DIR = "/tmp/potato"
     with mock.patch("sdw_updater.Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = Updater.run_full_install()
-    check_outputs = [call(["sdw-admin", "--apply"])]
+    check_outputs = [call(["securedrop-manage", "apply", "--target", "all"])]
     check_calls = [call(["sudo", "rm", "-rf", MIGRATION_DIR])]
     assert mocked_output.call_count == 1
     assert mocked_call.call_count == 1
@@ -685,7 +708,7 @@ def test_run_full_install_with_error(mocked_call, mocked_output, mocked_error):
     MIGRATION_DIR = "/tmp/potato"
     with mock.patch("sdw_updater.Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = Updater.run_full_install()
-    calls = [call(["sdw-admin", "--apply"])]
+    calls = [call(["securedrop-manage", "apply", "--target", "all"])]
     assert mocked_output.call_count == 1
     assert mocked_call.call_count == 0
     assert mocked_error.called
@@ -709,7 +732,7 @@ def test_run_full_install_with_flag_error(mocked_call, mocked_output, mocked_err
     MIGRATION_DIR = "/tmp/potato"
     with mock.patch("sdw_updater.Updater.MIGRATION_DIR", MIGRATION_DIR):
         result = Updater.run_full_install()
-    check_outputs = [call(["sdw-admin", "--apply"])]
+    check_outputs = [call(["securedrop-manage", "apply", "--target", "all"])]
     check_calls = [call(["sudo", "rm", "-rf", MIGRATION_DIR])]
     assert mocked_output.call_count == 1
     assert mocked_call.call_count == 1

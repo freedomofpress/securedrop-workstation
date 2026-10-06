@@ -59,6 +59,8 @@ configuration over time.
 
 %package -n securedrop-dom0-manager
 Summary:        SecureDrop Manager
+Requires:       python3-dnf
+Requires:       python3-pyqt6
 %description -n securedrop-dom0-manager
 Shared management, updating and launching code for the SecureDrop
 Journalist and Admin Workstations.
@@ -162,12 +164,9 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 %ghost %attr(0644, root, root) /srv/salt/securedrop_salt/sd-journalist.sec
 %attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-notify
-%attr(755, root, root) %{_bindir}/sdw-updater
 %attr(755, root, root) %{_bindir}/securedrop-generate-submission-key
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
 %{python3_sitelib}/sdw_notify/*.py
-%{python3_sitelib}/sdw_updater/*.py
-%{python3_sitelib}/sdw_util/*.py
 %{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %{_userunitdir}/sdw-notify.service
@@ -210,7 +209,10 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 
 %files -n securedrop-dom0-manager
 %attr(755, root, root) %{_bindir}/securedrop-manage
+%attr(755, root, root) %{_bindir}/sdw-updater
 %{python3_sitelib}/securedrop_manage/*.py
+%{python3_sitelib}/sdw_updater/*.py
+%{python3_sitelib}/sdw_util/*.py
 %doc README.md
 %license LICENSE
 /srv/salt/securedrop_shared/*
