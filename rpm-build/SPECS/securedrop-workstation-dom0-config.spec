@@ -37,8 +37,6 @@ Requires:   qubes-mgmt-salt-dom0-virtual-machines
 Requires:   securedrop-workstation-keyring
 Requires:   grub2-xen-pvh
 Requires:   qubes-gpg-split-dom0
-Requires:   python3-dnf
-Requires:   python3-pyqt6
 Requires:   securedrop-dom0-manager = %{version}-%{release}
 
 %description
@@ -113,6 +111,7 @@ install -m 644 files/sdw-notify.service %{buildroot}%{_userunitdir}/
 install -m 644 files/sdw-notify.timer %{buildroot}%{_userunitdir}/
 install -m 755 files/securedrop-generate-submission-key.py %{buildroot}%{_bindir}/securedrop-generate-submission-key
 install -m 644 files/securedrop-logind-override-disable.service %{buildroot}%{_unitdir}/
+install -m 644 files/94-securedrop-dom0-manager-user.preset %{buildroot}%{_userpresetdir}/
 install -m 644 files/95-securedrop-systemd-user.preset %{buildroot}%{_userpresetdir}/
 
 install -m 755 -d %{buildroot}/etc/qubes/policy.d/
@@ -162,14 +161,10 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 # Copied into place by securedrop-manage at provisioning time
 %ghost %attr(0644, root, root) /srv/salt/securedrop_salt/config.json
 %ghost %attr(0644, root, root) /srv/salt/securedrop_salt/sd-journalist.sec
-%attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/securedrop-generate-submission-key
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
-%{python3_sitelib}/sdw_notify/*.py
 %{_datadir}/icons/hicolor/128x128/apps/securedrop.png
 %{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
-%{_userunitdir}/sdw-notify.service
-%{_userunitdir}/sdw-notify.timer
 %{_userunitdir}/securedrop-user-xfce-settings.service
 %{_userunitdir}/securedrop-user-xfce-icon-size.service
 %{_unitdir}/securedrop-logind-override-disable.service
@@ -209,10 +204,15 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 %files -n securedrop-dom0-manager
 %attr(755, root, root) %{_bindir}/securedrop-manage
 %attr(755, root, root) %{_bindir}/sdw-login
+%attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/sdw-updater
 %{python3_sitelib}/securedrop_manage/*.py
+%{python3_sitelib}/sdw_notify/*.py
 %{python3_sitelib}/sdw_updater/*.py
 %{python3_sitelib}/sdw_util/*.py
+%{_userunitdir}/sdw-notify.service
+%{_userunitdir}/sdw-notify.timer
+%{_userpresetdir}/94-securedrop-dom0-manager-user.preset
 %doc README.md
 %license LICENSE
 /srv/salt/securedrop_shared/*
@@ -233,9 +233,6 @@ systemctl enable securedrop-logind-override-disable.service ||:
 %systemd_user_post securedrop-user-xfce-icon-size.service
 %systemd_user_post securedrop-user-xfce-settings.service
 
-# Enable notification timer
-%systemd_user_post sdw-notify.timer
-
 %preun
 # If we're uninstalling (vs upgrading)
 if [ $1 -eq 0 ]; then
@@ -243,7 +240,6 @@ if [ $1 -eq 0 ]; then
     %systemd_preun securedrop-logind-override-disable.service
     %systemd_user_preun securedrop-user-xfce-icon-size.service
     %systemd_user_preun securedrop-user-xfce-settings.service
-    %systemd_user_preun sdw-notify.timer
 fi
 
 # This trigger allows us to conditionally run code based on the
@@ -255,6 +251,16 @@ mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/debian-13-bump
 # Disable top to workaround a bug in the 1.8.0 upgrade; sdw-admin will re-enable it
 qubesctl top.disable securedrop_salt.sd-workstation
+
+%post -n securedrop-dom0-manager
+# Enable notification timer
+%systemd_user_post sdw-notify.timer
+
+%preun -n securedrop-dom0-manager
+# If we're uninstalling (vs upgrading)
+if [ $1 -eq 0 ]; then
+    %systemd_user_preun sdw-notify.timer
+fi
 
 %preun -n securedrop-admin-dom0-config
 # If we're uninstalling (vs upgrading)

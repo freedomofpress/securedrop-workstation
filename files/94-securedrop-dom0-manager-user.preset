@@ -1,0 +1,4 @@
+# Systemd user unit presets for components shared by all SecureDrop products.
+# Don't override Qubes systemd settings (75-qubes-dom0-user.preset)
+# or systemd settings (90-systemd.preset).
+enable sdw-notify.timer
