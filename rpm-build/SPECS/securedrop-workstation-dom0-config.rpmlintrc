@@ -24,3 +24,6 @@ addFilter(r"no-%check-section")
 
 # rpmlint cannot properly track cross-package symlinks
 addFilter(r"dangling-relative-symlink /usr/bin/sdw-admin securedrop-manage")
+
+# rpmlint cannot track binaries provided by a required subpackage
+addFilter(r"desktopfile-without-binary /usr/share/applications/press.freedom.SecureDropUpdater.desktop sdw-updater")
