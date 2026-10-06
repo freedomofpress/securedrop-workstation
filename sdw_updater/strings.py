@@ -1,4 +1,5 @@
 # Strings containing {app_name} are templates; format them with the app name.
+# Strings ending in _no_target are used when there is no app to launch.
 headline_introduction = "Preflight security updates"
 description_introduction = (
     "<p>To keep your Workstation safe, daily software updates are required.</p> "
@@ -22,11 +23,18 @@ headline_status_updates_complete = "All updates complete!"
 description_status_updates_complete = (
     "Click <em>Continue</em> to launch the {app_name}. No reboot is necessary."
 )
+description_status_updates_complete_no_target = (
+    "Click <em>Continue</em> to finish. No reboot is necessary."
+)
 
 headline_status_updates_failed = "Security updates failed"
 description_status_updates_failed = (
     "There was an error downloading or installing updates for your workstation. "
     "The {app_name} cannot be started at this time. Please contact your administrator."
+)
+description_status_updates_failed_no_target = (
+    "There was an error downloading or installing updates for your workstation. "
+    "Please contact your administrator."
 )
 # Post-update actions (launching inbox, reboot)
 headline_status_reboot_required = "All updates complete!"
