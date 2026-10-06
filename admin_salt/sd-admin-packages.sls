@@ -19,3 +19,14 @@ install-securedrop-packages:
     - require:
       - pkg: upgrade-all-packages
       - pkg: install-securedrop-keyring-package
+
+# allow Tor Browser to run with grsec
+configure-paxctld-torbrowser-flags:
+  file.managed:
+    - name: /etc/paxctld.d/torbrowser.conf
+    - makedirs: True
+    - contents: |
+        /home/user/.local/share/torbrowser/tbb/x86_64/tor-browser/Browser/firefox.real m nonroot
+        /home/user/.local/share/torbrowser/tbb/x86_64/tor-browser/Browser/glxtest m nonroot
+    - require:
+      - pkg: install-securedrop-packages
