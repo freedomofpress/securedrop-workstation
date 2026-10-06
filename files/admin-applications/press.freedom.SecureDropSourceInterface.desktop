@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon=securedrop
+Name=SecureDrop Source Interface
+Exec=sdw-updater --launch "SecureDrop Source Interface" sd-admin press.freedom.SecureDropSourceInterface
