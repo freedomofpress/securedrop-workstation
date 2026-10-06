@@ -464,6 +464,13 @@ def perform_uninstall(product: Product) -> None:
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
         packages.append("securedrop-workstation-dom0-config")
 
+    # Only remove shared files if no other product will remain installed
+    if product is get_installed_product():
+        print("Reverting shared dom0 configuration")
+        subprocess.check_call(
+            ["sudo", "qubesctl", "state.sls", "securedrop_shared.sd-clean-dom0-autostart"]
+        )
+
     print("Uninstalling RPM package(s)")
     subprocess.check_call(["sudo", "dnf", "-y", "-q", "remove", *packages])
 
