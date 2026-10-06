@@ -216,25 +216,58 @@ def copy_admin_config() -> None:
         raise SDWAdminException("Error copying admin configuration")
 
 
+def pre_provision_journalist() -> None:
+    # HACK: Workaround for #1763 in which we disable the top file during RPM upgrade
+    # to workaround pre-1.8.1 updaters. This can be removed once we no longer support
+    # the old updater versions.
+    run_cmd(["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"])
+
+    # This is provisioned + configured ahead of time because the kernel needs to be
+    # installed, otherwise the descendant templates can't boot
+    provision("Provisioning base template", "securedrop_salt.sd-base-template")
+    configure("Configuring base template", ["sd-base-debian-13"])
+
+
+def pre_provision_admin() -> None:
+    run_cmd(["sudo", "qubesctl", "top.enable", "admin_salt.sd-admin"])
+
+
+def post_provision_journalist() -> None:
+    sync_appmenus("sd-inbox-debian-13")
+    sync_appmenus("sd-viewer-debian-13")
+    # These are the ones we show in prod VMs, so sync explicitly
+    run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-devices"])
+    run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-log"])
+
+    if "sd-fedora-43-dvm" in Qubes().domains:
+        # If sd-fedora-43-dvm exists it's because salt determined that sys-usb was disposable
+        configure(
+            "Add SecureDrop export device handling to sys-usb (disposable)",
+            ["sd-fedora-43-dvm"],
+            restart=["sys-usb"],
+        )
+    else:
+        configure(
+            "Add SecureDrop export device handling to sys-usb (non-disposable)",
+            ["sys-usb"],
+        )
+
+
+def post_provision_admin() -> None:
+    sync_appmenus("sd-admin-debian-13")
+
+
 def provision_and_configure(product: Product) -> None:
     """
     Applies the salt state.highstate on dom0 and all VMs
     """
 
-    # HACK: Workaround for #1763 in which we disable the top file during RPM upgrade
-    # to workaround pre-1.8.1 updaters. This can be removed once we no longer support
-    # the old updater versions.
-    if product.contains_journalist:
-        run_cmd(["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"])
-    if product.contains_admin:
-        run_cmd(["sudo", "qubesctl", "top.enable", "admin_salt.sd-admin"])
-
     provision("Provisioning Fedora-based system VMs", "securedrop_shared.sd-sys-vms")
+
     if product.contains_journalist:
-        # This is provisioned + configured ahead of time because the kernel needs to be
-        # installed, otherwise the descendant templates can't boot
-        provision("Provisioning base template", "securedrop_salt.sd-base-template")
-        configure("Configuring base template", ["sd-base-debian-13"])
+        pre_provision_journalist()
+    if product.contains_admin:
+        pre_provision_admin()
 
     provision_all()
     configure(
@@ -242,21 +275,10 @@ def provision_and_configure(product: Product) -> None:
         [q.name for q in Qubes().domains if "sd-workstation" in q.tags],
     )
 
-    sync_appmenus(product)
-
     if product.contains_journalist:
-        if "sd-fedora-43-dvm" in Qubes().domains:
-            # If sd-fedora-43-dvm exists it's because salt determined that sys-usb was disposable
-            configure(
-                "Add SecureDrop export device handling to sys-usb (disposable)",
-                ["sd-fedora-43-dvm"],
-                restart=["sys-usb"],
-            )
-        else:
-            configure(
-                "Add SecureDrop export device handling to sys-usb (non-disposable)",
-                ["sys-usb"],
-            )
+        post_provision_journalist()
+    if product.contains_admin:
+        post_provision_admin()
 
 
 def run_cmd(args: list[str]) -> None:
@@ -433,7 +455,7 @@ def qubesctl_call(step_description: str, args: list[str]) -> None:
         raise SDWAdminException(f"Error in step {step_description}")
 
 
-def sync_appmenus(product: Product) -> None:
+def sync_appmenus(vm_name: str) -> None:
     """
     Sync appmenus now that all packages are installed
     TODO: this should be done by salt or debs, but we do it manually here because it's
@@ -441,24 +463,9 @@ def sync_appmenus(product: Product) -> None:
     n.b. none of the sd-inbox-based VMs are shown in the menu on prod,
     but nice to have it synced.
     """
-
-    if product.contains_journalist:
-        run_cmd(["qvm-start", "--skip-if-running", "sd-inbox-debian-13"])
-        run_cmd(["qvm-sync-appmenus", "sd-inbox-debian-13"])
-        run_cmd(["qvm-shutdown", "sd-inbox-debian-13"])
-
-        run_cmd(["qvm-start", "--skip-if-running", "sd-viewer-debian-13"])
-        run_cmd(["qvm-sync-appmenus", "sd-viewer-debian-13"])
-        run_cmd(["qvm-shutdown", "sd-viewer-debian-13"])
-
-        # These are the ones we show in prod VMs, so sync explicitly
-        run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-devices"])
-        run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-log"])
-
-    if product.contains_admin:
-        run_cmd(["qvm-start", "--skip-if-running", "sd-admin-debian-13"])
-        run_cmd(["qvm-sync-appmenus", "sd-admin-debian-13"])
-        run_cmd(["qvm-shutdown", "sd-admin-debian-13"])
+    run_cmd(["qvm-start", "--skip-if-running", vm_name])
+    run_cmd(["qvm-sync-appmenus", vm_name])
+    run_cmd(["qvm-shutdown", vm_name])
 
 
 def validate_config(path: Path, product: Product) -> None:
