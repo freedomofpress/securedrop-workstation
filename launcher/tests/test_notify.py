@@ -9,6 +9,7 @@ import pytest
 from sdw_notify import Notify
 from sdw_updater import Updater
 from sdw_util import Util
+from securedrop_manage.products import Product
 
 # Regex for warning log if the last-updated timestamp does not exist (updater
 # has never run)
@@ -245,71 +246,66 @@ def test_for_conflicting_process(
             assert not mocked_error.called
 
 
-@pytest.mark.parametrize(
-    ("os_release_fixture", "version_contains"),
-    [
-        ("os-release-qubes-4.1", "4.1"),
-        ("os-release-ubuntu", None),
-        ("no-such-file", None),
-    ],
-)
-@mock.patch("sdw_util.Util.OS_RELEASE_FILE", FIXTURES_PATH / "os-release-qubes-4.1")
-def test_is_sdapp_halted_yes(os_release_fixture, version_contains):
-    """
-    When sd-app state is 'Halted'
-    Then `Notify.is_sdapp_halted()` should return True
-    """
-    output = bytes(
-        "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
-        f"    Halted    AppVM   yellow     sd-inbox-debian-{DEBIAN_VERSION}\n",
-        "utf-8",
-    )
-
-    with mock.patch("subprocess.check_output") as patched_subprocess_check:
-        patched_subprocess_check.return_value = output
-        assert Notify.is_sdapp_halted()
+def qvm_ls_output(vm: str, state: str) -> bytes:
+    return (
+        "NAME     STATE     CLASS     LABEL     TEMPLATE\n"
+        f"{vm}    {state}    AppVM   yellow     {vm}-debian-{DEBIAN_VERSION}\n"
+    ).encode()
 
 
 @pytest.mark.parametrize(
-    ("os_release_fixture", "version_contains"),
+    ("product", "states", "expected"),
     [
-        ("os-release-qubes-4.1", "4.1"),
-        ("os-release-ubuntu", None),
-        ("no-such-file", None),
+        (Product.JOURNALIST, {"sd-app": "Halted"}, True),
+        (Product.JOURNALIST, {"sd-app": "Running"}, False),
+        (Product.JOURNALIST, {"sd-app": "Paused"}, False),
+        (Product.ADMIN, {"sd-admin": "Halted"}, True),
+        (Product.ADMIN, {"sd-admin": "Running"}, False),
+        (Product.ALL, {"sd-app": "Halted", "sd-admin": "Halted"}, True),
+        (Product.ALL, {"sd-app": "Running", "sd-admin": "Halted"}, False),
+        (Product.ALL, {"sd-app": "Halted", "sd-admin": "Running"}, False),
     ],
 )
 @mock.patch("sdw_util.Util.OS_RELEASE_FILE", FIXTURES_PATH / "os-release-qubes-4.1")
-def test_is_sdapp_halted_no(os_release_fixture, version_contains):
+def test_are_session_vms_halted(product, states, expected):
     """
-    When sd-app is not Halted (i.e. Running, Pasued)
-    Then Notify.is_sdapp_halted() should return False
+    When the VMs for the installed product(s) are all halted
+    Then `Notify.are_session_vms_halted()` should return True
+    When any of them is in another state
+    Then it should return False
+     And only the VMs for the installed product(s) should be checked
     """
-    output = bytes(
-        "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
-        f"    Paused    AppVM   yellow     sd-inbox-debian-{DEBIAN_VERSION}\n",
-        "utf-8",
-    )
+    with (
+        mock.patch("sdw_notify.Notify.get_installed_product", return_value=product),
+        mock.patch(
+            "subprocess.check_output", side_effect=lambda cmd: qvm_ls_output(cmd[1], states[cmd[1]])
+        ) as mocked_output,
+    ):
+        assert Notify.are_session_vms_halted() is expected
+    checked = [c.args[0][1] for c in mocked_output.call_args_list]
+    assert set(checked) <= set(states)
+    if expected:
+        assert checked == list(states)
 
-    with mock.patch("subprocess.check_output") as patched_subprocess:
-        patched_subprocess.return_value = output
-        assert not Notify.is_sdapp_halted()
 
-
-@pytest.mark.parametrize(
-    ("os_release_fixture", "version_contains"),
-    [
-        ("os-release-qubes-4.1", "4.1"),
-        ("os-release-ubuntu", None),
-        ("no-such-file", None),
-    ],
-)
 @mock.patch("sdw_util.Util.OS_RELEASE_FILE", FIXTURES_PATH / "os-release-qubes-4.1")
+@mock.patch("sdw_notify.Notify.get_installed_product", return_value=Product.ALL)
 @mock.patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"))
-def test_is_sdapp_halted_error(patched_subprocess, os_release_fixture, version_contains):
+def test_are_session_vms_halted_error(patched_subprocess, patched_product):
     """
-    When the sd-app status check encounters an error
-    Then the call to Notify.is_sdapp_halted() should still complete
+    When the VM status check encounters an error
+    Then the call to Notify.are_session_vms_halted() should still complete
      And the method should return False
     """
+    assert not Notify.are_session_vms_halted()
 
-    assert not Notify.is_sdapp_halted()
+
+@mock.patch("sdw_util.Util.OS_RELEASE_FILE", FIXTURES_PATH / "os-release-ubuntu")
+@mock.patch("subprocess.check_output")
+def test_are_session_vms_halted_not_qubes(patched_subprocess):
+    """
+    When not running on Qubes
+    Then Notify.are_session_vms_halted() should return False without running qvm-ls
+    """
+    assert not Notify.are_session_vms_halted()
+    assert not patched_subprocess.called
