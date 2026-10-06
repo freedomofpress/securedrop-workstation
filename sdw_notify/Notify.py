@@ -3,7 +3,10 @@ Utility library for warning the user that security updates have not been applied
 in some time.
 """
 
+import fcntl
 import os
+import subprocess
+from collections.abc import Iterable
 from datetime import datetime
 
 from sdw_util import Util
@@ -108,3 +111,66 @@ def get_uptime_seconds() -> float:
     # Obtain current uptime
     with open("/proc/uptime") as f:
         return float(f.readline().split()[0])
+
+
+def can_obtain_lock(basename: str) -> bool:
+    """
+    We temporarily obtain a shared, nonblocking lock to a lockfile to determine
+    whether the associated process is currently running. Returns True if it is
+    safe to continue execution (no lock conflict), False if not.
+
+    `basename` is the basename of a lockfile situated in Util.LOCK_DIRECTORY.
+    """
+    lock_file = os.path.join(Util.LOCK_DIRECTORY, basename)
+    try:
+        lh = open(lock_file)  # noqa: SIM115
+    except FileNotFoundError:
+        # Process may not have run during this session, safe to continue
+        return True
+
+    try:
+        # Obtain a nonblocking, shared lock
+        fcntl.lockf(lh, fcntl.LOCK_SH | fcntl.LOCK_NB)
+    except OSError:
+        sdlog.error(Util.LOCK_ERROR.format(lock_file))
+        return False
+
+    return True
+
+
+def is_conflicting_process_running(names: Iterable[str]) -> bool:
+    """
+    Check if any process of the given name is currently running. Aborts on the
+    first match.
+    """
+    for name in names:
+        result = subprocess.run(
+            args=["pgrep", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False
+        )
+        if result.returncode == 0:
+            sdlog.error(f"Conflicting process '{name}' is currently running.")
+            return True
+    return False
+
+
+def is_sdapp_halted() -> bool:
+    """
+    Helper fuction that returns True if `sd-app` VM is in a halted state
+    and False if state is running, paused, or cannot be determined.
+
+    Runs only if Qubes environment detected; otherwise returns False.
+    """
+
+    if not Util.get_qubes_version():
+        sdlog.error("QubesOS not detected, is_sdapp_halted will return False")
+        return False
+
+    try:
+        output_bytes = subprocess.check_output(["qvm-ls", "sd-app"])
+        output_str = output_bytes.decode("utf-8")
+        return "Halted" in output_str
+
+    except subprocess.CalledProcessError as e:
+        sdlog.error("Failed to return sd-app VM status via qvm-ls")
+        sdlog.error(str(e))
+        return False
