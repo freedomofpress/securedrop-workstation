@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import threading
 import time
@@ -84,6 +85,17 @@ def _get_current_templates() -> set[str]:
     return templates
 
 
+def cleanup_for_log(text: str) -> str:
+    """
+    Aesthetics-only formatting of log lines for text files:
+        - removes ANSI formatting
+
+    NOTE: this should not be assumed as a security hardening measure; input
+    should already be sanitized.
+    """
+    return re.sub(r"\u001b\[.*?[@-~]", "", text)
+
+
 def get_dom0_path(folder: str) -> str:
     return os.path.join(os.path.expanduser("~"), folder)
 
@@ -101,11 +113,11 @@ def run_full_install() -> UpdateStatus:
     except subprocess.CalledProcessError as e:
         sdlog.error(f"Failed to apply full system state. Please review {DETAIL_LOG_FILE}.")
         sdlog.error(str(e))
-        clean_output = Util.cleanup_for_log(e.output.decode("utf-8").strip())
+        clean_output = cleanup_for_log(e.output.decode("utf-8").strip())
         detail_log.error(f"Output from failed command: {apply_cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_FAILED
 
-    clean_output = Util.cleanup_for_log(output.decode("utf-8").strip())
+    clean_output = cleanup_for_log(output.decode("utf-8").strip())
     detail_log.info(f"Output from command: {apply_cmd_for_log}\n{clean_output}")
 
     # Clean up flag requesting migration. Shell out since root created it.
@@ -219,7 +231,7 @@ def _qubes_updater_parse_stdout(stream: IO[str]) -> None:
             # Reached EOF
             break
 
-        line = Util.cleanup_for_log(line).rstrip()
+        line = cleanup_for_log(line).rstrip()
         detail_log.info(f"[Qubes updater] {line}")
 
 
@@ -241,7 +253,7 @@ def _qubes_updater_parse_progress(
             # Reached EOF
             break
 
-        line = Util.cleanup_for_log(line).rstrip()
+        line = cleanup_for_log(line).rstrip()
         try:
             vm, status, info = line.split()
         except ValueError:
@@ -450,13 +462,13 @@ def enable_dom0_state() -> UpdateStatus:
     try:
         output = subprocess.check_output(cmd)
         sdlog.info("dom0 top file enabled")
-        clean_output = Util.cleanup_for_log(output.decode("utf-8").strip())
+        clean_output = cleanup_for_log(output.decode("utf-8").strip())
         detail_log.info(f"Output from command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_OK
     except subprocess.CalledProcessError as e:
         sdlog.error(f"Failed to enable dom0 top file. See {DETAIL_LOG_FILE} for details.")
         sdlog.error(str(e))
-        clean_output = Util.cleanup_for_log(e.output.decode("utf-8").strip())
+        clean_output = cleanup_for_log(e.output.decode("utf-8").strip())
         detail_log.error(f"Output from failed command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_FAILED
 
@@ -474,13 +486,13 @@ def apply_dom0_state() -> UpdateStatus:
     try:
         output = subprocess.check_output(cmd)
         sdlog.info("Dom0 state applied")
-        clean_output = Util.cleanup_for_log(output.decode("utf-8").strip())
+        clean_output = cleanup_for_log(output.decode("utf-8").strip())
         detail_log.info(f"Output from command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_OK
     except subprocess.CalledProcessError as e:
         sdlog.error(f"Failed to apply dom0 state. See {DETAIL_LOG_FILE} for details.")
         sdlog.error(str(e))
-        clean_output = Util.cleanup_for_log(e.output.decode("utf-8").strip())
+        clean_output = cleanup_for_log(e.output.decode("utf-8").strip())
         detail_log.error(f"Output from failed command: {cmd_for_log}\n{clean_output}")
         return UpdateStatus.UPDATES_FAILED
 

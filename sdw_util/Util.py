@@ -5,9 +5,6 @@ Utility functions used by both the updater and notifier scripts
 import fcntl
 import logging
 import os
-import re
-import subprocess
-from collections.abc import Iterable
 from logging.handlers import TimedRotatingFileHandler
 from typing import IO
 
@@ -85,46 +82,6 @@ def obtain_lock(basename: str) -> IO[str] | None:
     return lh
 
 
-def can_obtain_lock(basename: str) -> bool:
-    """
-    We temporarily obtain a shared, nonblocking lock to a lockfile to determine
-    whether the associated process is currently running. Returns True if it is
-    safe to continue execution (no lock conflict), False if not.
-
-    `basename` is the basename of a lockfile situated in the LOCK_DIRECTORY.
-    """
-    lock_file = os.path.join(LOCK_DIRECTORY, basename)
-    try:
-        lh = open(lock_file)
-    except FileNotFoundError:
-        # Process may not have run during this session, safe to continue
-        return True
-
-    try:
-        # Obtain a nonblocking, shared lock
-        fcntl.lockf(lh, fcntl.LOCK_SH | fcntl.LOCK_NB)
-    except OSError:
-        sdlog.error(LOCK_ERROR.format(lock_file))
-        return False
-
-    return True
-
-
-def is_conflicting_process_running(names: Iterable[str]) -> bool:
-    """
-    Check if any process of the given name is currently running. Aborts on the
-    first match.
-    """
-    for name in names:
-        result = subprocess.run(
-            args=["pgrep", name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False
-        )
-        if result.returncode == 0:
-            sdlog.error(f"Conflicting process '{name}' is currently running.")
-            return True
-    return False
-
-
 def get_qubes_version() -> str | None:
     """
     Helper function for checking the Qubes version. Returns None if not on Qubes.
@@ -157,37 +114,3 @@ def get_logger(prefix: str = SD_LOGGER_PREFIX, module: str | None = None) -> log
         return logging.getLogger(prefix)
 
     return logging.getLogger(prefix + "." + module)
-
-
-def cleanup_for_log(text: str) -> str:
-    """
-    Aesthetics-only formatting of log lines for text files:
-        - removes ANSI formatting
-
-    NOTE: this should not be assumed as a security hardening measure; input
-    should already be sanitized.
-    """
-    return re.sub(r"\u001b\[.*?[@-~]", "", text)
-
-
-def is_sdapp_halted() -> bool:
-    """
-    Helper fuction that returns True if `sd-app` VM is in a halted state
-    and False if state is running, paused, or cannot be determined.
-
-    Runs only if Qubes environment detected; otherwise returns False.
-    """
-
-    if not get_qubes_version():
-        sdlog.error("QubesOS not detected, is_sdapp_halted will return False")
-        return False
-
-    try:
-        output_bytes = subprocess.check_output(["qvm-ls", "sd-app"])
-        output_str = output_bytes.decode("utf-8")
-        return "Halted" in output_str
-
-    except subprocess.CalledProcessError as e:
-        sdlog.error("Failed to return sd-app VM status via qvm-ls")
-        sdlog.error(str(e))
-        return False

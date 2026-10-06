@@ -24,11 +24,11 @@ def main() -> None:
     system has not been updated for a specified period
     """
 
-    if Util.is_conflicting_process_running(Notify.CONFLICTING_PROCESSES):
+    if Notify.is_conflicting_process_running(Notify.CONFLICTING_PROCESSES):
         # Conflicting system process may be running in dom0. Logged.
         sys.exit(1)
 
-    if Util.can_obtain_lock(Updater.LOCK_FILE) is False:
+    if Notify.can_obtain_lock(Updater.LOCK_FILE) is False:
         # Preflight updater is already running. Logged.
         sys.exit(1)
 
@@ -57,7 +57,7 @@ def show_update_warning() -> None:
     """
 
     app = QApplication([])
-    dialog = NotifyApp.NotifyDialog(Util.is_sdapp_halted())
+    dialog = NotifyApp.NotifyDialog(Notify.is_sdapp_halted())
     result = dialog.run()
 
     # Check results of Notify Dialog and launch the Preflight Updater if user
