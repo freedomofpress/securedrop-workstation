@@ -217,19 +217,10 @@ def copy_admin_config() -> None:
 
 
 def pre_provision_journalist() -> None:
-    # HACK: Workaround for #1763 in which we disable the top file during RPM upgrade
-    # to workaround pre-1.8.1 updaters. This can be removed once we no longer support
-    # the old updater versions.
-    run_cmd(["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"])
-
     # This is provisioned + configured ahead of time because the kernel needs to be
     # installed, otherwise the descendant templates can't boot
     provision("Provisioning base template", "securedrop_salt.sd-base-template")
     configure("Configuring base template", ["sd-base-debian-13"])
-
-
-def pre_provision_admin() -> None:
-    run_cmd(["sudo", "qubesctl", "top.enable", "admin_salt.sd-admin"])
 
 
 def post_provision_journalist() -> None:
@@ -266,8 +257,6 @@ def provision_and_configure(product: Product) -> None:
 
     if product.contains_journalist:
         pre_provision_journalist()
-    if product.contains_admin:
-        pre_provision_admin()
 
     provision_all()
     configure(
