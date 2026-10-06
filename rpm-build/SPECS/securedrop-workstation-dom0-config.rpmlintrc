@@ -14,9 +14,6 @@ addFilter(r"non-conffile-in-etc /etc/systemd/logind.conf.d/")
 # don't care about man pages
 addFilter(r"no-manual-page-for-binary")
 
-# TODO: can we de-dupe these?
-addFilter(r"files-duplicate /usr/share/securedrop/icons/sd-logo.png")
-
 # we build in place from a git checkout, so there's nothing to unpack, and the
 # test suite runs outside of rpmbuild
 addFilter(r"no-%prep-section")
@@ -26,4 +23,4 @@ addFilter(r"no-%check-section")
 addFilter(r"dangling-relative-symlink /usr/bin/sdw-admin securedrop-manage")
 
 # rpmlint cannot track binaries provided by a required subpackage
-addFilter(r"desktopfile-without-binary /usr/share/applications/press.freedom.SecureDropUpdater.desktop sdw-updater")
+addFilter(r"desktopfile-without-binary /usr/share/applications/press\.freedom\.SecureDrop\w+\.desktop sdw-updater")
