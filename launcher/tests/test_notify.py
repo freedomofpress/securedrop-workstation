@@ -1,11 +1,14 @@
 import datetime
 import re
+import subprocess
+from pathlib import Path
 from unittest import mock
 
 import pytest
 
 from sdw_notify import Notify
 from sdw_updater import Updater
+from sdw_util import Util
 
 # Regex for warning log if the last-updated timestamp does not exist (updater
 # has never run)
@@ -31,6 +34,16 @@ NO_WARNING_REGEX = (
 
 # Regex for bad contents in `sdw-last-updated` file
 BAD_TIMESTAMP_REGEX = r"Data in .* not in the expected format."
+
+# Regex for lock conflicts
+BUSY_LOCK_REGEX = r"Error obtaining lock on '.*'."
+
+CONFLICTING_PROCESS_REGEX = r"Conflicting process .* is currently running."
+
+# Fixtures (sample files) for certain tests
+FIXTURES_PATH = Path(__file__).parent / "fixtures"
+
+DEBIAN_VERSION = 13
 
 
 @mock.patch("sdw_notify.Notify.sdlog.error")
@@ -148,3 +161,155 @@ def test_uptime_is_sane():
     seconds = Notify.get_uptime_seconds()
     assert isinstance(seconds, float)
     assert seconds > 0
+
+
+@mock.patch("sdw_notify.Notify.sdlog.error")
+@mock.patch("sdw_notify.Notify.sdlog.warning")
+@mock.patch("sdw_notify.Notify.sdlog.info")
+def test_cannot_obtain_shared_lock_when_busy(mocked_info, mocked_warning, mocked_error, tmp_path):
+    """
+    Test whether an exlusive lock on a lock file is successfully detected
+    by means of attempting to obtain a shared, nonexclusive lock on the same
+    file.
+
+    In the preflight updater / notifier, this is used to prevent the notification
+    from being displayed when the preflight updater is already open.
+    """
+    with mock.patch("sdw_util.Util.LOCK_DIRECTORY", tmp_path):
+        basename = "test-conflict.lock"
+        Util.obtain_lock(basename)
+
+        # We're running in the same process, so obtaining a lock will succeed.
+        # Instead we're mocking the IOError lockf would raise.
+        with mock.patch("fcntl.lockf", side_effect=OSError()) as mocked_lockf:
+            can_get_lock = Notify.can_obtain_lock(basename)
+            mocked_lockf.assert_called_once()
+            assert can_get_lock is False
+            error_string = mocked_error.call_args[0][0]
+            assert re.search(BUSY_LOCK_REGEX, error_string) is not None
+
+
+@mock.patch("sdw_notify.Notify.sdlog.error")
+@mock.patch("sdw_notify.Notify.sdlog.warning")
+@mock.patch("sdw_notify.Notify.sdlog.info")
+def test_no_lockfile_no_problems(mocked_info, mocked_warning, mocked_error, tmp_path):
+    """
+    Test whether our shared lock test succeeds even when there's no lockfile
+    (which means the process has not run recently, or ever, and it's safe to
+    run the potentially conflicting process).
+    """
+    with mock.patch("sdw_util.Util.LOCK_DIRECTORY", tmp_path):
+        lock_result = Notify.can_obtain_lock("404.lock")
+        assert lock_result is True
+
+
+@mock.patch("sdw_notify.Notify.sdlog.error")
+@mock.patch("sdw_notify.Notify.sdlog.warning")
+@mock.patch("sdw_notify.Notify.sdlog.info")
+def test_stale_lockfile_has_no_effect(mocked_info, mocked_warning, mocked_error, tmp_path):
+    """
+    Test whether we can get a shared lock when a lockfile exists, but nobody
+    is accessing it.
+    """
+    with mock.patch("sdw_util.Util.LOCK_DIRECTORY", tmp_path):
+        # Because we're not assigning the return value, it will be immediately released
+        basename = "test-stale.lock"
+        Util.obtain_lock(basename)
+        lock_result = Notify.can_obtain_lock(basename)
+        assert lock_result is True
+
+
+@pytest.mark.parametrize(("return_code", "expected_result"), [(0, True), (1, False)])
+@mock.patch("sdw_notify.Notify.sdlog.error")
+@mock.patch("sdw_notify.Notify.sdlog.warning")
+@mock.patch("sdw_notify.Notify.sdlog.info")
+def test_for_conflicting_process(
+    mocked_info, mocked_warning, mocked_error, return_code, expected_result
+):
+    """
+    Test whether we can successfully detect conflicting processes.
+    """
+    # We mock the pgrep call itself, which means we _won't_ detect behavior
+    # changes at that level.
+    completed_process = subprocess.CompletedProcess(args=[], returncode=return_code)
+    with mock.patch("subprocess.run", return_value=completed_process) as mocked_run:
+        running_process = Notify.is_conflicting_process_running(["cowsay"])
+        mocked_run.assert_called_once()
+        if expected_result is True:
+            assert running_process is True
+            mocked_error.assert_called_once()
+            error_string = mocked_error.call_args[0][0]
+            assert re.search(CONFLICTING_PROCESS_REGEX, error_string) is not None
+        else:
+            assert running_process is False
+            assert not mocked_error.called
+
+
+@pytest.mark.parametrize(
+    ("os_release_fixture", "version_contains"),
+    [
+        ("os-release-qubes-4.1", "4.1"),
+        ("os-release-ubuntu", None),
+        ("no-such-file", None),
+    ],
+)
+@mock.patch("sdw_util.Util.OS_RELEASE_FILE", FIXTURES_PATH / "os-release-qubes-4.1")
+def test_is_sdapp_halted_yes(os_release_fixture, version_contains):
+    """
+    When sd-app state is 'Halted'
+    Then `Notify.is_sdapp_halted()` should return True
+    """
+    output = bytes(
+        "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
+        f"    Halted    AppVM   yellow     sd-inbox-debian-{DEBIAN_VERSION}\n",
+        "utf-8",
+    )
+
+    with mock.patch("subprocess.check_output") as patched_subprocess_check:
+        patched_subprocess_check.return_value = output
+        assert Notify.is_sdapp_halted()
+
+
+@pytest.mark.parametrize(
+    ("os_release_fixture", "version_contains"),
+    [
+        ("os-release-qubes-4.1", "4.1"),
+        ("os-release-ubuntu", None),
+        ("no-such-file", None),
+    ],
+)
+@mock.patch("sdw_util.Util.OS_RELEASE_FILE", FIXTURES_PATH / "os-release-qubes-4.1")
+def test_is_sdapp_halted_no(os_release_fixture, version_contains):
+    """
+    When sd-app is not Halted (i.e. Running, Pasued)
+    Then Notify.is_sdapp_halted() should return False
+    """
+    output = bytes(
+        "NAME     STATE     CLASS     LABEL     TEMPLATE\nsd-app"
+        f"    Paused    AppVM   yellow     sd-inbox-debian-{DEBIAN_VERSION}\n",
+        "utf-8",
+    )
+
+    with mock.patch("subprocess.check_output") as patched_subprocess:
+        patched_subprocess.return_value = output
+        assert not Notify.is_sdapp_halted()
+
+
+@pytest.mark.parametrize(
+    ("os_release_fixture", "version_contains"),
+    [
+        ("os-release-qubes-4.1", "4.1"),
+        ("os-release-ubuntu", None),
+        ("no-such-file", None),
+    ],
+)
+@mock.patch("sdw_util.Util.OS_RELEASE_FILE", FIXTURES_PATH / "os-release-qubes-4.1")
+@mock.patch("subprocess.check_output", side_effect=subprocess.CalledProcessError(1, "check_output"))
+def test_is_sdapp_halted_error(patched_subprocess, os_release_fixture, version_contains):
+    """
+    When the sd-app status check encounters an error
+    Then the call to Notify.is_sdapp_halted() should still complete
+     And the method should return False
+    """
+
+    assert not Notify.is_sdapp_halted()
