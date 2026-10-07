@@ -219,6 +219,7 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 # Update Salt Configuration
 qubesctl saltutil.clear_cache -l quiet --out quiet > /dev/null || true
 qubesctl saltutil.sync_all refresh=true -l quiet --out quiet > /dev/null || true
+qubesctl top.enable securedrop_salt.sd-workstation > /dev/null ||:
 
 # Enable service that conditionally removes our systemd-logind customizations
 # on dev machines only.
@@ -251,8 +252,9 @@ fi
 %triggerun -- %{name} < 1.8.0
 mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/debian-13-bump
-# Disable top to workaround a bug in the 1.8.0 upgrade; sdw-admin will re-enable it
-qubesctl top.disable securedrop_salt.sd-workstation
+
+%post -n securedrop-admin-dom0-config
+qubesctl top.enable admin_salt.sd-admin > /dev/null ||:
 
 %preun -n securedrop-admin-dom0-config
 # If we're uninstalling (vs upgrading)
