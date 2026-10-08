@@ -10,11 +10,31 @@ import sys
 import tempfile
 from pathlib import Path
 
+from qubesadmin import Qubes
+from qubesadmin.exc import QubesException
+from qubesadmin.vm import QubesVM
+
+from securedrop_manage.products import get_installed_product
+
 # XDG_CONFIG_HOME is not set in 4.3 Qubes - set it manually
 CONFIG_DIR = Path.home() / ".config/securedrop-manage"
 SECRET_KEY_PATH = CONFIG_DIR / "sd-journalist.sec"
 PUBLIC_KEY_PATH = CONFIG_DIR / "sd-journalist.pub"
 CONFIG_PATH = CONFIG_DIR / "config.json"
+
+# Configurations in 'sd-admin' qube
+PUBLIC_KEY_PATH_SD_ADMIN = "~/.config/securedrop-admin/SecureDrop.asc"
+
+# ANSI color codes
+BOLD = "\033[1m"
+CYAN = "\033[36m"
+RED = "\033[31m"
+ITALIC = "\033[3m"
+RESET = "\033[0m"
+
+
+class SubmissionKeyException(Exception):
+    pass
 
 
 def generate_key(organization: str) -> tuple[str, str, str]:
@@ -113,8 +133,63 @@ def generate_submission_key(args: argparse.Namespace) -> None:
     print(f"Public key is saved to: {PUBLIC_KEY_PATH}")
 
 
+def copy_file_to_qube(
+    local_path: str | Path,
+    target_qube: QubesVM,
+    target_path: str | Path,
+    overwrite: bool,
+    sudo: bool = False,
+) -> None:
+    # Check if file overriding allowed
+    try:
+        target_qube.run(f"test ! -e {target_path}")
+
+    except subprocess.CalledProcessError as e:
+        if not overwrite:
+            raise SubmissionKeyException(
+                f"a submission key already exists in '{target_qube.name}' at "
+                f"{target_path}. Use --overwrite to overwrite it.",
+            ) from e
+
+    try:
+        kwargs = {"user": "root"} if sudo else {}
+        with open(local_path, "rb") as pub_key_f:
+            target_qube.run(f"tee {target_path}", input=pub_key_f.read(), **kwargs)
+    except subprocess.CalledProcessError:
+        raise SubmissionKeyException(f"Failed to save '{local_path}' in qube '{target_qube.name}'")
+
+
+def export_submission_pub_key_to_admin(args: argparse.Namespace) -> None:
+    print("Updating public key in sd-admin qube...")
+    try:
+        sd_admin_qube = Qubes().domains["sd-admin"]
+    except QubesException:
+        raise SubmissionKeyException("'sd-admin' qube not found!")
+
+    copy_file_to_qube(
+        local_path=PUBLIC_KEY_PATH,
+        target_qube=sd_admin_qube,
+        target_path=PUBLIC_KEY_PATH_SD_ADMIN,
+        overwrite=args.overwrite,
+    )
+
+    print("Public key succesfully exported to 'sd-admin' qube!\n")
+    print(
+        f"  {BOLD}{RED}NOTE:{RESET} Please follow the procedures in 'sd-admin' to propagate\n"
+        "  these changes to other local configuration files and to the server.\n"
+    )
+
+
 def export_submission_pub_key(args: argparse.Namespace) -> None:
-    pass
+    installed_product = get_installed_product()
+    if not installed_product.contains_admin:
+        raise NotImplementedError(
+            "Can't export submission public key without Admin Workstation installed"
+        )
+    else:
+        export_submission_pub_key_to_admin(args)
+
+    # TODO update site-settings w/ filename + fingerprint
 
 
 def main() -> None:
@@ -123,6 +198,7 @@ def main() -> None:
 
     # Key generation
     generate = subparsers.add_parser("generate", help="Generate a new Submission Key")
+    generate.set_defaults(run=generate_submission_key)
     generate.add_argument("organization", help="Name of your organization")
     generate.add_argument(
         "--overwrite",
@@ -131,13 +207,20 @@ def main() -> None:
     )
 
     # Key exporting
-    subparsers.add_parser("export", help="Export the Submission Key (public key only)")
+    export = subparsers.add_parser("export", help="Export the Submission Key (public key only)")
+    export.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite an existing Submission Key",
+    )
+    export.set_defaults(run=export_submission_pub_key)
 
     args = parser.parse_args()
-    if args.command == "generate":
-        generate_submission_key(args)
-    elif args.command == "export":
-        export_submission_pub_key(args)
+
+    try:
+        args.run(args)
+    except SubmissionKeyException as e:
+        sys.exit(f"Error: {e}")
 
 
 if __name__ == "__main__":
