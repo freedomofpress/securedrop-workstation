@@ -533,7 +533,8 @@ def perform_uninstall(product: Product) -> None:
         )
         print("Destroying all journalist VMs")
         provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-unused-qubes")
-        destroy_all_tagged(tag="sd-journalist")
+        with suppress_preloaded_disposables():
+            destroy_all_tagged(tag="sd-journalist")
         print("Reverting dom0 configuration")
         subprocess.check_call(["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-all"])
         packages.append("securedrop-workstation-dom0-config")
