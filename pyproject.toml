@@ -132,8 +132,6 @@ exclude = [
     "\\.venv/",
     # Duplicate Python files from the RPM build process
     "rpm-build/",
-    # Symlinks to sdw_updater/, sdw_notify/, sdw_util/, which are already checked.
-    "launcher/",
     # TODO: add type annotations to the launcher tests and remove this exclusion
     "tests/launcher/",
 ]
