@@ -194,18 +194,6 @@ endif
 test-uninstall: test-prereqs ## Checks that uninstall left no SDW state
 	pytest -v -m "uninstall" tests/test_dom0_uninstall.py
 
-test-base: test-prereqs ## Runs tests for VMs layout
-	pytest -v tests/test_vms_exist.py
-
-test-app: test-prereqs ## Runs tests for SD APP VM config
-	pytest -v tests/test_app.py
-
-test-proxy: test-prereqs ## Runs tests for SD Proxy VM
-	pytest -v tests/test_proxy_vm.py
-
-test-gpg: test-prereqs ## Runs tests for SD GPG functionality
-	pytest -v tests/test_gpg.py
-
 # Client autologin variables
 XDOTOOL_PATH=$(shell command -v xdotool)
 OATHTOOL_PATH=$(shell command -v oathtool)
