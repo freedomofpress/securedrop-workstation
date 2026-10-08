@@ -9,6 +9,7 @@ import qubesadmin
 from qubesadmin.app import VMCollection
 from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
+import securedrop_manage
 from securedrop_manage import main as manage
 from tests.base import SD_TAG
 
@@ -307,18 +308,18 @@ def test_legacy_config_is_migrated(tmp_path: Path) -> None:
 
 
 def test_get_installed_product(tmp_path: Path) -> None:
-    with pytest.raises(manage.SDWAdminException):
+    with pytest.raises(securedrop_manage.exc.SDWAdminException):
         # nothing installed in our tmp_path yet
-        manage.get_installed_product(tmp_path)
+        securedrop_manage.products.get_installed_product(tmp_path)
 
     (tmp_path / "admin-workstation.json").write_text("{}")
-    assert manage.get_installed_product(tmp_path) is manage.Product.ADMIN
+    assert securedrop_manage.products.get_installed_product(tmp_path) is manage.Product.ADMIN
 
     (tmp_path / "journalist-workstation.json").write_text("{}")
-    assert manage.get_installed_product(tmp_path) is manage.Product.ALL
+    assert securedrop_manage.products.get_installed_product(tmp_path) is manage.Product.ALL
 
     (tmp_path / "admin-workstation.json").unlink()
-    assert manage.get_installed_product(tmp_path) is manage.Product.JOURNALIST
+    assert securedrop_manage.products.get_installed_product(tmp_path) is manage.Product.JOURNALIST
 
 
 @pytest.mark.parametrize(
