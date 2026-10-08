@@ -87,16 +87,7 @@ def write_private(path: Path, contents: str) -> None:
     path.write_text(contents)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate a new Submission Key")
-    parser.add_argument("organization", help="Name of your organization")
-    parser.add_argument(
-        "--overwrite",
-        action="store_true",
-        help="Overwrite an existing Submission Key",
-    )
-    args = parser.parse_args()
-
+def generate_submission_key(args: argparse.Namespace) -> None:
     if SECRET_KEY_PATH.exists() and not args.overwrite:
         print(
             f"Error: a submission key already exists at {SECRET_KEY_PATH}. "
@@ -120,6 +111,33 @@ def main() -> None:
     print(f"Generated Submission Key with fingerprint: {fingerprint}")
     print(f"Secret key is saved to: {SECRET_KEY_PATH}")
     print(f"Public key is saved to: {PUBLIC_KEY_PATH}")
+
+
+def export_submission_pub_key(args: argparse.Namespace) -> None:
+    pass
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Manage SecureDrop Submission Key")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # Key generation
+    generate = subparsers.add_parser("generate", help="Generate a new Submission Key")
+    generate.add_argument("organization", help="Name of your organization")
+    generate.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite an existing Submission Key",
+    )
+
+    # Key exporting
+    subparsers.add_parser("export", help="Export the Submission Key (public key only)")
+
+    args = parser.parse_args()
+    if args.command == "generate":
+        generate_submission_key(args)
+    elif args.command == "export":
+        export_submission_pub_key(args)
 
 
 if __name__ == "__main__":
