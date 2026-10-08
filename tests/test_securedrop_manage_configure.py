@@ -9,8 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from securedrop_manage import configure
-from securedrop_manage.common import Product
+from securedrop_manage import Product, configure
 from securedrop_manage.validate import validate_config
 
 FAKE_JI_ADDRESS = "sdwfaketestonionaddressforintegrationtests22222222222222"
@@ -165,7 +164,7 @@ def test_import_journalist_interface_config(
         ]
     )
 
-    configure.import_workstation_config()
+    configure.import_journalist_config()
 
     # The submission key was fetched off the Secure Viewing Station drive
     imported_key = config_path / "sd-journalist.sec"
@@ -205,7 +204,7 @@ def test_import_config_keeps_existing_submission_key(
 
     answer_prompts(["y", "y", str(SD_APP_GB), str(SD_LOG_GB)])
 
-    configure.import_workstation_config()
+    configure.import_journalist_config()
 
     assert existing_key.read_bytes() == (proj_root / "sd-journalist.sec").read_bytes()
     config = json.loads((config_path / "config.json").read_text())
@@ -225,6 +224,6 @@ def test_import_config_aborts_without_confirmation(
 
     answer_prompts(["n"])
 
-    configure.import_workstation_config()
+    configure.import_journalist_config()
 
     assert list(config_path.iterdir()) == []

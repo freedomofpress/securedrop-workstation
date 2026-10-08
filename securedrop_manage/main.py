@@ -19,7 +19,7 @@ from typing import Literal
 from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
-from securedrop_manage.common import (
+from securedrop_manage import (
     CONFIG_FILENAME,
     CONFIG_PATH,
     LEGACY_CONFIG_PATH,
@@ -181,7 +181,7 @@ def copy_admin_config() -> None:
             check=True,
         )
     except subprocess.CalledProcessError:
-        raise SDWAdminException("Error copying admin configuration")
+        raise ManageException("Error copying admin configuration")
 
 
 def pre_provision_journalist() -> None:
@@ -593,7 +593,7 @@ def main() -> None:  # noqa: PLR0912
                 validate_config(CONFIG_PATH, Product.JOURNALIST)
                 print("Valid configuration found, configuration complete")
             except ManageException:
-                import_workstation_config()
+                import_journalist_config()
         if args.product.contains_admin:
             validate_config(CONFIG_PATH, Product.ADMIN)
             import_admin_config()

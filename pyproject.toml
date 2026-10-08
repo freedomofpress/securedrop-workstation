@@ -26,7 +26,6 @@ python-systemd = "^0.0.9"
 semgrep = "^1.161.0"
 pytest-mock = "^3.15.1"
 shellcheck-py = "^0.11.0.1"
-types-pyyaml = "^6.0.12.20260906"
 
 [tool.poetry.group.system-package-equivalents.dependencies]
 # In production these are installed as a system package so match the

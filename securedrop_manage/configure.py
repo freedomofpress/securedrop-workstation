@@ -3,10 +3,11 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
+from shlex import quote
 
 from qubesadmin import Qubes
 
-from securedrop_manage.common import (
+from securedrop_manage import (
     CONFIG_FILENAME,
     CONFIG_PATH,
     SUBMISSION_KEY_FILENAME,
@@ -23,7 +24,6 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
     TAILS_PATH / "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
 TAILS_SSH_PATH = TAILS_PATH / "openssh-client/"
-TAILS_SSH_KEYS = ("id_rsa", "id_rsa.pub")
 
 SD_ADMIN_VM = "sd-admin"
 SD_ADMIN_CONFIG_PATH = "/home/user/.config/securedrop-admin"
@@ -198,7 +198,7 @@ def import_journalist_interface_config() -> tuple[str, str]:
     return addr, auth_token
 
 
-def import_workstation_config() -> None:
+def import_journalist_config() -> None:
     submission_key_fingerprint = _try_read_submission_key()
     if not submission_key_fingerprint:
         subprocess.Popen(
@@ -271,16 +271,6 @@ def import_workstation_config() -> None:
             print("Exiting.")
             return
 
-        # Configure private volume sizes. Validator requires int; cast user input.
-        sd_app_input = input(
-            f"Enter desired size for sd-app private volume in GiB (default: {DEFAULT_SD_APP_GB}GiB)"
-        )
-        sd_app_gb = int(sd_app_input) if sd_app_input else DEFAULT_SD_APP_GB
-        sd_log_input = input(
-            f"Enter desired size for sd-log private volume in GiB (default: {DEFAULT_SD_LOG_GB}GiB)"
-        )
-        sd_log_gb = int(sd_log_input) if sd_log_input else DEFAULT_SD_LOG_GB
-
         config = {
             "submission_key_fpr": submission_key_fingerprint,
             "hidserv": {
@@ -288,7 +278,7 @@ def import_workstation_config() -> None:
                 "key": ji_auth_token,
             },
             "environment": "prod",
-            "vmsizes": {"sd_app": sd_app_gb, "sd_log": sd_log_gb},
+            "vmsizes": {"sd_app": DEFAULT_SD_APP_GB, "sd_log": DEFAULT_SD_LOG_GB},
         }
         temp_file = f"/tmp/{CONFIG_FILENAME}"
         with open(temp_file, "w") as f:
@@ -315,36 +305,46 @@ def _check_in_qube(vm: str, command: str) -> bool:
     return result.returncode == 0
 
 
-def _qvm_copy_to_sd_admin(sources: list[Path]) -> None:
-    """
-    Runs qvm-copy in vault, temporarily allowing Filecopy into sd-admin
-    """
-    # Use Qubes runtime policy to temporarily allow Filecopy into sd-admin from vault
-    policy = RUNTIME_POLICY_PATH / FILECOPY_POLICY_FILENAME
-    policy.write_text(f"qubes.Filecopy * vault @default allow target={SD_ADMIN_VM}\n")
-    try:
-        if not _check_in_qube("vault", shlex.join(["qvm-copy", *map(str, sources)])):
-            raise ManageException(f"Error copying securedrop-admin configuration to {SD_ADMIN_VM}")
-    finally:
-        policy.unlink(missing_ok=True)
-
-
 def copy_admin_config() -> list[str]:
     """
     Copies the securedrop-admin configuration and SSH keys from the Tails USB in vault to
     sd-admin. Returns the names of the files now in sd-admin's config directory.
     """
-    q = shlex.quote
-    config, ssh = q(SD_ADMIN_CONFIG_PATH), q(SD_ADMIN_SSH_PATH)
-    incoming_config = q(f"{SD_ADMIN_INCOMING_PATH}/{TAILS_ADMIN_CONFIG_PATH.name}")
-    private_key, public_key = (q(f"{SD_ADMIN_INCOMING_PATH}/{key}") for key in TAILS_SSH_KEYS)
+    config = quote(SD_ADMIN_CONFIG_PATH)
+    ssh = quote(SD_ADMIN_SSH_PATH)
+    incoming_config = quote(f"{SD_ADMIN_INCOMING_PATH}/{TAILS_ADMIN_CONFIG_PATH.name}")
+
+    private_key = quote(f"{SD_ADMIN_INCOMING_PATH}/id_rsa")
+    public_key = quote(f"{SD_ADMIN_INCOMING_PATH}/id_rsa.pub")
     cleanup = f"rm -rf {incoming_config} {private_key} {public_key}"
 
     _check_in_qube(SD_ADMIN_VM, cleanup)
     try:
-        _qvm_copy_to_sd_admin(
-            [TAILS_ADMIN_CONFIG_PATH, *(TAILS_SSH_PATH / key for key in TAILS_SSH_KEYS)]
-        )
+        # Use Qubes runtime policy to temporarily allow Filecopy into sd-admin from vault
+        policy = RUNTIME_POLICY_PATH / FILECOPY_POLICY_FILENAME
+        policy.write_text("qubes.Filecopy * vault sd-admin allow\n")
+        # Copy over config directory and SSH keys
+        try:
+            subprocess.check_output(
+                [
+                    "qvm-run",
+                    "vault",
+                    "qvm-copy",
+                    shlex.join(
+                        [
+                            str(TAILS_ADMIN_CONFIG_PATH),
+                            f"{TAILS_SSH_PATH}/id_rsa",
+                            f"{TAILS_SSH_PATH}/id_rsa.pub",
+                        ]
+                    ),
+                ]
+            )
+        except subprocess.CalledProcessError as e:
+            raise ManageException(
+                f"Error copying securedrop-admin configuration from vault to {SD_ADMIN_VM}: {e}"
+            )
+        # Update copied files: move into correct directory, set permissions, and set the
+        # site-specific config_path
         install = [
             f"{SET_SITE_SPECIFIC} --file {incoming_config}/site-specific config_path {config}",
             f"mkdir -p -m 700 {ssh}",
@@ -359,11 +359,12 @@ def copy_admin_config() -> list[str]:
             files = subprocess.check_output(
                 ["qvm-run", "--pass-io", SD_ADMIN_VM, " && ".join(install)], text=True
             )
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
             raise ManageException(
-                f"Error installing securedrop-admin configuration in {SD_ADMIN_VM}"
+                f"Error installing securedrop-admin configuration in {SD_ADMIN_VM}: {e}"
             )
     finally:
+        policy.unlink(missing_ok=True)
         _check_in_qube(SD_ADMIN_VM, cleanup)
     return files.split()
 
@@ -381,7 +382,7 @@ def import_admin_config() -> None:
     existing = [
         path
         for path in (SD_ADMIN_CONFIG_PATH, f"{SD_ADMIN_SSH_PATH}/id_rsa")
-        if _check_in_qube(SD_ADMIN_VM, f"stat {shlex.quote(path)} > /dev/null")
+        if _check_in_qube(SD_ADMIN_VM, f"stat {quote(path)} > /dev/null")
     ]
     if existing:
         print(f"{SD_ADMIN_VM} already has securedrop-admin configuration in {', '.join(existing)}")
@@ -412,7 +413,7 @@ def import_admin_config() -> None:
         return
 
     print("Importing Admin Workstation configuration...")
-    tails_config = shlex.quote(str(TAILS_ADMIN_CONFIG_PATH))
+    tails_config = quote(str(TAILS_ADMIN_CONFIG_PATH))
     # TODO(vicki): automatically handle the migration from git-based installer
     if not _check_in_qube("vault", f"test -d {tails_config}"):
         raise ManageException(
@@ -426,10 +427,10 @@ def import_admin_config() -> None:
             f"No site-specific file found in {TAILS_ADMIN_CONFIG_PATH}.\n"
             "This looks like a Journalist Workstation USB; attach an Admin Workstation USB instead."
         )
-    ssh_keys = " ".join(shlex.quote(str(TAILS_SSH_PATH / key)) for key in TAILS_SSH_KEYS)
+    ssh_keys = f"{TAILS_SSH_PATH}/id_rsa {TAILS_SSH_PATH}/id_rsa.pub"
     if not _check_in_qube("vault", f"stat {ssh_keys} > /dev/null"):
         raise ManageException(
-            f"No SSH keys ({', '.join(TAILS_SSH_KEYS)}) found in {TAILS_SSH_PATH}.\n"
+            f"No SSH keys found in {TAILS_SSH_PATH}.\n"
             "Check that SSH Client persistence is enabled on the Admin Workstation USB."
         )
 
@@ -438,7 +439,7 @@ def import_admin_config() -> None:
     print(
         f"Admin Workstation configuration imported into {SD_ADMIN_VM}:\n"
         + "".join(f"  - {name}\n" for name in files)
-        + f"SSH keys ({', '.join(TAILS_SSH_KEYS)}) imported into {SD_ADMIN_SSH_PATH}.\n"
+        + f"SSH keys imported into {SD_ADMIN_SSH_PATH}.\n"
         + "\nPlease detach and disconnect the USB drive.\n\n"
         f"Next, open a terminal in {SD_ADMIN_VM} and run:\n\n"
         "  securedrop-admin qubesconfig\n\n"

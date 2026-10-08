@@ -13,7 +13,7 @@ from typing import Any
 
 from qubesadmin import Qubes
 
-from securedrop_manage.common import (
+from securedrop_manage import (
     CONFIG_FILENAME,
     SUBMISSION_KEY_FILENAME,
     ManageException,
