@@ -11,6 +11,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from collections.abc import Callable, Iterator
 from contextlib import ContextDecorator, contextmanager
 from enum import Enum
@@ -500,6 +501,26 @@ def refresh_salt() -> None:
         raise SDWAdminException("Error while synchronizing Salt")
 
 
+def wait_for_dispvm_switch() -> None:
+    """
+    Wait for preloaded disposables based on sd-viewer to go away after we switched default_dispvm
+    but before we try to remove individual VMs.
+    """
+    deadline = time.monotonic() + 120
+    while True:
+        preloaded = [
+            vm.name for vm in Qubes().domains if "sd-journalist" in vm.tags and not is_managed(vm)
+        ]
+        if not preloaded:
+            return
+        if time.monotonic() >= deadline:
+            raise SDWAdminException(
+                f"Timed out waiting for preloaded disposables to be removed: {', '.join(preloaded)}"
+            )
+        print(f"Waiting for preloaded disposables to be removed: {', '.join(preloaded)}")
+        time.sleep(5)
+
+
 def destroy_all_tagged(tag: str) -> None:
     """
     Destroys all VMs marked with the specified tag, in the following order:
@@ -531,6 +552,7 @@ def perform_uninstall(product: Product) -> None:
         subprocess.check_call(
             ["sudo", "qubesctl", "state.sls", "securedrop_salt.sd-clean-default-dispvm"]
         )
+        wait_for_dispvm_switch()
         print("Destroying all journalist VMs")
         provision("Removing unused SDW qubes", "securedrop_salt.sd-remove-unused-qubes")
         destroy_all_tagged(tag="sd-journalist")
