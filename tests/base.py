@@ -34,7 +34,7 @@ CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
 CURRENT_WHONIX_VERSION = "17"
 
 
-# Lifted from launcher/sdw_util/Util.py
+# Lifted from sdw_util/Util.py
 def get_qubes_version() -> str | None:
     """
     Helper function for checking the Qubes version. Returns None if not on Qubes.
