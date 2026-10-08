@@ -10,11 +10,24 @@ import sys
 import tempfile
 from pathlib import Path
 
+from securedrop_manage.exc import SDWAdminException
+from securedrop_manage.products import get_installed_product
+
 # XDG_CONFIG_HOME is not set in 4.3 Qubes - set it manually
 CONFIG_DIR = Path.home() / ".config/securedrop-manage"
 SECRET_KEY_PATH = CONFIG_DIR / "sd-journalist.sec"
 PUBLIC_KEY_PATH = CONFIG_DIR / "sd-journalist.pub"
 CONFIG_PATH = CONFIG_DIR / "config.json"
+
+# Configurations in 'sd-admin' qube
+PUBLIC_KEY_PATH_SD_ADMIN = "~/.config/securedrop-admin/SecureDrop.asc"
+
+# ANSI color codes
+BOLD = "\033[1m"
+CYAN = "\033[36m"
+RED = "\033[31m"
+ITALIC = "\033[3m"
+RESET = "\033[0m"
 
 
 def generate_key(organization: str) -> tuple[str, str, str]:
@@ -113,8 +126,52 @@ def generate_submission_key(args: argparse.Namespace) -> None:
     print(f"Public key is saved to: {PUBLIC_KEY_PATH}")
 
 
+def export_submission_pub_key_to_admin(args: argparse.Namespace) -> None:
+    print("Updating public key sd-admin qube...")
+    try:
+        sd_admin_has_pub_key = (
+            subprocess.run(
+                ["qvm-run", "sd-admin", f"test -e {PUBLIC_KEY_PATH_SD_ADMIN}"],
+                stderr=subprocess.DEVNULL,
+                check=False,
+            ).returncode
+            != 0
+        )
+
+        if sd_admin_has_pub_key and not args.overwrite:
+            raise SDWAdminException(
+                "Error: a submission key already exists in 'sd-admin' at"
+                f"{PUBLIC_KEY_PATH_SD_ADMIN}. Use --overwrite to overwrite it.",
+            )
+
+        with open(PUBLIC_KEY_PATH, "rb") as pub_key_f:
+            subprocess.run(
+                ["qvm-run", "sd-admin", f"cat > {PUBLIC_KEY_PATH_SD_ADMIN}"],
+                check=True,
+                stdin=pub_key_f,
+                stderr=subprocess.DEVNULL,  # Suppress output: "Running [cmd] in [qube]"
+            )
+
+    except subprocess.CalledProcessError:
+        raise SDWAdminException("Failed to update public submission key in 'sd-admin'")
+
+    print("Public key succesfully exported to 'sd-admin' qube!\n")
+    print(
+        f"  {BOLD}{RED}NOTE:{RESET} Please follow the procedures in 'sd-admin' to propagate\n"
+        "  these changes to other local configuration files and to the server.\n"
+    )
+
+
 def export_submission_pub_key(args: argparse.Namespace) -> None:
-    pass
+    installed_product = get_installed_product()
+    if not installed_product.contains_admin:
+        raise NotImplementedError(
+            "Can't export submission public key without Admin Workstation installed"
+        )
+    else:
+        export_submission_pub_key_to_admin(args)
+
+    # TODO update site-settings w/ filename + fingerprint
 
 
 def main() -> None:
@@ -123,6 +180,7 @@ def main() -> None:
 
     # Key generation
     generate = subparsers.add_parser("generate", help="Generate a new Submission Key")
+    generate.set_defaults(run=generate_submission_key)
     generate.add_argument("organization", help="Name of your organization")
     generate.add_argument(
         "--overwrite",
@@ -131,13 +189,20 @@ def main() -> None:
     )
 
     # Key exporting
-    subparsers.add_parser("export", help="Export the Submission Key (public key only)")
+    export = subparsers.add_parser("export", help="Export the Submission Key (public key only)")
+    export.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite an existing Submission Key",
+    )
+    export.set_defaults(run=export_submission_pub_key)
 
     args = parser.parse_args()
-    if args.command == "generate":
-        generate_submission_key(args)
-    elif args.command == "export":
-        export_submission_pub_key(args)
+
+    try:
+        args.run(args)
+    except SDWAdminException as e:
+        sys.exit(f"Error: {e}")
 
 
 if __name__ == "__main__":
