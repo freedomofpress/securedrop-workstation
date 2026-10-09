@@ -28,14 +28,14 @@ class NotifyDialog(QMessageBox):
     Shows notification advising user that they have not checked for updates
     recently, and offering option to check now or defer the check.
 
-    Constructor takes a boolean parameter, `is_sdapp_stopped`, which determines
+    Constructor takes a boolean parameter, `are_vms_halted`, which determines
     whether a longer error message indicating the updater's impact on a
-    currently-running inbox session will be shown.
+    currently-running session will be shown.
     """
 
-    def __init__(self, is_sdapp_stopped: bool):
+    def __init__(self, are_vms_halted: bool):
         super().__init__()
-        self._is_sdapp_stopped = is_sdapp_stopped
+        self._are_vms_halted = are_vms_halted
         self._ui()
 
     def _ui(self) -> None:
@@ -51,10 +51,10 @@ class NotifyDialog(QMessageBox):
         assert button_defer is not None  # noqa: S101
         button_defer.setText(strings.button_defer_check)
 
-        if self._is_sdapp_stopped:
+        if self._are_vms_halted:
             self.setText(strings.description_notify_updates)
         else:
-            self.setText(strings.description_notify_updates_sdapp_running)
+            self.setText(strings.description_notify_updates_vms_running)
 
     def run(self) -> NotifyStatus:
         """
