@@ -9,6 +9,7 @@ import qubesadmin
 from qubesadmin.app import VMCollection
 from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
+from securedrop_manage import configure
 from securedrop_manage import main as manage
 from tests.base import SD_TAG
 
@@ -356,3 +357,276 @@ def test_parse_args_target_invalid(
     monkeypatch.setattr("sys.argv", ["securedrop-manage", *argv])
     with pytest.raises(SystemExit):
         manage.parse_args()
+
+
+@pytest.fixture
+def fake_qubes(tmp_path: Path, mocker: Any, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
+    """
+    Stand in for vault and sd-admin with local directories: a fake qvm-run on PATH runs
+    the command locally, and the paths on both ends point into tmp_path.
+    """
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    qvm_run = bin_dir / "qvm-run"
+    # qvm-run [--pass-io] <vm> <command>...
+    qvm_run.write_text(
+        '#!/bin/sh\nwhile [ "${1#-}" != "$1" ]; do shift; done\nshift\nexec sh -c "$*"\n'
+    )
+    qvm_run.chmod(0o755)
+    # shipped in sd-admin by securedrop-admin-qubes; record how it's called
+    set_site_specific = bin_dir / configure.SET_SITE_SPECIFIC
+    set_site_specific_log = tmp_path / "set-site-specific.log"
+    set_site_specific.write_text(f'#!/bin/sh\necho "$@" >> "{set_site_specific_log}"\n')
+    set_site_specific.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+
+    usb = tmp_path / "TailsData/securedrop-admin"
+    usb_ssh = tmp_path / "TailsData/openssh-client"
+    sd_admin = tmp_path / "sd-admin/.config/securedrop-admin"
+    sd_admin_ssh = tmp_path / "sd-admin/.ssh"
+    staging = tmp_path / "sd-admin/.securedrop-admin-import"
+    usb.mkdir(parents=True)
+    usb_ssh.mkdir()
+    (usb_ssh / "id_rsa").write_text("private\n")
+    (usb_ssh / "id_rsa.pub").write_text("public\n")
+    sd_admin.parent.mkdir(parents=True)
+    mocker.patch.object(configure, "TAILS_ADMIN_CONFIG_PATH", usb)
+    mocker.patch.object(configure, "TAILS_SSH_PATH", usb_ssh)
+    mocker.patch.object(configure, "SD_ADMIN_CONFIG_PATH", str(sd_admin))
+    mocker.patch.object(configure, "SD_ADMIN_SSH_PATH", str(sd_admin_ssh))
+    mocker.patch.object(configure, "SD_ADMIN_STAGING_PATH", str(staging))
+    mocker.patch.object(configure, "Qubes").return_value.domains = [configure.SD_ADMIN_VM, "vault"]
+    return {
+        "usb": usb,
+        "usb_ssh": usb_ssh,
+        "sd_admin": sd_admin,
+        "sd_admin_ssh": sd_admin_ssh,
+        "staging": staging,
+        "set_site_specific": set_site_specific,
+        "set_site_specific_log": set_site_specific_log,
+    }
+
+
+def _start_vault_is_skipped(mocker: Any) -> None:
+    # qvm-start vault is fire-and-forget; don't try to run it
+    real_popen = configure.subprocess.Popen
+
+    def popen(args: list[str], **kwargs: Any) -> Any:
+        if args[0] == "qvm-start":
+            return mocker.Mock()
+        return real_popen(args, **kwargs)
+
+    mocker.patch.object(configure.subprocess, "Popen", side_effect=popen)
+
+
+class TestConfigureAdmin:
+    @pytest.fixture(autouse=True)
+    def _admin_installed(self, mocker: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        mocker.patch.object(manage.os, "geteuid", return_value=1000)
+        mocker.patch.object(manage, "get_installed_product", return_value=manage.Product.ADMIN)
+        monkeypatch.setattr("sys.argv", ["securedrop-manage", "--configure"])
+
+    def test_validates_before_import(self, mocker: Any) -> None:
+        calls = mocker.Mock()
+        mocker.patch.object(manage, "validate_config", calls.validate_config)
+        mocker.patch.object(manage, "import_admin_config", calls.import_admin_config)
+
+        manage.main()
+
+        assert calls.mock_calls == [
+            mocker.call.validate_config(manage.CONFIG_PATH, manage.Product.ADMIN),
+            mocker.call.import_admin_config(),
+        ]
+
+    def test_invalid_config_skips_import(self, mocker: Any) -> None:
+        mocker.patch.object(
+            manage, "validate_config", side_effect=manage.ManageException("invalid")
+        )
+        import_admin_config = mocker.patch.object(manage, "import_admin_config")
+
+        with pytest.raises(manage.ManageException):
+            manage.main()
+        import_admin_config.assert_not_called()
+
+
+class TestImportAdminConfig:
+    def test_copies_config_into_sd_admin(self, fake_qubes: dict[str, Path], mocker: Any) -> None:
+        _start_vault_is_skipped(mocker)
+        usb = fake_qubes["usb"]
+        (usb / "site-specific").write_text("app_hostname: app\n")
+        (usb / "app-journalist.auth_private").write_text("abc:descriptor:x25519:key\n")
+        (usb / "app-journalist.auth_private").chmod(0o644)
+        mocker.patch("builtins.input", return_value="y")
+
+        configure.import_admin_config()
+
+        sd_admin = fake_qubes["sd_admin"]
+        assert sorted(p.name for p in sd_admin.iterdir()) == [
+            "app-journalist.auth_private",
+            "site-specific",
+        ]
+        assert (sd_admin / "site-specific").read_text() == "app_hostname: app\n"
+        assert sd_admin.stat().st_mode & 0o777 == 0o700
+        for path in sd_admin.iterdir():
+            assert path.stat().st_mode & 0o777 == 0o600
+
+        ssh = fake_qubes["sd_admin_ssh"]
+        assert ssh.stat().st_mode & 0o777 == 0o700
+        assert (ssh / "id_rsa").read_text() == "private\n"
+        assert (ssh / "id_rsa").stat().st_mode & 0o777 == 0o600
+        assert (ssh / "id_rsa.pub").read_text() == "public\n"
+        assert (ssh / "id_rsa.pub").stat().st_mode & 0o777 == 0o644
+
+        assert not fake_qubes["staging"].exists()
+
+    def test_copies_only_files(self, fake_qubes: dict[str, Path]) -> None:
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+        (fake_qubes["usb"] / "subdir").mkdir()
+
+        assert configure.copy_admin_config() == ["site-specific"]
+
+    def test_replaces_leftover_staging(self, fake_qubes: dict[str, Path]) -> None:
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+        leftover = fake_qubes["staging"] / "config"
+        leftover.mkdir(parents=True)
+        (leftover / "stale").write_text("stale\n")
+
+        assert configure.copy_admin_config() == ["site-specific"]
+
+    def test_removes_staging_on_exception(self, fake_qubes: dict[str, Path], mocker: Any) -> None:
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+
+        def pipe_file(source: str, destination: str) -> None:
+            assert fake_qubes["staging"].exists()
+            raise KeyboardInterrupt
+
+        mocker.patch.object(configure, "_pipe_admin_file", side_effect=pipe_file)
+
+        with pytest.raises(KeyboardInterrupt):
+            configure.copy_admin_config()
+        assert not fake_qubes["staging"].exists()
+
+    def test_rejects_missing_ssh_keys(self, fake_qubes: dict[str, Path], mocker: Any) -> None:
+        _start_vault_is_skipped(mocker)
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+        (fake_qubes["usb_ssh"] / "id_rsa").unlink()
+        mocker.patch("builtins.input", return_value="y")
+        copy = mocker.patch.object(configure, "copy_admin_config")
+
+        with pytest.raises(manage.ManageException, match="No SSH keys"):
+            configure.import_admin_config()
+        copy.assert_not_called()
+
+    def test_sets_config_path(self, fake_qubes: dict[str, Path]) -> None:
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+
+        configure.copy_admin_config()
+
+        staged_site_specific = fake_qubes["staging"] / "config/site-specific"
+        assert fake_qubes["set_site_specific_log"].read_text() == (
+            f"--file {staged_site_specific} config_path {fake_qubes['sd_admin']}\n"
+        )
+
+    def test_skips_config_path_without_set_site_specific(
+        self, fake_qubes: dict[str, Path], capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+        # older securedrop-admin-qubes without the script
+        fake_qubes["set_site_specific"].unlink()
+
+        assert configure.copy_admin_config() == ["site-specific"]
+
+        assert (fake_qubes["sd_admin"] / "site-specific").read_text() == "app_hostname: app\n"
+        assert not fake_qubes["set_site_specific_log"].exists()
+        assert "not updating config_path" in capsys.readouterr().out
+
+    def test_requires_sd_admin(self, fake_qubes: dict[str, Path], mocker: Any) -> None:
+        mocker.patch.object(configure, "Qubes").return_value.domains = ["vault"]
+        with pytest.raises(manage.ManageException, match="does not exist"):
+            configure.import_admin_config()
+
+    def test_rejects_journalist_usb(self, fake_qubes: dict[str, Path], mocker: Any) -> None:
+        _start_vault_is_skipped(mocker)
+        (fake_qubes["usb"] / "app-journalist.auth_private").write_text("abc\n")
+        mocker.patch("builtins.input", return_value="y")
+        copy = mocker.patch.object(configure, "copy_admin_config")
+
+        with pytest.raises(manage.ManageException, match="Journalist Workstation USB"):
+            configure.import_admin_config()
+        copy.assert_not_called()
+
+    def test_rejects_locked_usb(self, fake_qubes: dict[str, Path], mocker: Any) -> None:
+        _start_vault_is_skipped(mocker)
+        fake_qubes["usb"].rmdir()
+        mocker.patch("builtins.input", return_value="y")
+
+        with pytest.raises(manage.ManageException, match="No securedrop-admin configuration"):
+            configure.import_admin_config()
+
+    def test_keeps_existing_config_unless_confirmed(
+        self, fake_qubes: dict[str, Path], mocker: Any
+    ) -> None:
+        fake_qubes["sd_admin"].mkdir()
+        (fake_qubes["sd_admin"] / "site-specific").write_text("existing\n")
+        mocker.patch("builtins.input", return_value="n")
+        copy = mocker.patch.object(configure, "copy_admin_config")
+
+        configure.import_admin_config()
+
+        copy.assert_not_called()
+        assert (fake_qubes["sd_admin"] / "site-specific").read_text() == "existing\n"
+
+    def test_keeps_existing_ssh_key_unless_confirmed(
+        self, fake_qubes: dict[str, Path], mocker: Any
+    ) -> None:
+        fake_qubes["sd_admin_ssh"].mkdir()
+        (fake_qubes["sd_admin_ssh"] / "id_rsa").write_text("existing\n")
+        mocker.patch("builtins.input", return_value="n")
+        copy = mocker.patch.object(configure, "copy_admin_config")
+
+        configure.import_admin_config()
+
+        copy.assert_not_called()
+
+    def test_failed_transfer_leaves_existing_config(
+        self, fake_qubes: dict[str, Path], mocker: Any
+    ) -> None:
+        fake_qubes["sd_admin"].mkdir()
+        (fake_qubes["sd_admin"] / "site-specific").write_text("existing\n")
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+        # reading the last file fails on the vault end, after the others were copied
+        (fake_qubes["usb_ssh"] / "id_rsa.pub").unlink()
+
+        with pytest.raises(manage.ManageException, match="Error copying"):
+            configure.copy_admin_config()
+
+        assert (fake_qubes["sd_admin"] / "site-specific").read_text() == "existing\n"
+        assert not fake_qubes["sd_admin_ssh"].exists()
+        assert not fake_qubes["staging"].exists()
+
+    def test_failed_listing_leaves_existing_config(
+        self, fake_qubes: dict[str, Path], mocker: Any
+    ) -> None:
+        fake_qubes["sd_admin"].mkdir()
+        (fake_qubes["sd_admin"] / "site-specific").write_text("existing\n")
+        mocker.patch.object(configure, "TAILS_ADMIN_CONFIG_PATH", fake_qubes["usb"] / "missing")
+
+        with pytest.raises(manage.ManageException, match="Error listing"):
+            configure.copy_admin_config()
+
+        assert (fake_qubes["sd_admin"] / "site-specific").read_text() == "existing\n"
+        assert not fake_qubes["staging"].exists()
+
+    def test_failed_install_leaves_existing_config(self, fake_qubes: dict[str, Path]) -> None:
+        fake_qubes["sd_admin"].mkdir()
+        (fake_qubes["sd_admin"] / "site-specific").write_text("existing\n")
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+        # securedrop-set-site-specific fails on the sd-admin end
+        fake_qubes["set_site_specific"].write_text("#!/bin/sh\nexit 1\n")
+
+        with pytest.raises(manage.ManageException, match="Error installing"):
+            configure.copy_admin_config()
+
+        assert (fake_qubes["sd_admin"] / "site-specific").read_text() == "existing\n"
+        assert not fake_qubes["sd_admin_ssh"].exists()
+        assert not fake_qubes["staging"].exists()
