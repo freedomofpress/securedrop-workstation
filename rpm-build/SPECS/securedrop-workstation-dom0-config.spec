@@ -162,7 +162,6 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 # Copied into place by securedrop-manage at provisioning time
 %ghost %attr(0644, root, root) /srv/salt/securedrop_salt/config.json
 %ghost %attr(0644, root, root) /srv/salt/securedrop_salt/sd-journalist.sec
-%attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-notify
 %attr(755, root, root) %{_bindir}/securedrop-generate-submission-key
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
@@ -209,6 +208,7 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 
 %files -n securedrop-dom0-manager
 %attr(755, root, root) %{_bindir}/securedrop-manage
+%attr(755, root, root) %{_bindir}/sdw-login
 %attr(755, root, root) %{_bindir}/sdw-updater
 %{python3_sitelib}/securedrop_manage/*.py
 %{python3_sitelib}/sdw_updater/*.py
