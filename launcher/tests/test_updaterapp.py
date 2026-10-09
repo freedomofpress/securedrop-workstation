@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QApplication
 
 from sdw_updater import UpdaterApp, strings
 from sdw_updater.Updater import UpdateStatus, overall_update_status
+from securedrop_manage.products import Product
 
 TEST_TARGET = UpdaterApp.LaunchTarget(name="Test App", vm="test-vm", desktop="org.example.TestApp")
 
@@ -249,6 +250,67 @@ def test_updater_app_continue_launches_target(mocked_launch):
 
     updater_app_dialog.inboxOpenButton.click()
     mocked_launch.assert_called_once_with(TEST_TARGET)
+
+
+def test_updater_app_no_target_introduction():
+    """
+    When the updater is started without a launch target
+    Then the introduction should refer to the Workstation
+    """
+    updater_app_dialog = UpdaterApp.UpdaterApp(launch_target=None)
+    assert "You cannot use the Workstation" in updater_app_dialog.proposedActionDescription.text()
+
+
+@mock.patch("sdw_updater.UpdaterApp.launch_in_vm")
+def test_updater_app_no_target_continue_exits(mocked_launch):
+    """
+    When updates complete successfully without a launch target
+    Then the completion message should not mention launching anything
+     And continuing should exit without launching anything
+    """
+    updater_app_dialog = UpdaterApp.UpdaterApp(launch_target=None)
+    updater_app_dialog.upgrade_status({"recommended_action": UpdateStatus.UPDATES_OK})
+    assert updater_app_dialog.inboxOpenButton.isEnabled()
+    assert (
+        updater_app_dialog.proposedActionDescription.text()
+        == strings.description_status_updates_complete_no_target
+    )
+
+    with pytest.raises(SystemExit) as e:
+        updater_app_dialog.continue_to_target()
+    assert e.value.code == 0
+    assert not mocked_launch.called
+
+
+def test_updater_app_no_target_failure():
+    """
+    When updates fail without a launch target
+    Then the failure message should not mention an app that can't be started
+    """
+    updater_app_dialog = UpdaterApp.UpdaterApp(launch_target=None)
+    updater_app_dialog.upgrade_status({"recommended_action": UpdateStatus.UPDATES_FAILED})
+    assert (
+        updater_app_dialog.proposedActionDescription.text()
+        == strings.description_status_updates_failed_no_target
+    )
+
+
+@pytest.mark.parametrize(
+    ("product", "expected"),
+    [
+        (Product.JOURNALIST, UpdaterApp.InboxTarget),
+        (Product.ALL, UpdaterApp.InboxTarget),
+        (Product.ADMIN, None),
+    ],
+)
+def test_default_launch_target(product, expected):
+    """
+    When no launch target is specified
+    Then the Inbox should be launched if the Journalist Workstation is installed
+     And nothing should be launched otherwise
+    """
+    with mock.patch("sdw_updater.UpdaterApp.get_installed_product", return_value=product):
+        assert UpdaterApp.default_launch_target() == expected
 
 
 @mock.patch("sdw_updater.UpdaterApp.subprocess.Popen")

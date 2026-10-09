@@ -1,9 +1,11 @@
 import importlib.util
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
-from sdw_updater.UpdaterApp import LaunchTarget
+from sdw_updater.UpdaterApp import InboxTarget, LaunchTarget
+from securedrop_manage.products import Product
 
 # files/sdw-updater.py isn't a module (it has a hyphen), so load it by path
 _spec = importlib.util.spec_from_file_location(
@@ -24,6 +26,24 @@ def test_parse_argv_launch_target():
     assert args.launch_target == LaunchTarget(
         name="Test App", vm="test-vm", desktop="org.example.TestApp"
     )
+
+
+@pytest.mark.parametrize(
+    ("product", "expected"),
+    [
+        (Product.JOURNALIST, InboxTarget),
+        (Product.ALL, InboxTarget),
+        (Product.ADMIN, None),
+    ],
+)
+def test_parse_argv_default_launch_target(product, expected):
+    """
+    When no launch target arguments are passed
+    Then the default launch target for the installed product should be used
+    """
+    with mock.patch("sdw_updater.UpdaterApp.get_installed_product", return_value=product):
+        args = sdw_updater_cli.parse_argv([])
+    assert args.launch_target == expected
 
 
 @pytest.mark.parametrize(

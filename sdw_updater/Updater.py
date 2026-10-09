@@ -20,6 +20,7 @@ from enum import Enum
 from typing import IO, Any, TypeGuard
 
 from sdw_util import Util
+from securedrop_manage.products import get_installed_product
 
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 DEFAULT_HOME = ".securedrop_updater"
@@ -102,12 +103,12 @@ def get_dom0_path(folder: str) -> str:
 
 def run_full_install() -> UpdateStatus:
     """
-    Re-apply the entire Salt config via sdw-admin. Required to enforce
+    Re-apply the entire Salt config via securedrop-manage. Required to enforce
     VM state during major migrations, such as template consolidation.
     """
-    sdlog.info("Running 'sdw-admin --apply' to apply full system state")
-    apply_cmd = ["sdw-admin", "--apply"]
+    apply_cmd = ["securedrop-manage", "apply", "--target", "all"]
     apply_cmd_for_log = (" ").join(apply_cmd)
+    sdlog.info(f"Running '{apply_cmd_for_log}' to apply full system state")
     try:
         output = subprocess.check_output(apply_cmd)
     except subprocess.CalledProcessError as e:
@@ -135,7 +136,7 @@ def run_full_install() -> UpdateStatus:
 
 def migration_is_required() -> bool:
     """
-    Check whether a full run of the Salt config via sdw-admin is required.
+    Check whether a full run of the Salt config via securedrop-manage is required.
     """
     result = False
     if os.path.exists(MIGRATION_DIR) and len(os.listdir(MIGRATION_DIR)) > 0:
@@ -452,32 +453,43 @@ def overall_update_status(results: dict[str, UpdateStatus]) -> UpdateStatus:
 
 def enable_dom0_state() -> UpdateStatus:
     """
-    Ensure the salt top file is enabled; this is mostly to ensure that if for
-    whatever reason the pre-1.8.0 disable wasn't undone in sdw-admin, we're still
-    running those states
+    Ensure the salt top files for all installed products are enabled, so
+    their states are applied by apply_dom0_state().
+
+    Historically this was necessary for users upgrading from pre-1.8.0 as
+    we disabled the top file in %post to work around an updater bug.
     """
-    sdlog.info("Enabling dom0 top file")
-    cmd = ["sudo", "qubesctl", "top.enable", "securedrop_salt.sd-workstation"]
-    cmd_for_log = " ".join(cmd)
-    try:
-        output = subprocess.check_output(cmd)
-        sdlog.info("dom0 top file enabled")
-        clean_output = cleanup_for_log(output.decode("utf-8").strip())
-        detail_log.info(f"Output from command: {cmd_for_log}\n{clean_output}")
-        return UpdateStatus.UPDATES_OK
-    except subprocess.CalledProcessError as e:
-        sdlog.error(f"Failed to enable dom0 top file. See {DETAIL_LOG_FILE} for details.")
-        sdlog.error(str(e))
-        clean_output = cleanup_for_log(e.output.decode("utf-8").strip())
-        detail_log.error(f"Output from failed command: {cmd_for_log}\n{clean_output}")
-        return UpdateStatus.UPDATES_FAILED
+    product = get_installed_product()
+    tops = []
+    if product.contains_journalist:
+        tops.append("securedrop_salt.sd-workstation")
+    if product.contains_admin:
+        tops.append("admin_salt.sd-admin")
+
+    for top in tops:
+        sdlog.info(f"Enabling dom0 top file {top}")
+        cmd = ["sudo", "qubesctl", "top.enable", top]
+        cmd_for_log = " ".join(cmd)
+        try:
+            output = subprocess.check_output(cmd)
+            sdlog.info(f"dom0 top file {top} enabled")
+            clean_output = cleanup_for_log(output.decode("utf-8").strip())
+            detail_log.info(f"Output from command: {cmd_for_log}\n{clean_output}")
+        except subprocess.CalledProcessError as e:
+            sdlog.error(f"Failed to enable dom0 top file {top}. See {DETAIL_LOG_FILE} for details.")
+            sdlog.error(str(e))
+            clean_output = cleanup_for_log(e.output.decode("utf-8").strip())
+            detail_log.error(f"Output from failed command: {cmd_for_log}\n{clean_output}")
+            return UpdateStatus.UPDATES_FAILED
+
+    return UpdateStatus.UPDATES_OK
 
 
 def apply_dom0_state() -> UpdateStatus:
     """
     Applies the dom0 state to ensure dom0 and AppVMs are properly
     Configured. This will *not* enforce configuration inside the AppVMs.
-    Here, we call qubectl directly (instead of through sdw-admin) to
+    Here, we call qubectl directly (instead of through securedrop-manage) to
     ensure it is environment-specific.
     """
     sdlog.info("Applying dom0 state")
