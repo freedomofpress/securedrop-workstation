@@ -11,8 +11,8 @@ from securedrop_manage import (
     CONFIG_PATH,
     SUBMISSION_KEY_FILENAME,
     ManageException,
-    Product,
 )
+from securedrop_manage.products import Product
 from securedrop_manage.validate import validate_config
 
 TAILS_PATH = Path("/run/media/user/TailsData/")

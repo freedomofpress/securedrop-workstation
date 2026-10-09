@@ -17,9 +17,9 @@ from securedrop_manage import (
     CONFIG_FILENAME,
     SUBMISSION_KEY_FILENAME,
     ManageException,
-    Product,
 )
 from securedrop_manage.config_types import AdminConfig, Dom0Config, ValidationError
+from securedrop_manage.products import Product
 
 
 def validate_config(path: Path, product: Product) -> None:

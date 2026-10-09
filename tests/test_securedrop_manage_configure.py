@@ -9,7 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from securedrop_manage import Product, configure
+from securedrop_manage import configure
+from securedrop_manage.products import Product
 from securedrop_manage.validate import validate_config
 
 FAKE_JI_ADDRESS = "sdwfaketestonionaddressforintegrationtests22222222222222"
