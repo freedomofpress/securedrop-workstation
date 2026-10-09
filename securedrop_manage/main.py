@@ -13,7 +13,6 @@ import subprocess
 import sys
 from collections.abc import Callable, Iterator
 from contextlib import ContextDecorator, contextmanager
-from enum import Enum
 from pathlib import Path
 from typing import Literal
 
@@ -21,6 +20,7 @@ from qubesadmin import Qubes
 from qubesadmin.vm import QubesVM
 
 from securedrop_manage.config_types import ValidationError
+from securedrop_manage.products import Product, get_installed_product
 from securedrop_manage.validate import AdminConfigValidator, JournalistConfigValidator
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
@@ -34,7 +34,6 @@ SALT_PATH = Path("/srv/salt/securedrop_salt/")
 ADMIN_SALT_PATH = Path("/srv/salt/admin_salt/")
 CONFIG_PATH = Path.home() / ".config/securedrop-manage"
 LEGACY_CONFIG_PATH = Path("/usr/share/securedrop-workstation-dom0-config/")
-PRODUCTS_PATH = Path("/usr/share/securedrop/products/")
 
 DEBIAN_VERSION = "13"
 BASE_TEMPLATE = f"debian-{DEBIAN_VERSION}-minimal"
@@ -53,45 +52,6 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
 # disposables are disabled. Just that they don't get enabled on provisioning.
 # FIXME: https://github.com/freedomofpress/securedrop-workstation/issues/1523
 PILLAR_DISABLE_PRELOAD = {"qvm": {"dom0": {"preload": False}}}
-
-
-class Product(Enum):
-    JOURNALIST = "journalist"
-    ADMIN = "admin"
-    ALL = "all"
-
-    @property
-    def contains_journalist(self) -> bool:
-        return self in (Product.JOURNALIST, Product.ALL)
-
-    @property
-    def contains_admin(self) -> bool:
-        return self in (Product.ADMIN, Product.ALL)
-
-    def __str__(self) -> str:
-        """needed for nice --help output"""
-        return self.value
-
-    def as_text(self) -> str:
-        match self:
-            case Product.JOURNALIST:
-                return "Journalist Workstation"
-            case Product.ADMIN:
-                return "Admin Workstation"
-            case Product.ALL:
-                return "SecureDrop Workstation"
-
-
-def get_installed_product(products_path: Path = PRODUCTS_PATH) -> Product:
-    journalist = (products_path / "journalist-workstation.json").is_file()
-    admin = (products_path / "admin-workstation.json").is_file()
-    if journalist and admin:
-        return Product.ALL
-    if journalist:
-        return Product.JOURNALIST
-    if admin:
-        return Product.ADMIN
-    raise SDWAdminException(f"No SecureDrop products are installed (checked {products_path})")
 
 
 def parse_args() -> argparse.Namespace:
