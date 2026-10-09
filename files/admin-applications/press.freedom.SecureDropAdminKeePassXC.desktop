@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon=securedrop
+Name=SecureDrop Admin KeePassXC
+Exec=sdw-updater --launch "SecureDrop Admin KeePassXC" sd-admin-vault org.keepassxc.KeePassXC
