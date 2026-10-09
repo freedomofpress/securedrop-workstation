@@ -12,6 +12,7 @@ from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 from securedrop_manage import configure
 from securedrop_manage import main as manage
 from tests.base import SD_TAG
+from tests.markers import needs_journalist
 
 if TYPE_CHECKING:
     from qubesadmin.vm import QubesVM
@@ -137,6 +138,7 @@ def mock_qubes_app(mocker: Any) -> QubesTestWrapper:
     return mock_qubes_app
 
 
+@needs_journalist
 def test_is_managed() -> None:
     assert manage.is_managed("sd-app")
 
@@ -182,6 +184,7 @@ def let_sd_viewer_preloads_settle(all_vms: VMCollection) -> Any:
 
 @pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
 @pytest.mark.provisioning
+@needs_journalist
 def test_suppress_preloaded_disposables(let_sd_viewer_preloads_settle: Any) -> None:
     def get_preloaded_qubes() -> list["QubesVM"]:
         return list(filter(lambda q: getattr(q, "is_preload", False), app.domains))
@@ -211,6 +214,7 @@ def test_suppress_preloaded_disposables(let_sd_viewer_preloads_settle: Any) -> N
 
 
 @pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
+@needs_journalist
 class TestTemplateUpgradesAvailable:
     def test_template_upgrade_handler(
         self,

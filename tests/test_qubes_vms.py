@@ -2,6 +2,9 @@ import pytest
 from qubesadmin.app import VMCollection
 
 from tests.base import CURRENT_FEDORA_TEMPLATE
+from tests.markers import needs_dom0
+
+pytestmark = needs_dom0
 
 """
 Ensures that the upstream, Qubes-maintained VMs are

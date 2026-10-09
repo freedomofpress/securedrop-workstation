@@ -1,4 +1,3 @@
-import importlib.util
 import json
 import os
 import subprocess
@@ -11,12 +10,7 @@ import pytest
 
 from sdw_updater import Updater
 from sdw_updater.Updater import UpdateStatus
-
-skipif_no_qubesadmin = pytest.mark.skipif(
-    importlib.util.find_spec("qubesadmin") is None,
-    reason="qubesadmin module not available (only runs in dom0)",
-)
-
+from tests.markers import needs_dom0
 
 debian_based_vms = [
     "sd-app",
@@ -78,7 +72,7 @@ TEST_RESULTS_UPDATES = {
         ),
     ],
 )
-@skipif_no_qubesadmin
+@needs_dom0
 def test__get_current_templates(fixture_name, expected, request):
     request.getfixturevalue(fixture_name)
     assert Updater._get_current_templates() == expected
@@ -382,7 +376,7 @@ def test_read_dom0_update_flag_from_disk_fails(mocked_info, mocked_error, tmp_pa
         ("4.4", "4.3", True),  # System in middle of 4.3 -> 4.4 upgrade
     ],
 )
-@skipif_no_qubesadmin
+@needs_dom0
 def test_is_qubes_mid_upgrade(
     qubes_ver, agent_ver, is_mid_upgrade, mocker, mocked_journalist_qubes
 ):

@@ -12,6 +12,9 @@ import pytest
 from securedrop_manage import configure
 from securedrop_manage.products import Product
 from securedrop_manage.validate import validate_config
+from tests.markers import needs_journalist
+
+pytestmark = needs_journalist
 
 FAKE_JI_ADDRESS = "sdwfaketestonionaddressforintegrationtests22222222222222"
 FAKE_JI_AUTH_TOKEN = "SDWFAKETESTAUTHTOKENFORINTEGRATIONTESTS2222222222222"

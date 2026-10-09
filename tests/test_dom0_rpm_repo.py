@@ -4,6 +4,9 @@ import dnf  # Implicit dom0 dependency
 import pytest
 
 from securedrop_manage.config_types import Dom0Config
+from tests.markers import needs_dom0
+
+pytestmark = needs_dom0
 
 REPO_CONFIG = {
     "prod": {
