@@ -1,5 +1,4 @@
 import json
-import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -28,10 +27,8 @@ TAILS_SSH_PATH = TAILS_PATH / "openssh-client/"
 SD_ADMIN_VM = "sd-admin"
 SD_ADMIN_CONFIG_PATH = "/home/user/.config/securedrop-admin"
 SD_ADMIN_SSH_PATH = "/home/user/.ssh"
-SD_ADMIN_INCOMING_PATH = "/home/user/QubesIncoming/vault"
+SD_ADMIN_STAGING_PATH = "/home/user/.securedrop-admin-import"
 SET_SITE_SPECIFIC = "securedrop-set-site-specific"
-RUNTIME_POLICY_PATH = Path("/run/qubes/policy.d")
-FILECOPY_POLICY_FILENAME = "20-securedrop-manage-admin-import.policy"
 
 DEFAULT_SD_APP_GB = 10
 DEFAULT_SD_LOG_GB = 5
@@ -305,6 +302,29 @@ def _check_in_qube(vm: str, command: str) -> bool:
     return result.returncode == 0
 
 
+def _pipe_admin_file(source: str, destination: str) -> None:
+    """
+    Streams a file from vault to sd-admin
+    """
+    reader = subprocess.Popen(
+        ["qvm-run", "--pass-io", "vault", f"cat {quote(source)}"], stdout=subprocess.PIPE
+    )
+    try:
+        writer = subprocess.run(
+            ["qvm-run", "--pass-io", SD_ADMIN_VM, f"umask 077 && cat > {quote(destination)}"],
+            stdin=reader.stdout,
+            check=False,
+        )
+    finally:
+        # Let vault see a closed pipe if sd-admin stops reading early
+        if reader.stdout:
+            reader.stdout.close()
+        reader_returncode = reader.wait()
+
+    if reader_returncode != 0 or writer.returncode != 0:
+        raise ManageException(f"Error copying {source} from vault to {SD_ADMIN_VM}")
+
+
 def copy_admin_config() -> list[str]:
     """
     Copies the securedrop-admin configuration and SSH keys from the Tails USB in vault to
@@ -312,47 +332,52 @@ def copy_admin_config() -> list[str]:
     """
     config = quote(SD_ADMIN_CONFIG_PATH)
     ssh = quote(SD_ADMIN_SSH_PATH)
-    incoming_config = quote(f"{SD_ADMIN_INCOMING_PATH}/{TAILS_ADMIN_CONFIG_PATH.name}")
+    # Stage everything first so that a failed transfer doesn't touch the existing config
+    staging = quote(SD_ADMIN_STAGING_PATH)
+    staging_config = quote(f"{SD_ADMIN_STAGING_PATH}/config")
+    cleanup = f"rm -rf {staging}"
 
-    private_key = quote(f"{SD_ADMIN_INCOMING_PATH}/id_rsa")
-    public_key = quote(f"{SD_ADMIN_INCOMING_PATH}/id_rsa.pub")
-    cleanup = f"rm -rf {incoming_config} {private_key} {public_key}"
-
-    _check_in_qube(SD_ADMIN_VM, cleanup)
     try:
-        # Use Qubes runtime policy to temporarily allow Filecopy into sd-admin from vault
-        policy = RUNTIME_POLICY_PATH / FILECOPY_POLICY_FILENAME
-        policy.write_text("qubes.Filecopy * vault sd-admin allow\n")
-        # Copy over config directory and SSH keys
-        try:
-            subprocess.check_output(
-                [
-                    "qvm-run",
-                    "vault",
-                    "qvm-copy",
-                    shlex.join(
-                        [
-                            str(TAILS_ADMIN_CONFIG_PATH),
-                            f"{TAILS_SSH_PATH}/id_rsa",
-                            f"{TAILS_SSH_PATH}/id_rsa.pub",
-                        ]
-                    ),
-                ]
+        names = subprocess.check_output(
+            [
+                "qvm-run",
+                "--pass-io",
+                "vault",
+                f"find {quote(str(TAILS_ADMIN_CONFIG_PATH))} -maxdepth 1 -type f -printf '%f\\n'",
+            ],
+            text=True,
+        ).splitlines()
+    except subprocess.CalledProcessError:
+        raise ManageException("Error listing securedrop-admin configuration in vault")
+
+    try:
+        if not _check_in_qube(
+            SD_ADMIN_VM, f"{cleanup} && mkdir -m 700 {staging} && mkdir -m 700 {staging_config}"
+        ):
+            raise ManageException(f"Error preparing {SD_ADMIN_STAGING_PATH} in {SD_ADMIN_VM}")
+        for name in names:
+            _pipe_admin_file(
+                str(TAILS_ADMIN_CONFIG_PATH / name), f"{SD_ADMIN_STAGING_PATH}/config/{name}"
             )
-        except subprocess.CalledProcessError as e:
-            raise ManageException(
-                f"Error copying securedrop-admin configuration from vault to {SD_ADMIN_VM}: {e}"
+        _pipe_admin_file(str(TAILS_SSH_PATH / "id_rsa"), f"{SD_ADMIN_STAGING_PATH}/id_rsa")
+        _pipe_admin_file(str(TAILS_SSH_PATH / "id_rsa.pub"), f"{SD_ADMIN_STAGING_PATH}/id_rsa.pub")
+
+        install: list[str] = []
+        if _check_in_qube(SD_ADMIN_VM, f"command -v {SET_SITE_SPECIFIC}"):
+            install.append(
+                f"{SET_SITE_SPECIFIC} --file {staging_config}/site-specific config_path {config}"
             )
-        # Update copied files: move into correct directory, set permissions, and set the
-        # site-specific config_path
-        install = [
-            f"{SET_SITE_SPECIFIC} --file {incoming_config}/site-specific config_path {config}",
+        else:
+            print(
+                f"{SET_SITE_SPECIFIC} not found in {SD_ADMIN_VM}; "
+                "not updating config_path in site-specific."
+            )
+        install += [
             f"mkdir -p -m 700 {ssh}",
-            f"install -m 600 {private_key} {ssh}/id_rsa",
-            f"install -m 644 {public_key} {ssh}/id_rsa.pub",
-            f"chmod -R u=rwX,go= {incoming_config}",
+            f"install -m 600 {staging}/id_rsa {ssh}/id_rsa",
+            f"install -m 644 {staging}/id_rsa.pub {ssh}/id_rsa.pub",
             f"rm -rf {config}",
-            f"mv {incoming_config} {config}",
+            f"mv {staging_config} {config}",
             f"ls -1A {config}",
         ]
         try:
@@ -364,7 +389,6 @@ def copy_admin_config() -> list[str]:
                 f"Error installing securedrop-admin configuration in {SD_ADMIN_VM}: {e}"
             )
     finally:
-        policy.unlink(missing_ok=True)
         _check_in_qube(SD_ADMIN_VM, cleanup)
     return files.split()
 

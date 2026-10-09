@@ -28,7 +28,11 @@ from securedrop_manage import (
     Product,
 )
 from securedrop_manage.configure import import_admin_config, import_workstation_config
-from securedrop_manage.validate import validate_config, AdminConfigValidator, JournalistConfigValidator
+from securedrop_manage.validate import (
+    validate_config,
+    AdminConfigValidator,
+    JournalistConfigValidator,
+)
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
 # errors from qubesctl. It may be possible to raise this again.
