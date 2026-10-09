@@ -6,7 +6,8 @@ set -euo pipefail
 
 source "$(dirname "$0")/common.sh"
 
-RPM_NAME="${RPM_NAME:-securedrop-workstation-dom0-config}"
+# Space-separated list of packages to install
+RPM_NAMES="${RPM_NAMES:-securedrop-workstation-dom0-config}"
 
 function find_latest_rpm() {
     # Look up which version of dom0 we're using.
@@ -35,6 +36,8 @@ function install_latest() {
 echo "Deploying Salt config..."
 sudo dnf clean all
 install_latest securedrop-dom0-manager
-install_latest "${RPM_NAME}"
+for rpm_name in ${RPM_NAMES}; do
+    install_latest "${rpm_name}"
+done
 # Mark it as installed as a dependency so its autoremoved on --uninstall
 sudo dnf -y mark dependency securedrop-dom0-manager

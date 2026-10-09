@@ -25,6 +25,8 @@ all: assert-dom0
 	@echo "make staging"
 	@echo "make dev-admin"
 	@echo "make staging-admin"
+	@echo "make dev-all"
+	@echo "make staging-all"
 	@echo
 	@echo "These targets will set your config.json to the appropriate environment."
 	@false
@@ -46,7 +48,18 @@ dev-journalist staging-journalist: %-journalist: assert-dom0 ## Installs, config
 dev-admin staging-admin: %-admin: assert-dom0 ## Installs, configures and builds a dev or staging admin environment
 	@./scripts/bootstrap-keyring.py --env $*
 	$(MAKE) assert-keyring-$*
-	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$* RPM_NAME=securedrop-admin-dom0-config
+	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$* RPM_NAMES=securedrop-admin-dom0-config
+	$(MAKE) configure-admin-env-$*
+	securedrop-manage --apply --target all
+
+# Both the journalist and admin workstations. The journalist config.json is a
+# superset of what the admin workstation needs, so it's used for both.
+.PHONY: dev-all staging-all
+dev-all staging-all: %-all: assert-dom0 ## Installs, configures and builds both dev or staging journalist and admin environments
+	@./scripts/bootstrap-keyring.py --env $*
+	$(MAKE) assert-keyring-$*
+	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$* RPM_NAMES="securedrop-workstation-dom0-config securedrop-admin-dom0-config"
+	$(MAKE) configure-env-$*
 	$(MAKE) configure-admin-env-$*
 	securedrop-manage --apply --target all
 
@@ -79,7 +92,8 @@ assert-keyring-%: ## Correct keyring pkg installed
 		fi \
 	fi
 
-RPM_NAME ?= securedrop-workstation-dom0-config
+# Space-separated list of dom0 config packages to install
+RPM_NAMES ?= securedrop-workstation-dom0-config
 install-rpm: assert-dom0 ## Install locally-built rpm (dev) or download published rpm
 	# All environments depend on the prod keyring package
 	@echo "Installing prod keyring package"
@@ -87,10 +101,10 @@ install-rpm: assert-dom0 ## Install locally-built rpm (dev) or download publishe
 ifeq ($(RPM_INSTALL_STRATEGY),dev)
 	@echo "Install dependencies and locally-built rpm"
 	@rpm -q grub2-xen-pvh || sudo qubes-dom0-update --clean -y grub2-xen-pvh
-	@RPM_NAME=$(RPM_NAME) ./scripts/prep-dev
+	@RPM_NAMES="$(RPM_NAMES)" ./scripts/prep-dev
 else
 	@echo "Install published rpm"
-	@rpm -q $(RPM_NAME) || sudo qubes-dom0-update -y $(RPM_NAME)
+	@rpm -q $(RPM_NAMES) || sudo qubes-dom0-update -y $(RPM_NAMES)
 endif
 	@echo "Provide instance-specific configuration and run securedrop-manage --apply."
 
