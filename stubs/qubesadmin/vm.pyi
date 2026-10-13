@@ -1,6 +1,8 @@
 # Type stubs for the `qubesadmin.vm` package.
 from collections.abc import Iterable, Iterator, Mapping
-from typing import TypeVar, overload
+from typing import Any, TypeVar, overload
+
+from qubesadmin.devices import DeviceCollection
 
 _T = TypeVar("_T")
 
@@ -46,6 +48,7 @@ class QubesVM:
     auto_cleanup: bool
     appvms: Iterable[QubesVM]
     derived_vms: Iterable[QubesVM]
+    devices: Mapping[str, DeviceCollection]
     def is_running(self) -> bool: ...
     def is_halted(self) -> bool: ...
     def start(self) -> None: ...
@@ -56,3 +59,13 @@ class QubesVM:
     def run(
         self, command: str, input: bytes | None = ..., user: str | None = ...
     ) -> tuple[bytes, bytes]: ...
+    def run_service_for_stdio(
+        self, service: str, input: bytes | None = ...
+    ) -> tuple[bytes, bytes]: ...
+
+class DispVMWrapper(QubesVM):
+    def cleanup(self) -> None: ...
+
+class DispVM(QubesVM):
+    @classmethod
+    def from_appvm(cls, app: Any, appvm: str | QubesVM | None) -> DispVMWrapper: ...

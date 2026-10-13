@@ -5,12 +5,13 @@ Generate a new Submission Key in dom0 and export the fingerprint, secret and pub
 
 import argparse
 import json
+import shlex
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-from qubesadmin import Qubes
+import qubesadmin
 from qubesadmin.exc import QubesException
 from qubesadmin.vm import QubesVM
 
@@ -143,7 +144,6 @@ def copy_file_to_qube(
     # Check if file overriding allowed
     try:
         target_qube.run(f"test ! -e {target_path}")
-
     except subprocess.CalledProcessError as e:
         if not overwrite:
             raise SubmissionKeyException(
@@ -162,7 +162,7 @@ def copy_file_to_qube(
 def export_submission_pub_key_to_admin(args: argparse.Namespace) -> None:
     print("Updating public key in sd-admin qube...")
     try:
-        sd_admin_qube = Qubes().domains["sd-admin"]
+        sd_admin_qube = qubesadmin.Qubes().domains["sd-admin"]
     except QubesException:
         raise SubmissionKeyException("'sd-admin' qube not found!")
 
@@ -180,12 +180,75 @@ def export_submission_pub_key_to_admin(args: argparse.Namespace) -> None:
     )
 
 
-def export_submission_pub_key(args: argparse.Namespace) -> None:
-    installed_product = get_installed_product()
-    if not installed_product.contains_admin:
-        raise NotImplementedError(
-            "Can't export submission public key without Admin Workstation installed"
+def copy_pub_key_to_usb(vm: qubesadmin.vm.QubesVM, overwrite: bool) -> None:
+    """
+    Ask the user for a folder on the USB drive attached to 'vm', copy the
+    public key there and lock the drive
+    """
+    while True:
+        print(f"In '{vm.name}', unlock the drive and choose a folder on it...")
+        try:
+            stdout, _ = vm.run_service_for_stdio("qubes.SelectDirectory")
+        except subprocess.CalledProcessError:
+            raise SubmissionKeyException("no folder selected")
+        untrusted_directory = stdout.decode("ascii", errors="ignore")
+        directory = shlex.quote(untrusted_directory.removesuffix("\n"))
+        if directory.startswith(("/media/", "/run/media/")):
+            break
+        print(f"Selected folder is not on a USB drive: {directory}")
+        if input("Pick another folder? [Y/n] ").lower() == "n":
+            raise SubmissionKeyException("export cancelled")
+
+    target_path = f"{directory}/{Path(PUBLIC_KEY_PATH).name}"
+    copy_file_to_qube(
+        local_path=PUBLIC_KEY_PATH,
+        target_qube=vm,
+        target_path=target_path,
+        overwrite=overwrite,
+        sudo=True,
+    )
+
+    print("Public key successfully exported to USB device")
+    try:
+        # Unmount the filesystem (optional)
+        subprocess.run(
+            [
+                "qvm-run",
+                vm.name,
+                f"udisksctl unmount -b $(findmnt -no SOURCE --target {directory})",
+            ],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
+        print("Failed to unmount drive")
+
+    except subprocess.CalledProcessError:
+        print(f"{BOLD}{RED}WARNING:{RESET} failed to unmount drive", file=sys.stderr)
+
+
+def export_submission_pub_key_to_usb(args: argparse.Namespace) -> None:
+    app = qubesadmin.Qubes()
+    try:
+        sd_devices = app.domains["sd-devices"]
+    except QubesException:
+        raise SubmissionKeyException("'sd-devices' qube not found!")
+
+    # USB drives are automatically attached to sd-devices
+    input("Insert the USB drive and press Enter...")
+    copy_pub_key_to_usb(sd_devices, args.overwrite)
+
+    print("You can now remove the USB drive.\n")
+
+
+def export_submission_pub_key(args: argparse.Namespace) -> None:
+    use_usb = (
+        args.usb
+        or not get_installed_product().contains_admin
+        or input("Export to [a]dmin qube or [u]sb drive? Please pick [a/u]: ").lower() == "u"
+    )
+    if use_usb:
+        export_submission_pub_key_to_usb(args)
     else:
         export_submission_pub_key_to_admin(args)
 
@@ -212,6 +275,11 @@ def main() -> None:
         "--overwrite",
         action="store_true",
         help="Overwrite an existing Submission Key",
+    )
+    export.add_argument(
+        "--usb",
+        action="store_true",
+        help="Export to a USB drive",
     )
     export.set_defaults(run=export_submission_pub_key)
 
