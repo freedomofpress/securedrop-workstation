@@ -17,10 +17,6 @@ FAKE_JI_ADDRESS = "sdwfaketestonionaddressforintegrationtests22222222222222"
 FAKE_JI_AUTH_TOKEN = "SDWFAKETESTAUTHTOKENFORINTEGRATIONTESTS2222222222222"
 FAKE_JI_CONFIG = f"{FAKE_JI_ADDRESS}:descriptor:x25519:{FAKE_JI_AUTH_TOKEN}"
 
-# intentionally not the defaults so we can assert they were set correctly
-SD_APP_GB = 20
-SD_LOG_GB = 10
-
 
 def vault_run(command: str, stdin: bytes | None = None) -> str:
     """Run a shell command in the vault qube, returning its stdout"""
@@ -160,8 +156,6 @@ def test_import_journalist_interface_config(
             "y",  # ready to import the submission key
             swap_in_workstation_drive,  # ready to import the Journalist Interface details
             "y",  # the imported Journalist Interface details are correct
-            str(SD_APP_GB),
-            str(SD_LOG_GB),
         ]
     )
 
@@ -182,7 +176,10 @@ def test_import_journalist_interface_config(
             "key": FAKE_JI_AUTH_TOKEN,
         },
         "environment": "prod",
-        "vmsizes": {"sd_app": SD_APP_GB, "sd_log": SD_LOG_GB},
+        "vmsizes": {
+            "sd_app": configure.DEFAULT_SD_APP_GB,
+            "sd_log": configure.DEFAULT_SD_LOG_GB,
+        },
     }
 
     validate_config(config_path, Product.JOURNALIST)
@@ -203,7 +200,7 @@ def test_import_config_keeps_existing_submission_key(
     existing_key = config_path / "sd-journalist.sec"
     existing_key.write_bytes((proj_root / "sd-journalist.sec").read_bytes())
 
-    answer_prompts(["y", "y", str(SD_APP_GB), str(SD_LOG_GB)])
+    answer_prompts(["y", "y"])
 
     configure.import_journalist_config()
 
