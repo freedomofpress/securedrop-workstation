@@ -24,7 +24,10 @@ PUBLIC_KEY_PATH = CONFIG_DIR / "sd-journalist.pub"
 CONFIG_PATH = CONFIG_DIR / "config.json"
 
 # Configurations in 'sd-admin' qube
-PUBLIC_KEY_PATH_SD_ADMIN = "~/.config/securedrop-admin/SecureDrop.asc"
+SD_ADMIN_VM = "sd-admin"
+CONFIG_PATH_SD_ADMIN = "~/.config/securedrop-admin"
+PUBLIC_KEY_PATH_SD_ADMIN = f"{CONFIG_PATH_SD_ADMIN}/SecureDrop.asc"
+SITE_SPECIFIC_PATH_SD_ADMIN = f"{CONFIG_PATH_SD_ADMIN}/site-specific"
 
 # ANSI color codes
 BOLD = "\033[1m"
@@ -173,11 +176,21 @@ def export_submission_pub_key_to_admin(args: argparse.Namespace) -> None:
         overwrite=args.overwrite,
     )
 
-    print("Public key succesfully exported to 'sd-admin' qube!\n")
-    print(
-        f"  {BOLD}{RED}NOTE:{RESET} Please follow the procedures in 'sd-admin' to propagate\n"
-        "  these changes to other local configuration files and to the server.\n"
-    )
+    print("Public key succesfully exported to 'sd-admin' qube!")
+
+    print(f"Updating site-specific settings in '{SITE_SPECIFIC_PATH_SD_ADMIN}'")
+    site_specific_changes = {
+        "securedrop_app_gpg_fingerprint": "FIXME fingerprint",  # TODO
+        "securedrop_app_gpg_public_key": PUBLIC_KEY_PATH_SD_ADMIN,
+    }
+    try:
+        for key, value in site_specific_changes.items():
+            sd_admin_qube.run(
+                "securedrop-set-site-specific --file "
+                + f"{SITE_SPECIFIC_PATH_SD_ADMIN} {key} {value}",
+            )
+    except subprocess.CalledProcessError:
+        print("Failed to update site-specific configurations.")
 
 
 def copy_pub_key_to_usb(vm: qubesadmin.vm.QubesVM, overwrite: bool) -> None:
@@ -251,8 +264,6 @@ def export_submission_pub_key(args: argparse.Namespace) -> None:
         export_submission_pub_key_to_usb(args)
     else:
         export_submission_pub_key_to_admin(args)
-
-    # TODO update site-settings w/ filename + fingerprint
 
 
 def main() -> None:
