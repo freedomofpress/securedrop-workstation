@@ -64,7 +64,7 @@ def test_redis_service_running(qube: QubeWrapper) -> None:
 
 
 @pytest.mark.configuration
-def test_logs_are_flowing(qube: QubeWrapper, sdw_tagged_vms: list[QubesVM]) -> None:
+def test_logs_are_flowing(qube: QubeWrapper, journalist_tagged_vms: list[QubesVM]) -> None:
     """
     To test that logs work, we run a unique command in each VM we care
     about that gets logged, and then check for that string in the logs.
@@ -81,7 +81,7 @@ def test_logs_are_flowing(qube: QubeWrapper, sdw_tagged_vms: list[QubesVM]) -> N
     # We first run the command in each VM, and then do a second loop to
     # look for the token in the log entry, so there's enough time for the
     # log entry to get written.
-    for vm in sdw_tagged_vms:
+    for vm in journalist_tagged_vms:
         if vm.name in skip:
             continue
         # The sudo call will make it into syslog
@@ -90,7 +90,7 @@ def test_logs_are_flowing(qube: QubeWrapper, sdw_tagged_vms: list[QubesVM]) -> N
         except subprocess.CalledProcessError:
             raise RuntimeError(f"failed to insert token for logging check on VM '{vm.name}")
 
-    for vm in sdw_tagged_vms:
+    for vm in journalist_tagged_vms:
         if vm.name in skip:
             continue
         syslog = f"/home/user/QubesIncomingLogs/{vm.name}/syslog.log"
