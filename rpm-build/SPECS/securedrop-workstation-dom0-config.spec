@@ -151,6 +151,9 @@ install -m 755 -d %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/31-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 
+# Admin application launchers, shown in the dom0 application menu
+install -m 644 files/admin-applications/*.desktop %{buildroot}%{_datadir}/applications/
+
 %files
 %attr(755, root, root) %{_bindir}/sdw-upgrade
 %{_bindir}/sdw-admin
@@ -163,8 +166,6 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 %ghost %attr(0644, root, root) /srv/salt/securedrop_salt/sd-journalist.sec
 %attr(755, root, root) %{_bindir}/securedrop-generate-submission-key
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropUpdater.desktop
-%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
-%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %{_userunitdir}/securedrop-user-xfce-settings.service
 %{_userunitdir}/securedrop-user-xfce-icon-size.service
 %{_unitdir}/securedrop-logind-override-disable.service
@@ -198,6 +199,11 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-admin.policy
 %dir /usr/share/securedrop/products
 /usr/share/securedrop/products/admin-workstation.json
+%attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropAdminKeePassXC.desktop
+%attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropJournalistInterface.desktop
+%attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropSourceInterface.desktop
+%attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropSshApp.desktop
+%attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropSshMon.desktop
 %doc README.md
 %license LICENSE
 
@@ -213,6 +219,8 @@ install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 %{_userunitdir}/sdw-notify.service
 %{_userunitdir}/sdw-notify.timer
 %{_userpresetdir}/94-securedrop-dom0-manager-user.preset
+%{_datadir}/icons/hicolor/128x128/apps/securedrop.png
+%{_datadir}/icons/hicolor/scalable/apps/securedrop.svg
 %doc README.md
 %license LICENSE
 /srv/salt/securedrop_shared/*
