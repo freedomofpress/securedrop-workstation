@@ -57,14 +57,14 @@ def show_update_warning() -> None:
     """
 
     app = QApplication([])
-    dialog = NotifyApp.NotifyDialog(Notify.is_sdapp_halted())
+    dialog = NotifyApp.NotifyDialog(Notify.are_session_vms_halted())
     result = dialog.run()
 
     # Check results of Notify Dialog and launch the Preflight Updater if user
     # has opted to check for updates.
     if result == NotifyApp.NotifyStatus.CHECK_UPDATES:
         log.info("Launching Preflight Updater")
-        updater = UpdaterApp.UpdaterApp(launch_target=UpdaterApp.InboxTarget)
+        updater = UpdaterApp.UpdaterApp(launch_target=UpdaterApp.default_launch_target())
         updater.show()
         sys.exit(app.exec())
     elif result == NotifyApp.NotifyStatus.DEFER_UPDATES:

@@ -10,6 +10,7 @@ from collections.abc import Iterable
 from datetime import datetime
 
 from sdw_util import Util
+from securedrop_manage.products import get_installed_product
 
 sdlog = Util.get_logger(module=__name__)
 
@@ -153,24 +154,30 @@ def is_conflicting_process_running(names: Iterable[str]) -> bool:
     return False
 
 
-def is_sdapp_halted() -> bool:
+def are_session_vms_halted() -> bool:
     """
-    Helper fuction that returns True if `sd-app` VM is in a halted state
-    and False if state is running, paused, or cannot be determined.
-
-    Runs only if Qubes environment detected; otherwise returns False.
+    Detect if sd-app and/or sd-admin are running so we can display a message
+    to the user that they'll be restarted.
     """
 
     if not Util.get_qubes_version():
-        sdlog.error("QubesOS not detected, is_sdapp_halted will return False")
+        sdlog.error("QubesOS not detected, are_session_vms_halted will return False")
         return False
 
-    try:
-        output_bytes = subprocess.check_output(["qvm-ls", "sd-app"])
-        output_str = output_bytes.decode("utf-8")
-        return "Halted" in output_str
+    product = get_installed_product()
+    vms = []
+    if product.contains_journalist:
+        vms.append("sd-app")
+    if product.contains_admin:
+        vms.append("sd-admin")
 
-    except subprocess.CalledProcessError as e:
-        sdlog.error("Failed to return sd-app VM status via qvm-ls")
-        sdlog.error(str(e))
-        return False
+    for vm in vms:
+        try:
+            output = subprocess.check_output(["qvm-ls", vm]).decode("utf-8")
+        except subprocess.CalledProcessError as e:
+            sdlog.error(f"Failed to return {vm} VM status via qvm-ls")
+            sdlog.error(str(e))
+            return False
+        if "Halted" not in output:
+            return False
+    return True
