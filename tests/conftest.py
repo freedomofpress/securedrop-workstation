@@ -23,6 +23,7 @@ from tests.base import (
     SD_INBOX_TEMPLATE,
     SD_TEMPLATE_BASE,
     SD_VIEWER_TEMPLATE,
+    is_journalist_qube,
     is_workstation_qube,
 )
 from tests.dom0_stubs import IN_DOM0
@@ -169,6 +170,12 @@ def all_vms(needs_dom0: None) -> VMCollection:
 def sdw_tagged_vms(needs_journalist: None, all_vms: VMCollection) -> list[QubesVM]:
     """Obtain all SecureDrop Workstation-exclusive qubes"""
     return list(filter(is_workstation_qube, all_vms))
+
+
+@pytest.fixture
+def journalist_tagged_vms(needs_journalist: None, all_vms: VMCollection) -> list[QubesVM]:
+    """Obtain all SecureDrop Workstation-exclusive qubes"""
+    return list(filter(is_journalist_qube, all_vms))
 
 
 @pytest.fixture(scope="session", autouse=True)
