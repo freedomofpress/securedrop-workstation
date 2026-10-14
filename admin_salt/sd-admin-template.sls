@@ -15,6 +15,8 @@ sd-admin-debian-13:
     - clone:
       - source: debian-13-minimal
       - label: red
+    - prefs:
+      - default_dispvm: ""
     - tags:
       - add:
         - sd-workstation
