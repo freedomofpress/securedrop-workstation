@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-SCRIPT_PATH = Path(__file__).parents[2] / "files/securedrop-generate-submission-key.py"
+SCRIPT_PATH = Path(__file__).parents[2] / "files/securedrop-submission-key.py"
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def run_main(home, monkeypatch):
     spec.loader.exec_module(generate_submission_key)
 
     def run(*args):
-        monkeypatch.setattr(sys, "argv", ["securedrop-generate-submission-key", *args])
+        monkeypatch.setattr(sys, "argv", ["securedrop-submission-key", *args])
         generate_submission_key.main()
 
     return run
