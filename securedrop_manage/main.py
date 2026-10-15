@@ -485,7 +485,9 @@ def destroy_all_tagged(tag: str) -> None:
     for vm in sdw_disp_vms + sdw_app_vms + sdw_template_vms:
         if vm.is_running():
             vm.kill()
-        run_cmd(["qvm-remove", "-f", "--", vm.name])
+        # double-check it hasn't already been removed:
+        if vm.name in Qubes().domains:
+            run_cmd(["qvm-remove", "-f", "--", vm.name])
 
 
 def perform_uninstall(product: Product) -> None:
