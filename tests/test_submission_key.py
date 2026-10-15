@@ -1,38 +1,35 @@
-import importlib.util
 import json
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import pytest
 
-SCRIPT_PATH = Path(__file__).parents[2] / "files/securedrop-generate-submission-key.py"
+SCRIPT_PATH = Path(__file__).parent.parent / "files/securedrop-submission-key.py"
 
 
 @pytest.fixture
-def home(tmp_path, monkeypatch):
+def home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A mock home directory, which the script's config paths are relative to"""
     monkeypatch.setenv("HOME", str(tmp_path))
     return tmp_path
 
 
 @pytest.fixture
-def run_main(home, monkeypatch):
-    # Load the module after HOME is set, so its config paths are in the mock homedir
-    spec = importlib.util.spec_from_file_location("generate_submission_key", SCRIPT_PATH)
-    assert spec is not None
-    assert spec.loader is not None
-    generate_submission_key = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(generate_submission_key)
+def run_main(load_non_standard_module: Callable, monkeypatch: pytest.MonkeyPatch) -> Callable:
+    """Load the python RPC server module from its non-standard path"""
+    generate_submission_key = load_non_standard_module(SCRIPT_PATH)
 
-    def run(*args):
-        monkeypatch.setattr(sys, "argv", ["securedrop-generate-submission-key", *args])
+    def run(*args: Any) -> None:
+        monkeypatch.setattr(sys, "argv", ["securedrop-submission-key", *args])
         generate_submission_key.main()
 
     return run
 
 
-def test_generates_key(home, run_main):
+def test_generates_key(home: Path, run_main: Callable) -> None:
     run_main("Placeholder Org")
     config_dir = home / ".config/securedrop-manage"
     secret_key = (config_dir / "sd-journalist.sec").read_text()
@@ -53,7 +50,7 @@ def test_generates_key(home, run_main):
     ]
 
 
-def test_updates_existing_config(home, run_main):
+def test_updates_existing_config(home: Path, run_main: Callable) -> None:
     config_dir = home / ".config/securedrop-manage"
     config_dir.mkdir(parents=True)
     (config_dir / "config.json").write_text(json.dumps({"environment": "prod"}))
@@ -63,7 +60,7 @@ def test_updates_existing_config(home, run_main):
     assert config["environment"] == "prod"
 
 
-def test_refuses_overwrite(home, run_main):
+def test_refuses_overwrite(home: Path, run_main: Callable) -> None:
     config_dir = home / ".config/securedrop-manage"
     config_dir.mkdir(parents=True)
     (config_dir / "sd-journalist.sec").write_text("existing")

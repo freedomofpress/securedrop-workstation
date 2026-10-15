@@ -81,16 +81,13 @@ def _prompt_choose_submission_key(fingerprints: list[str]) -> str | None:
         return None
 
 
-def _try_read_submission_key() -> str | None:
+def get_submission_key_fingerprint(priv_key_file: Path) -> str:
     """
-    Checks if SecureDrop submission key is written to dom0. If so, returns
-    submission key fingerprint
+    Obtains the submission key fingerprint. If multiple, it asks for the
+    user to pick one.
     """
-    key_file = CONFIG_PATH / SUBMISSION_KEY_FILENAME
-    if not key_file.exists():
-        return None
     gpg_output = subprocess.check_output(
-        ["gpg", "--show-keys", "--with-fingerprint", "--with-colon", key_file],
+        ["gpg", "--show-keys", "--with-fingerprint", "--with-colon", priv_key_file],
         text=True,
     )
     fingerprints = extract_secret_key_fingerprints(gpg_output)
@@ -196,8 +193,11 @@ def import_journalist_interface_config() -> tuple[str, str]:
 
 
 def import_journalist_config() -> None:
-    submission_key_fingerprint = _try_read_submission_key()
-    if not submission_key_fingerprint:
+    key_file = CONFIG_PATH / SUBMISSION_KEY_FILENAME
+    if key_file.exists():
+        submission_key_fingerprint = get_submission_key_fingerprint(key_file)
+        print("Found submission key file, proceeding")
+    else:
         subprocess.Popen(
             [
                 "qvm-start",
@@ -227,8 +227,6 @@ def import_journalist_config() -> None:
             "Submission key import complete!\n"
             "Please detach and disconnect the USB containing the submission key\n\n"
         )
-    else:
-        print("Found submission key file, proceeding")
 
     try:
         validate_config(CONFIG_PATH, Product.JOURNALIST)
