@@ -1,7 +1,9 @@
 import json
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -16,13 +18,9 @@ def home(tmp_path, monkeypatch):
 
 
 @pytest.fixture
-def run_main(home, monkeypatch):
-    # Load the module after HOME is set, so its config paths are in the mock homedir
-    spec = importlib.util.spec_from_file_location("generate_submission_key", SCRIPT_PATH)
-    assert spec is not None
-    assert spec.loader is not None
-    generate_submission_key = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(generate_submission_key)
+def run_main(load_non_standard_module: Callable, monkeypatch: pytest.MonkeyPatch) -> Any:
+    """Load the python RPC server module from its non-standard path"""
+    generate_submission_key = load_non_standard_module(SCRIPT_PATH)
 
     def run(*args):
         monkeypatch.setattr(sys, "argv", ["securedrop-submission-key", *args])
