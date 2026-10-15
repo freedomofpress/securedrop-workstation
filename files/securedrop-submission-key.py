@@ -15,6 +15,7 @@ import qubesadmin
 from qubesadmin.exc import QubesException
 from qubesadmin.vm import QubesVM
 
+from securedrop_manage.configure import get_submission_key_fingerprint
 from securedrop_manage.products import get_installed_product
 
 # XDG_CONFIG_HOME is not set in 4.3 Qubes - set it manually
@@ -180,7 +181,7 @@ def export_submission_pub_key_to_admin(args: argparse.Namespace) -> None:
 
     print(f"Updating site-specific settings in '{SITE_SPECIFIC_PATH_SD_ADMIN}'")
     site_specific_changes = {
-        "securedrop_app_gpg_fingerprint": "FIXME fingerprint",  # TODO
+        "securedrop_app_gpg_fingerprint": get_submission_key_fingerprint(SECRET_KEY_PATH),
         "securedrop_app_gpg_public_key": PUBLIC_KEY_PATH_SD_ADMIN,
     }
     try:
