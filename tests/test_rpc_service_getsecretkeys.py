@@ -10,6 +10,10 @@ from typing import Any
 
 import pytest
 
+from tests.markers import needs_journalist
+
+pytestmark = needs_journalist
+
 
 @pytest.fixture
 def rpc_service(load_non_standard_module: Callable) -> Any:

@@ -5,6 +5,10 @@ from pathlib import Path
 
 import pytest
 
+from tests.markers import needs_journalist
+
+pytestmark = needs_journalist
+
 DESKTOP_FILE_NAME = "press.freedom.SecureDropUpdater.desktop"
 
 
