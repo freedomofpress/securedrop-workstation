@@ -265,12 +265,7 @@ def export_submission_pub_key_to_usb(args: argparse.Namespace) -> None:
 
 
 def export_submission_pub_key(args: argparse.Namespace) -> None:
-    use_usb = (
-        args.usb
-        or not get_installed_product().contains_admin
-        or input("Export to [a]dmin qube or [u]sb drive? Please pick [a/u]: ").lower() == "u"
-    )
-    if use_usb:
+    if args.target == "usb":
         export_submission_pub_key_to_usb(args)
     else:
         export_submission_pub_key_to_admin(args)
@@ -297,14 +292,27 @@ def main() -> None:
         action="store_true",
         help="Overwrite an existing Submission Key",
     )
+    # Without the admin product there's nothing to choose: always export to USB
+    admin_installed = get_installed_product().contains_admin
+    usb_export_help = "Export to a USB drive"
     export.add_argument(
-        "--usb",
-        action="store_true",
-        help="Export to a USB drive",
+        "--target",
+        choices=["usb", "admin"] if admin_installed else ["usb"],
+        default=None if admin_installed else "usb",  # "None" represents "ambiguous"
+        help=(
+            f"{usb_export_help} or the 'sd-admin' qube (asks if not given)"
+            if admin_installed
+            else usb_export_help
+        ),
     )
     export.set_defaults(run=export_submission_pub_key)
 
     args = parser.parse_args()
+
+    # Clarify with user ambiguous export target
+    if args.target is None:
+        answer = input("Export to [a]dmin workstation or [u]sb drive? Please pick [a/u]: ").lower()
+        args.target = "usb" if answer == "u" else "admin"
 
     try:
         args.run(args)
