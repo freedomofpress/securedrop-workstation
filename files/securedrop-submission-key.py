@@ -157,6 +157,11 @@ def copy_file_to_qube(
 
     try:
         kwargs = {"user": "root"} if sudo else {}
+
+        # Create path if it doesn't already exist
+        target_qube.run(f"mkdir -p {Path(target_path).parent}", **kwargs)
+
+        # Write file with default permissions
         with open(local_path, "rb") as pub_key_f:
             target_qube.run(f"tee {target_path}", input=pub_key_f.read(), **kwargs)
     except subprocess.CalledProcessError:
