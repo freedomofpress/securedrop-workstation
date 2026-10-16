@@ -195,8 +195,8 @@ def export_submission_pub_key_to_admin(args: argparse.Namespace) -> None:
                 "securedrop-set-site-specific --file "
                 + f"{SITE_SPECIFIC_PATH_SD_ADMIN} {key} {value}",
             )
-    except subprocess.CalledProcessError:
-        print("Failed to update site-specific configurations.")
+    except subprocess.CalledProcessError as e:
+        raise SubmissionKeyException("Failed to update site-specific configurations") from e
 
 
 def copy_pub_key_to_usb(vm: qubesadmin.vm.QubesVM, overwrite: bool) -> None:
