@@ -5,16 +5,42 @@ Generate a new Submission Key in dom0 and export the fingerprint, secret and pub
 
 import argparse
 import json
+import shlex
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
+import qubesadmin
+from qubesadmin.exc import QubesException
+from qubesadmin.vm import QubesVM
+
+from securedrop_manage.configure import get_submission_key_fingerprint
+from securedrop_manage.products import get_installed_product
+
 # XDG_CONFIG_HOME is not set in 4.3 Qubes - set it manually
-CONFIG_DIR = Path.home() / ".config/securedrop-manage"
-SECRET_KEY_PATH = CONFIG_DIR / "sd-journalist.sec"
-PUBLIC_KEY_PATH = CONFIG_DIR / "sd-journalist.pub"
-CONFIG_PATH = CONFIG_DIR / "config.json"
+DOM0_CONFIG_DIR = Path.home() / ".config/securedrop-manage"
+DOM0_SEC_KEY_PATH = DOM0_CONFIG_DIR / "sd-journalist.sec"
+DOM0_PUB_KEY_PATH = DOM0_CONFIG_DIR / "sd-journalist.pub"
+DOM0_CONFIG_PATH = DOM0_CONFIG_DIR / "config.json"
+
+# Configurations in 'sd-admin' qube or for exporting via USB
+SD_ADMIN_VM = "sd-admin"
+SD_ADMIN_CONFIG_PATH = "~/.config/securedrop-admin"
+SD_ADMIN_PUB_KEY_FILE_NAME = "SecureDrop.asc"
+SD_ADMIN_PUB_KEY_PATH = f"{SD_ADMIN_CONFIG_PATH}/{SD_ADMIN_PUB_KEY_FILE_NAME}"
+SD_ADMIN_SITE_SPECIFIC_PATH = f"{SD_ADMIN_CONFIG_PATH}/site-specific"
+
+# ANSI color codes
+BOLD = "\033[1m"
+CYAN = "\033[36m"
+RED = "\033[31m"
+ITALIC = "\033[3m"
+RESET = "\033[0m"
+
+
+class SubmissionKeyException(Exception):
+    pass
 
 
 def generate_key(organization: str) -> tuple[str, str, str]:
@@ -87,19 +113,10 @@ def write_private(path: Path, contents: str) -> None:
     path.write_text(contents)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate a new Submission Key")
-    parser.add_argument("organization", help="Name of your organization")
-    parser.add_argument(
-        "--overwrite",
-        action="store_true",
-        help="Overwrite an existing Submission Key",
-    )
-    args = parser.parse_args()
-
-    if SECRET_KEY_PATH.exists() and not args.overwrite:
+def generate_submission_key(args: argparse.Namespace) -> None:
+    if DOM0_SEC_KEY_PATH.exists() and not args.overwrite:
         print(
-            f"Error: a submission key already exists at {SECRET_KEY_PATH}. "
+            f"Error: a submission key already exists at {DOM0_SEC_KEY_PATH}. "
             "Use --overwrite to overwrite it.",
             file=sys.stderr,
         )
@@ -108,18 +125,202 @@ def main() -> None:
     print("Generating submission key...")
     fingerprint, secret_key, public_key = generate_key(args.organization)
 
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    write_private(SECRET_KEY_PATH, secret_key)
-    PUBLIC_KEY_PATH.write_text(public_key)
+    DOM0_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    write_private(DOM0_SEC_KEY_PATH, secret_key)
+    DOM0_PUB_KEY_PATH.write_text(public_key)
 
     # Edit or create config.json and set submission_key_fpr
-    config = json.loads(CONFIG_PATH.read_text()) if CONFIG_PATH.exists() else {}
+    config = json.loads(DOM0_CONFIG_PATH.read_text()) if DOM0_CONFIG_PATH.exists() else {}
     config["submission_key_fpr"] = fingerprint
-    CONFIG_PATH.write_text(json.dumps(config, indent=2) + "\n")
+    DOM0_CONFIG_PATH.write_text(json.dumps(config, indent=2) + "\n")
 
     print(f"Generated Submission Key with fingerprint: {fingerprint}")
-    print(f"Secret key is saved to: {SECRET_KEY_PATH}")
-    print(f"Public key is saved to: {PUBLIC_KEY_PATH}")
+    print(f"Secret key is saved to: {DOM0_SEC_KEY_PATH}")
+    print(f"Public key is saved to: {DOM0_PUB_KEY_PATH}")
+
+
+def copy_file_to_qube(
+    local_path: str | Path,
+    target_qube: QubesVM,
+    target_path: str | Path,
+    overwrite: bool,
+    sudo: bool = False,
+) -> None:
+    # Check if file overriding allowed
+    if not overwrite:
+        try:
+            target_qube.run(f"test ! -e {target_path}")
+        except subprocess.CalledProcessError as e:
+            raise SubmissionKeyException(
+                f"a submission key already exists in '{target_qube.name}' at "
+                f"{target_path}. Use --overwrite to overwrite it.",
+            ) from e
+
+    try:
+        kwargs = {"user": "root"} if sudo else {}
+
+        # Create path if it doesn't already exist
+        target_qube.run(f"mkdir -p {Path(target_path).parent}", **kwargs)
+
+        # Write file with default permissions
+        with open(local_path, "rb") as pub_key_f:
+            target_qube.run(f"tee {target_path}", input=pub_key_f.read(), **kwargs)
+    except subprocess.CalledProcessError:
+        raise SubmissionKeyException(f"Failed to save '{local_path}' in qube '{target_qube.name}'")
+
+
+def export_submission_pub_key_to_admin(args: argparse.Namespace) -> None:
+    print("Updating public key in sd-admin qube...")
+    try:
+        sd_admin_qube = qubesadmin.Qubes().domains["sd-admin"]
+    except QubesException:
+        raise SubmissionKeyException(
+            "'sd-admin' qube not found! "
+            "You need to run `securedrop-manage apply --target admin` first."
+        )
+
+    copy_file_to_qube(
+        local_path=DOM0_PUB_KEY_PATH,
+        target_qube=sd_admin_qube,
+        target_path=SD_ADMIN_PUB_KEY_PATH,
+        overwrite=args.overwrite,
+    )
+
+    print("Public key succesfully exported to 'sd-admin' qube!")
+
+    print(f"Updating site-specific settings in '{SD_ADMIN_SITE_SPECIFIC_PATH}'")
+    site_specific_changes = {
+        "securedrop_app_gpg_fingerprint": get_submission_key_fingerprint(DOM0_SEC_KEY_PATH),
+        "securedrop_app_gpg_public_key": SD_ADMIN_PUB_KEY_PATH,
+    }
+    try:
+        for key, value in site_specific_changes.items():
+            sd_admin_qube.run(
+                "securedrop-set-site-specific --file "
+                + f"{SD_ADMIN_SITE_SPECIFIC_PATH} {key} {value}",
+            )
+    except subprocess.CalledProcessError as e:
+        raise SubmissionKeyException("Failed to update site-specific configurations") from e
+
+
+def copy_pub_key_to_usb(vm: qubesadmin.vm.QubesVM, overwrite: bool) -> None:
+    """
+    Ask the user for a folder on the USB drive attached to 'vm', copy the
+    public key there and lock the drive
+    """
+    while True:
+        print(
+            f"Opening '{vm.name}'... afterwards, please unlock the "
+            "drive and choose a folder on it..."
+        )
+        try:
+            stdout, _ = vm.run_service_for_stdio("qubes.SelectDirectory")
+        except subprocess.CalledProcessError:
+            raise SubmissionKeyException("no folder selected")
+        untrusted_directory = stdout.decode("ascii", errors="ignore")
+        directory = shlex.quote(untrusted_directory.removesuffix("\n"))
+        if directory.startswith(("/media/", "/run/media/")):
+            break
+        print(f"Selected folder is not on a USB drive: {directory}")
+        if input("Pick another folder? [Y/n] ").lower() == "n":
+            raise SubmissionKeyException("export cancelled")
+
+    target_path = f"{directory}/{Path(SD_ADMIN_PUB_KEY_FILE_NAME).name}"
+    copy_file_to_qube(
+        local_path=DOM0_PUB_KEY_PATH,
+        target_qube=vm,
+        target_path=target_path,
+        overwrite=overwrite,
+        sudo=True,
+    )
+
+    print("Public key successfully exported to USB device")
+    try:
+        # Unmount the filesystem (optional)
+        subprocess.run(
+            [
+                "qvm-run",
+                vm.name,
+                f"udisksctl unmount -b $(findmnt -no SOURCE --target {directory})",
+            ],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        print("Failed to unmount drive")
+
+    except subprocess.CalledProcessError:
+        print(f"{BOLD}{RED}WARNING:{RESET} failed to unmount drive", file=sys.stderr)
+
+
+def export_submission_pub_key_to_usb(args: argparse.Namespace) -> None:
+    app = qubesadmin.Qubes()
+    try:
+        sd_devices = app.domains["sd-devices"]
+    except QubesException:
+        raise SubmissionKeyException("'sd-devices' qube not found!")
+
+    # USB drives are automatically attached to sd-devices
+    input("Please insert the USB drive and press Enter...")
+    copy_pub_key_to_usb(sd_devices, args.overwrite)
+
+    print("You can now remove the USB drive.")
+
+
+def export_submission_pub_key(args: argparse.Namespace) -> None:
+    if args.target == "usb":
+        export_submission_pub_key_to_usb(args)
+    else:
+        export_submission_pub_key_to_admin(args)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Manage SecureDrop Submission Key")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # Key generation
+    generate = subparsers.add_parser("generate", help="Generate a new Submission Key")
+    generate.set_defaults(run=generate_submission_key)
+    generate.add_argument("organization", help="Name of your organization")
+    generate.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite an existing Submission Key",
+    )
+
+    # Key exporting
+    export = subparsers.add_parser("export", help="Export the Submission Key (public key only)")
+    export.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite an existing Submission Key",
+    )
+    # Without the admin product there's nothing to choose: always export to USB
+    admin_installed = get_installed_product().contains_admin
+    usb_export_help = "Export to a USB drive"
+    export.add_argument(
+        "--target",
+        choices=["usb", "admin"] if admin_installed else ["usb"],
+        default=None if admin_installed else "usb",  # "None" represents "ambiguous"
+        help=(
+            f"{usb_export_help} or the 'sd-admin' qube (asks if not given)"
+            if admin_installed
+            else usb_export_help
+        ),
+    )
+    export.set_defaults(run=export_submission_pub_key)
+
+    args = parser.parse_args()
+
+    # Clarify with user ambiguous export target
+    if args.target is None:
+        answer = input("Export to [a]dmin workstation or [u]sb drive? Please pick [a/u]: ").lower()
+        args.target = "usb" if answer == "u" else "admin"
+
+    try:
+        args.run(args)
+    except SubmissionKeyException as e:
+        sys.exit(f"Error: {e}")
 
 
 if __name__ == "__main__":
