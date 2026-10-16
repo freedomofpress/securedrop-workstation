@@ -222,7 +222,7 @@ def copy_pub_key_to_usb(vm: qubesadmin.vm.QubesVM, overwrite: bool) -> None:
         if input("Pick another folder? [Y/n] ").lower() == "n":
             raise SubmissionKeyException("export cancelled")
 
-    target_path = f"{directory}/{Path(DOM0_PUB_KEY_PATH).name}"
+    target_path = f"{directory}/{Path(SD_ADMIN_PUB_KEY_FILE_NAME).name}"
     copy_file_to_qube(
         local_path=DOM0_PUB_KEY_PATH,
         target_qube=vm,
