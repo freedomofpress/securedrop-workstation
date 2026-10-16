@@ -146,10 +146,10 @@ def copy_file_to_qube(
     sudo: bool = False,
 ) -> None:
     # Check if file overriding allowed
-    try:
-        target_qube.run(f"test ! -e {target_path}")
-    except subprocess.CalledProcessError as e:
-        if not overwrite:
+    if not overwrite:
+        try:
+            target_qube.run(f"test ! -e {target_path}")
+        except subprocess.CalledProcessError as e:
             raise SubmissionKeyException(
                 f"a submission key already exists in '{target_qube.name}' at "
                 f"{target_path}. Use --overwrite to overwrite it.",
