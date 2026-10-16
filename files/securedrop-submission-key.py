@@ -209,7 +209,10 @@ def copy_pub_key_to_usb(vm: qubesadmin.vm.QubesVM, overwrite: bool) -> None:
     public key there and lock the drive
     """
     while True:
-        print(f"In '{vm.name}', unlock the drive and choose a folder on it...")
+        print(
+            f"Opening '{vm.name}'... afterwards, please unlock the "
+            "drive and choose a folder on it..."
+        )
         try:
             stdout, _ = vm.run_service_for_stdio("qubes.SelectDirectory")
         except subprocess.CalledProcessError:
@@ -258,10 +261,10 @@ def export_submission_pub_key_to_usb(args: argparse.Namespace) -> None:
         raise SubmissionKeyException("'sd-devices' qube not found!")
 
     # USB drives are automatically attached to sd-devices
-    input("Insert the USB drive and press Enter...")
+    input("Please insert the USB drive and press Enter...")
     copy_pub_key_to_usb(sd_devices, args.overwrite)
 
-    print("You can now remove the USB drive.\n")
+    print("You can now remove the USB drive.")
 
 
 def export_submission_pub_key(args: argparse.Namespace) -> None:
