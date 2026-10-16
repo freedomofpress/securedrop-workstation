@@ -173,7 +173,10 @@ def export_submission_pub_key_to_admin(args: argparse.Namespace) -> None:
     try:
         sd_admin_qube = qubesadmin.Qubes().domains["sd-admin"]
     except QubesException:
-        raise SubmissionKeyException("'sd-admin' qube not found!")
+        raise SubmissionKeyException(
+            "'sd-admin' qube not found! "
+            "You need to run `securedrop-manage apply --target admin` first."
+        )
 
     copy_file_to_qube(
         local_path=PUBLIC_KEY_PATH,
