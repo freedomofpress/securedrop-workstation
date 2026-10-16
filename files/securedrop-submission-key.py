@@ -19,16 +19,17 @@ from securedrop_manage.configure import get_submission_key_fingerprint
 from securedrop_manage.products import get_installed_product
 
 # XDG_CONFIG_HOME is not set in 4.3 Qubes - set it manually
-CONFIG_DIR = Path.home() / ".config/securedrop-manage"
-SECRET_KEY_PATH = CONFIG_DIR / "sd-journalist.sec"
-PUBLIC_KEY_PATH = CONFIG_DIR / "sd-journalist.pub"
-CONFIG_PATH = CONFIG_DIR / "config.json"
+DOM0_CONFIG_DIR = Path.home() / ".config/securedrop-manage"
+DOM0_SEC_KEY_PATH = DOM0_CONFIG_DIR / "sd-journalist.sec"
+DOM0_PUB_KEY_PATH = DOM0_CONFIG_DIR / "sd-journalist.pub"
+DOM0_CONFIG_PATH = DOM0_CONFIG_DIR / "config.json"
 
-# Configurations in 'sd-admin' qube
+# Configurations in 'sd-admin' qube or for exporting via USB
 SD_ADMIN_VM = "sd-admin"
-CONFIG_PATH_SD_ADMIN = "~/.config/securedrop-admin"
-PUBLIC_KEY_PATH_SD_ADMIN = f"{CONFIG_PATH_SD_ADMIN}/SecureDrop.asc"
-SITE_SPECIFIC_PATH_SD_ADMIN = f"{CONFIG_PATH_SD_ADMIN}/site-specific"
+SD_ADMIN_CONFIG_PATH = "~/.config/securedrop-admin"
+SD_ADMIN_PUB_KEY_FILE_NAME = "SecureDrop.asc"
+SD_ADMIN_PUB_KEY_PATH = f"{SD_ADMIN_CONFIG_PATH}/{SD_ADMIN_PUB_KEY_FILE_NAME}"
+SD_ADMIN_SITE_SPECIFIC_PATH = f"{SD_ADMIN_CONFIG_PATH}/site-specific"
 
 # ANSI color codes
 BOLD = "\033[1m"
@@ -113,9 +114,9 @@ def write_private(path: Path, contents: str) -> None:
 
 
 def generate_submission_key(args: argparse.Namespace) -> None:
-    if SECRET_KEY_PATH.exists() and not args.overwrite:
+    if DOM0_SEC_KEY_PATH.exists() and not args.overwrite:
         print(
-            f"Error: a submission key already exists at {SECRET_KEY_PATH}. "
+            f"Error: a submission key already exists at {DOM0_SEC_KEY_PATH}. "
             "Use --overwrite to overwrite it.",
             file=sys.stderr,
         )
@@ -124,18 +125,18 @@ def generate_submission_key(args: argparse.Namespace) -> None:
     print("Generating submission key...")
     fingerprint, secret_key, public_key = generate_key(args.organization)
 
-    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-    write_private(SECRET_KEY_PATH, secret_key)
-    PUBLIC_KEY_PATH.write_text(public_key)
+    DOM0_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    write_private(DOM0_SEC_KEY_PATH, secret_key)
+    DOM0_PUB_KEY_PATH.write_text(public_key)
 
     # Edit or create config.json and set submission_key_fpr
-    config = json.loads(CONFIG_PATH.read_text()) if CONFIG_PATH.exists() else {}
+    config = json.loads(DOM0_CONFIG_PATH.read_text()) if DOM0_CONFIG_PATH.exists() else {}
     config["submission_key_fpr"] = fingerprint
-    CONFIG_PATH.write_text(json.dumps(config, indent=2) + "\n")
+    DOM0_CONFIG_PATH.write_text(json.dumps(config, indent=2) + "\n")
 
     print(f"Generated Submission Key with fingerprint: {fingerprint}")
-    print(f"Secret key is saved to: {SECRET_KEY_PATH}")
-    print(f"Public key is saved to: {PUBLIC_KEY_PATH}")
+    print(f"Secret key is saved to: {DOM0_SEC_KEY_PATH}")
+    print(f"Public key is saved to: {DOM0_PUB_KEY_PATH}")
 
 
 def copy_file_to_qube(
@@ -179,24 +180,24 @@ def export_submission_pub_key_to_admin(args: argparse.Namespace) -> None:
         )
 
     copy_file_to_qube(
-        local_path=PUBLIC_KEY_PATH,
+        local_path=DOM0_PUB_KEY_PATH,
         target_qube=sd_admin_qube,
-        target_path=PUBLIC_KEY_PATH_SD_ADMIN,
+        target_path=SD_ADMIN_PUB_KEY_PATH,
         overwrite=args.overwrite,
     )
 
     print("Public key succesfully exported to 'sd-admin' qube!")
 
-    print(f"Updating site-specific settings in '{SITE_SPECIFIC_PATH_SD_ADMIN}'")
+    print(f"Updating site-specific settings in '{SD_ADMIN_SITE_SPECIFIC_PATH}'")
     site_specific_changes = {
-        "securedrop_app_gpg_fingerprint": get_submission_key_fingerprint(SECRET_KEY_PATH),
-        "securedrop_app_gpg_public_key": PUBLIC_KEY_PATH_SD_ADMIN,
+        "securedrop_app_gpg_fingerprint": get_submission_key_fingerprint(DOM0_SEC_KEY_PATH),
+        "securedrop_app_gpg_public_key": SD_ADMIN_PUB_KEY_PATH,
     }
     try:
         for key, value in site_specific_changes.items():
             sd_admin_qube.run(
                 "securedrop-set-site-specific --file "
-                + f"{SITE_SPECIFIC_PATH_SD_ADMIN} {key} {value}",
+                + f"{SD_ADMIN_SITE_SPECIFIC_PATH} {key} {value}",
             )
     except subprocess.CalledProcessError as e:
         raise SubmissionKeyException("Failed to update site-specific configurations") from e
@@ -221,9 +222,9 @@ def copy_pub_key_to_usb(vm: qubesadmin.vm.QubesVM, overwrite: bool) -> None:
         if input("Pick another folder? [Y/n] ").lower() == "n":
             raise SubmissionKeyException("export cancelled")
 
-    target_path = f"{directory}/{Path(PUBLIC_KEY_PATH).name}"
+    target_path = f"{directory}/{Path(DOM0_PUB_KEY_PATH).name}"
     copy_file_to_qube(
-        local_path=PUBLIC_KEY_PATH,
+        local_path=DOM0_PUB_KEY_PATH,
         target_qube=vm,
         target_path=target_path,
         overwrite=overwrite,
