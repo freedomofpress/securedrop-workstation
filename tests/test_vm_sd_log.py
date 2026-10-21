@@ -3,8 +3,6 @@ Integration tests for validating SecureDrop Workstation config,
 specifically for the "sd-log" VM and related functionality.
 """
 
-import secrets
-import string
 import subprocess
 
 import pytest
@@ -61,13 +59,11 @@ def test_redis_service_running(qube: QubeWrapper) -> None:
 
 
 @pytest.mark.configuration
-def test_logs_are_flowing(qube: QubeWrapper, sdw_tagged_vms: list[QubesVM]) -> None:
+def test_logs_are_flowing(qube: QubeWrapper, sdw_tagged_vms: list[QubesVM], token: str) -> None:
     """
     To test that logs work, we run a unique command in each VM we care
     about that gets logged, and then check for that string in the logs.
     """
-    # Random string, to avoid collisions with other test runs
-    token = "".join(secrets.choice(string.ascii_uppercase) for _ in range(10))
 
     # base template doesn't have sd-log configured
     # TODO: test a sd-viewer based dispVM
