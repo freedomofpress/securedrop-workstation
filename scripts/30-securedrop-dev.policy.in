@@ -1,0 +1,16 @@
+## Dev-only: let SECUREDROP_DEV_VM drive @tag:sd-workstation qubes (scripts/try-pr.py).
+## Installed by `make dev-vm-policy`. Never use on a production workstation.
+#
+# Numbered 30 so it's evaluated before the SecureDrop Workstation policies
+# (31-*, 32-*), whose catch-all deny rules would otherwise match first.
+
+qubes.VMShell      *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow
+# vm.run() checks the qube's OS to know how to end the shell command
+admin.vm.feature.CheckWithTemplate  +os  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
+
+admin.vm.List      *  SECUREDROP_DEV_VM  @adminvm             allow target=dom0
+admin.vm.List      *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
+admin.vm.CurrentState  *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
+admin.vm.tag.Get   *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
+admin.vm.Shutdown  *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
+admin.vm.Start     *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
