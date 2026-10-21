@@ -3,12 +3,17 @@
 import argparse
 import contextlib
 import os
+import socket
 import subprocess
-import tempfile
+import sys
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 
-BUILD_VM = os.environ.get("SECUREDROP_DEV_VM", "sd-dev")
+import qubesadmin
+import qubesadmin.exc
+from qubesadmin.vm import QubesVM
+
 INBOX_TEMPLATE = "sd-inbox-debian-13"
 VIEWER_TEMPLATE = "sd-viewer-debian-13"
 ADMIN_TEMPLATE = "sd-admin-debian-13"
@@ -18,7 +23,7 @@ ADMIN_TEMPLATE = "sd-admin-debian-13"
 class Target:
     """A repository to build packages from and the templates to install them into."""
 
-    repo: str
+    repo: Path
     default_branch: str
     make_target: str
     templates: list[str]
@@ -30,7 +35,7 @@ class Target:
 
 
 CLIENT = Target(
-    repo="securedrop-client",
+    repo=Path.home() / "securedrop-client",
     default_branch="main",
     make_target="build-debs",
     templates=[INBOX_TEMPLATE, VIEWER_TEMPLATE],
@@ -40,7 +45,7 @@ CLIENT = Target(
     done_message="You can start the app with `make run-app`.",
 )
 ADMIN = Target(
-    repo="securedrop",
+    repo=Path.home() / "securedrop",
     default_branch="develop",
     make_target="build-debs-admin-notest",
     templates=[ADMIN_TEMPLATE],
@@ -50,121 +55,77 @@ ADMIN = Target(
 )
 
 
-def run_in_vm(command: list[str], vmname: str, capture_output: bool = False) -> str | None:
-    """Run a command in the build VM."""
-    full_command = ["qvm-run", "--pass-io", vmname, " ".join(command)]
-    print(f"$ {' '.join(full_command)}")
-    if capture_output:
-        return subprocess.check_output(full_command, text=True)
-    else:
-        subprocess.check_call(full_command)
-        return None
+def check_requirements(target: Target) -> None:
+    """Exit early unless running in the development VM with the dev policy installed."""
+    if socket.gethostname() == "dom0":
+        sys.exit("This script must now be run from the development VM, not dom0.")
+    try:
+        app = qubesadmin.Qubes()
+        list(app.domains)  # check if admin.vm.List is allowed
+        app.domains[target.templates[0]].run("true")
+    except (qubesadmin.exc.QubesException, subprocess.CalledProcessError):
+        sys.exit(
+            "This VM is not allowed to manage SecureDrop qubes. "
+            "Run `make dev-vm-policy` in dom0 first."
+        )
 
 
 def check_out_pr(pr_id: int, target: Target) -> None:
-    """Check out the PR into the local repository in build VM."""
-    print(f"Checking out {target.repo} PR #{pr_id} in {BUILD_VM} VM...")
+    """Check out the PR into the local repository."""
+    print(f"Checking out {target.repo} PR #{pr_id}...")
+    git = ["git", "-C", str(target.repo)]
     branch = f"pr-{pr_id}"
     # first switch to the default branch, removing the PR branch if it exists
-    run_in_vm(["git", "-C", target.repo, "checkout", target.default_branch], BUILD_VM)
+    subprocess.check_call([*git, "checkout", target.default_branch])
     with contextlib.suppress(subprocess.CalledProcessError):
-        run_in_vm(["git", "-C", target.repo, "branch", "-D", branch], BUILD_VM)
+        subprocess.check_call([*git, "branch", "-D", branch])
     # Fetch and checkout the PR
     # TODO: this doesn't seem to work with SSH remotes
-    run_in_vm(
-        ["git", "-C", target.repo, "fetch", "origin", f"pull/{pr_id}/head:{branch}"],
-        BUILD_VM,
-    )
-    run_in_vm(["git", "-C", target.repo, "checkout", branch], BUILD_VM)
+    subprocess.check_call([*git, "fetch", "origin", f"pull/{pr_id}/head:{branch}"])
+    subprocess.check_call([*git, "checkout", branch])
 
     print(f"Successfully checked out PR #{pr_id}")
 
 
-def build_debs(target: Target) -> None:
-    """Run make build-debs (or equivalent) in build VM to build the Debian packages."""
+def build_debs(target: Target) -> list[Path]:
+    """Run make build-debs (or equivalent) to build the Debian packages."""
     # TODO: we should download these from CI instead of building them ourselves
     # TODO: an option to also update securedrop-builder?
-    print(f"Building Debian packages in {BUILD_VM} VM...")
-    run_in_vm(["rm", "-rf", f"{target.repo}/build"], BUILD_VM)
-    build_args = ["FAST=1", "make", "-C", target.repo, target.make_target]
-    run_in_vm(build_args, BUILD_VM)
+    print("Building Debian packages...")
+    subprocess.check_call(["rm", "-rf", str(target.repo / "build")])
+    build_args = ["make", "-C", str(target.repo), target.make_target]
+    subprocess.check_call(build_args, env={**os.environ, "FAST": "1"})
     print("Successfully built Debian packages")
 
-
-def find_debs_in_build_vm(target: Target) -> list[str]:
-    """Find all .deb files in the build folder of build VM."""
-    print(f"Finding .deb files in {BUILD_VM} VM...")
-    # List all .deb files in the build directory
-    output = run_in_vm(
-        ["find", f"{target.repo}/build", "-name", '"*.deb"'], BUILD_VM, capture_output=True
-    )
-    assert output is not None  # noqa: S101
-
-    deb_files = [line.strip() for line in output.strip().split("\n") if line.strip()]
-
-    if not deb_files:
+    debs = sorted((target.repo / "build").rglob("*.deb"))
+    if not debs:
         raise RuntimeError("No .deb packages found in the build directory")
-
-    return deb_files
-
-
-def get_package_name_from_build_vm(deb_path: str) -> str:
-    # A bit hacky but should do the job
-    return Path(deb_path).name.split("_")[0]
+    return debs
 
 
-def copy_deb_to_dom0(build_vm_path: str) -> Path:
-    """Copy a .deb file from build VM to dom0."""
-    # Create a temp file path in dom0
-    filename = Path(build_vm_path).name
-    dom0_path = Path(tempfile.gettempdir()) / filename
-
-    # Copy from build VM to dom0
-    with open(dom0_path, "wb") as f:
-        cat_cmd = ["qvm-run", "--pass-io", BUILD_VM, f"cat {build_vm_path}"]
-        subprocess.run(cat_cmd, stdout=f, check=True)
-
-    return dom0_path
-
-
-def move_deb_to_template(dom0_path: Path, template_vm: str) -> str:
-    """Move a .deb file from dom0 to template VM."""
-    subprocess.check_call(["qvm-move-to-vm", template_vm, str(dom0_path)])
-    return f"/home/user/QubesIncoming/dom0/{dom0_path.name}"
-
-
-def install_debs_in_template(all_deb_paths: list[str], template_vm: str) -> None:
+def install_debs(template: QubesVM, debs: list[Path]) -> None:
     """Install .deb files in template VM."""
+    dpkg_output = template.run("dpkg-query -f '${Package}\\n' --show 'securedrop*'")[0]
+    wanted_packages = dpkg_output.decode().splitlines()
+    print(f"Going to install into {template.name}: {', '.join(wanted_packages)}")
 
-    # Need to escape "${Package}\n" from being interpreted by bash
-    dpkg_output = run_in_vm(
-        ["dpkg-query", "-f", "\\$\\{Package\\}\\\\n", "--show", "securedrop*"],
-        template_vm,
-        capture_output=True,
-    )
-    assert dpkg_output is not None  # noqa: S101
-    wanted_packages = dpkg_output.splitlines()
-    print(f"Going to install into {template_vm}: {', '.join(wanted_packages)}")
-
-    template_deb_paths = []
+    tmp_dir = template.run("mktemp -d")[0].decode().strip()
 
     # Copy each deb file to the template
-    for build_vm_path in all_deb_paths:
-        if get_package_name_from_build_vm(build_vm_path) not in wanted_packages:
+    for deb in debs:
+        # A bit hacky but should do the job
+        if deb.name.split("_")[0] not in wanted_packages:
             continue
-        print(f"Copying {Path(build_vm_path).name} to {template_vm}...")
-        dom0_path = copy_deb_to_dom0(build_vm_path)
-        template_path = move_deb_to_template(dom0_path, template_vm)
-        template_deb_paths.append(str(template_path))
+        print(f"Copying {deb.name} to {template.name}...")
+        template.run(f"cat > {tmp_dir}/{deb.name}", input=deb.read_bytes())
 
     # Install all packages in the template
-    debs_list = " ".join(template_deb_paths)
-    run_in_vm(
-        ["sudo", "apt-get", "install", "--reinstall", "--yes", "--allow-downgrades", debs_list],
-        template_vm,
+    template.run(
+        f"sudo apt-get install --reinstall --yes --allow-downgrades {tmp_dir}/*.deb",
+        stdout=None,
+        stderr=None,
     )
-    print(f"Packages installed successfully in {template_vm}; cleaning up")
-    run_in_vm(["rm", "-v", debs_list], template_vm)
+    print(f"Packages installed successfully in {template.name}")
 
 
 def main() -> None:
@@ -178,30 +139,27 @@ def main() -> None:
     args = parser.parse_args()
     target = ADMIN if args.admin else CLIENT
 
-    print(f"Using build VM: {BUILD_VM}")
+    check_requirements(target)
+    app = qubesadmin.Qubes()
 
     # Run the workflow
     check_out_pr(args.pr_id, target)
-    build_debs(target)
-
-    # Find deb files and get their names
-    deb_files = find_debs_in_build_vm(target)
-
-    for deb_file in deb_files:
-        package_name = get_package_name_from_build_vm(deb_file)
-        print(f"Package: {package_name} - {deb_file}")
+    debs = build_debs(target)
 
     # Install the deb files in template VMs
-    for template in target.templates:
-        install_debs_in_template(deb_files, template)
+    for name in target.templates:
+        install_debs(app.domains[name], debs)
 
     # Shutdown
-    running_vms = subprocess.check_output(
-        ["qvm-ls", "--tags", target.tag, "--raw-list", "--running"], text=True
-    ).splitlines()
-    subprocess.check_call(["qvm-shutdown", "--wait"] + running_vms)
-    for vm in target.start_vms:
-        subprocess.check_call(["qvm-start", vm])
+    running_vms = [vm for vm in app.domains if vm.is_running() and target.tag in vm.tags]
+    # Shut down in parallel, like `qvm-shutdown --wait` with several qubes
+    with ThreadPoolExecutor() as pool:
+        shutdowns = [pool.submit(vm.shutdown, wait=True) for vm in running_vms]
+    for shutdown in shutdowns:
+        shutdown.result()  # re-raises any shutdown error
+    for name in target.start_vms:
+        app.domains[name].start()
+
     print(f"\n\nYour VMs are provisioned with {target.repo} PR #{args.pr_id}.")
     print(f"\n\n{target.done_message}")
 
