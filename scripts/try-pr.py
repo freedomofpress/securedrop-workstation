@@ -151,7 +151,14 @@ def main() -> None:
         install_debs(app.domains[name], debs)
 
     # Shutdown
-    running_vms = [vm for vm in app.domains if vm.is_running() and target.tag in vm.tags]
+    running_vms = [
+        vm
+        for vm in app.domains
+        if vm.is_running()
+        and target.tag in vm.tags
+        # Preloaded disposables are restarted by Qubes when their template changes
+        and not getattr(vm, "is_preload", False)
+    ]
     # Shut down in parallel, like `qvm-shutdown --wait` with several qubes
     with ThreadPoolExecutor() as pool:
         shutdowns = [pool.submit(vm.shutdown, wait=True) for vm in running_vms]

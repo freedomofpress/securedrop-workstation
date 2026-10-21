@@ -12,5 +12,6 @@ admin.vm.List      *  SECUREDROP_DEV_VM  @adminvm             allow target=dom0
 admin.vm.List      *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
 admin.vm.CurrentState  *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
 admin.vm.tag.Get   *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
+admin.vm.property.Get  +is_preload  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
 admin.vm.Shutdown  *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
 admin.vm.Start     *  SECUREDROP_DEV_VM  @tag:sd-workstation  allow target=dom0
