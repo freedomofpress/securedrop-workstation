@@ -268,6 +268,11 @@ def export_submission_pub_key_to_usb(args: argparse.Namespace) -> None:
 
 
 def export_submission_pub_key(args: argparse.Namespace) -> None:
+    # Clarify with user ambiguous export target
+    if args.target is None:
+        answer = input("Export to [a]dmin workstation or [u]sb drive? Please pick [a/u]: ").lower()
+        args.target = "usb" if answer == "u" else "admin"
+
     if args.target == "usb":
         export_submission_pub_key_to_usb(args)
     else:
@@ -311,11 +316,6 @@ def main() -> None:
     export.set_defaults(run=export_submission_pub_key)
 
     args = parser.parse_args()
-
-    # Clarify with user ambiguous export target
-    if args.target is None:
-        answer = input("Export to [a]dmin workstation or [u]sb drive? Please pick [a/u]: ").lower()
-        args.target = "usb" if answer == "u" else "admin"
 
     try:
         args.run(args)
