@@ -14,6 +14,9 @@ from tests.base import (
     SD_VIEWER_TEMPLATE,
     SD_VMS,
 )
+from tests.markers import needs_journalist
+
+pytestmark = needs_journalist
 
 IS_CI = os.environ.get("CI") == "true"
 
