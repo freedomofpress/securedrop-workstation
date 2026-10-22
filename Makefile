@@ -147,6 +147,14 @@ clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 clone-norpm: assert-dom0 ## As above, but skip creating RPM
 	@BUILD_RPM=false ./scripts/clone-to-dom0
 
+SECUREDROP_DEV_VM ?= sd-dev
+DEV_POLICY := /etc/qubes/policy.d/30-securedrop-dev.policy
+
+.PHONY: dev-vm-policy
+dev-vm-policy: assert-dom0 ## Allow SECUREDROP_DEV_VM to run commands in and start/stop SDW qubes (dev only)
+	sed "s/SECUREDROP_DEV_VM/$(SECUREDROP_DEV_VM)/g" scripts/30-securedrop-dev.policy.in | sudo tee $(DEV_POLICY) >/dev/null
+	@echo "Installed $(DEV_POLICY) for $(SECUREDROP_DEV_VM)"
+
 .PHONY: clean
 clean: assert-dom0 ## Destroys all SD VMs
 # Skip the uninstall if the package isn't installed because it means
