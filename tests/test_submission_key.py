@@ -30,7 +30,7 @@ def run_main(load_non_standard_module: Callable, monkeypatch: pytest.MonkeyPatch
 
 
 def test_generates_key(home: Path, run_main: Callable) -> None:
-    run_main("Placeholder Org")
+    run_main("generate", "Placeholder Org")
     config_dir = home / ".config/securedrop-manage"
     secret_key = (config_dir / "sd-journalist.sec").read_text()
     public_key = (config_dir / "sd-journalist.pub").read_text()
@@ -54,7 +54,7 @@ def test_updates_existing_config(home: Path, run_main: Callable) -> None:
     config_dir = home / ".config/securedrop-manage"
     config_dir.mkdir(parents=True)
     (config_dir / "config.json").write_text(json.dumps({"environment": "prod"}))
-    run_main("Placeholder Org")
+    run_main("generate", "Placeholder Org")
     config = json.loads((config_dir / "config.json").read_text())
     assert config.keys() == {"environment", "submission_key_fpr"}
     assert config["environment"] == "prod"
@@ -65,6 +65,6 @@ def test_refuses_overwrite(home: Path, run_main: Callable) -> None:
     config_dir.mkdir(parents=True)
     (config_dir / "sd-journalist.sec").write_text("existing")
     with pytest.raises(SystemExit):
-        run_main("Placeholder Org")
+        run_main("generate", "Placeholder Org")
     assert (config_dir / "sd-journalist.sec").read_text() == "existing"
     assert not (config_dir / "config.json").exists()
