@@ -104,7 +104,6 @@ def parse_args(prog: str | None = None, argv: list[str] | None = None) -> argpar
         type=Product,
         dest="product",
         help="Whether to operate on the journalist, admin, or both workstations",
-        allow_abbrev=False,
     )
 
     parser = argparse.ArgumentParser(prog=prog)
@@ -130,7 +129,6 @@ def parse_args(prog: str | None = None, argv: list[str] | None = None) -> argpar
         required=False,
         action="store_true",
         help="Don't prompt for confirmation, proceed immediately",
-        allow_abbrev=False,
     )
     subparsers.add_parser(
         Command.CONFIGURE.value,
