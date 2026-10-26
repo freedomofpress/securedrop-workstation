@@ -90,8 +90,14 @@ class QubesExtraTestCaseVMAdapter:
         return self.vm.is_running()
 
     def run(self, command: str, **kwargs: Any) -> SimpleNamespace:
-        out, err = self.vm.run(command, user="root")
-        return SimpleNamespace(returncode=0, communicate=lambda: (out, err))
+        """Adapt vm.run() to return the USB Tests' modified version"""
+        try:
+            out, err = self.vm.run(command, user="root")
+            ret = 0
+        except subprocess.CalledProcessError as error:
+            out, err = error.stdout, error.stderr
+            ret = error.returncode
+        return SimpleNamespace(returncode=ret, communicate=lambda: (out, err))
 
 
 @pytest.fixture
