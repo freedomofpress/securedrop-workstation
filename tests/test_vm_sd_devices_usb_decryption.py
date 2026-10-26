@@ -21,7 +21,7 @@ IS_CI = os.environ.get("CI") == "true"
 
 # Seconds to wait for a udisks2 call: LUKS formatting can take longer than
 # gdbus' default 25s, especially on slower CI hardware
-UDISKS_TIMEOUT = 300 if IS_CI else 30
+UDISKS_TIMEOUT = 300 if IS_CI else 45
 
 
 @pytest.fixture(scope="module")
