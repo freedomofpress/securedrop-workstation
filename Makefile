@@ -147,6 +147,11 @@ clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 clone-norpm: assert-dom0 ## As above, but skip creating RPM
 	@BUILD_RPM=false ./scripts/clone-to-dom0
 
+
+.PHONY: bootstrap-dev-vm
+bootstrap-dev-vm: assert-dom0 ## Allow SECUREDROP_DEV_VM to manage SDW qubes (dev only)
+	./scripts/bootstrap-dev-vm.sh
+
 .PHONY: clean
 clean: assert-dom0 ## Destroys all SD VMs
 # Skip the uninstall if the package isn't installed because it means
