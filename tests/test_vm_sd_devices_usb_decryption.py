@@ -118,16 +118,28 @@ def mock_usb_device(qube_sys_usb: QubeWrapper, qube_sd_devices: QubeWrapper) -> 
     else:
         usbproxy_tests.create_usb_gadget(sys_usb_adapter)
 
+    # Wait for sys-usb's udev rule to attach the device to sd-devices
     try:
-        # Wait for sys-usb's udev rule to attach the device to sd-devices
+        # Wait for auto-attachment by sys-usb's udev rule (seen by the kernel)
         disk = ""
-        for _ in range(60):
+        patience = 60  # seconds
+        while patience > 0 and not disk:
             disk = qube_sd_devices.run("lsblk -dno NAME,TRAN | awk '$2 == \"usb\" {print $1}'")
-            if disk:
-                break
             time.sleep(1)
+            patience -= 1
         assert disk, "USB device was not attached to sd-devices"
 
+        # Wait for detection by udisks2, which happens a bit later
+        while patience > 0 and not _udisks_call(
+            qube_sd_devices,
+            "/org/freedesktop/UDisks2/Manager",
+            "Manager.ResolveDevice",
+            f"{{'path': <'/dev/{disk}'>}}",
+            "{}",
+        ):
+            time.sleep(1)
+            patience -= 1
+        assert patience > 0, "USB device was not detected by udisks2 in sd-devices"
         yield disk
     finally:
         qube_sd_devices.run(CLOSE_USB_DISKS, user="root")
