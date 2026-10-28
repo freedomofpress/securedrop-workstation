@@ -5,10 +5,10 @@ description_notify_updates = (
     "<p>Would you like to check for updates now?</p>"
 )
 
-description_notify_updates_sdapp_running = (
+description_notify_updates_vms_running = (
     "<p>The computer has not checked for security updates recently.</p>"
     "<p><strong>Warning:</strong> Checking for updates "
-    "will interrupt your session and restart the application.</p>"
+    "will interrupt your session and restart VMs.</p>"
     "<p>Would you like to check for updates now?</p>"
 )
 
