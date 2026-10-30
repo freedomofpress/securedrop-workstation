@@ -21,6 +21,7 @@ SD_VIEWER_TEMPLATE = f"sd-viewer-debian-{DEBIAN_VERSION}"
 SD_INBOX_TEMPLATE = f"sd-inbox-debian-{DEBIAN_VERSION}"
 
 SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
+JOURNALIST_TAG = "sd-journalist"
 
 # Expectations regarding VMs' existence and versions
 SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-devices", "sd-printers"]
@@ -34,7 +35,7 @@ CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
 CURRENT_WHONIX_VERSION = "17"
 
 
-# Lifted from launcher/sdw_util/Util.py
+# Lifted from sdw_util/Util.py
 def get_qubes_version() -> str | None:
     """
     Helper function for checking the Qubes version. Returns None if not on Qubes.
@@ -97,6 +98,10 @@ def is_workstation_qube(qube: QubesVM) -> bool:
     """
 
     return is_managed_qube(qube) and SD_TAG in qube.tags
+
+
+def is_journalist_qube(qube: QubesVM) -> bool:
+    return is_workstation_qube(qube) and JOURNALIST_TAG in qube.tags
 
 
 class QubeWrapper:

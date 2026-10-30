@@ -5,14 +5,14 @@ Strictly speaking this doesn't have to do with the launcher, but
 it needs dependencies installed and to be run under pytest
 """
 
-import socket
 from pathlib import Path
 
-if socket.gethostname() != "dom0":
+from tests.dom0_stubs import IN_DOM0
+from tests.markers import skip_in_dom0
+
+if not IN_DOM0:
     import pysequoia
     from debian import deb822
-
-from conftest import skip_in_dom0
 
 # A couple of tests are skipped in dom0 since:
 #  - they rely on poetry-installed dependencies (not trival to get in dom0)

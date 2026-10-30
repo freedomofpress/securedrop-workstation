@@ -8,7 +8,3 @@
 # sd-admin: copy/paste to and from sd-admin-vault
 qubes.ClipboardPaste    *           sd-admin sd-admin-vault allow
 qubes.ClipboardPaste    *           sd-admin-vault sd-admin allow
-
-# sd-admin-firewall: copy/paste to and from sd-admin-vault
-qubes.ClipboardPaste    *           sd-admin-firewall sd-admin-vault allow
-qubes.ClipboardPaste    *           sd-admin-vault sd-admin-firewall allow
