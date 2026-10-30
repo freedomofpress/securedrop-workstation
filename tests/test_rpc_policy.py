@@ -13,9 +13,7 @@ pytestmark = needs_dom0
 
 # Clipboard pairings granted by 31-securedrop-admin.policy
 ADMIN_CLIPBOARD_PAIRS = [
-    ("sd-admin", "sd-vault"),
-    ("sd-firewall-setup", "sd-vault"),
-    ("sd-vault", "sd-app"),
+    ("sd-admin", "sd-admin-vault"),
 ]
 
 
