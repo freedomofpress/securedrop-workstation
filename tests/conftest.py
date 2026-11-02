@@ -98,6 +98,19 @@ def needs_admin(needs_dom0: None) -> None:
             pytest.skip("requires Admin Workstation")
 
 
+@pytest.fixture(scope="module")
+def needs_journalist_absent() -> None:
+    """
+    Skip if Journalist Workstation is installed, to avoid the sd-devices
+    auto-attach logic for USBs
+    """
+    if (PRODUCTS_PATH / "journalist-workstation.json").is_file():
+        if EXPECTED_INSTALLED_PRODUCT == "admin":
+            pytest.fail("journalist workstation expected to be missing, but it's installed")
+        else:
+            pytest.skip("Journalist Workstation auto-attaches USB storage to sd-devices")
+
+
 @pytest.fixture(scope="session")
 def proj_root() -> os.PathLike[Any]:
     return Path(__file__).parent.parent
