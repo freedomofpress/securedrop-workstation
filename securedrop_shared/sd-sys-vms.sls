@@ -14,7 +14,7 @@ include:
 
 # 4.2 fedora template is fedora-NN-xfce, but let's keep the dvm names to
 # follow simple - like sd-fedora-NN-dvm
-{% set sd_supported_fedora_version_num = 43 %}
+{% set sd_supported_fedora_version_num = 44 %}
 {% set sd_supported_fedora_version = 'fedora-' ~ sd_supported_fedora_version_num %}
 {% set sd_fedora_base_template = sd_supported_fedora_version + '-xfce' %}
 
