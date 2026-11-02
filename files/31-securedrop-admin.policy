@@ -8,3 +8,7 @@
 # sd-admin: copy/paste to and from sd-admin-vault
 qubes.ClipboardPaste    *           sd-admin sd-admin-vault allow
 qubes.ClipboardPaste    *           sd-admin-vault sd-admin allow
+
+# sd-admin: USB devices attached manually from dom0 (e.g. via the devices
+# widget). Unlike sd-devices, sys-usb doesn't auto-attach (qubes.USBAttach).
+qubes.USB               *           sd-admin sys-usb allow
