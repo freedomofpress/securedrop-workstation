@@ -255,9 +255,9 @@ fi
 # version we are upgrading from. The version conditional should
 # be bumped whenever there is some change in the release that
 # requires a full `sdw-admin --apply` run.
-%triggerun -- %{name} < 1.8.0
+%triggerun -- %{name} < 1.10.0
 mkdir -p /tmp/sdw-migrations
-touch /tmp/sdw-migrations/debian-13-bump
+touch /tmp/sdw-migrations/fedora-44-bump
 
 %post -n securedrop-admin-dom0-config
 qubesctl top.enable admin_salt.sd-admin > /dev/null ||:
