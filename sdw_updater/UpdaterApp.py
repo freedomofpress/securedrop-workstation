@@ -11,6 +11,7 @@ from sdw_updater import Updater, strings
 from sdw_updater.Updater import UpdateStatus
 from sdw_updater.UpdaterAppUiQt6 import Ui_UpdaterDialog
 from sdw_util import Util
+from securedrop_manage.products import get_installed_product
 
 logger = Util.get_logger(module=__name__)
 
@@ -29,6 +30,15 @@ class LaunchTarget:
 InboxTarget = LaunchTarget(
     name="SecureDrop Inbox", vm="sd-app", desktop="press.freedom.SecureDropApp"
 )
+
+
+def default_launch_target() -> LaunchTarget | None:
+    """
+    The Inbox if the Journalist Workstation is installed, otherwise nothing
+    """
+    if get_installed_product().contains_journalist:
+        return InboxTarget
+    return None
 
 
 def launch_in_vm(target: LaunchTarget) -> None:
@@ -53,7 +63,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self,
         should_skip_netcheck: bool = False,
         parent: Any = None,
-        launch_target: LaunchTarget = InboxTarget,
+        launch_target: LaunchTarget | None = None,
     ) -> None:
         super().__init__(parent)
 
@@ -76,7 +86,7 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
 
         self.inboxOpenButton.setEnabled(False)
         self.inboxOpenButton.hide()
-        self.inboxOpenButton.clicked.connect(lambda: launch_in_vm(self.launch_target))
+        self.inboxOpenButton.clicked.connect(self.continue_to_target)
 
         self.rebootButton.setEnabled(False)
         self.rebootButton.hide()
@@ -85,8 +95,10 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
         self.show()
 
         self.headline.setText(strings.headline_introduction)
+        # With nothing to launch, it's the Workstation as a whole that can't be used
+        app_name = self.launch_target.name if self.launch_target else "Workstation"
         self.proposedActionDescription.setText(
-            strings.description_introduction.format(app_name=self.launch_target.name)
+            strings.description_introduction.format(app_name=app_name)
         )
 
         self.progress += 1
@@ -118,17 +130,25 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
             self.headline.setText(strings.headline_status_updates_complete)
-            self.proposedActionDescription.setText(
-                strings.description_status_updates_complete.format(app_name=self.launch_target.name)
-            )
+            if self.launch_target:
+                description = strings.description_status_updates_complete.format(
+                    app_name=self.launch_target.name
+                )
+            else:
+                description = strings.description_status_updates_complete_no_target
+            self.proposedActionDescription.setText(description)
         else:
             logger.info("Error upgrading VMs")
             self.cancelButton.setEnabled(True)
             self.cancelButton.show()
             self.headline.setText(strings.headline_status_updates_failed)
-            self.proposedActionDescription.setText(
-                strings.description_status_updates_failed.format(app_name=self.launch_target.name)
-            )
+            if self.launch_target:
+                description = strings.description_status_updates_failed.format(
+                    app_name=self.launch_target.name
+                )
+            else:
+                description = strings.description_status_updates_failed_no_target
+            self.proposedActionDescription.setText(description)
 
     @pyqtSlot(int)
     def update_progress_bar(self, value: int) -> None:
@@ -209,6 +229,15 @@ class UpdaterApp(QDialog, Ui_UpdaterDialog):
             self.proposedActionDescription.setText(strings.description_error_reboot)
             logger.error("Error while rebooting the workstation")
             logger.error(str(e))
+
+    def continue_to_target(self) -> None:
+        """
+        Launches the launch target if there is one, otherwise exits
+        """
+        if self.launch_target:
+            launch_in_vm(self.launch_target)
+        else:
+            sys.exit(0)
 
     def exit_updater(self) -> None:
         """

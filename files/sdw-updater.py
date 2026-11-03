@@ -6,7 +6,12 @@ from PyQt6.QtWidgets import QApplication
 
 from sdw_updater import Updater
 from sdw_updater.Updater import is_qubes_mid_upgrade, should_launch_updater
-from sdw_updater.UpdaterApp import InboxTarget, LaunchTarget, UpdaterApp, launch_in_vm
+from sdw_updater.UpdaterApp import (
+    LaunchTarget,
+    UpdaterApp,
+    default_launch_target,
+    launch_in_vm,
+)
 from sdw_util import Util
 
 DEFAULT_INTERVAL = 28800  # 8hr default for update interval
@@ -25,14 +30,14 @@ def parse_argv(argv: list[str]) -> argparse.Namespace:
     args = parser.parse_args(argv)
 
     if args.launch is None:
-        args.launch_target = InboxTarget
+        args.launch_target = default_launch_target()
     else:
         name, vm, desktop = args.launch
         args.launch_target = LaunchTarget(name=name, vm=vm, desktop=desktop)
     return args
 
 
-def launch_updater(launch_target: LaunchTarget, should_skip_netcheck: bool = False) -> None:
+def launch_updater(launch_target: LaunchTarget | None, should_skip_netcheck: bool = False) -> None:
     """
     Start the updater GUI.
     """
@@ -74,8 +79,13 @@ def main(argv: list[str]) -> None:
 
     if should_launch_updater(interval):
         launch_updater(args.launch_target, args.skip_netcheck)
-    else:
+    elif args.launch_target:
         launch_in_vm(args.launch_target)
+    else:
+        # This should only happen on admin-only workstations that were recently updated,
+        # e.g. after a mandated reboot. In that case we don't know what they wanted to
+        # launch so we show/do nothing and let them re-launch it.
+        sdlog.info("Updates not required and nothing to launch, exiting.")
 
 
 if __name__ == "__main__":
