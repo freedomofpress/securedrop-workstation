@@ -218,11 +218,11 @@ def post_provision_journalist() -> None:
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-devices"])
     run_cmd(["qvm-sync-appmenus", "--regenerate-only", "sd-log"])
 
-    if "sd-fedora-43-dvm" in Qubes().domains:
-        # If sd-fedora-43-dvm exists it's because salt determined that sys-usb was disposable
+    if "sd-fedora-44-dvm" in Qubes().domains:
+        # If sd-fedora-XX-dvm exists it's because salt determined that sys-usb was disposable
         configure(
             "Add SecureDrop export device handling to sys-usb (disposable)",
-            ["sd-fedora-43-dvm"],
+            ["sd-fedora-44-dvm"],
             restart=["sys-usb"],
         )
     else:
