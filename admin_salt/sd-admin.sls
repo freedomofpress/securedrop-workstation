@@ -32,6 +32,8 @@ sd-admin:
     - features:
       - enable:
         - service.paxctld
+    - set:
+      - menu-items: "org.gnome.Nautilus.desktop org.gnome.DiskUtility.desktop"
     - require:
       - qvm: sd-admin-debian-13
 
