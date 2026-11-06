@@ -190,6 +190,19 @@ else
 	$(PYTEST_CMD) -m "not run_alone"  -n auto --dist=loadfile --durations=5
 endif
 
+# Variants that also verify the expected product is installed
+.PHONY: test-all
+test-all:
+	EXPECTED_INSTALLED_PRODUCT=all $(MAKE) test
+
+.PHONY: test-journalist
+test-journalist:
+	EXPECTED_INSTALLED_PRODUCT=journalist $(MAKE) test
+
+.PHONY: test-admin
+test-admin:
+	EXPECTED_INSTALLED_PRODUCT=admin $(MAKE) test
+
 .PHONY: test-uninstall
 test-uninstall: test-prereqs ## Checks that uninstall left no SDW state
 	pytest -v -m "uninstall" tests/test_dom0_uninstall.py
