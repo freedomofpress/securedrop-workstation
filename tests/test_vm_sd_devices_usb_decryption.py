@@ -16,6 +16,9 @@ from typing import Any
 import pytest
 
 from tests.base import QubeWrapper
+from tests.markers import needs_journalist
+
+pytestmark = needs_journalist
 
 IS_CI = os.environ.get("CI") == "true"
 
