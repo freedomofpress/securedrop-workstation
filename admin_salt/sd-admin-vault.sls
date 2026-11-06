@@ -29,6 +29,9 @@ sd-admin-vault:
       - enable:
         - service.paxctld
         - service.securedrop-setup-admin-vault
+        - service.custom-persist
+      - set:
+        - custom-persist.persistent: dir:user:user:0700:/home/user/Persistent
     - tags:
       - add:
         - sd-workstation
