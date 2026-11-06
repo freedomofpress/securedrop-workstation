@@ -28,6 +28,8 @@ from tests.base import (
 )
 from tests.dom0_stubs import IN_DOM0
 
+EXPECTED_INSTALLED_PRODUCT = os.environ.get("EXPECTED_INSTALLED_PRODUCT")
+
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """
@@ -60,14 +62,20 @@ def needs_dom0() -> None:
 def needs_journalist(needs_dom0: None) -> None:
     """Skip the test unless the Journalist Workstation product is installed"""
     if not (PRODUCTS_PATH / "journalist-workstation.json").is_file():
-        pytest.skip("requires Journalist Workstation")
+        if EXPECTED_INSTALLED_PRODUCT in ["journalist", "all"]:
+            pytest.fail("journalist workstation expected but not installed")
+        else:
+            pytest.skip("requires Journalist Workstation")
 
 
 @pytest.fixture(scope="session")
 def needs_admin(needs_dom0: None) -> None:
     """Skip the test unless the Admin Workstation product is installed"""
     if not (PRODUCTS_PATH / "admin-workstation.json").is_file():
-        pytest.skip("requires Admin Workstation")
+        if EXPECTED_INSTALLED_PRODUCT in ["admin", "all"]:
+            pytest.fail("admin workstation expected but not installed")
+        else:
+            pytest.skip("requires Admin Workstation")
 
 
 @pytest.fixture(scope="session")
