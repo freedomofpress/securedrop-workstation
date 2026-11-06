@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Icon=securedrop
+Name=SecureDrop Application Server SSH
+Exec=sdw-updater --launch "SecureDrop Application Server SSH" sd-admin press.freedom.SecureDropSshApp
