@@ -3,4 +3,3 @@
 # or systemd settings (90-systemd.preset).
 enable securedrop-user-xfce-icon-size.service
 enable securedrop-user-xfce-settings.service
-enable sdw-notify.timer
