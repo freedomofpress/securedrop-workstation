@@ -2,6 +2,8 @@ import importlib.machinery
 import importlib.util
 import json
 import os
+import secrets
+import string
 import warnings
 from collections.abc import Callable, Iterator
 from datetime import datetime
@@ -44,6 +46,12 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 @pytest.fixture(scope="session")
 def proj_root() -> os.PathLike[Any]:
     return Path(__file__).parent.parent
+
+
+@pytest.fixture
+def token() -> str:
+    """Random string, to avoid collisions with other test runs"""
+    return "".join(secrets.choice(string.ascii_uppercase) for _ in range(10))
 
 
 @pytest.fixture(autouse=True)
