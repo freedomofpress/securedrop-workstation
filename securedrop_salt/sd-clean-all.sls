@@ -48,14 +48,11 @@ include:
   - securedrop_salt.sd-usb-autoattach-remove
 {% endif %}
 
-# Removes all salt-provisioned files (if these files are also provisioned via
-# RPM, they should be removed as part of remove-dom0-sdw-config-files-dev)
+# Removes all securedrop_salt-provisioned files.
 remove-dom0-sdw-config-files:
   file.absent:
     - names:
-      - /home/{{ gui_user }}/.config/autostart/press.freedom.SecureDropUpdater.desktop
       - /home/{{ gui_user }}/Desktop/press.freedom.SecureDropUpdater.desktop
-      - /home/{{ gui_user }}/.securedrop_updater
       - /var/lib/securedrop-workstation
 
 # Remove any custom RPC policy tags added to non-SecureDrop VMs by the user
