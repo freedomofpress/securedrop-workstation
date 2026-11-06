@@ -23,4 +23,9 @@ addFilter(r"no-%check-section")
 addFilter(r"dangling-relative-symlink /usr/bin/sdw-admin securedrop-manage")
 
 # rpmlint cannot track binaries provided by a required subpackage
-addFilter(r"desktopfile-without-binary /usr/share/applications/press\.freedom\.SecureDrop\w+\.desktop sdw-updater")
+addFilter(r"desktopfile-without-binary /usr/share/applications/press\.freedom\.SecureDropUpdater.desktop sdw-updater")
+addFilter(r"desktopfile-without-binary /usr/share/applications/press\.freedom\.SecureDropAdminKeePassXC.desktop sdw-updater")
+addFilter(r"desktopfile-without-binary /usr/share/applications/press\.freedom\.SecureDropJournalistInterface.desktop sdw-updater")
+addFilter(r"desktopfile-without-binary /usr/share/applications/press\.freedom\.SecureDropSourceInterface.desktop sdw-updater")
+addFilter(r"desktopfile-without-binary /usr/share/applications/press\.freedom\.SecureDropSshApp.desktop sdw-updater")
+addFilter(r"desktopfile-without-binary /usr/share/applications/press\.freedom\.SecureDropSshMon.desktop sdw-updater")
