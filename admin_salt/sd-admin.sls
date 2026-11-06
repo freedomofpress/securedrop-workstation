@@ -33,7 +33,14 @@ sd-admin:
       - enable:
         - service.paxctld
       - set:
-        - menu-items: "org.gnome.Nautilus.desktop org.gnome.DiskUtility.desktop"
+        - menu-items: >-
+            org.gnome.Nautilus.desktop
+            org.gnome.DiskUtility.desktop
+            press.freedom.SecureDropAdminKeePassXC.desktop
+            press.freedom.SecureDropJournalistInterface.desktop
+            press.freedom.SecureDropSourceInterface.desktop
+            press.freedom.SecureDropSshApp.desktop
+            press.freedom.SecureDropSshMon.desktop
     - require:
       - qvm: sd-admin-debian-13
 
