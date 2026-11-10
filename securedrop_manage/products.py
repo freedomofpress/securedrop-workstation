@@ -51,6 +51,16 @@ class Product(Enum):
             case Product.ALL:
                 return "sd-workstation"
 
+    @property
+    def top(self) -> str:
+        match self:
+            case Product.JOURNALIST:
+                return "securedrop_salt/sd-workstation.top"
+            case Product.ADMIN:
+                return "admin_salt/sd-admin.top"
+            case Product.ALL:
+                return "top.sls"  # Merges enabled top files (state.highstate equivalent)
+
 
 def get_installed_product(products_path: Path = PRODUCTS_PATH) -> Product:
     journalist = (products_path / "journalist-workstation.json").is_file()
