@@ -22,6 +22,7 @@ SD_INBOX_TEMPLATE = f"sd-inbox-debian-{DEBIAN_VERSION}"
 
 SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
 JOURNALIST_TAG = "sd-journalist"
+ADMIN_TAG = "sd-admin"
 
 # Expectations regarding VMs' existence and versions
 SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-devices", "sd-printers"]
