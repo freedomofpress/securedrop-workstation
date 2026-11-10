@@ -15,6 +15,9 @@ from tests.base import (
 from tests.base import (
     Test_SD_VM_Common as Test_SD_Devices_Common,  # noqa: F401 [HACK: import so base tests run]
 )
+from tests.markers import needs_journalist
+
+pytestmark = needs_journalist
 
 # NOTE: this file needs includes tests for the functionally similar 'sd-devices'
 # and 'sd-printers'. Some tests overlap (tested on both through the 'qube' fixture)

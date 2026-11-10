@@ -4,6 +4,8 @@ packages only puts the files in place `/srv/salt` but does not apply the state, 
 does it handle the config.
 """
 
+from __future__ import annotations
+
 import argparse
 import dataclasses
 import json

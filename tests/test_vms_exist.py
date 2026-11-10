@@ -11,16 +11,21 @@ from tests.base import (
     SD_VIEWER_TEMPLATE,
     SD_VMS,
 )
+from tests.markers import needs_journalist
+
+pytestmark = needs_journalist
 
 
 @pytest.mark.provisioning
-def test_all_sdw_vms_present(all_vms: VMCollection, sdw_tagged_vms: list[QubesVM]) -> None:
+def test_all_journalist_vms_present(
+    all_vms: VMCollection, journalist_tagged_vms: list[QubesVM]
+) -> None:
     """
     Confirm that all SDW-managed VMs are present on the system.
     Seeks to detect errors in provisioning that result in VMs
     failing to be created. Compares to a hardcoded list in fixtures.
     """
-    sdw_tagged_vm_names = {vm.name for vm in sdw_tagged_vms}
+    sdw_tagged_vm_names = {vm.name for vm in journalist_tagged_vms}
     expected_vm_names = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
 
     assert sdw_tagged_vm_names == expected_vm_names
