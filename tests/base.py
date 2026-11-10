@@ -23,6 +23,7 @@ SD_ADMIN_TEMPLATE = f"sd-admin-debian-{DEBIAN_VERSION}"
 
 SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
 JOURNALIST_TAG = "sd-journalist"
+ADMIN_TAG = "sd-admin"
 
 # Expectations regarding VMs' existence and versions
 SD_VMS = [
