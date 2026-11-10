@@ -41,7 +41,7 @@ dev-journalist staging-journalist: %-journalist: assert-dom0 ## Installs, config
 	$(MAKE) assert-keyring-$*
 	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$*
 	$(MAKE) configure-env-$*
-	securedrop-manage apply --target all
+	securedrop-manage apply --target journalist
 
 # Same as above, but for the admin workstation
 .PHONY: dev-admin staging-admin
@@ -50,7 +50,7 @@ dev-admin staging-admin: %-admin: assert-dom0 ## Installs, configures and builds
 	$(MAKE) assert-keyring-$*
 	$(MAKE) install-rpm RPM_INSTALL_STRATEGY=$* RPM_NAMES=securedrop-admin-dom0-config
 	$(MAKE) configure-admin-env-$*
-	securedrop-manage apply --target all
+	securedrop-manage apply --target admin
 
 # Both the journalist and admin workstations. The journalist config.json is a
 # superset of what the admin workstation needs, so it's used for both.
