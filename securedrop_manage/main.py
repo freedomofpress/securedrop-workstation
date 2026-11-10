@@ -250,8 +250,8 @@ def provision_and_configure(product: Product) -> None:
 
     provision_all()
     configure(
-        "Configure all SecureDrop Workstation VMs with service-specific configs",
-        [q.name for q in Qubes().domains if "sd-workstation" in q.tags],
+        f"Configure all {product.as_text()} VMs with service-specific configs",
+        [q.name for q in Qubes().domains if product.tag in q.tags],
     )
 
     if product.contains_journalist:

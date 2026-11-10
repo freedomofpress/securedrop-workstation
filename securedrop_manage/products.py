@@ -41,6 +41,16 @@ class Product(Enum):
             case Product.ALL:
                 return "SecureDrop Workstation"
 
+    @property
+    def tag(self) -> str:
+        match self:
+            case Product.JOURNALIST:
+                return "sd-journalist"
+            case Product.ADMIN:
+                return "sd-admin"
+            case Product.ALL:
+                return "sd-workstation"
+
 
 def get_installed_product(products_path: Path = PRODUCTS_PATH) -> Product:
     journalist = (products_path / "journalist-workstation.json").is_file()
