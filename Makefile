@@ -136,8 +136,16 @@ build-deps: ## Install package dependencies to build RPMs
 QUBES_VER ?= 4.3
 FEDORA_VER ?= 41
 
+IS_DEBIAN := $(wildcard /etc/debian_version)
+
 .PHONY: test-deps
-test-deps: build-deps ## Install package dependencies for running tests
+test-deps: $(if $(IS_DEBIAN),,build-deps) ## Install package dependencies for running tests
+ifneq ($(IS_DEBIAN),)
+# RPM builds run in a container (see CONTAINER), so only test deps are needed.
+# This is for Qubes development environments running locally
+	sudo apt-get install -y xvfb libxcb-cursor0 \
+		python3-dnf python3-systemd python3-qubesadmin
+else
 	dnf install -y xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
 		hostname python3-setuptools
 	dnf --setopt=install_weak_deps=False -y install reprotest
@@ -153,6 +161,7 @@ test-deps: build-deps ## Install package dependencies for running tests
 		--repofrompath=qubes-dom0,https://yum.qubes-os.org/r$(QUBES_VER)/current/dom0/fc$(FEDORA_VER) \
 		--setopt=qubes-dom0.gpgcheck=1 \
 		--setopt=qubes-dom0.gpgkey=file://$(CURDIR)/tests/files/qubes-release-$(QUBES_VER)-signing-key.asc
+endif
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
