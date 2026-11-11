@@ -132,6 +132,10 @@ build-deps: ## Install package dependencies to build RPMs
 	dnf install -y git file rpmdevtools dnf-plugins-core rpm-build rpmlint
 	dnf builddep -y $(SPEC_FILE)
 
+# Qubes release whose dom0 packages the tests use
+QUBES_VER ?= 4.3
+FEDORA_VER ?= 41
+
 .PHONY: test-deps
 test-deps: build-deps ## Install package dependencies for running tests
 	dnf install -y xorg-x11-server-Xvfb rpmlint which libfaketime ShellCheck \
@@ -140,6 +144,15 @@ test-deps: build-deps ## Install package dependencies for running tests
 
 	@echo "Installing python package dependencies (e.g. PyQt)"
 	dnf install -y `rpmspec --parse $(SPEC_FILE) | sed -n "s/^Requires:.*python3/python3/p"`
+
+	@echo "Installing systemd as a system package, like on dom0"
+	dnf install -y python3-systemd
+
+	@echo "Installing qubesadmin from the Qubes $(QUBES_VER) dom0 repo"
+	dnf install -y python3-qubesadmin \
+		--repofrompath=qubes-dom0,https://yum.qubes-os.org/r$(QUBES_VER)/current/dom0/fc$(FEDORA_VER) \
+		--setopt=qubes-dom0.gpgcheck=1 \
+		--setopt=qubes-dom0.gpgkey=file://$(CURDIR)/tests/files/qubes-release-$(QUBES_VER)-signing-key.asc
 
 clone: assert-dom0 ## Builds rpm && pulls the latest repo from work VM to dom0
 	@./scripts/clone-to-dom0
