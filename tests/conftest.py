@@ -2,7 +2,9 @@ import importlib.machinery
 import importlib.util
 import json
 import os
+import subprocess
 import warnings
+import xml.etree.ElementTree as ET
 from collections.abc import Callable, Iterator
 from datetime import datetime
 from pathlib import Path
@@ -44,6 +46,49 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     for item in items:
         if "uninstall" in item.keywords:
             item.add_marker(skip)
+
+
+@pytest.hookimpl(trylast=True)  # run after junitxml has written the report
+def pytest_sessionfinish(session: pytest.Session) -> None:
+    """
+    Make the JUnit XML report ASCII-only (#1973)
+
+    OpenQA's JunitXML can't handle UTF-8. Typically OpenQA tests would call
+    `iconv ascii//translit` over the raw report, which can turn characters
+    like “ into a bare ". This would break the XML if any individual test
+    included these characters (not to mention, propensity of injection).
+
+    This function does the ascii conversion per test report. This way the
+    report generation can do the proper quoting inside each test.
+    """
+
+    # Skip when "--junitxml=" report was not requested
+    xmlpath = getattr(session.config.option, "xmlpath", None)
+    if not xmlpath or hasattr(session.config, "workerinput"):
+        return
+
+    def to_ascii(text: str) -> str:
+        if text.isascii():
+            return text
+        cmd = ["iconv", "-f", "utf8", "-t", "ascii//translit"]
+        result = subprocess.run(cmd, input=text.encode(), capture_output=True, check=False)
+        return result.stdout.decode()
+
+    tree = ET.parse(xmlpath)  # noqa: S314 (pytest's own report, not untrusted)
+    for element in tree.iter():
+        if element.text:
+            element.text = to_ascii(element.text)
+        if element.tail:
+            element.tail = to_ascii(element.tail)
+        for key, value in element.attrib.items():
+            element.set(key, to_ascii(value))
+
+    # Last check if report is full ascii
+    if not ET.tostring(tree.getroot(), encoding="unicode").isascii():
+        raise RuntimeError(f"JUnit report {xmlpath} still has non-ASCII characters")
+
+    # Save modified XML report
+    tree.write(xmlpath, encoding="us-ascii", xml_declaration=True)
 
 
 @pytest.fixture(scope="session")
