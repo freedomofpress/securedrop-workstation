@@ -149,6 +149,9 @@ class QubeWrapper:
         self.mime_vars_vm_name = mime_vars_vm_name if mime_vars_vm_name else name
         self.devices_attachable = devices_attachable
 
+    def __repr__(self) -> str:
+        return self.name
+
     def run(self, cmd: str, user: str = "") -> str:
         """
         Wrapper for `Qube.run()` to make it a bit more ergonomic in tests.

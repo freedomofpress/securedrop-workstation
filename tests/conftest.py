@@ -14,6 +14,7 @@ import pytest
 import systemd.journal
 from qubesadmin import Qubes
 from qubesadmin.app import VMCollection
+from qubesadmin.features import Features
 from qubesadmin.vm import QubesVM
 
 from securedrop_manage.config_types import Dom0Config
@@ -44,6 +45,23 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     for item in items:
         if "uninstall" in item.keywords:
             item.add_marker(skip)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def readable_qube_repr() -> Iterator[None]:
+    """
+    Show qube names in test failures (#1974)
+
+    Pytest prints objects with repr(), which in the default case prints the
+    object's memory address, thus making it difficult to see what happened
+    in test results.
+
+    Print them as "sd-app" and "<features of sd-app>" instead.
+    """
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(QubesVM, "__repr__", lambda qube: qube.name)
+        mp.setattr(Features, "__repr__", lambda features: f"<features of {features.vm.name}>")
+        yield
 
 
 @pytest.fixture(scope="session")
