@@ -25,6 +25,7 @@ sd-admin:
       - default_dispvm: ""
       - virt-mode: pvh
       - kernel: "pvgrub2-pvh"
+      - devices_denied: '*******'
     - tags:
       - add:
         - sd-workstation
