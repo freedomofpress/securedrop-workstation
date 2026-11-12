@@ -7,22 +7,16 @@ it needs dependencies installed and to be run under pytest
 
 from pathlib import Path
 
-from tests.dom0_stubs import IN_DOM0
-from tests.markers import skip_in_dom0
+import pytest
 
-if not IN_DOM0:
-    import pysequoia
-    from debian import deb822
-
-# A couple of tests are skipped in dom0 since:
-#  - they rely on poetry-installed dependencies (not trival to get in dom0)
-#  - This test may go away later once the .sources files in the keyring package
+SKIP_REASON = "Unavailable in dom0 python modules"
+pysequoia = pytest.importorskip("pysequoia", reason=SKIP_REASON)
+deb822 = pytest.importorskip("debian.deb822", reason=SKIP_REASON)
 
 
 SECUREDROP_SALT = Path(__file__).parent.parent.parent / "securedrop_salt"
 
 
-@skip_in_dom0
 def test_prod_sources():
     """Verify the key in the aptsources file is our prod signing key"""
     path = SECUREDROP_SALT / "apt_freedom_press.sources.j2"
@@ -38,7 +32,6 @@ def test_prod_sources():
     assert key.expiration.year == 2027
 
 
-@skip_in_dom0
 def test_test_sources():
     """Verify the key in the apt-test sources file is our dev signing key"""
     path = SECUREDROP_SALT / "apt-test_freedom_press.sources.j2"

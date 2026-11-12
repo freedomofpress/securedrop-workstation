@@ -1,2 +1,6 @@
 [solver]
 min-release-age = 7
+
+# Use qubesadmin from the system package (python3-qubesadmin), as in dom0
+[virtualenvs.options]
+system-site-packages = true

@@ -1602,17 +1602,6 @@ files = [
 ]
 
 [[package]]
-name = "python-systemd"
-version = "0.0.9"
-description = "Systemd interfaces wrapper"
-optional = false
-python-versions = "*"
-groups = ["dev"]
-files = [
-    {file = "python-systemd-0.0.9.tar.gz", hash = "sha256:c01352a24518a6d89f90ceb94e384b0ef0385ea5b3b2d6963f8262d9c00f2fc7"},
-]
-
-[[package]]
 name = "pywin32"
 version = "311"
 description = "Python for Window Extensions"
@@ -2348,4 +2337,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "99264411d309869259f8be843c06798ea3f9a26a0613bd4ddb38dd65612e9943"
+content-hash = "ec7626baf4090771fae36869762070eabea2a0b90b366cd003266a8d2a7ce8cb"

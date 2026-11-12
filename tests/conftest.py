@@ -26,7 +26,7 @@ from tests.base import (
     is_journalist_qube,
     is_workstation_qube,
 )
-from tests.dom0_stubs import IN_DOM0
+from tests.markers import IN_DOM0
 
 EXPECTED_INSTALLED_PRODUCT = os.environ.get("EXPECTED_INSTALLED_PRODUCT")
 
