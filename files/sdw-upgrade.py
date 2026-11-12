@@ -40,7 +40,8 @@ def qubes_to_names(qubes_list: list[QubesVM]) -> list[str]:
     return [qube.name for qube in qubes_list]
 
 
-CURRENT_FEDORA_TEMPLATE = app.domains.get("fedora-44-xfce")
+CURRENT_FEDORA_TEMPLATE_NAME = "fedora-44-xfce"
+CURRENT_FEDORA_TEMPLATE = app.domains.get(CURRENT_FEDORA_TEMPLATE_NAME)
 
 OLD_FEDORA_TEMPLATES = names_to_qubes(
     [
@@ -269,7 +270,8 @@ class RemoveOldFedoras(RemoveQubesStep):
         # given that it'll be shipped in the same update as the Fedora 43 bump
         if CURRENT_FEDORA_TEMPLATE is None:
             log.debug(
-                f"{CURRENT_FEDORA_TEMPLATE} not found; cannot reassign derived VMs automatically"
+                f"{CURRENT_FEDORA_TEMPLATE_NAME} not found; "
+                "cannot reassign derived VMs automatically"
             )
             return ActionRecommendation.MANUAL
         return super().can_run()
