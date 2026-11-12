@@ -54,6 +54,7 @@ def install() -> None:
             "qubesadmin": {"Qubes": _Unavailable},
             "qubesadmin.app": {"VMCollection": _Unavailable},
             "qubesadmin.vm": {"QubesVM": _Unavailable},
+            "qubesadmin.features": {"Features": _Unavailable},
             "qubesadmin.exc": {"QubesException": type("QubesException", (Exception,), {})},
             "qubesadmin.tests": {},
             "qubesadmin.tests.mock_app": {
