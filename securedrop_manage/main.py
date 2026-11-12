@@ -240,18 +240,18 @@ def post_provision_admin() -> None:
 
 def provision_and_configure(product: Product) -> None:
     """
-    Applies the salt state.highstate on dom0 and all VMs
+    Applies the salt states of the product on dom0 and its VMs
     """
 
     provision("Provisioning Fedora-based system VMs", "securedrop_shared.sd-sys-vms")
-
     if product.contains_journalist:
         pre_provision_journalist()
 
-    provision_all()
+    provision_all(product)
+
     configure(
-        "Configure all SecureDrop Workstation VMs with service-specific configs",
-        [q.name for q in Qubes().domains if "sd-workstation" in q.tags],
+        f"Configure all {product.as_text()} VMs with service-specific configs",
+        [q.name for q in Qubes().domains if product.tag in q.tags],
     )
 
     if product.contains_journalist:
@@ -383,13 +383,13 @@ def provision(step_description: str, salt_state: str) -> None:
 
 
 @template_upgrade_handler()
-def provision_all() -> None:
+def provision_all(product: Product) -> None:
     """
-    Provision all enabled salt states
+    Provision all enabled salt states, or only those of the given top file
     """
     qubesctl_call(
         "Set up dom0 config files, including RPC policies, and create VMs",
-        ["state.highstate", f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
+        ["state.top", product.top, f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
     )
 
 
@@ -592,12 +592,6 @@ def main() -> None:  # noqa: PLR0912
         validate_config(CONFIG_PATH, args.product)
         print("OK")
     elif args.command is Command.APPLY:
-        if installed_product is Product.ALL and args.product is not Product.ALL:
-            # if we're on a combined workstation, require the use of --target all so all VMs
-            # are provisioned at the same time
-            # FIXME: remove this restriction
-            print("apply can only be used with --target all")
-            sys.exit(1)
         if args.product.contains_journalist:
             print(
                 "SecureDrop Workstation should be installed on a fresh Qubes OS install.\n"

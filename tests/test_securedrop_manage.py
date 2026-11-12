@@ -1,8 +1,12 @@
+import json
 import os
+import re
 import time
 from collections.abc import Generator
 from pathlib import Path
+from types import EllipsisType
 from typing import TYPE_CHECKING, Any
+from unittest.mock import MagicMock, patch
 
 import pytest
 import qubesadmin
@@ -11,8 +15,8 @@ from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
 from securedrop_manage import configure
 from securedrop_manage import main as manage
-from tests.base import SD_TAG
-from tests.markers import needs_journalist
+from tests.base import SD_ADMIN_VMS, SD_JOURNALIST_VMS, SD_TAG
+from tests.markers import needs_dom0, needs_journalist
 
 if TYPE_CHECKING:
     from qubesadmin.vm import QubesVM
@@ -634,6 +638,122 @@ class TestImportAdminConfig:
         assert (fake_qubes["sd_admin"] / "site-specific").read_text() == "existing\n"
         assert not fake_qubes["sd_admin_ssh"].exists()
         assert not fake_qubes["staging"].exists()
+
+
+class TestApplyAdmin:
+    @staticmethod
+    def call_matches_pattern(actual: list[str], expected: list[str | EllipsisType]) -> bool:
+        """
+        Check for expected items in order
+
+        Ignores ellipses in `expected` and allows intervening items in `actual`.
+
+        Examples:
+            >>> actual = ["--", "state.sls", "extra", "my.state"]
+            >>> expected = [..., "state.sls", ..., "my.state"]
+            >>> contains_in_order(actual, expected)
+            True
+
+            >>> actual = ["--", "my.state", "state.sls"]
+            >>> contains_in_order(actual, expected)
+            False
+        """
+        pattern = "".join("(?:.*\0)?" if arg is ... else re.escape(arg) + "\0" for arg in expected)
+        text = "".join(arg + "\0" for arg in actual)
+        return re.fullmatch(pattern, text) is not None
+
+    @pytest.mark.parametrize(
+        ("product", "needs_fixtures", "qubesctl_calls_expected"),
+        [
+            # both installed, only one targeted: use its top file and VMs
+            (
+                manage.Product.ADMIN,
+                ["needs_admin"],
+                [
+                    [..., "state.sls", "securedrop_shared.sd-sys-vms", ...],
+                    [..., "state.top", "admin_salt/sd-admin.top", ...],
+                    [..., "--targets", ",".join(sorted(SD_ADMIN_VMS)), "state.highstate"],
+                ],
+            ),
+            (
+                manage.Product.ALL,
+                ["needs_admin", "needs_journalist"],
+                [
+                    [..., "state.sls", "securedrop_shared.sd-sys-vms", ...],
+                    [..., "state.sls", "securedrop_salt.sd-base-template", ...],
+                    [..., "--targets", "sd-base-debian-13", "state.highstate"],
+                    [..., "state.top", "top.sls", ...],
+                    [
+                        ...,
+                        "--targets",
+                        ",".join(sorted(SD_JOURNALIST_VMS + SD_ADMIN_VMS)),
+                        "state.highstate",
+                    ],
+                    [..., "--targets", "sd-fedora-43-dvm", "state.highstate"],
+                ],
+            ),
+            (
+                manage.Product.JOURNALIST,
+                ["needs_journalist"],
+                [
+                    [..., "state.sls", "securedrop_shared.sd-sys-vms", ...],
+                    [..., "state.sls", "securedrop_salt.sd-base-template", ...],
+                    [..., "--targets", "sd-base-debian-13", "state.highstate"],
+                    ["state.top", "securedrop_salt/sd-workstation.top", ...],
+                    [
+                        ...,
+                        "--targets",
+                        ",".join(sorted(SD_JOURNALIST_VMS)),
+                        "state.highstate",
+                    ],
+                    [..., "--targets", "sd-fedora-43-dvm", "state.highstate"],
+                ],
+            ),
+        ],
+        ids=["admin", "journalist+admin", "journalist"],
+    )
+    @patch.object(manage, "qubesctl_call")
+    @patch.object(manage, "subprocess")
+    def test_provision_and_configure(
+        self,
+        subprocess: MagicMock,
+        qubesctl_call: MagicMock,
+        product: manage.Product,
+        needs_fixtures: list[str],
+        qubesctl_calls_expected: list[list[str | EllipsisType]],
+        request: pytest.FixtureRequest,
+    ) -> None:
+        for needs_fixture in needs_fixtures:
+            request.getfixturevalue(needs_fixture)
+
+        manage.provision_and_configure(product)
+
+        # Get all qubesctl args (2nd argument of 'qubesctl_call')
+        qubesctl_call_actual = [call.args[1] for call in qubesctl_call.call_args_list]
+
+        assert len(qubesctl_call_actual) == len(qubesctl_calls_expected)
+        for actual, expected in zip(qubesctl_call_actual, qubesctl_calls_expected):
+            assert self.call_matches_pattern(actual, expected)
+
+    @pytest.mark.parametrize(
+        ("product", "state"),
+        [
+            (manage.Product.JOURNALIST, ["state.top", "securedrop_salt/sd-workstation.top"]),
+            (manage.Product.ADMIN, ["state.top", "admin_salt/sd-admin.top"]),
+            (manage.Product.ALL, ["state.top", "top.sls"]),
+        ],
+    )
+    @patch.object(manage, "qubesctl_call")
+    @needs_dom0
+    def test_provision_all(
+        self, qubesctl_call: MagicMock, product: manage.Product, state: list[str]
+    ) -> None:
+        manage.provision_all(product)
+
+        args = qubesctl_call.call_args.args[1]
+        assert args[:-1] == state
+        pillar_arg = json.loads(args[-1].removeprefix("pillar="))
+        assert pillar_arg == manage.PILLAR_DISABLE_PRELOAD
 
 
 @pytest.mark.parametrize(
