@@ -6,7 +6,6 @@ from tests.markers import needs_admin
 pytestmark = needs_admin
 
 SD_ADMIN_FAVORITES = {
-    "press.freedom.SecureDropAdminKeePassXC",
     "press.freedom.SecureDropJournalistInterface",
     "press.freedom.SecureDropSourceInterface",
     "press.freedom.SecureDropSshApp",
@@ -27,3 +26,13 @@ def test_sd_admin_menu_favorites(all_vms: VMCollection) -> None:
     """
     favorites = set(all_vms["sd-admin"].features.get("menu-favorites", "").split())
     assert favorites == SD_ADMIN_FAVORITES
+
+
+@pytest.mark.provisioning
+def test_sd_admin_vault_menu_favorites(all_vms: VMCollection) -> None:
+    """
+    KeePassXC runs in sd-admin-vault, so its favorite must be set there.
+    """
+    vm = all_vms["sd-admin-vault"]
+    assert vm.features.get("menu-items") == "org.keepassxc.KeePassXC.desktop"
+    assert vm.features.get("menu-favorites") == "org.keepassxc.KeePassXC"

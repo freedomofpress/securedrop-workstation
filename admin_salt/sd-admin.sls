@@ -37,13 +37,11 @@ sd-admin:
             org.gnome.Nautilus.desktop
             org.gnome.DiskUtility.desktop
             xfce4-terminal.desktop
-            press.freedom.SecureDropAdminKeePassXC.desktop
             press.freedom.SecureDropJournalistInterface.desktop
             press.freedom.SecureDropSourceInterface.desktop
             press.freedom.SecureDropSshApp.desktop
             press.freedom.SecureDropSshMon.desktop
         - menu-favorites: >-
-            press.freedom.SecureDropAdminKeePassXC
             press.freedom.SecureDropJournalistInterface
             press.freedom.SecureDropSourceInterface
             press.freedom.SecureDropSshApp
