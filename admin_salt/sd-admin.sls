@@ -36,6 +36,7 @@ sd-admin:
         - menu-items: >-
             org.gnome.Nautilus.desktop
             org.gnome.DiskUtility.desktop
+            xfce4-terminal.desktop
             press.freedom.SecureDropAdminKeePassXC.desktop
             press.freedom.SecureDropJournalistInterface.desktop
             press.freedom.SecureDropSourceInterface.desktop
