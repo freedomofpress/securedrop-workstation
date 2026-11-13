@@ -19,6 +19,7 @@ DEBIAN_CODENAME = "trixie"
 SD_TEMPLATE_BASE = f"sd-base-debian-{DEBIAN_VERSION}"
 SD_VIEWER_TEMPLATE = f"sd-viewer-debian-{DEBIAN_VERSION}"
 SD_INBOX_TEMPLATE = f"sd-inbox-debian-{DEBIAN_VERSION}"
+SD_ADMIN_TEMPLATE = f"sd-admin-debian-{DEBIAN_VERSION}"
 
 SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
 JOURNALIST_TAG = "sd-journalist"

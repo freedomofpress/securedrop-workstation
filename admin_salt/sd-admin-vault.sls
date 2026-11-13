@@ -31,6 +31,7 @@ sd-admin-vault:
         - service.securedrop-setup-admin-vault
         - service.custom-persist
       - set:
+        - menu-items: "org.keepassxc.KeePassXC.desktop"
         - custom-persist.persistent: dir:user:user:0700:/home/user/Persistent
     - tags:
       - add:
