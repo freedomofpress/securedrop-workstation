@@ -37,11 +37,15 @@ sd-admin:
             org.gnome.Nautilus.desktop
             org.gnome.DiskUtility.desktop
             xfce4-terminal.desktop
-            press.freedom.SecureDropAdminKeePassXC.desktop
             press.freedom.SecureDropJournalistInterface.desktop
             press.freedom.SecureDropSourceInterface.desktop
             press.freedom.SecureDropSshApp.desktop
             press.freedom.SecureDropSshMon.desktop
+        - menu-favorites: >-
+            press.freedom.SecureDropJournalistInterface
+            press.freedom.SecureDropSourceInterface
+            press.freedom.SecureDropSshApp
+            press.freedom.SecureDropSshMon
     - require:
       - qvm: sd-admin-debian-13
 
@@ -55,13 +59,9 @@ sd-admin-custom-persist:
       - custom-persist.tor_config: dir:root:root:0700:/etc/tor
       - custom-persist.home: /home
 
-sd-admin-dom0-menu-favorites:
+# Open the Qubes app menu to the Favorites page rather than the list of qubes
+sd-admin-dom0-menu-initial-page:
   qvm.features:
     - name: dom0
     - set:
-      - menu-favorites: >-
-          press.freedom.SecureDropAdminKeePassXC.desktop
-          press.freedom.SecureDropJournalistInterface.desktop
-          press.freedom.SecureDropSourceInterface.desktop
-          press.freedom.SecureDropSshApp.desktop
-          press.freedom.SecureDropSshMon.desktop
+      - menu-initial-page: favorites_page

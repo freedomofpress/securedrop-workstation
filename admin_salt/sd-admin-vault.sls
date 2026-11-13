@@ -32,6 +32,8 @@ sd-admin-vault:
         - service.custom-persist
       - set:
         - custom-persist.persistent: dir:user:user:0700:/home/user/Persistent
+        - menu-items: "org.keepassxc.KeePassXC.desktop"
+        - menu-favorites: "org.keepassxc.KeePassXC"
     - tags:
       - add:
         - sd-workstation
