@@ -25,6 +25,7 @@ sd-admin:
       - default_dispvm: ""
       - virt-mode: pvh
       - kernel: "pvgrub2-pvh"
+      - devices_denied: '*******'
     - tags:
       - add:
         - sd-workstation
@@ -35,7 +36,6 @@ sd-admin:
       - set:
         - menu-items: >-
             org.gnome.Nautilus.desktop
-            org.gnome.DiskUtility.desktop
             xfce4-terminal.desktop
             press.freedom.SecureDropAdminKeePassXC.desktop
             press.freedom.SecureDropJournalistInterface.desktop
