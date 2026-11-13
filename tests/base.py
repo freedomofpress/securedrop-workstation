@@ -24,7 +24,16 @@ SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
 JOURNALIST_TAG = "sd-journalist"
 
 # Expectations regarding VMs' existence and versions
-SD_VMS = ["sd-gpg", "sd-log", "sd-proxy", "sd-app", "sd-viewer", "sd-devices", "sd-printers"]
+SD_VMS = [
+    "sd-gpg",
+    "sd-log",
+    "sd-proxy",
+    "sd-app",
+    "sd-viewer",
+    "sd-devices",
+    "sd-printers",
+    "sd-journalist-vault",
+]
 SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
 SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_VIEWER_TEMPLATE, SD_INBOX_TEMPLATE]
 SD_UNTAGGED_DEPRECATED_VMS = ["sd-retain-logvm"]
