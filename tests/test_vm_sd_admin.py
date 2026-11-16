@@ -21,5 +21,5 @@ def test_admin_menu_favorites(all_vms: VMCollection) -> None:
     favorites = all_vms["dom0"].features.get("menu-favorites", "")
     assert favorites == manage.ADMIN_DOM0_MENU_FEATURES["menu-favorites"]
     # No favorites on the qubes themselves, which would bypass sdw-updater
-    for vm in ("sd-admin", "sd-admin-vault"):
-        assert not all_vms[vm].features.get("menu-favorites")
+    for vm in all_vms:
+        assert not vm.features.get("menu-favorites")
