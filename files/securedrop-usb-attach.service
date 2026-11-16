@@ -1,0 +1,10 @@
+[Unit]
+Description=SecureDrop USB attachment
+
+[Service]
+ExecStart=/usr/bin/securedrop-usb-attach
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=default.target
