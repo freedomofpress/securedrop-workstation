@@ -20,7 +20,7 @@ from tests.markers import needs_journalist
 pytestmark = needs_journalist
 
 # NOTE: this file needs includes tests for the functionally similar 'sd-devices'
-# and 'sd-printers'. Some tests overlap (tested on both through the 'qube' fixture)
+# and 'sd-printers'. Some tests overlap (tested on both through the 'tested_qube' fixture)
 # and some only happen in one VM. In this last case dedicated qube fixtures are used
 _qube_kwargs = {
     "sd-devices": {
@@ -65,14 +65,16 @@ def qube_sd_printers(qube_factory: Callable[[str], QubeWrapper]) -> QubeWrapper:
 
 # Parameterize: tests calling this fixture will run for each qube
 @pytest.fixture(scope="module", params=list(_qube_kwargs))
-def qube(request: pytest.FixtureRequest, qube_factory: Callable[[str], QubeWrapper]) -> QubeWrapper:
+def tested_qube(
+    request: pytest.FixtureRequest, qube_factory: Callable[[str], QubeWrapper]
+) -> QubeWrapper:
     return qube_factory(request.param)  # returns a fixture for each qube
 
 
-def test_files_are_properly_copied(qube: QubeWrapper) -> None:
-    assert qube.fileExists("/usr/bin/send-to-usb")
-    assert qube.fileExists("/usr/share/applications/send-to-usb.desktop")
-    assert qube.fileExists("/usr/share/mime/packages/application-x-sd-export.xml")
+def test_files_are_properly_copied(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.fileExists("/usr/bin/send-to-usb")
+    assert tested_qube.fileExists("/usr/share/applications/send-to-usb.desktop")
+    assert tested_qube.fileExists("/usr/share/mime/packages/application-x-sd-export.xml")
 
 
 def test_sd_export_package_installed(qube_sd_devices: QubeWrapper) -> None:
@@ -81,12 +83,12 @@ def test_sd_export_package_installed(qube_sd_devices: QubeWrapper) -> None:
     assert qube_sd_devices.package_is_installed("gnome-disk-utility")
 
 
-def test_logging_configured(qube: QubeWrapper) -> None:
-    qube.logging_configured()
+def test_logging_configured(tested_qube: QubeWrapper) -> None:
+    tested_qube.logging_configured()
 
 
-def test_mailcap_hardened(qube: QubeWrapper) -> None:
-    qube.mailcap_hardened()
+def test_mailcap_hardened(tested_qube: QubeWrapper) -> None:
+    tested_qube.mailcap_hardened()
 
 
 def test_open_in_dvm_desktop(qube_sd_devices: QubeWrapper) -> None:

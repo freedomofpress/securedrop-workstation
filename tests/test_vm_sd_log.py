@@ -25,45 +25,45 @@ pytestmark = needs_journalist
 
 
 @pytest.fixture(scope="module")
-def qube() -> QubeWrapper:
+def tested_qube() -> QubeWrapper:
     return QubeWrapper("sd-log")
 
 
 @pytest.mark.configuration
-def test_sd_log_package_installed(qube: QubeWrapper) -> None:
-    assert qube.package_is_installed("securedrop-log")
+def test_sd_log_package_installed(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.package_is_installed("securedrop-log")
 
 
 @pytest.mark.configuration
-def test_sd_log_redis_is_installed(qube: QubeWrapper) -> None:
-    assert qube.package_is_installed("redis")
-    assert qube.package_is_installed("redis-server")
+def test_sd_log_redis_is_installed(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.package_is_installed("redis")
+    assert tested_qube.package_is_installed("redis-server")
 
 
 @pytest.mark.configuration
-def test_log_utility_installed(qube: QubeWrapper) -> None:
-    assert qube.fileExists("/usr/sbin/securedrop-log-saver")
-    assert qube.fileExists("/etc/qubes-rpc/securedrop.Log")
+def test_log_utility_installed(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.fileExists("/usr/sbin/securedrop-log-saver")
+    assert tested_qube.fileExists("/etc/qubes-rpc/securedrop.Log")
 
 
 @pytest.mark.configuration
-def test_sd_log_has_no_custom_rsyslog(qube: QubeWrapper) -> None:
-    assert not qube.fileExists("/etc/rsyslog.d/sdlog.conf")
+def test_sd_log_has_no_custom_rsyslog(tested_qube: QubeWrapper) -> None:
+    assert not tested_qube.fileExists("/etc/rsyslog.d/sdlog.conf")
 
 
 @pytest.mark.configuration
-def test_sd_log_service_running(qube: QubeWrapper) -> None:
-    assert qube.service_is_active("securedrop-log-server")
+def test_sd_log_service_running(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.service_is_active("securedrop-log-server")
 
 
 @pytest.mark.configuration
-def test_redis_service_running(qube: QubeWrapper) -> None:
-    assert qube.service_is_active("redis")
+def test_redis_service_running(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.service_is_active("redis")
 
 
 @pytest.mark.configuration
 def test_logs_are_flowing(
-    qube: QubeWrapper, journalist_tagged_vms: list[QubesVM], token: str
+    tested_qube: QubeWrapper, journalist_tagged_vms: list[QubesVM], token: str
 ) -> None:
     """
     To test that logs work, we run a unique command in each VM we care
@@ -93,18 +93,20 @@ def test_logs_are_flowing(
             continue
         syslog = f"/home/user/QubesIncomingLogs/{vm.name}/syslog.log"
         if vm.name in no_log_vms:
-            assert not qube.fileExists(syslog)
+            assert not tested_qube.fileExists(syslog)
         else:
-            assert token in qube.get_file_contents(syslog)
+            assert token in tested_qube.get_file_contents(syslog)
 
 
 @pytest.mark.configuration
-def test_sd_log_service(qube: QubeWrapper) -> None:
-    assert qube.service_is_active("securedrop-log-server")
+def test_sd_log_service(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.service_is_active("securedrop-log-server")
 
 
 @pytest.mark.provisioning
-def test_sd_log_config(qube: QubeWrapper, dom0_config: Dom0Config, all_vms: VMCollection) -> None:
+def test_sd_log_config(
+    tested_qube: QubeWrapper, dom0_config: Dom0Config, all_vms: VMCollection
+) -> None:
     """
     Confirm that qvm-prefs match expectations for the sd-log VM.
     """
