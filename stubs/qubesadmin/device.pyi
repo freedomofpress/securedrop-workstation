@@ -1,0 +1,9 @@
+# Type stubs for the `qubesadmin.devices` module.
+from collections.abc import Iterable
+from typing import Any
+
+class DeviceCollection:
+    # DeviceInfo/DeviceAssignment come from qubesadmin.device_protocol (no stubs)
+    def get_exposed_devices(self) -> Iterable[Any]: ...
+    def attach(self, assignment: Any) -> None: ...
+    def detach(self, assignment: Any) -> None: ...

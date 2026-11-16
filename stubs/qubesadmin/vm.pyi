@@ -2,6 +2,8 @@
 from collections.abc import Iterable, Iterator, Mapping
 from typing import TypeVar, overload
 
+from qubesadmin.devices import DeviceCollection
+
 _T = TypeVar("_T")
 
 class Tags:
@@ -46,6 +48,7 @@ class QubesVM:
     auto_cleanup: bool
     appvms: Iterable[QubesVM]
     derived_vms: Iterable[QubesVM]
+    devices: Mapping[str, DeviceCollection]
     def is_running(self) -> bool: ...
     def is_halted(self) -> bool: ...
     def start(self) -> None: ...

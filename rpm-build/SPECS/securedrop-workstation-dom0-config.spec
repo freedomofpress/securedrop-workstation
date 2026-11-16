@@ -1,5 +1,5 @@
 Name:		securedrop-workstation-dom0-config
-Version:	1.9.0
+Version:	1.9.1
 Release:	1%{?dist}
 Summary:	SecureDrop Workstation
 
@@ -116,6 +116,11 @@ install -m 644 files/95-securedrop-systemd-user.preset %{buildroot}%{_userpreset
 install -m 755 -d %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/31-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/32-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
+install -m 644 files/36-securedrop-workstation.policy %{buildroot}/etc/qubes/policy.d/
+
+# USB attachment handling
+install -m 755 files/securedrop-usb-attach.py %{buildroot}/usr/bin/securedrop-usb-attach
+install -m 644 files/securedrop-usb-attach.service %{buildroot}%{_userunitdir}/
 
 # Install qrexec service for journalist secret keys
 install -m 755 -d %{buildroot}/etc/qubes-rpc/
@@ -145,6 +150,7 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 %attr(755, root, root) %{_datadir}/%{name}/scripts/validate_config.py
 %attr(755, root, root) %{_bindir}/sdw-admin
 %attr(755, root, root) %{_bindir}/sdw-upgrade
+%attr(755, root, root) %{_bindir}/securedrop-usb-attach
 
 %{_datadir}/%{name}/config.json.example
 /srv/salt/securedrop_salt/*
@@ -161,11 +167,13 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 %{_userunitdir}/sdw-notify.timer
 %{_userunitdir}/securedrop-user-xfce-settings.service
 %{_userunitdir}/securedrop-user-xfce-icon-size.service
+%{_userunitdir}/securedrop-usb-attach.service
 %{_unitdir}/securedrop-logind-override-disable.service
 %{_userpresetdir}/95-securedrop-systemd-user.preset
 
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-workstation.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-workstation.policy
+%attr(664, root, root) /etc/qubes/policy.d/36-securedrop-workstation.policy
 
 # qrexec service for journalist secret keys
 %attr(755, root, root) /etc/qubes-rpc/securedrop.GetSecretKeys
@@ -203,6 +211,13 @@ systemctl enable securedrop-logind-override-disable.service ||:
 %systemd_user_post securedrop-user-xfce-icon-size.service
 %systemd_user_post securedrop-user-xfce-settings.service
 
+# Enable USB (auto) attachment
+%systemd_user_post securedrop-usb-attach.service
+# Re-apply preset on every upgrade (admin overriding is not an issue here)
+if [ $1 -ge 2 ]; then
+    systemctl --no-reload --global preset securedrop-usb-attach.service || :
+fi
+
 # Enable notification timer
 %systemd_user_post sdw-notify.timer
 
@@ -212,6 +227,7 @@ if [ $1 -eq 0 ]; then
     %systemd_preun securedrop-logind-override-disable.service
     %systemd_user_preun securedrop-user-xfce-icon-size.service
     %systemd_user_preun securedrop-user-xfce-settings.service
+    %systemd_user_preun securedrop-usb-attach.service
     %systemd_user_preun sdw-notify.timer
 fi
 
@@ -219,13 +235,16 @@ fi
 # version we are upgrading from. The version conditional should
 # be bumped whenever there is some change in the release that
 # requires a full `sdw-admin --apply` run.
-%triggerun -- %{name} < 1.8.0
+%triggerun -- %{name} < 1.9.1
 mkdir -p /tmp/sdw-migrations
 touch /tmp/sdw-migrations/debian-13-bump
 # Disable top to workaround a bug in the 1.8.0 upgrade; sdw-admin will re-enable it
 qubesctl top.disable securedrop_salt.sd-workstation
 
 %changelog
+* Tue Nov 17 2026 SecureDrop Team <securedrop@freedom.press> - 1.9.1
+- See changelog.md
+
 * Tue Sep 01 2026 SecureDrop Team <securedrop@freedom.press> - 1.9.0
 - See changelog.md
 

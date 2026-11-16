@@ -31,10 +31,6 @@ qubes.GpgImportKey      *           @tag:sd-client sd-gpg allow
 # Future: qubes-app-linux-split-gpg2
 qubes.Gpg2              *           @tag:sd-client sd-gpg allow target=sd-gpg
 
-qubes.USBAttach         *           sys-usb @tag:sd-export-target allow  user=root
-
-qubes.USB               *           @tag:sd-export-target sys-usb allow
-
 # TODO: should this be handled with the new Global Config UI instead?
 qubes.ClipboardPaste    *           @tag:sd-send-app-clipboard sd-app ask
 qubes.ClipboardPaste    *           sd-app @tag:sd-receive-app-clipboard ask

@@ -1,5 +1,11 @@
 # changelog
 
+## 1.9.1
+
+This release contains a high-priority security fix.
+
+* Harden device auto-attachment: move logic to dom0 ([GHSA-mp93-xwqc-7rm5](https://github.com/advisories/GHSA-mp93-xwqc-7rm5))
+
 ## 1.9.0
 
 This release focused on hardening some edge-cases updater issues discovered during
