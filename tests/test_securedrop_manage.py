@@ -726,3 +726,34 @@ def test_parse_args_invalid(mocker: Any, prog: str, argv: list[str]) -> None:
     mocker.patch.object(manage, "get_installed_product", return_value=manage.Product.JOURNALIST)
     with pytest.raises(SystemExit):
         manage.parse_args(prog, argv)
+
+
+@pytest.mark.parametrize(
+    ("features", "expected"),
+    [
+        # set by admin_salt.sd-admin: reverted
+        (dict(manage.ADMIN_DOM0_MENU_FEATURES), {}),
+        # changed by the user: left alone
+        (
+            {"menu-favorites": "my-app.desktop", "menu-initial-page": "search_page"},
+            {"menu-favorites": "my-app.desktop", "menu-initial-page": "search_page"},
+        ),
+        # only some still match: only those reverted
+        (
+            {**manage.ADMIN_DOM0_MENU_FEATURES, "menu-favorites": "my-app.desktop"},
+            {"menu-favorites": "my-app.desktop"},
+        ),
+        # not set: nothing to do
+        ({}, {}),
+    ],
+)
+def test_revert_admin_dom0_menu(
+    mocker: Any, features: dict[str, str], expected: dict[str, str]
+) -> None:
+    app = mocker.MagicMock()
+    app.domains = {"dom0": mocker.MagicMock(features=features)}
+    mocker.patch.object(manage, "Qubes", return_value=app)
+
+    manage.revert_admin_dom0_menu()
+
+    assert features == expected

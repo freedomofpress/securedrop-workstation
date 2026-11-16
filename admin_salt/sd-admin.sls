@@ -37,7 +37,6 @@ sd-admin:
             org.gnome.Nautilus.desktop
             org.gnome.DiskUtility.desktop
             xfce4-terminal.desktop
-            press.freedom.SecureDropAdminKeePassXC.desktop
             press.freedom.SecureDropJournalistInterface.desktop
             press.freedom.SecureDropSourceInterface.desktop
             press.freedom.SecureDropSshApp.desktop
@@ -55,7 +54,8 @@ sd-admin-custom-persist:
       - custom-persist.tor_config: dir:root:root:0700:/etc/tor
       - custom-persist.home: /home
 
-sd-admin-dom0-menu-favorites:
+# Open Qubes menu to Favorites page by default and add launchers
+sd-admin-dom0-menu:
   qvm.features:
     - name: dom0
     - set:
@@ -65,3 +65,4 @@ sd-admin-dom0-menu-favorites:
           press.freedom.SecureDropSourceInterface.desktop
           press.freedom.SecureDropSshApp.desktop
           press.freedom.SecureDropSshMon.desktop
+      - menu-initial-page: favorites_page

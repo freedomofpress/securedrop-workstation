@@ -525,11 +525,38 @@ def destroy_all_tagged(tag: str) -> None:
             run_cmd(["qvm-remove", "-f", "--", vm.name])
 
 
+# dom0 app menu settings applied by admin_salt.sd-admin
+ADMIN_DOM0_MENU_FEATURES = {
+    "menu-favorites": " ".join(
+        [
+            "press.freedom.SecureDropAdminKeePassXC.desktop",
+            "press.freedom.SecureDropJournalistInterface.desktop",
+            "press.freedom.SecureDropSourceInterface.desktop",
+            "press.freedom.SecureDropSshApp.desktop",
+            "press.freedom.SecureDropSshMon.desktop",
+        ]
+    ),
+    "menu-initial-page": "favorites_page",
+}
+
+
+def revert_admin_dom0_menu() -> None:
+    """
+    Undo the dom0 app menu settings applied by admin_salt.sd-admin, leaving
+    alone any that have since been changed to something else.
+    """
+    dom0 = Qubes().domains["dom0"]
+    for feature, value in ADMIN_DOM0_MENU_FEATURES.items():
+        if dom0.features.get(feature) == value:
+            del dom0.features[feature]
+
+
 def perform_uninstall(product: Product) -> None:
     packages = []
     if product.contains_admin:
         print("Destroying all admin VMs")
         destroy_all_tagged("sd-admin")
+        revert_admin_dom0_menu()
         packages.append("securedrop-admin-dom0-config")
 
     if product.contains_journalist:
