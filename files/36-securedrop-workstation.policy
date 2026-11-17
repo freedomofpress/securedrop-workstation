@@ -1,0 +1,2 @@
+# Rules after 35-compat.policy; see https://github.com/QubesOS/qubes-issues/issues/11282
+qubes.USB               *           @tag:sd-workstation @anyvm deny

@@ -28,7 +28,7 @@ base:
     - securedrop_salt.sd-viewer-files
   'sd-fedora-43-dvm,sys-usb':
     - match: list
-    - securedrop_salt.sd-usb-autoattach-add
+    - securedrop_salt.sd-usb-autoattach-remove
 
   # "Placeholder" config to trigger TemplateVM boots,
   # so upgrades can be applied automatically via cron.

@@ -38,7 +38,6 @@ qubes.USBAttach         *           @anyvm @tag:sd-workstation deny
 qubes.USBAttach         *           @tag:sd-workstation @anyvm deny
 
 qubes.USB               *           @anyvm @tag:sd-workstation deny
-qubes.USB               *           @tag:sd-workstation @anyvm deny
 
 qubes.PdfConvert        *           @anyvm @tag:sd-workstation deny
 qubes.PdfConvert        *           @tag:sd-workstation @anyvm deny
