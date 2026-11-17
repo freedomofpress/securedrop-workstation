@@ -729,31 +729,23 @@ def test_parse_args_invalid(mocker: Any, prog: str, argv: list[str]) -> None:
 
 
 @pytest.mark.parametrize(
-    ("features", "expected"),
+    "features",
     [
-        # set by admin_salt.sd-admin: reverted
-        (dict(manage.ADMIN_DOM0_MENU_FEATURES), {}),
-        # changed by the user: left alone
-        (
-            {"menu-favorites": "my-app.desktop", "menu-initial-page": "search_page"},
-            {"menu-favorites": "my-app.desktop", "menu-initial-page": "search_page"},
-        ),
-        # only some still match: only those reverted
-        (
-            {**manage.ADMIN_DOM0_MENU_FEATURES, "menu-favorites": "my-app.desktop"},
-            {"menu-favorites": "my-app.desktop"},
-        ),
-        # not set: nothing to do
-        ({}, {}),
+        # as set by admin_salt.sd-admin
+        {
+            "menu-favorites": "press.freedom.SecureDropSshApp.desktop",
+            "menu-initial-page": "favorites_page",
+        },
+        # changed by the user since
+        {"menu-favorites": "my-app.desktop", "menu-initial-page": "search_page"},
     ],
 )
-def test_revert_admin_dom0_menu(
-    mocker: Any, features: dict[str, str], expected: dict[str, str]
-) -> None:
+def test_revert_dom0_menu(mocker: Any, features: dict[str, str]) -> None:
+    features = {**features, "unrelated-feature": "1"}
     app = mocker.MagicMock()
     app.domains = {"dom0": mocker.MagicMock(features=features)}
     mocker.patch.object(manage, "Qubes", return_value=app)
 
-    manage.revert_admin_dom0_menu()
+    manage.revert_dom0_menu()
 
-    assert features == expected
+    assert features == {"unrelated-feature": "1"}
