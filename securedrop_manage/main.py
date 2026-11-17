@@ -59,6 +59,10 @@ class Command(Enum):
     IMPORT = "import"
 
 
+class ImportSource(Enum):
+    TAILS = "tails"
+
+
 def rewrite_legacy_args(argv: list[str]) -> list[str]:
     """
     Rewrite the legacy flag-style invocation (e.g. `--apply --target all`) into
@@ -67,7 +71,7 @@ def rewrite_legacy_args(argv: list[str]) -> list[str]:
     legacy = {
         "--apply": ["apply"],
         "--validate": ["validate"],
-        "--configure": ["import", "--from-tails"],
+        "--configure": ["import", "--from", "tails"],
         "--uninstall": ["uninstall"],
     }
     flags = [arg for arg in argv if arg in legacy]
@@ -143,16 +147,17 @@ def parse_args(prog: str | None = None, argv: list[str] | None = None) -> argpar
         parents=[target_parser],
         help="Import credentials and configuration when migrating workstations",
     )
-    import_source = import_parser.add_mutually_exclusive_group(required=True)
-    import_source.add_argument(
-        "--from-tails",
+    import_parser.add_argument(
+        "--from",
         dest="source",
-        action="store_const",
-        const="tails",
-        help="Import from legacy Tails Workstation",
+        required=True,
+        choices=[source.value for source in ImportSource],
+        help="Where to import from",
     )
     args = parser.parse_args(argv)
     args.command = Command(args.command)
+    if args.command is Command.IMPORT:
+        args.source = ImportSource(args.source)
     if args.product is Product.ALL:
         # "all" means whatever is installed
         args.product = installed_product

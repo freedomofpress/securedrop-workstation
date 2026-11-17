@@ -431,7 +431,7 @@ class TestImportFromTailsAdmin:
     def _admin_installed(self, mocker: Any, monkeypatch: pytest.MonkeyPatch) -> None:
         mocker.patch.object(manage.os, "geteuid", return_value=1000)
         mocker.patch.object(manage, "get_installed_product", return_value=manage.Product.ADMIN)
-        monkeypatch.setattr("sys.argv", ["securedrop-manage", "import", "--from-tails"])
+        monkeypatch.setattr("sys.argv", ["securedrop-manage", "import", "--from", "tails"])
 
     def test_validates_before_import(self, mocker: Any) -> None:
         calls = mocker.Mock()
@@ -647,8 +647,11 @@ class TestImportAdminConfig:
         (["--apply"], ["apply"]),
         (["--apply", "--target", "admin"], ["apply", "--target", "admin"]),
         (["--target", "admin", "--validate"], ["validate", "--target", "admin"]),
-        (["--configure"], ["import", "--from-tails"]),
-        (["--configure", "--target", "admin"], ["import", "--from-tails", "--target", "admin"]),
+        (["--configure"], ["import", "--from", "tails"]),
+        (
+            ["--configure", "--target", "admin"],
+            ["import", "--from", "tails", "--target", "admin"],
+        ),
         (["--uninstall", "--force"], ["uninstall", "--force"]),
         (
             ["--force", "--uninstall", "--target", "all"],
@@ -697,11 +700,19 @@ def test_parse_args_legacy(
     assert getattr(args, "force", None) is force
 
 
-def test_parse_args_import_from_tails(mocker: Any) -> None:
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["import", "--from", "tails"],
+        ["import", "--from=tails"],
+        ["import", "--target", "all", "--from", "tails"],
+    ],
+)
+def test_parse_args_import_from_tails(mocker: Any, argv: list[str]) -> None:
     mocker.patch.object(manage, "get_installed_product", return_value=manage.Product.JOURNALIST)
-    args = manage.parse_args("securedrop-manage", ["import", "--from-tails"])
+    args = manage.parse_args("securedrop-manage", argv)
     assert args.command is manage.Command.IMPORT
-    assert args.source == "tails"
+    assert args.source is manage.ImportSource.TAILS
 
 
 @pytest.mark.parametrize(
@@ -730,6 +741,10 @@ def test_parse_args_legacy_argv0(
         ("sdw-admin", ["--apply", "--force"]),
         # import requires a source
         ("securedrop-manage", ["import"]),
+        # unknown import source
+        ("securedrop-manage", ["import", "--from", "usb"]),
+        # the old flag is gone
+        ("securedrop-manage", ["import", "--from-tails"]),
         # the old subcommand name is gone
         ("securedrop-manage", ["configure"]),
         # legacy flags are only accepted via sdw-admin
