@@ -55,6 +55,8 @@ sd-devices-create-named-dispvm:
       - template: sd-devices-dvm
       - default_dispvm: ""
       - netvm: ""
+      # Explicitly enable devices, since template disables them
+      - devices_denied: ''
     - tags:
       - add:
         - sd-workstation
