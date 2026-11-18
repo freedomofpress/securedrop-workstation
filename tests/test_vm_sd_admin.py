@@ -1,7 +1,6 @@
 import pytest
 from qubesadmin.app import VMCollection
 
-from securedrop_manage import main as manage
 from tests.markers import needs_admin
 
 pytestmark = needs_admin
@@ -19,7 +18,14 @@ def test_admin_menu_favorites(all_vms: VMCollection) -> None:
     For dom0 apps the menu matches against the full .desktop file name.
     """
     favorites = all_vms["dom0"].features.get("menu-favorites", "")
-    assert favorites == manage.ADMIN_DOM0_MENU_FEATURES["menu-favorites"]
+    assert favorites.split() == [
+        "press.freedom.SecureDropAdminKeePassXC.desktop",
+        "press.freedom.SecureDropJournalistInterface.desktop",
+        "press.freedom.SecureDropSourceInterface.desktop",
+        "press.freedom.SecureDropSshApp.desktop",
+        "press.freedom.SecureDropSshMon.desktop",
+    ]
     # No favorites on the qubes themselves, which would bypass sdw-updater
-    for vm in ("sd-admin", "sd-admin-vault"):
-        assert not all_vms[vm].features.get("menu-favorites")
+    for vm in all_vms:
+        if vm.name != "dom0":
+            assert not vm.features.get("menu-favorites"), vm.name
