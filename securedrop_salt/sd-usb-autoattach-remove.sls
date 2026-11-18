@@ -22,12 +22,13 @@ sd-clear-udev-rules:
       - /usr/local/bin/sd-attach-export-device
 
 sd-clear-rc-local-udev-rules:
-  file.blockreplace:
+  file.replace:
     - name: /rw/config/rc.local
-    - marker_start: "### BEGIN securedrop-workstation ###"
-    - marker_end: "### END securedrop-workstation ###"
-    - content: ''
-    - onlyif: grep -qsxF '### BEGIN securedrop-workstation ###' /rw/config/rc.local
+    # Remove the whole block, including the markers
+    - pattern: '(?s)### BEGIN securedrop-workstation ###.*?### END securedrop-workstation ###\n?'
+    - repl: ''
+    - bufsize: file
+    - ignore_if_missing: True
 
 sd-udev-reload:
   cmd.run:
