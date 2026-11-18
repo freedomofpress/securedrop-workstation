@@ -37,6 +37,19 @@ def qube_sys_usb() -> QubeWrapper:
     return QubeWrapper("sys-usb")
 
 
+@pytest.fixture(scope="module", autouse=True)
+def needs_usb_autoattach_daemon() -> None:
+    """
+    Fail fast if USB auto-attachment preconditions not met
+    """
+    result = subprocess.run(
+        ["systemctl", "--user", "is-active", "--quiet", "securedrop-usb-attach"],
+        check=False,
+    )
+    if result.returncode != 0:
+        pytest.fail("'securedrop-usb-attach' user unit must be running!")
+
+
 def _udisks_call(qube_sd_devices: QubeWrapper, object_path: str, method: str, *args: str) -> str:
     """
     Call a udisks2 D-Bus method as the desktop user (as GNOME Disks does) and
