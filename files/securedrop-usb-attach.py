@@ -7,6 +7,7 @@ from pathlib import Path
 
 import qubesadmin
 import qubesadmin.events
+import qubesadmin.exc
 from qubesadmin.device_protocol import DeviceAssignment, DeviceCategory, DeviceInfo
 from qubesadmin.vm import QubesVM
 from systemd.journal import JournalHandler
