@@ -37,19 +37,6 @@ def qube_sys_usb() -> QubeWrapper:
     return QubeWrapper("sys-usb")
 
 
-@pytest.fixture(scope="module", autouse=True)
-def needs_usb_autoattach_daemon() -> None:
-    """
-    Fail fast if USB auto-attachment preconditions not met
-    """
-    result = subprocess.run(
-        ["systemctl", "--user", "is-active", "--quiet", "securedrop-usb-attach"],
-        check=False,
-    )
-    if result.returncode != 0:
-        pytest.fail("'securedrop-usb-attach' user unit must be running!")
-
-
 def _udisks_call(qube_sd_devices: QubeWrapper, object_path: str, method: str, *args: str) -> str:
     """
     Call a udisks2 D-Bus method as the desktop user (as GNOME Disks does) and
@@ -212,6 +199,19 @@ def _export(qube_sd_devices: QubeWrapper, passphrase: str, content: str) -> str:
         check=True,
     ).stdout.decode()
     return output.splitlines()[-1]
+
+
+# NOTE: keep this as the first test so that it runs (and fails) first!
+# If USB autoattach daemon is not running, the other tests will time out.
+@pytest.mark.configuration
+@pytest.mark.run_alone  # Run in the same batch as (and before) the USB tests below
+def test_usb_autoattach_daemon_running() -> None:
+    result = subprocess.run(
+        ["systemctl", "--user", "is-active", "--quiet", "securedrop-usb-attach"],
+        check=False,
+    )
+    if result.returncode != 0:
+        pytest.exit("'securedrop-usb-attach' user unit must be running!", returncode=1)
 
 
 @pytest.mark.slow
