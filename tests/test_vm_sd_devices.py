@@ -3,6 +3,7 @@ Integration tests for validating SecureDrop Workstation config,
 specifically for the "sd-devices" VM and related functionality.
 """
 
+import subprocess
 from collections.abc import Callable
 
 import pytest
@@ -73,6 +74,31 @@ def test_files_are_properly_copied(qube: QubeWrapper) -> None:
     assert qube.fileExists("/usr/bin/send-to-usb")
     assert qube.fileExists("/usr/share/applications/send-to-usb.desktop")
     assert qube.fileExists("/usr/share/mime/packages/application-x-sd-export.xml")
+
+
+# qrexec-client-vm's exit code when the call is refused by policy
+QREXEC_REFUSED = 126
+
+
+def test_usb_attach_arbitrary_device_denied(qube: QubeWrapper) -> None:
+    # Arbitrary device identifier: even if the device doesn't exist the
+    # call should fail first at the policy check
+    device_ident = "1-1"
+    result = subprocess.run(
+        [
+            "qvm-run",
+            "--pass-io",
+            qube.name,
+            f"timeout 30 qrexec-client-vm sys-usb qubes.USB+{device_ident} < /dev/null",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == QREXEC_REFUSED, (
+        f"qubes.USB+{device_ident} from {qube.name} to sys-usb was not refused by policy "
+        f"(exit code {result.returncode}): {result.stderr}"
+    )
 
 
 def test_sd_export_package_installed(qube_sd_devices: QubeWrapper) -> None:
