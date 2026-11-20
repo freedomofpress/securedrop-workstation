@@ -1,5 +1,5 @@
 """
-Integration tests for "securedrop-manage configure"
+Integration tests for "securedrop-manage import --from tails"
 """
 
 import json
@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from securedrop_manage import configure
+from securedrop_manage import tails_import
 from securedrop_manage.products import Product
 from securedrop_manage.validate import validate_config
 from tests.markers import needs_journalist
@@ -34,12 +34,12 @@ def vault_run(command: str, stdin: bytes | None = None) -> str:
 
 class FakeTailsDrive:
     """
-    Stand-in for the Tails USB drives that "securedrop-manage configure" reads from.
+    Stand-in for the Tails USB drives that "securedrop-manage import --from tails" reads from.
     """
 
     def __init__(self, submission_key: bytes) -> None:
-        self.mountpoint: Path = configure.TAILS_PATH
-        self.gnupg_path: Path = configure.TAILS_GNUPG_PATH
+        self.mountpoint: Path = tails_import.TAILS_PATH
+        self.gnupg_path: Path = tails_import.TAILS_GNUPG_PATH
         self.submission_key = submission_key
 
     def insert_secure_viewing_station(self) -> None:
@@ -66,7 +66,7 @@ class FakeTailsDrive:
 @pytest.fixture
 def tails_drive(proj_root: Path) -> Iterator[FakeTailsDrive]:
     # Never touch an actually-mounted Tails drive: ejecting deletes its contents
-    mountpoint: Path = configure.TAILS_PATH
+    mountpoint: Path = tails_import.TAILS_PATH
     if vault_run(f"test -e {mountpoint} && echo present || echo absent").strip() == "present":
         pytest.fail(f"{mountpoint} already exists in vault; refusing to overwrite it")
 
@@ -86,7 +86,7 @@ def ji_config_path(request: pytest.FixtureRequest) -> Path:
     fixture indirectly to test the legacy (git) location instead.
     """
     attribute = getattr(request, "param", "TAILS_PKG_JOURNALIST_INTERFACE_CONFIG")
-    path: Path = getattr(configure, attribute)
+    path: Path = getattr(tails_import, attribute)
     return path
 
 
@@ -95,7 +95,7 @@ def config_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     """Redirect the dom0 config directory, so tests don't clobber the real one"""
     config_path = tmp_path / "securedrop-manage"
     config_path.mkdir()
-    monkeypatch.setattr(configure, "CONFIG_PATH", config_path)
+    monkeypatch.setattr(tails_import, "CONFIG_PATH", config_path)
     return config_path
 
 
@@ -127,7 +127,7 @@ def submission_key_fingerprint(key_file: Path) -> str:
     gpg_output = subprocess.check_output(
         ["gpg", "--show-keys", "--with-fingerprint", "--with-colon", key_file], text=True
     )
-    fingerprints = configure.extract_secret_key_fingerprints(gpg_output)
+    fingerprints = tails_import.extract_secret_key_fingerprints(gpg_output)
     assert len(fingerprints) == 1
     return fingerprints[0]
 
@@ -162,7 +162,7 @@ def test_import_journalist_interface_config(
         ]
     )
 
-    configure.import_journalist_config()
+    tails_import.import_journalist_config()
 
     # The submission key was fetched off the Secure Viewing Station drive
     imported_key = config_path / "sd-journalist.sec"
@@ -180,8 +180,8 @@ def test_import_journalist_interface_config(
         },
         "environment": "prod",
         "vmsizes": {
-            "sd_app": configure.DEFAULT_SD_APP_GB,
-            "sd_log": configure.DEFAULT_SD_LOG_GB,
+            "sd_app": tails_import.DEFAULT_SD_APP_GB,
+            "sd_log": tails_import.DEFAULT_SD_LOG_GB,
         },
     }
 
@@ -205,7 +205,7 @@ def test_import_config_keeps_existing_submission_key(
 
     answer_prompts(["y", "y"])
 
-    configure.import_journalist_config()
+    tails_import.import_journalist_config()
 
     assert existing_key.read_bytes() == (proj_root / "sd-journalist.sec").read_bytes()
     config = json.loads((config_path / "config.json").read_text())
@@ -225,6 +225,6 @@ def test_import_config_aborts_without_confirmation(
 
     answer_prompts(["n"])
 
-    configure.import_journalist_config()
+    tails_import.import_journalist_config()
 
     assert list(config_path.iterdir()) == []

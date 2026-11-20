@@ -30,8 +30,8 @@ from securedrop_manage import (
     SUBMISSION_KEY_FILENAME,
     ManageException,
 )
-from securedrop_manage.configure import import_admin_config, import_journalist_config
 from securedrop_manage.products import Product, get_installed_product
+from securedrop_manage.tails_import import import_admin_config, import_journalist_config
 from securedrop_manage.validate import AdminConfigValidator, validate_config
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
@@ -56,7 +56,11 @@ class Command(Enum):
     APPLY = "apply"
     VALIDATE = "validate"
     UNINSTALL = "uninstall"
-    CONFIGURE = "configure"
+    IMPORT = "import"
+
+
+class ImportSource(Enum):
+    TAILS = "tails"
 
 
 def rewrite_legacy_args(argv: list[str]) -> list[str]:
@@ -64,20 +68,25 @@ def rewrite_legacy_args(argv: list[str]) -> list[str]:
     Rewrite the legacy flag-style invocation (e.g. `--apply --target all`) into
     the subcommand form (`apply --target all`), for backwards compatibility.
     """
-    legacy = ("--apply", "--validate", "--configure", "--uninstall")
+    legacy = {
+        "--apply": ["apply"],
+        "--validate": ["validate"],
+        "--configure": ["import", "--from", "tails"],
+        "--uninstall": ["uninstall"],
+    }
     flags = [arg for arg in argv if arg in legacy]
     if not flags:
         return argv
     if len(flags) > 1:
         sys.exit(f"error: only one of {', '.join(flags)} may be specified")
     flag = flags[0]
-    command = flag[2:]
+    command = legacy[flag]
     print(
-        f"Warning: {flag} is deprecated, use `securedrop-manage {command}` instead",
+        f"Warning: {flag} is deprecated, use `securedrop-manage {' '.join(command)}` instead",
         file=sys.stderr,
     )
     rest = [arg for arg in argv if arg != flag]
-    return [command, *rest]
+    return [*command, *rest]
 
 
 def parse_args(prog: str | None = None, argv: list[str] | None = None) -> argparse.Namespace:
@@ -133,13 +142,22 @@ def parse_args(prog: str | None = None, argv: list[str] | None = None) -> argpar
         action="store_true",
         help="Don't prompt for confirmation, proceed immediately",
     )
-    subparsers.add_parser(
-        Command.CONFIGURE.value,
+    import_parser = subparsers.add_parser(
+        Command.IMPORT.value,
         parents=[target_parser],
-        help="Configure SecureDrop Workstation",
+        help="Import credentials and configuration when migrating workstations",
+    )
+    import_parser.add_argument(
+        "--from",
+        dest="source",
+        required=True,
+        choices=[source.value for source in ImportSource],
+        help="Where to import from",
     )
     args = parser.parse_args(argv)
     args.command = Command(args.command)
+    if args.command is Command.IMPORT:
+        args.source = ImportSource(args.source)
     if args.product is Product.ALL:
         # "all" means whatever is installed
         args.product = installed_product
@@ -650,7 +668,7 @@ def main() -> None:  # noqa: PLR0912
                 sys.exit(0)
         refresh_salt()
         perform_uninstall(args.product)
-    elif args.command is Command.CONFIGURE:
+    elif args.command is Command.IMPORT:
         if args.product.contains_journalist:
             print(
                 "Preparing to import SecureDrop Workstation configuration...\n\n"

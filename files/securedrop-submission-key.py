@@ -15,8 +15,8 @@ import qubesadmin
 from qubesadmin.exc import QubesException
 from qubesadmin.vm import QubesVM
 
-from securedrop_manage.configure import get_submission_key_fingerprint
 from securedrop_manage.products import get_installed_product
+from securedrop_manage.tails_import import get_submission_key_fingerprint
 
 # XDG_CONFIG_HOME is not set in 4.3 Qubes - set it manually
 DOM0_CONFIG_DIR = Path.home() / ".config/securedrop-manage"
