@@ -155,6 +155,7 @@ install -m 644 securedrop_salt/apt-test_freedom_press.sources.j2 %{buildroot}/sr
 install -m 755 -d %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/31-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 install -m 644 files/32-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
+install -m 644 files/36-securedrop-admin.policy %{buildroot}/etc/qubes/policy.d/
 
 # Admin application launchers, shown in the dom0 application menu
 install -m 644 files/admin-applications/*.desktop %{buildroot}%{_datadir}/applications/
@@ -205,6 +206,7 @@ install -m 644 files/admin-applications/*.desktop %{buildroot}%{_datadir}/applic
 %ghost %attr(0644, root, root) /srv/salt/admin_salt/config.json
 %attr(664, root, root) /etc/qubes/policy.d/31-securedrop-admin.policy
 %attr(664, root, root) /etc/qubes/policy.d/32-securedrop-admin.policy
+%attr(664, root, root) /etc/qubes/policy.d/36-securedrop-admin.policy
 %dir /usr/share/securedrop/products
 /usr/share/securedrop/products/admin-workstation.json
 %attr(644, root, root) %{_datadir}/applications/press.freedom.SecureDropAdminKeePassXC.desktop
