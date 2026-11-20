@@ -15,7 +15,7 @@ from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
 from securedrop_manage import configure
 from securedrop_manage import main as manage
-from tests.base import SD_ADMIN_VMS, SD_JOURNALIST_VMS, SD_TAG
+from tests.base import SD_ADMIN_VMS, SD_JOURNALIST_VMS
 from tests.markers import needs_dom0, needs_journalist
 
 if TYPE_CHECKING:
@@ -67,7 +67,15 @@ def suppress_policies() -> Generator:
 
 
 @pytest.fixture
-def mock_qubes_app(mocker: Any) -> QubesTestWrapper:
+def mock_product() -> MagicMock:
+    """
+    Mocked product, with a tag no real qube has
+    """
+    return MagicMock(tag="sd-test-product")
+
+
+@pytest.fixture
+def mock_qubes_app(mocker: Any, mock_product: MagicMock) -> QubesTestWrapper:
     """
     Simulate a qubesadmin.Qubes() object called by securedrop_manage
     """
@@ -127,11 +135,15 @@ def mock_qubes_app(mocker: Any) -> QubesTestWrapper:
 
             # Report these with the SD tag
             for qube in sd_templates + sd_app_qubes + sd_disposables:
-                self.expected_calls[(qube.name, "admin.vm.tag.Get", SD_TAG, None)] = b"0\x001"
+                self.expected_calls[(qube.name, "admin.vm.tag.Get", mock_product.tag, None)] = (
+                    b"0\x001"
+                )
 
             # Report these without the SD tag (if asked)
             for qube in [self.domains["dom0"], default_template, default_app_qube, default_disp]:
-                self.expected_calls[(qube.name, "admin.vm.tag.Get", SD_TAG, None)] = b"0\x000"
+                self.expected_calls[(qube.name, "admin.vm.tag.Get", mock_product.tag, None)] = (
+                    b"0\x000"
+                )
 
     mock_qubes_app = MockQubesWorkstation()
 
@@ -217,36 +229,52 @@ def test_suppress_preloaded_disposables(let_sd_viewer_preloads_settle: Any) -> N
     assert new_preload_dispvm_max == int(app.domains["dom0"].features["preload-dispvm-max"])
 
 
-@pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
-@needs_journalist
+@needs_dom0
 class TestTemplateUpgradesAvailable:
+    @pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
+    @pytest.mark.parametrize(
+        ("product", "some_product_qube", "needs_fixtures"),
+        [
+            (manage.Product.JOURNALIST, "sd-proxy", ["needs_journalist"]),
+            (manage.Product.ADMIN, "sd-admin", ["needs_admin"]),
+            (manage.Product.ALL, "sd-proxy", ["needs_journalist", "needs_admin"]),
+        ],
+    )
     def test_template_upgrade_handler(
         self,
         template_upgrades_available: None,
         suppress_policies: None,
         cleanup_prohibit_start: None,
+        product: manage.Product,
+        some_product_qube: str,
+        needs_fixtures: list[str],
+        request: pytest.FixtureRequest,
     ) -> None:
+        # Skip if the product isn't installed
+        for needs_fixture in needs_fixtures:
+            request.getfixturevalue(needs_fixture)
+
         # Start with an SDW qube
         app = qubesadmin.Qubes()
-        sd_proxy = app.domains["sd-proxy"]
-        if sd_proxy.is_halted():
-            sd_proxy.start()
+        qube = app.domains[some_product_qube]
+        if qube.is_halted():
+            qube.start()
 
-        with manage.template_upgrade_handler():
+        with manage.template_upgrade_handler(product):
             # SDW qubes should have all be shut down
-            assert sd_proxy.is_halted()
+            assert qube.is_halted()
 
             # And they can no longer be started
             with pytest.raises(qubesadmin.exc.QubesException) as exc_info:
-                sd_proxy.start()
+                qube.start()
             assert "Qube start is prohibited" in str(exc_info.value)
 
         # sd-proxy should start just fine (startup has been re-enabled)
-        sd_proxy.start()
+        qube.start()
 
         # Shut down sd-proxy so it doesn't start sd-log through 'securedrop.Log'
         # after test finishes
-        sd_proxy.shutdown()
+        qube.shutdown()
 
     @pytest.mark.parametrize(
         ("template_ver", "expected_ver", "should_upgrades_be_skipped"),
@@ -262,6 +290,7 @@ class TestTemplateUpgradesAvailable:
         expected_ver: str,
         should_upgrades_be_skipped: bool,
         mock_qubes_app: QubesTestWrapper,
+        mock_product: MagicMock,
         mocker: Any,
     ) -> None:
         # Patch securedrop-manage to expect a certain Debian version
@@ -271,12 +300,12 @@ class TestTemplateUpgradesAvailable:
         # actually messing with the system
         for qube in mock_qubes_app.domains:
             # Just tell is tagged as 'sd-workstation'
-            if qube.klass == "TemplateVM" and SD_TAG in qube.tags:
+            if qube.klass == "TemplateVM" and mock_product.tag in qube.tags:
                 mock_qubes_app.expected_calls[
                     (qube.name, "admin.vm.feature.Get", "os-version", None)
                 ] = b"0\x00" + template_ver.encode()
 
-        upgrade_handler = manage.template_upgrade_handler()
+        upgrade_handler = manage.template_upgrade_handler(mock_product)
         assert upgrade_handler.template_upgrades_skipped() == should_upgrades_be_skipped
 
 
