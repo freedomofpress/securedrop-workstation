@@ -206,12 +206,23 @@ def _export(qube_sd_devices: QubeWrapper, passphrase: str, content: str) -> str:
 @pytest.mark.configuration
 @pytest.mark.run_alone  # Run in the same batch as (and before) the USB tests below
 def test_usb_autoattach_daemon_running() -> None:
+    runtime_dir = f"/run/user/{os.getuid()}"
+    env = {
+        **os.environ,
+        "XDG_RUNTIME_DIR": runtime_dir,
+        "DBUS_SESSION_BUS_ADDRESS": f"unix:path={runtime_dir}/bus",
+    }
     result = subprocess.run(
-        ["systemctl", "--user", "is-active", "--quiet", "securedrop-usb-attach"],
+        ["systemctl", "--user", "is-active", "securedrop-usb-attach"],
+        env=env,
+        capture_output=True,
+        text=True,
         check=False,
     )
-    if result.returncode != 0:
-        pytest.exit("'securedrop-usb-attach' user unit must be running!", returncode=1)
+    assert result.returncode == 0, (
+        "'securedrop-usb-attach' user unit must be running! "
+        f"(systemctl: {result.stdout.strip()} {result.stderr.strip()})"
+    )
 
 
 @pytest.mark.slow
