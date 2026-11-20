@@ -23,12 +23,19 @@ TAILS_GIT_JOURNALIST_INTERFACE_CONFIG = (
     TAILS_PATH / "Persistent/securedrop/install_files/ansible-base/app-journalist.auth_private"
 )
 TAILS_SSH_PATH = TAILS_PATH / "openssh-client/"
+TAILS_PERSISTENT_PATH = TAILS_PATH / "Persistent/"
+TAILS_KEEPASSXC_PATH = TAILS_PERSISTENT_PATH / "Passwords.kdbx"
+TAILS_GIT_CHECKOUT_PATH = TAILS_PERSISTENT_PATH / "securedrop"
 
 SD_ADMIN_VM = "sd-admin"
 SD_ADMIN_CONFIG_PATH = "/home/user/.config/securedrop-admin"
 SD_ADMIN_SSH_PATH = "/home/user/.ssh"
 SD_ADMIN_STAGING_PATH = "/home/user/.securedrop-admin-import"
 SET_SITE_SPECIFIC = "securedrop-set-site-specific"
+
+SD_ADMIN_VAULT_VM = "sd-admin-vault"
+SD_ADMIN_VAULT_KEEPASSXC_PATH = "/home/user/Persistent/admin.kdbx"
+SD_ADMIN_VAULT_KEEPASSXC_TEMPLATE = "/usr/share/securedrop-admin/keepassxc/securedrop-keepassx.kdbx"
 
 DEFAULT_SD_APP_GB = 10
 DEFAULT_SD_LOG_GB = 5
@@ -300,27 +307,27 @@ def _check_in_qube(vm: str, command: str) -> bool:
     return result.returncode == 0
 
 
-def _pipe_admin_file(source: str, destination: str) -> None:
+def _pipe_admin_file(source: str, destination: str, vm: str = SD_ADMIN_VM) -> None:
     """
-    Streams a file from vault to sd-admin
+    Streams a file from vault to an admin qube
     """
     reader = subprocess.Popen(
         ["qvm-run", "--pass-io", "vault", f"cat {quote(source)}"], stdout=subprocess.PIPE
     )
     try:
         writer = subprocess.run(
-            ["qvm-run", "--pass-io", SD_ADMIN_VM, f"umask 077 && cat > {quote(destination)}"],
+            ["qvm-run", "--pass-io", vm, f"umask 077 && cat > {quote(destination)}"],
             stdin=reader.stdout,
             check=False,
         )
     finally:
-        # Let vault see a closed pipe if sd-admin stops reading early
+        # Let vault see a closed pipe if the destination stops reading early
         if reader.stdout:
             reader.stdout.close()
         reader_returncode = reader.wait()
 
     if reader_returncode != 0 or writer.returncode != 0:
-        raise ManageException(f"Error copying {source} from vault to {SD_ADMIN_VM}")
+        raise ManageException(f"Error copying {source} from vault to {vm}")
 
 
 def copy_admin_config() -> list[str]:
@@ -391,6 +398,105 @@ def copy_admin_config() -> list[str]:
     return files.split()
 
 
+def find_keepassxc_databases() -> list[Path]:
+    try:
+        output = subprocess.check_output(
+            [
+                "qvm-run",
+                "--pass-io",
+                "vault",
+                f"find {quote(str(TAILS_PERSISTENT_PATH))}"
+                f" -path {quote(str(TAILS_GIT_CHECKOUT_PATH))} -prune"
+                " -o -type f -iname '*.kdbx' -print",
+            ],
+            text=True,
+        )
+    except subprocess.CalledProcessError:
+        raise ManageException(f"Error searching for KeePassXC databases in {TAILS_PERSISTENT_PATH}")
+    found = sorted(Path(line) for line in output.splitlines() if line)
+    return sorted(found, key=lambda path: path != TAILS_KEEPASSXC_PATH)
+
+
+def _prompt_choose_keepassxc_database(candidates: list[Path]) -> Path | None:
+    destination = f"{SD_ADMIN_VAULT_VM}:{SD_ADMIN_VAULT_KEEPASSXC_PATH}"
+    if len(candidates) == 1:
+        print(f"Found a KeePassXC database on the USB: {candidates[0]}")
+        response = input(f"Import it into {destination} (y/N)? ")
+        return candidates[0] if response.lower() == "y" else None
+
+    print("Found multiple KeePassXC databases on the USB:")
+    for i, path in enumerate(candidates, 1):
+        print(f"  {i}. {path}")
+    response = input(
+        f"Select which database to import to {destination}.\n"
+        f"Enter 1-{len(candidates)}, or press Enter to skip: "
+    ).strip()
+    if not response:
+        return None
+    try:
+        choice = int(response)
+    except ValueError:
+        choice = 0
+    if not 1 <= choice <= len(candidates):
+        print("Invalid choice, exiting.")
+        return None
+    return candidates[choice - 1]
+
+
+def copy_keepassxc_database(source: Path) -> bool:
+    vm = SD_ADMIN_VAULT_VM
+    destination_path = SD_ADMIN_VAULT_KEEPASSXC_PATH
+    destination = quote(destination_path)
+    # Copy next to the destination first so a failed transfer leaves nothing half-written
+    staging_path = f"{destination_path}.import"
+    staging = quote(staging_path)
+
+    # Let securedrop-setup-admin-vault.service finish first, so it can't copy the blank
+    # template over the imported database on the qube's first boot.
+    _check_in_qube(vm, "systemctl is-system-running --wait")
+
+    if _check_in_qube(vm, f"test -e {destination}") and not _check_in_qube(
+        vm, f"cmp -s {destination} {quote(SD_ADMIN_VAULT_KEEPASSXC_TEMPLATE)}"
+    ):
+        print(f"{vm} already has a KeePassXC database at {destination_path}")
+        response = input("Replace it with the database from the USB (y/N)? ")
+        if response.lower() != "y":
+            return False
+
+    try:
+        parent = quote(str(Path(destination_path).parent))
+        if not _check_in_qube(vm, f"mkdir -p -m 700 {parent}"):
+            raise ManageException(f"Error preparing {destination_path} in {vm}")
+        _pipe_admin_file(str(source), staging_path, vm=vm)
+        if not _check_in_qube(vm, f"mv {staging} {destination}"):
+            raise ManageException(f"Error installing KeePassXC database in {vm}")
+    finally:
+        _check_in_qube(vm, f"rm -f {staging}")
+    return True
+
+
+def import_keepassxc_database() -> bool:
+    """
+    Import admin KeePassXC from Tails Admin Workstation USB into sd-admin-vault.
+    """
+    if SD_ADMIN_VAULT_VM not in Qubes().domains:
+        print(f"{SD_ADMIN_VAULT_VM} does not exist. Provision the Admin Workstation first.")
+        return False
+    candidates = find_keepassxc_databases()
+    if not candidates:
+        print(f"No KeePassXC database found in {TAILS_PERSISTENT_PATH}; skipping.")
+        return False
+    source = _prompt_choose_keepassxc_database(candidates)
+    if source is None:
+        print("Not importing a KeePassXC database.")
+        return False
+    print(f"Copying {source} to {SD_ADMIN_VAULT_VM}...")
+    if not copy_keepassxc_database(source):
+        print(f"Keeping the existing KeePassXC database in {SD_ADMIN_VAULT_VM}.")
+        return False
+    return True
+
+
 def import_admin_config() -> None:
     """
     Imports the securedrop-admin configuration from an Admin Workstation Tails USB into
@@ -458,10 +564,27 @@ def import_admin_config() -> None:
 
     print(f"Copying configuration to {SD_ADMIN_VM}...")
     files = copy_admin_config()
+
+    keepassxc_imported = False
+    try:
+        keepassxc_imported = import_keepassxc_database()
+    except ManageException as e:
+        # The rest of the import has succeeded; the database can be copied manually
+        print(
+            f"{e}\nThe KeePassXC database was not imported. Copy it manually to\n"
+            f"{SD_ADMIN_VAULT_KEEPASSXC_PATH} in {SD_ADMIN_VAULT_VM}."
+        )
+
     print(
         f"Admin Workstation configuration imported into {SD_ADMIN_VM}:\n"
         + "".join(f"  - {name}\n" for name in files)
         + f"SSH keys imported into {SD_ADMIN_SSH_PATH}.\n"
+        + (
+            f"KeePassXC database imported into {SD_ADMIN_VAULT_VM} at "
+            f"{SD_ADMIN_VAULT_KEEPASSXC_PATH}.\n"
+            if keepassxc_imported
+            else ""
+        )
         + "\nPlease detach and disconnect the USB drive.\n\n"
         f"Next, open a terminal in {SD_ADMIN_VM} and run:\n\n"
         "  securedrop-admin qubesconfig\n\n"
