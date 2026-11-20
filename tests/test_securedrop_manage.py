@@ -1,8 +1,12 @@
+import json
 import os
+import re
 import time
 from collections.abc import Generator
 from pathlib import Path
+from types import EllipsisType
 from typing import TYPE_CHECKING, Any
+from unittest.mock import MagicMock, patch
 
 import pytest
 import qubesadmin
@@ -11,8 +15,8 @@ from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
 from securedrop_manage import configure
 from securedrop_manage import main as manage
-from tests.base import SD_TAG
-from tests.markers import needs_journalist
+from tests.base import SD_ADMIN_VMS, SD_JOURNALIST_VMS
+from tests.markers import needs_dom0, needs_journalist
 
 if TYPE_CHECKING:
     from qubesadmin.vm import QubesVM
@@ -63,7 +67,15 @@ def suppress_policies() -> Generator:
 
 
 @pytest.fixture
-def mock_qubes_app(mocker: Any) -> QubesTestWrapper:
+def mock_product() -> MagicMock:
+    """
+    Mocked product, with a tag no real qube has
+    """
+    return MagicMock(tag="sd-test-product")
+
+
+@pytest.fixture
+def mock_qubes_app(mocker: Any, mock_product: MagicMock) -> QubesTestWrapper:
     """
     Simulate a qubesadmin.Qubes() object called by securedrop_manage
     """
@@ -123,11 +135,15 @@ def mock_qubes_app(mocker: Any) -> QubesTestWrapper:
 
             # Report these with the SD tag
             for qube in sd_templates + sd_app_qubes + sd_disposables:
-                self.expected_calls[(qube.name, "admin.vm.tag.Get", SD_TAG, None)] = b"0\x001"
+                self.expected_calls[(qube.name, "admin.vm.tag.Get", mock_product.tag, None)] = (
+                    b"0\x001"
+                )
 
             # Report these without the SD tag (if asked)
             for qube in [self.domains["dom0"], default_template, default_app_qube, default_disp]:
-                self.expected_calls[(qube.name, "admin.vm.tag.Get", SD_TAG, None)] = b"0\x000"
+                self.expected_calls[(qube.name, "admin.vm.tag.Get", mock_product.tag, None)] = (
+                    b"0\x000"
+                )
 
     mock_qubes_app = MockQubesWorkstation()
 
@@ -213,36 +229,52 @@ def test_suppress_preloaded_disposables(let_sd_viewer_preloads_settle: Any) -> N
     assert new_preload_dispvm_max == int(app.domains["dom0"].features["preload-dispvm-max"])
 
 
-@pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
-@needs_journalist
+@needs_dom0
 class TestTemplateUpgradesAvailable:
+    @pytest.mark.run_alone  # Otherwise it would interfere in parallel tests
+    @pytest.mark.parametrize(
+        ("product", "some_product_qube", "needs_fixtures"),
+        [
+            (manage.Product.JOURNALIST, "sd-proxy", ["needs_journalist"]),
+            (manage.Product.ADMIN, "sd-admin", ["needs_admin"]),
+            (manage.Product.ALL, "sd-proxy", ["needs_journalist", "needs_admin"]),
+        ],
+    )
     def test_template_upgrade_handler(
         self,
         template_upgrades_available: None,
         suppress_policies: None,
         cleanup_prohibit_start: None,
+        product: manage.Product,
+        some_product_qube: str,
+        needs_fixtures: list[str],
+        request: pytest.FixtureRequest,
     ) -> None:
+        # Skip if the product isn't installed
+        for needs_fixture in needs_fixtures:
+            request.getfixturevalue(needs_fixture)
+
         # Start with an SDW qube
         app = qubesadmin.Qubes()
-        sd_proxy = app.domains["sd-proxy"]
-        if sd_proxy.is_halted():
-            sd_proxy.start()
+        qube = app.domains[some_product_qube]
+        if qube.is_halted():
+            qube.start()
 
-        with manage.template_upgrade_handler():
+        with manage.template_upgrade_handler(product):
             # SDW qubes should have all be shut down
-            assert sd_proxy.is_halted()
+            assert qube.is_halted()
 
             # And they can no longer be started
             with pytest.raises(qubesadmin.exc.QubesException) as exc_info:
-                sd_proxy.start()
+                qube.start()
             assert "Qube start is prohibited" in str(exc_info.value)
 
         # sd-proxy should start just fine (startup has been re-enabled)
-        sd_proxy.start()
+        qube.start()
 
         # Shut down sd-proxy so it doesn't start sd-log through 'securedrop.Log'
         # after test finishes
-        sd_proxy.shutdown()
+        qube.shutdown()
 
     @pytest.mark.parametrize(
         ("template_ver", "expected_ver", "should_upgrades_be_skipped"),
@@ -258,6 +290,7 @@ class TestTemplateUpgradesAvailable:
         expected_ver: str,
         should_upgrades_be_skipped: bool,
         mock_qubes_app: QubesTestWrapper,
+        mock_product: MagicMock,
         mocker: Any,
     ) -> None:
         # Patch securedrop-manage to expect a certain Debian version
@@ -267,12 +300,12 @@ class TestTemplateUpgradesAvailable:
         # actually messing with the system
         for qube in mock_qubes_app.domains:
             # Just tell is tagged as 'sd-workstation'
-            if qube.klass == "TemplateVM" and SD_TAG in qube.tags:
+            if qube.klass == "TemplateVM" and mock_product.tag in qube.tags:
                 mock_qubes_app.expected_calls[
                     (qube.name, "admin.vm.feature.Get", "os-version", None)
                 ] = b"0\x00" + template_ver.encode()
 
-        upgrade_handler = manage.template_upgrade_handler()
+        upgrade_handler = manage.template_upgrade_handler(mock_product)
         assert upgrade_handler.template_upgrades_skipped() == should_upgrades_be_skipped
 
 
@@ -634,6 +667,122 @@ class TestImportAdminConfig:
         assert (fake_qubes["sd_admin"] / "site-specific").read_text() == "existing\n"
         assert not fake_qubes["sd_admin_ssh"].exists()
         assert not fake_qubes["staging"].exists()
+
+
+class TestApplyAdmin:
+    @staticmethod
+    def assert_call_matches_pattern(actual: list[str], expected: list[str | EllipsisType]) -> None:
+        """
+        Check for expected items in order
+
+        Ignores ellipses in `expected` and allows intervening items in `actual`.
+
+        Examples:
+            >>> actual = ["--", "state.sls", "extra", "my.state"]
+            >>> expected = [..., "state.sls", ..., "my.state"]
+            >>> contains_in_order(actual, expected)
+            True
+
+            >>> actual = ["--", "my.state", "state.sls"]
+            >>> contains_in_order(actual, expected)
+            False
+        """
+        pattern = "".join("(?:.*\0)?" if arg is ... else re.escape(arg) + "\0" for arg in expected)
+        text = "".join(arg + "\0" for arg in actual)
+        assert re.fullmatch(pattern, text) is not None
+
+    @pytest.mark.parametrize(
+        ("product", "needs_fixtures", "qubesctl_calls_expected"),
+        [
+            # both installed, only one targeted: use its top file and VMs
+            (
+                manage.Product.ADMIN,
+                ["needs_admin"],
+                [
+                    [..., "state.sls", "securedrop_shared.sd-sys-vms", ...],
+                    [..., "state.top", "admin_salt/sd-admin.top", ...],
+                    [..., "--targets", ",".join(sorted(SD_ADMIN_VMS)), "state.highstate"],
+                ],
+            ),
+            (
+                manage.Product.ALL,
+                ["needs_admin", "needs_journalist"],
+                [
+                    [..., "state.sls", "securedrop_shared.sd-sys-vms", ...],
+                    [..., "state.sls", "securedrop_salt.sd-base-template", ...],
+                    [..., "--targets", "sd-base-debian-13", "state.highstate"],
+                    [..., "state.top", "top.sls", ...],
+                    [
+                        ...,
+                        "--targets",
+                        ",".join(sorted(SD_JOURNALIST_VMS + SD_ADMIN_VMS)),
+                        "state.highstate",
+                    ],
+                    [..., "--targets", "sd-fedora-43-dvm", "state.highstate"],
+                ],
+            ),
+            (
+                manage.Product.JOURNALIST,
+                ["needs_journalist"],
+                [
+                    [..., "state.sls", "securedrop_shared.sd-sys-vms", ...],
+                    [..., "state.sls", "securedrop_salt.sd-base-template", ...],
+                    [..., "--targets", "sd-base-debian-13", "state.highstate"],
+                    ["state.top", "securedrop_salt/sd-workstation.top", ...],
+                    [
+                        ...,
+                        "--targets",
+                        ",".join(sorted(SD_JOURNALIST_VMS)),
+                        "state.highstate",
+                    ],
+                    [..., "--targets", "sd-fedora-43-dvm", "state.highstate"],
+                ],
+            ),
+        ],
+        ids=["admin", "journalist+admin", "journalist"],
+    )
+    @patch.object(manage, "qubesctl_call")
+    @patch.object(manage, "subprocess")
+    def test_provision_and_configure(
+        self,
+        subprocess: MagicMock,
+        qubesctl_call: MagicMock,
+        product: manage.Product,
+        needs_fixtures: list[str],
+        qubesctl_calls_expected: list[list[str | EllipsisType]],
+        request: pytest.FixtureRequest,
+    ) -> None:
+        for needs_fixture in needs_fixtures:
+            request.getfixturevalue(needs_fixture)
+
+        manage.provision_and_configure(product)
+
+        # Get all qubesctl args (2nd argument of 'qubesctl_call')
+        qubesctl_call_actual = [call.args[1] for call in qubesctl_call.call_args_list]
+
+        assert len(qubesctl_call_actual) == len(qubesctl_calls_expected)
+        for actual, expected in zip(qubesctl_call_actual, qubesctl_calls_expected):
+            self.assert_call_matches_pattern(actual, expected)
+
+    @pytest.mark.parametrize(
+        ("product", "state"),
+        [
+            (manage.Product.JOURNALIST, ["state.top", "securedrop_salt/sd-workstation.top"]),
+            (manage.Product.ADMIN, ["state.top", "admin_salt/sd-admin.top"]),
+            (manage.Product.ALL, ["state.top", "top.sls"]),
+        ],
+    )
+    @patch.object(manage, "qubesctl_call")
+    @needs_dom0
+    def test_provision_all(
+        self, qubesctl_call: MagicMock, product: manage.Product, state: list[str]
+    ) -> None:
+        manage.provision_all(product)
+
+        args = qubesctl_call.call_args.args[1]
+        assert args[:-1] == state
+        pillar_arg = json.loads(args[-1].removeprefix("pillar="))
+        assert pillar_arg == manage.PILLAR_DISABLE_PRELOAD
 
 
 @pytest.mark.parametrize(

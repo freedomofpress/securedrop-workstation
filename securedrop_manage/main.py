@@ -240,18 +240,18 @@ def post_provision_admin() -> None:
 
 def provision_and_configure(product: Product) -> None:
     """
-    Applies the salt state.highstate on dom0 and all VMs
+    Applies the salt states of the product on dom0 and its VMs
     """
 
     provision("Provisioning Fedora-based system VMs", "securedrop_shared.sd-sys-vms")
-
     if product.contains_journalist:
         pre_provision_journalist()
 
-    provision_all()
+    provision_all(product)
+
     configure(
-        "Configure all SecureDrop Workstation VMs with service-specific configs",
-        [q.name for q in Qubes().domains if "sd-workstation" in q.tags],
+        f"Configure all {product.as_text()} VMs with service-specific configs",
+        [q.name for q in Qubes().domains if product.tag in q.tags],
     )
 
     if product.contains_journalist:
@@ -303,6 +303,9 @@ class template_upgrade_handler(ContextDecorator):
     https://github.com/qubesos/qubes-issues/issues/8070
     """
 
+    def __init__(self, product: Product) -> None:
+        self.tag = product.tag
+
     def __enter__(self) -> Callable[..., ContextDecorator]:
         self.app = Qubes()
 
@@ -317,7 +320,7 @@ class template_upgrade_handler(ContextDecorator):
         self.excluded = [
             q
             for q in self.app.domains
-            if "sd-workstation" in q.tags
+            if self.tag in q.tags
             if ("prohibit-start" in q.features or not is_managed(q))
         ]
 
@@ -355,7 +358,7 @@ class template_upgrade_handler(ContextDecorator):
         return [
             q
             for q in self.app.domains
-            if ("sd-workstation" in q.tags and q not in self.excluded and is_managed(q))
+            if (self.tag in q.tags and q not in self.excluded and is_managed(q))
         ]
 
     def template_upgrades_skipped(self) -> bool:
@@ -365,7 +368,7 @@ class template_upgrade_handler(ContextDecorator):
         templ_current_version_checks = [
             q.features["os-version"] == DEBIAN_VERSION
             for q in Qubes().domains
-            if ("sd-workstation" in q.tags and q.klass == "TemplateVM")
+            if (self.tag in q.tags and q.klass == "TemplateVM")
         ]
 
         # Ignore if all templates are using the intended version
@@ -382,15 +385,15 @@ def provision(step_description: str, salt_state: str) -> None:
     )
 
 
-@template_upgrade_handler()
-def provision_all() -> None:
+def provision_all(product: Product) -> None:
     """
-    Provision all enabled salt states
+    Provision all enabled salt states, or only those of the given top file
     """
-    qubesctl_call(
-        "Set up dom0 config files, including RPC policies, and create VMs",
-        ["state.highstate", f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
-    )
+    with template_upgrade_handler(product):
+        qubesctl_call(
+            "Set up dom0 config files, including RPC policies, and create VMs",
+            ["state.top", product.top, f"pillar={json.dumps(PILLAR_DISABLE_PRELOAD)}"],
+        )
 
 
 def configure(step_description: str, targets: list[str], restart: list[str] = []) -> None:
@@ -602,12 +605,6 @@ def main() -> None:  # noqa: PLR0912
         validate_config(CONFIG_PATH, args.product)
         print("OK")
     elif args.command is Command.APPLY:
-        if installed_product is Product.ALL and args.product is not Product.ALL:
-            # if we're on a combined workstation, require the use of --target all so all VMs
-            # are provisioned at the same time
-            # FIXME: remove this restriction
-            print("apply can only be used with --target all")
-            sys.exit(1)
         if args.product.contains_journalist:
             print(
                 "SecureDrop Workstation should be installed on a fresh Qubes OS install.\n"
