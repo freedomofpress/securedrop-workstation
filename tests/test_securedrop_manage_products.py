@@ -4,7 +4,7 @@ import pytest
 from qubesadmin.app import VMCollection
 
 from securedrop_manage import products
-from tests.base import ADMIN_TAG, SD_TAG, is_managed_qube
+from tests.base import is_managed_qube
 
 
 def test_get_installed_product(tmp_path: Path) -> None:
@@ -34,8 +34,12 @@ def test_product_tags(all_vms: VMCollection) -> None:
             if is_managed_qube(vm):
                 vms_by_tag[tag].add(vm)
 
+    product_journalist_vms = vms_by_tag[products.Product.JOURNALIST.tag]
+    product_admin_vms = vms_by_tag[products.Product.ADMIN.tag]
+    product_all_vms = vms_by_tag[products.Product.ALL.tag]
+
     # No overlap between admin and journalist workstations
-    assert vms_by_tag[SD_TAG].isdisjoint(ADMIN_TAG)
+    assert product_journalist_vms.isdisjoint(product_admin_vms)
 
     # VM in either is always tagged with a shared workstation tag
-    assert vms_by_tag[SD_TAG] == vms_by_tag[SD_TAG].union(vms_by_tag[ADMIN_TAG])
+    assert product_all_vms == product_journalist_vms.union(product_admin_vms)
