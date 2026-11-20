@@ -1,7 +1,9 @@
 import pytest
 from qubesadmin.app import VMCollection
 
+from tests.base import QubeWrapper
 from tests.markers import needs_admin
+from tests.mock_usb import assert_usb_qrexec_denied
 
 pytestmark = needs_admin
 
@@ -29,3 +31,7 @@ def test_admin_menu_favorites(all_vms: VMCollection) -> None:
     for vm in all_vms:
         if vm.name != "dom0":
             assert not vm.features.get("menu-favorites"), vm.name
+
+
+def test_sd_admin_usb_attach_arbitrary_device_denied() -> None:
+    assert_usb_qrexec_denied(QubeWrapper("sd-admin"))
