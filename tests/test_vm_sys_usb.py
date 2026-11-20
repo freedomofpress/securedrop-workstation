@@ -22,6 +22,10 @@ def qube() -> QubeWrapper:
 
 
 @pytest.mark.configuration
-def test_files_are_properly_copied(qube: QubeWrapper) -> None:
-    assert qube.fileExists("/etc/udev/rules.d/99-sd-devices.rules")
-    assert qube.fileExists("/usr/local/bin/sd-attach-export-device")
+def test_usb_autoattach_files_removed(qube: QubeWrapper) -> None:
+    assert not qube.fileExists("/etc/udev/rules.d/99-sd-devices.rules")
+    assert not qube.fileExists("/rw/config/sd/etc/udev/rules.d/99-sd-devices.rules")
+    assert not qube.fileExists("/usr/local/bin/sd-attach-export-device")
+    assert "### BEGIN securedrop-workstation ###" not in qube.get_file_contents(
+        "/rw/config/rc.local"
+    )

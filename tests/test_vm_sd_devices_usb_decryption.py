@@ -201,6 +201,30 @@ def _export(qube_sd_devices: QubeWrapper, passphrase: str, content: str) -> str:
     return output.splitlines()[-1]
 
 
+# NOTE: keep this as the first test so that it runs (and fails) first!
+# If USB autoattach daemon is not running, the other tests will time out.
+@pytest.mark.configuration
+@pytest.mark.run_alone  # Run in the same batch as (and before) the USB tests below
+def test_usb_autoattach_daemon_running() -> None:
+    runtime_dir = f"/run/user/{os.getuid()}"
+    env = {
+        **os.environ,
+        "XDG_RUNTIME_DIR": runtime_dir,
+        "DBUS_SESSION_BUS_ADDRESS": f"unix:path={runtime_dir}/bus",
+    }
+    result = subprocess.run(
+        ["systemctl", "--user", "is-active", "securedrop-usb-attach"],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, (
+        "'securedrop-usb-attach' user unit must be running! "
+        f"(systemctl: {result.stdout.strip()} {result.stderr.strip()})"
+    )
+
+
 @pytest.mark.slow
 @pytest.mark.configuration
 @pytest.mark.run_alone  # Only one USB device can be attached for exporting
