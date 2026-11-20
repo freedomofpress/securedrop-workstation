@@ -674,7 +674,7 @@ class TestImportAdminConfig:
 
 class TestApplyAdmin:
     @staticmethod
-    def call_matches_pattern(actual: list[str], expected: list[str | EllipsisType]) -> bool:
+    def assert_call_matches_pattern(actual: list[str], expected: list[str | EllipsisType]) -> None:
         """
         Check for expected items in order
 
@@ -692,7 +692,7 @@ class TestApplyAdmin:
         """
         pattern = "".join("(?:.*\0)?" if arg is ... else re.escape(arg) + "\0" for arg in expected)
         text = "".join(arg + "\0" for arg in actual)
-        return re.fullmatch(pattern, text) is not None
+        assert re.fullmatch(pattern, text) is not None
 
     @pytest.mark.parametrize(
         ("product", "needs_fixtures", "qubesctl_calls_expected"),
@@ -765,7 +765,7 @@ class TestApplyAdmin:
 
         assert len(qubesctl_call_actual) == len(qubesctl_calls_expected)
         for actual, expected in zip(qubesctl_call_actual, qubesctl_calls_expected):
-            assert self.call_matches_pattern(actual, expected)
+            self.assert_call_matches_pattern(actual, expected)
 
     @pytest.mark.parametrize(
         ("product", "state"),
