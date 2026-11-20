@@ -25,7 +25,7 @@ pytestmark = needs_journalist
 
 
 @pytest.fixture(scope="module")
-def qube() -> QubeWrapper:
+def tested_qube() -> QubeWrapper:
     return QubeWrapper("sd-gpg")
 
 
@@ -60,24 +60,24 @@ def dom0_fingerprint() -> list[str]:
 
 
 @pytest.fixture
-def vm_fingerprint(qube: QubeWrapper) -> list[str]:
+def vm_fingerprint(tested_qube: QubeWrapper) -> list[str]:
     """
     Obtain fingerprints for all keys actually present in GPG VM
     """
-    remote_results = qube.run("/usr/bin/gpg --list-secret-keys")
+    remote_results = tested_qube.run("/usr/bin/gpg --list-secret-keys")
     return _extract_fingerprints(remote_results)
 
 
 @pytest.mark.configuration
-def test_sd_gpg_timeout(qube: QubeWrapper) -> None:
-    assert "QUBES_GPG_AUTOACCEPT=2147483647" in qube.run("env")
+def test_sd_gpg_timeout(tested_qube: QubeWrapper) -> None:
+    assert "QUBES_GPG_AUTOACCEPT=2147483647" in tested_qube.run("env")
 
 
-def test_sd_gpg_timeout_not_in_home_profile(qube: QubeWrapper) -> None:
+def test_sd_gpg_timeout_not_in_home_profile(tested_qube: QubeWrapper) -> None:
     """This is mostly a test against lingering state"""
-    if qube.vm.klass == "DispVM":
+    if tested_qube.vm.klass == "DispVM":
         pytest.fail("Test may no longer be needed")
-    assert "QUBES_GPG_AUTOACCEPT" not in qube.run("cat /home/user/.profile")
+    assert "QUBES_GPG_AUTOACCEPT" not in tested_qube.run("cat /home/user/.profile")
 
 
 @pytest.mark.configuration
@@ -94,7 +94,9 @@ def test_local_key_in_remote_keyring(
 
 
 @pytest.mark.configuration
-def test_local_key_in_remote_keyring_clean(qube: QubeWrapper, config_fingerprint: str) -> None:
+def test_local_key_in_remote_keyring_clean(
+    tested_qube: QubeWrapper, config_fingerprint: str
+) -> None:
     """
     Confirm key presence in sd-gpg, but simulate clean environment.
 
@@ -103,28 +105,28 @@ def test_local_key_in_remote_keyring_clean(qube: QubeWrapper, config_fingerprint
     there from before or if it was in fact placed there by the workstation version
     under testing.
     """
-    if qube.vm.klass == "DispVM":
+    if tested_qube.vm.klass == "DispVM":
         # This condition is just a note for developers
         pytest.fail("Test can be removed, as we no longer need to test against clean slate")
 
-    tmp_dir = qube.run("mktemp -d")
-    qube.run(f"GNUPGHOME={tmp_dir} securedrop-get-secret-keys")
+    tmp_dir = tested_qube.run("mktemp -d")
+    tested_qube.run(f"GNUPGHOME={tmp_dir} securedrop-get-secret-keys")
     vm_fingerprints = _extract_fingerprints(
-        qube.run(f"GNUPGHOME={tmp_dir} /usr/bin/gpg --list-secret-keys")
+        tested_qube.run(f"GNUPGHOME={tmp_dir} /usr/bin/gpg --list-secret-keys")
     )
     assert vm_fingerprints == [config_fingerprint]
 
 
 @pytest.mark.configuration
-def test_logging_disabled(qube: QubeWrapper) -> None:
+def test_logging_disabled(tested_qube: QubeWrapper) -> None:
     # Logging to sd-log should be disabled on sd-gpg
-    assert not qube.fileExists("/etc/rsyslog.d/sdlog.conf")
-    assert qube.fileExists("/var/run/qubes-service/securedrop-logging-disabled")
+    assert not tested_qube.fileExists("/etc/rsyslog.d/sdlog.conf")
+    assert tested_qube.fileExists("/var/run/qubes-service/securedrop-logging-disabled")
 
 
 @pytest.mark.configuration
-def test_sd_gpg_services(qube: QubeWrapper) -> None:
-    assert qube.service_is_active("securedrop-get-secret-keys")
+def test_sd_gpg_services(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.service_is_active("securedrop-get-secret-keys")
 
 
 @pytest.mark.provisioning

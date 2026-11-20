@@ -21,7 +21,7 @@ pytestmark = needs_journalist
 
 
 @pytest.fixture(scope="module")
-def qube() -> QubeWrapper:
+def tested_qube() -> QubeWrapper:
     return QubeWrapper(
         "sd-app",
         expected_config_keys={
@@ -34,8 +34,8 @@ def qube() -> QubeWrapper:
 
 
 @pytest.mark.configuration
-def test_open_in_dvm_desktop(qube: QubeWrapper) -> None:
-    contents = qube.get_file_contents("/usr/share/applications/open-in-dvm.desktop")
+def test_open_in_dvm_desktop(tested_qube: QubeWrapper) -> None:
+    contents = tested_qube.get_file_contents("/usr/share/applications/open-in-dvm.desktop")
     expected_contents = [
         "TryExec=/usr/bin/qvm-open-in-vm",
         "Exec=/usr/bin/qvm-open-in-vm --view-only @dispvm:sd-viewer %f",
@@ -45,28 +45,30 @@ def test_open_in_dvm_desktop(qube: QubeWrapper) -> None:
 
 
 @pytest.mark.configuration
-def test_mailcap_hardened(qube: QubeWrapper) -> None:
-    qube.mailcap_hardened()
+def test_mailcap_hardened(tested_qube: QubeWrapper) -> None:
+    tested_qube.mailcap_hardened()
 
 
 @pytest.mark.configuration
-def test_sd_app_package_installed(qube: QubeWrapper) -> None:
-    assert qube.package_is_installed("securedrop-app")
+def test_sd_app_package_installed(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.package_is_installed("securedrop-app")
     # And the client has been removed
-    assert not qube.package_is_installed("securedrop-client")
+    assert not tested_qube.package_is_installed("securedrop-client")
 
 
 @pytest.mark.provisioning
-def test_sd_client_config(dom0_config: Dom0Config, qube: QubeWrapper) -> None:
-    assert dom0_config.submission_key_fpr == qube.vm_config_read("SD_SUBMISSION_KEY_FPR")
+def test_sd_client_config(dom0_config: Dom0Config, tested_qube: QubeWrapper) -> None:
+    assert dom0_config.submission_key_fpr == tested_qube.vm_config_read("SD_SUBMISSION_KEY_FPR")
 
 
 @pytest.mark.provisioning
-def test_logging_configured(qube: QubeWrapper) -> None:
-    qube.logging_configured()
+def test_logging_configured(tested_qube: QubeWrapper) -> None:
+    tested_qube.logging_configured()
 
 
-def test_sd_app_config(dom0_config: Dom0Config, qube: QubeWrapper, all_vms: VMCollection) -> None:
+def test_sd_app_config(
+    dom0_config: Dom0Config, tested_qube: QubeWrapper, all_vms: VMCollection
+) -> None:
     vm = all_vms["sd-app"]
     nvm = vm.netvm
     assert nvm is None
@@ -86,7 +88,7 @@ def test_sd_app_config(dom0_config: Dom0Config, qube: QubeWrapper, all_vms: VMCo
     # MIME handling
     assert vm.features["service.securedrop-mime-handling"] == "1"
     assert vm.features["vm-config.SD_MIME_HANDLING"] == "sd-app"
-    assert qube.service_is_active("securedrop-mime-handling")
+    assert tested_qube.service_is_active("securedrop-mime-handling")
 
     # Arti should *not* be running
-    assert not qube.service_is_active("securedrop-arti")
+    assert not tested_qube.service_is_active("securedrop-arti")

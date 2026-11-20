@@ -21,7 +21,7 @@ pytestmark = needs_journalist
 
 
 @pytest.fixture(scope="module")
-def qube() -> QubeWrapper:
+def tested_qube() -> QubeWrapper:
     return QubeWrapper(
         "sd-proxy",
         expected_config_keys={"SD_PROXY_ORIGIN", "SD_PROXY_ORIGIN_KEY", "SD_MIME_HANDLING"},
@@ -31,43 +31,43 @@ def qube() -> QubeWrapper:
 
 
 @pytest.mark.configuration
-def test_do_not_open_here(qube: QubeWrapper) -> None:
+def test_do_not_open_here(tested_qube: QubeWrapper) -> None:
     """
     The do-not-open here script has been removed from sd-proxy.
     All VMs now default to using open-in-dvm.
     """
-    assert not qube.fileExists("/usr/bin/do-not-open-here")
+    assert not tested_qube.fileExists("/usr/bin/do-not-open-here")
 
 
 @pytest.mark.configuration
-def test_sd_proxy_package_installed(qube: QubeWrapper) -> None:
-    assert qube.package_is_installed("securedrop-proxy")
+def test_sd_proxy_package_installed(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.package_is_installed("securedrop-proxy")
 
 
 @pytest.mark.configuration
-def test_tor_hidserv_auth_url(qube: QubeWrapper, dom0_config: Dom0Config) -> None:
-    assert f"http://{dom0_config.hidserv.hostname}" == qube.vm_config_read("SD_PROXY_ORIGIN")
+def test_tor_hidserv_auth_url(tested_qube: QubeWrapper, dom0_config: Dom0Config) -> None:
+    assert f"http://{dom0_config.hidserv.hostname}" == tested_qube.vm_config_read("SD_PROXY_ORIGIN")
 
 
 @pytest.mark.configuration
-def test_logging_configured(qube: QubeWrapper) -> None:
-    qube.logging_configured()
+def test_logging_configured(tested_qube: QubeWrapper) -> None:
+    tested_qube.logging_configured()
 
 
 @pytest.mark.configuration
-def test_mailcap_hardened(qube: QubeWrapper) -> None:
-    qube.mailcap_hardened()
+def test_mailcap_hardened(tested_qube: QubeWrapper) -> None:
+    tested_qube.mailcap_hardened()
 
 
 @pytest.mark.configuration
-def test_sd_proxy_services(qube: QubeWrapper) -> None:
-    assert qube.service_is_active("securedrop-mime-handling")
-    assert qube.service_is_active("securedrop-proxy-onion-config")
-    assert qube.service_is_active("tor")
+def test_sd_proxy_services(tested_qube: QubeWrapper) -> None:
+    assert tested_qube.service_is_active("securedrop-mime-handling")
+    assert tested_qube.service_is_active("securedrop-proxy-onion-config")
+    assert tested_qube.service_is_active("tor")
 
 
 @pytest.mark.provisioning
-def test_sd_proxy_config(all_vms: VMCollection, qube: QubeWrapper) -> None:
+def test_sd_proxy_config(all_vms: VMCollection, tested_qube: QubeWrapper) -> None:
     """
     Confirm that qvm-prefs for the VM match expectations.
     """
@@ -85,7 +85,7 @@ def test_sd_proxy_config(all_vms: VMCollection, qube: QubeWrapper) -> None:
     assert vm.features["vm-config.SD_MIME_HANDLING"] == "default"
 
 
-def test_sd_proxy_dvm_services(qube: QubeWrapper, all_vms: VMCollection) -> None:
+def test_sd_proxy_dvm_services(tested_qube: QubeWrapper, all_vms: VMCollection) -> None:
     """
     Confirm that systemd services for the sd-proxy DispVM are running.
     """

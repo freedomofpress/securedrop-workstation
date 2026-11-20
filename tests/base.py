@@ -299,100 +299,100 @@ remotevm = sd-log
 
 
 class Test_SD_VM_Common:
-    def test_vm_config_keys(self, qube: QubeWrapper) -> None:
+    def test_vm_config_keys(self, tested_qube: QubeWrapper) -> None:
         """Every VM should check that it has only the configuration keys it
         expects.
         """
-        qube.vm_config_check(qube.expected_config_keys)
+        tested_qube.vm_config_check(tested_qube.expected_config_keys)
 
-    def test_lsm_enabled(self, qube: QubeWrapper) -> None:
+    def test_lsm_enabled(self, tested_qube: QubeWrapper) -> None:
         """Check that the expected LSM is enabled"""
-        if qube.linux_security_modules == "apparmor":
-            assert qube.package_is_installed("apparmor")
+        if tested_qube.linux_security_modules == "apparmor":
+            assert tested_qube.package_is_installed("apparmor")
             # returns error code if AppArmor not enabled
-            qube.run("sudo aa-status --enabled")
-        elif qube.linux_security_modules == "selinux":
-            sestatus = qube.run("sudo sestatus")
+            tested_qube.run("sudo aa-status --enabled")
+        elif tested_qube.linux_security_modules == "selinux":
+            sestatus = tested_qube.run("sudo sestatus")
             assert "SELinux status:                 enabled\n" in sestatus
             assert "Current mode:                   enforcing\n" in sestatus
         else:
-            raise ValueError(f"Unsupported LSM: {qube.linux_security_modules}")
+            raise ValueError(f"Unsupported LSM: {tested_qube.linux_security_modules}")
 
-    def test_enforced_apparmor_profiles(self, qube: QubeWrapper) -> None:
+    def test_enforced_apparmor_profiles(self, tested_qube: QubeWrapper) -> None:
         """Check the expected AppArmor profiles are enforced"""
-        if not qube.enforced_apparmor_profiles:
-            pytest.skip(f"No enforced AppArmor profiles in {qube.name}")
+        if not tested_qube.enforced_apparmor_profiles:
+            pytest.skip(f"No enforced AppArmor profiles in {tested_qube.name}")
 
-        results = json.loads(qube.run("sudo aa-status --json"))
-        for profile in qube.enforced_apparmor_profiles:
+        results = json.loads(tested_qube.run("sudo aa-status --json"))
+        for profile in tested_qube.enforced_apparmor_profiles:
             assert results["profiles"][profile] == "enforce"
 
-    def test_grsec_kernel(self, qube: QubeWrapper) -> None:
+    def test_grsec_kernel(self, tested_qube: QubeWrapper) -> None:
         """
         Confirms expected grsecurity-patched kernel is running.
         """
         # base doesn't have kernel configured
         exceptions = [SD_TEMPLATE_BASE, "sys-usb"]
 
-        if qube.vm.name in exceptions:
-            pytest.skip(f"Skipping grsec test on VM: '{qube.vm.name}'")
+        if tested_qube.vm.name in exceptions:
+            pytest.skip(f"Skipping grsec test on VM: '{tested_qube.vm.name}'")
 
         # Running custom kernel in PVH mode requires pvgrub2-pvh
-        assert qube.vm.virt_mode == "pvh"
-        assert qube.vm.kernel == "pvgrub2-pvh"
+        assert tested_qube.vm.virt_mode == "pvh"
+        assert tested_qube.vm.kernel == "pvgrub2-pvh"
 
         # Check running kernel is grsecurity-patched
-        stdout = qube.run("uname -r")
+        stdout = tested_qube.run("uname -r")
         assert stdout.endswith("-grsec-workstation")
-        qube.service_is_active("paxctld")
+        tested_qube.service_is_active("paxctld")
 
-    def test_debian_platform_version(self, qube: QubeWrapper) -> None:
+    def test_debian_platform_version(self, tested_qube: QubeWrapper) -> None:
         """
         Asserts that the given AppVM is based on an OS listed in the
         SUPPORTED_<XX>_PLATFORMS list, as specified in tests.
         All workstation-provisioned VMs should be based on DEBIAN_CODENAME.
         """
 
-        if qube.name.startswith("sys-"):
-            pytest.skip(f"skipping Debian platform check on QubesOS sys VM: {qube.name}")
+        if tested_qube.name.startswith("sys-"):
+            pytest.skip(f"skipping Debian platform check on QubesOS sys VM: {tested_qube.name}")
 
-        stdout = qube.run("cat /etc/os-release")
+        stdout = tested_qube.run("cat /etc/os-release")
         search = re.search(r'^PRETTY_NAME="(.*)"', stdout)
         if not search:
-            raise RuntimeError(f"Unable to determine platform for {qube.name}")
+            raise RuntimeError(f"Unable to determine platform for {tested_qube.name}")
         platform = search.group(1)
         assert DEBIAN_CODENAME in platform
 
     @pytest.mark.mime
     @pytest.mark.slow
     @pytest.mark.configuration
-    def test_mime_types(self, qube: QubeWrapper) -> None:
+    def test_mime_types(self, tested_qube: QubeWrapper) -> None:
         """
         Functionally verifies that the VM config handles specific filetypes correctly,
         opening them with the appropriate program.
         """
-        if not qube.mime_types_handling:
-            pytest.skip(f"MIME types handling not enabled for {qube.name}")
+        if not tested_qube.mime_types_handling:
+            pytest.skip(f"MIME types handling not enabled for {tested_qube.name}")
 
-        for mime_type, expected_app in get_mimeapp_vars_for_vm(qube.mime_vars_vm_name):
-            actual_app = qube.run(f"xdg-mime query default {mime_type}")
+        for mime_type, expected_app in get_mimeapp_vars_for_vm(tested_qube.mime_vars_vm_name):
+            actual_app = tested_qube.run(f"xdg-mime query default {mime_type}")
             assert (
                 actual_app == expected_app
             ), f"MIME type {mime_type}: expected {expected_app}, got {actual_app}"
 
     @pytest.mark.skip(reason="Broken in CI. Tracked as #1579")
     def test_mock_device_attach_deny(
-        self, qube: QubeWrapper, mock_block_device: str, qubesd_log: Iterator[str]
+        self, tested_qube: QubeWrapper, mock_block_device: str, qubesd_log: Iterator[str]
     ) -> None:
-        if qube.name == "sys-usb":
+        if tested_qube.name == "sys-usb":
             pytest.skip("Test does not run on 'sys-usb' (no need to attach devices to itself)")
-        if qube.devices_attachable:
+        if tested_qube.devices_attachable:
             pytest.skip("On this qube device attachment is not denied")
 
         # Device attachment expected to fail (generic qubes)
         with pytest.raises(subprocess.CalledProcessError) as exc_info:
             subprocess.check_output(
-                ["qvm-block", "attach", qube.name, mock_block_device],
+                ["qvm-block", "attach", tested_qube.name, mock_block_device],
                 stderr=subprocess.STDOUT,  # Capture qubesd error message
                 text=True,
             )
@@ -405,7 +405,7 @@ class Test_SD_VM_Common:
                 r"WARNING: permission denied for call "
                 r"b'admin.vm.device.block.Attach'\+b'{device_id}\+\+\d+' "
                 r"\(b'dom0' → b'{target_qube}'\)"
-            ).format(device_id=mock_block_device.replace(":", r"\+"), target_qube=qube.name)
+            ).format(device_id=mock_block_device.replace(":", r"\+"), target_qube=tested_qube.name)
         )
 
         # Exactly one policy denial match
