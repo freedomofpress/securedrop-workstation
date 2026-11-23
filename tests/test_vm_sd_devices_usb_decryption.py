@@ -10,16 +10,15 @@ from pathlib import Path
 
 import pytest
 
+from securedrop_manage.usb import USB_ATTACH_UNIT, user_systemctl
 from tests.base import QubeWrapper
 from tests.markers import needs_journalist
 from tests.mock_usb import (
-    USB_ATTACH_UNIT,
     close_usb_disks,
     create_usb_gadget,
     format_luks,
     remove_usb_gadget,
     unlocked_drive,
-    user_systemctl,
     wait_for_usb_disk,
 )
 

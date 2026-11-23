@@ -8,6 +8,8 @@ from collections.abc import Iterator
 
 import pytest
 
+from securedrop_manage.products import get_installed_product
+from securedrop_manage.usb import usb_autoattach_paused
 from tests.base import SD_TAG, QubeWrapper
 from tests.base import (
     Test_SD_VM_Common as Test_SD_Admin_USB_Common,  # noqa: F401 [HACK: import so base tests run]
@@ -20,7 +22,6 @@ from tests.mock_usb import (
     format_luks,
     remove_usb_gadget,
     unlocked_drive,
-    usb_autoattach_paused,
     wait_for_usb_disk,
 )
 
@@ -80,7 +81,7 @@ def mock_usb_device(qube_sys_usb: QubeWrapper, qube: QubeWrapper) -> Iterator[st
     If the Journalist Workstation is also installed, its auto-attach daemon is
     paused meanwhile, so it doesn't grab the device for sd-devices first.
     """
-    with usb_autoattach_paused():
+    with usb_autoattach_paused(get_installed_product()):
         port = create_usb_gadget(qube_sys_usb)
         try:
             subprocess.run(["qvm-usb", "attach", qube.name, port], check=True)

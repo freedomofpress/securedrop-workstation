@@ -14,8 +14,13 @@ from qubesadmin.app import VMCollection
 from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
 from securedrop_manage import main as manage
-from securedrop_manage import tails_import
-from tests.base import CURRENT_SD_FEDORA_DVM, SD_ADMIN_VMS, SD_JOURNALIST_VMS, SD_TEMPLATE_BASE
+from securedrop_manage import tails_import, usb
+from tests.base import (
+    CURRENT_SD_FEDORA_DVM,
+    SD_ADMIN_VMS,
+    SD_JOURNALIST_VMS,
+    SD_TEMPLATE_BASE,
+)
 from tests.markers import needs_dom0, needs_journalist
 
 if TYPE_CHECKING:
@@ -477,6 +482,56 @@ class TestImportFromTailsAdmin:
             mocker.call.validate_config(manage.CONFIG_PATH, manage.Product.ADMIN),
             mocker.call.import_admin_config(),
         ]
+
+    def test_admin_only_leaves_usb_autoattach_alone(self, mocker: Any) -> None:
+        mocker.patch.object(manage, "validate_config")
+        mocker.patch.object(manage, "import_admin_config")
+        systemctl = mocker.patch.object(usb, "user_systemctl")
+
+        manage.main()
+
+        systemctl.assert_not_called()
+
+    def test_combined_pauses_usb_autoattach(
+        self, mocker: Any, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        mocker.patch.object(manage, "get_installed_product", return_value=manage.Product.ALL)
+        mocker.patch.object(manage, "move_legacy_config")
+        monkeypatch.setattr(
+            "sys.argv", ["securedrop-manage", "import", "--from", "tails", "--target", "admin"]
+        )
+        calls = mocker.Mock()
+        calls.user_systemctl.return_value.returncode = 0
+        mocker.patch.object(manage, "validate_config")
+        mocker.patch.object(manage, "import_admin_config", calls.import_admin_config)
+        mocker.patch.object(usb, "user_systemctl", calls.user_systemctl)
+
+        manage.main()
+
+        assert calls.mock_calls == [
+            mocker.call.user_systemctl("stop", usb.USB_ATTACH_UNIT),
+            mocker.call.import_admin_config(),
+            mocker.call.user_systemctl("start", usb.USB_ATTACH_UNIT),
+        ]
+
+    def test_combined_resumes_usb_autoattach_on_failure(
+        self, mocker: Any, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        mocker.patch.object(manage, "get_installed_product", return_value=manage.Product.ALL)
+        mocker.patch.object(manage, "move_legacy_config")
+        monkeypatch.setattr(
+            "sys.argv", ["securedrop-manage", "import", "--from", "tails", "--target", "admin"]
+        )
+        mocker.patch.object(manage, "validate_config")
+        mocker.patch.object(
+            manage, "import_admin_config", side_effect=manage.ManageException("no USB")
+        )
+        systemctl = mocker.patch.object(usb, "user_systemctl")
+        systemctl.return_value.returncode = 0
+
+        with pytest.raises(manage.ManageException, match="no USB"):
+            manage.main()
+        assert systemctl.call_args == mocker.call("start", usb.USB_ATTACH_UNIT)
 
     def test_invalid_config_skips_import(self, mocker: Any) -> None:
         mocker.patch.object(

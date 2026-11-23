@@ -32,6 +32,7 @@ from securedrop_manage import (
 )
 from securedrop_manage.products import Product, get_installed_product
 from securedrop_manage.tails_import import import_admin_config, import_journalist_config
+from securedrop_manage.usb import usb_autoattach_paused
 from securedrop_manage.validate import AdminConfigValidator, validate_config
 
 # The max concurrency reduction (4->2) was required to avoid "did not return clean data"
@@ -679,6 +680,9 @@ def main() -> None:  # noqa: PLR0912
                 import_journalist_config()
         if args.product.contains_admin:
             validate_config(CONFIG_PATH, Product.ADMIN)
-            import_admin_config()
+            # On a combined workstation, keep the Journalist Workstation from
+            # attaching the Admin Workstation USB to sd-devices
+            with usb_autoattach_paused(installed_product):
+                import_admin_config()
     else:
         sys.exit(0)
