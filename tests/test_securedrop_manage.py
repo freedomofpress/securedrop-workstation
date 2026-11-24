@@ -382,6 +382,10 @@ def fake_qubes(tmp_path: Path, mocker: Any, monkeypatch: pytest.MonkeyPatch) -> 
     set_site_specific_log = tmp_path / "set-site-specific.log"
     set_site_specific.write_text(f'#!/bin/sh\necho "$@" >> "{set_site_specific_log}"\n')
     set_site_specific.chmod(0o755)
+    # don't wait on the host's systemd
+    systemctl = bin_dir / "systemctl"
+    systemctl.write_text("#!/bin/sh\nexit 0\n")
+    systemctl.chmod(0o755)
     monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
 
     usb = tmp_path / "TailsData/securedrop-admin"
@@ -394,6 +398,17 @@ def fake_qubes(tmp_path: Path, mocker: Any, monkeypatch: pytest.MonkeyPatch) -> 
     (usb_ssh / "id_rsa").write_text("private\n")
     (usb_ssh / "id_rsa.pub").write_text("public\n")
     sd_admin.parent.mkdir(parents=True)
+    usb_persistent = tmp_path / "TailsData/Persistent"
+    usb_persistent.mkdir()
+    vault_kdbx = tmp_path / "sd-admin-vault/Persistent/admin.kdbx"
+    vault_kdbx_template = tmp_path / "sd-admin-vault/securedrop-keepassx.kdbx"
+    vault_kdbx_template.parent.mkdir()
+    vault_kdbx_template.write_text("blank template\n")
+    mocker.patch.object(tails_import, "TAILS_PERSISTENT_PATH", usb_persistent)
+    mocker.patch.object(tails_import, "TAILS_KEEPASSXC_PATH", usb_persistent / "Passwords.kdbx")
+    mocker.patch.object(tails_import, "TAILS_GIT_CHECKOUT_PATH", usb_persistent / "securedrop")
+    mocker.patch.object(tails_import, "SD_ADMIN_VAULT_KEEPASSXC_PATH", str(vault_kdbx))
+    mocker.patch.object(tails_import, "SD_ADMIN_VAULT_KEEPASSXC_TEMPLATE", str(vault_kdbx_template))
     mocker.patch.object(tails_import, "TAILS_ADMIN_CONFIG_PATH", usb)
     mocker.patch.object(tails_import, "TAILS_SSH_PATH", usb_ssh)
     mocker.patch.object(tails_import, "SD_ADMIN_CONFIG_PATH", str(sd_admin))
@@ -411,6 +426,9 @@ def fake_qubes(tmp_path: Path, mocker: Any, monkeypatch: pytest.MonkeyPatch) -> 
         "staging": staging,
         "set_site_specific": set_site_specific,
         "set_site_specific_log": set_site_specific_log,
+        "usb_persistent": usb_persistent,
+        "vault_kdbx": vault_kdbx,
+        "vault_kdbx_template": vault_kdbx_template,
     }
 
 
@@ -637,6 +655,198 @@ class TestImportAdminConfig:
         assert (fake_qubes["sd_admin"] / "site-specific").read_text() == "existing\n"
         assert not fake_qubes["sd_admin_ssh"].exists()
         assert not fake_qubes["staging"].exists()
+
+
+def _with_sd_admin_vault(mocker: Any) -> None:
+    mocker.patch.object(tails_import, "Qubes").return_value.domains = [
+        tails_import.SD_ADMIN_VM,
+        tails_import.SD_ADMIN_VAULT_VM,
+        "vault",
+    ]
+
+
+class TestImportKeePassXCDatabase:
+    def test_finds_documented_location_first(self, fake_qubes: dict[str, Path]) -> None:
+        persistent = fake_qubes["usb_persistent"]
+        (persistent / "Archive").mkdir()
+        (persistent / "Archive/old.KDBX").write_text("old\n")
+        (persistent / "Passwords.kdbx").write_text("current\n")
+        (persistent / "notes.txt").write_text("not a database\n")
+
+        assert tails_import.find_keepassxc_databases() == [
+            persistent / "Passwords.kdbx",
+            persistent / "Archive/old.KDBX",
+        ]
+
+    def test_ignores_git_checkout(self, fake_qubes: dict[str, Path]) -> None:
+        checkout = fake_qubes["usb_persistent"] / "securedrop/tails_files"
+        checkout.mkdir(parents=True)
+        (checkout / "securedrop-keepassx.kdbx").write_text("template\n")
+
+        assert tails_import.find_keepassxc_databases() == []
+
+    def test_find_fails_without_persistent_storage(self, fake_qubes: dict[str, Path]) -> None:
+        fake_qubes["usb_persistent"].rmdir()
+
+        with pytest.raises(manage.ManageException, match="Error searching"):
+            tails_import.find_keepassxc_databases()
+
+    @pytest.mark.parametrize(("response", "chosen"), [("y", True), ("n", False), ("", False)])
+    def test_prompt_single(self, mocker: Any, response: str, chosen: bool) -> None:
+        mocker.patch("builtins.input", return_value=response)
+        path = Path("/Persistent/Passwords.kdbx")
+
+        assert tails_import._prompt_choose_keepassxc_database([path]) == (path if chosen else None)
+
+    @pytest.mark.parametrize(
+        ("response", "index"), [("1", 0), ("2", 1), ("", None), ("3", None), ("x", None)]
+    )
+    def test_prompt_multiple(self, mocker: Any, response: str, index: int | None) -> None:
+        mocker.patch("builtins.input", return_value=response)
+        paths = [Path("/Persistent/Passwords.kdbx"), Path("/Persistent/old.kdbx")]
+
+        expected = None if index is None else paths[index]
+        assert tails_import._prompt_choose_keepassxc_database(paths) == expected
+
+    def test_copies_database(self, fake_qubes: dict[str, Path]) -> None:
+        source = fake_qubes["usb_persistent"] / "Passwords.kdbx"
+        source.write_text("secrets\n")
+
+        assert tails_import.copy_keepassxc_database(source)
+
+        vault_kdbx = fake_qubes["vault_kdbx"]
+        assert vault_kdbx.read_text() == "secrets\n"
+        assert vault_kdbx.stat().st_mode & 0o777 == 0o600
+        assert vault_kdbx.parent.stat().st_mode & 0o777 == 0o700
+        assert sorted(p.name for p in vault_kdbx.parent.iterdir()) == ["admin.kdbx"]
+
+    def test_replaces_blank_template_without_asking(
+        self, fake_qubes: dict[str, Path], mocker: Any
+    ) -> None:
+        source = fake_qubes["usb_persistent"] / "Passwords.kdbx"
+        source.write_text("secrets\n")
+        vault_kdbx = fake_qubes["vault_kdbx"]
+        vault_kdbx.parent.mkdir()
+        vault_kdbx.write_text(fake_qubes["vault_kdbx_template"].read_text())
+        prompt = mocker.patch("builtins.input")
+
+        assert tails_import.copy_keepassxc_database(source)
+
+        prompt.assert_not_called()
+        assert vault_kdbx.read_text() == "secrets\n"
+        assert sorted(p.name for p in vault_kdbx.parent.iterdir()) == ["admin.kdbx"]
+
+    def test_keeps_existing_database_unless_confirmed(
+        self, fake_qubes: dict[str, Path], mocker: Any
+    ) -> None:
+        source = fake_qubes["usb_persistent"] / "Passwords.kdbx"
+        source.write_text("secrets\n")
+        vault_kdbx = fake_qubes["vault_kdbx"]
+        vault_kdbx.parent.mkdir()
+        vault_kdbx.write_text("existing\n")
+        mocker.patch("builtins.input", return_value="n")
+
+        assert not tails_import.copy_keepassxc_database(source)
+
+        assert vault_kdbx.read_text() == "existing\n"
+        assert sorted(p.name for p in vault_kdbx.parent.iterdir()) == ["admin.kdbx"]
+
+    def test_replaces_existing_database_if_confirmed(
+        self, fake_qubes: dict[str, Path], mocker: Any
+    ) -> None:
+        source = fake_qubes["usb_persistent"] / "Passwords.kdbx"
+        source.write_text("secrets\n")
+        vault_kdbx = fake_qubes["vault_kdbx"]
+        vault_kdbx.parent.mkdir()
+        vault_kdbx.write_text("existing\n")
+        mocker.patch("builtins.input", return_value="y")
+
+        assert tails_import.copy_keepassxc_database(source)
+
+        assert vault_kdbx.read_text() == "secrets\n"
+        assert sorted(p.name for p in vault_kdbx.parent.iterdir()) == ["admin.kdbx"]
+
+    def test_failed_transfer_leaves_existing_database(
+        self, fake_qubes: dict[str, Path], mocker: Any
+    ) -> None:
+        vault_kdbx = fake_qubes["vault_kdbx"]
+        vault_kdbx.parent.mkdir()
+        vault_kdbx.write_text("existing\n")
+        mocker.patch("builtins.input", return_value="y")
+
+        with pytest.raises(manage.ManageException, match="Error copying"):
+            tails_import.copy_keepassxc_database(fake_qubes["usb_persistent"] / "missing.kdbx")
+
+        assert vault_kdbx.read_text() == "existing\n"
+        assert sorted(p.name for p in vault_kdbx.parent.iterdir()) == ["admin.kdbx"]
+
+    def test_skips_without_sd_admin_vault(self, fake_qubes: dict[str, Path]) -> None:
+        (fake_qubes["usb_persistent"] / "Passwords.kdbx").write_text("secrets\n")
+
+        assert not tails_import.import_keepassxc_database()
+        assert not fake_qubes["vault_kdbx"].exists()
+
+    def test_skips_without_database(
+        self, fake_qubes: dict[str, Path], mocker: Any, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        _with_sd_admin_vault(mocker)
+        prompt = mocker.patch("builtins.input")
+
+        assert not tails_import.import_keepassxc_database()
+
+        prompt.assert_not_called()
+        assert "No KeePassXC database found" in capsys.readouterr().out
+
+    def test_admin_import_includes_database(
+        self, fake_qubes: dict[str, Path], mocker: Any, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        _start_vault_is_skipped(mocker)
+        _with_sd_admin_vault(mocker)
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+        (fake_qubes["usb_persistent"] / "Passwords.kdbx").write_text("secrets\n")
+        mocker.patch("builtins.input", return_value="y")
+
+        tails_import.import_admin_config()
+
+        assert fake_qubes["vault_kdbx"].read_text() == "secrets\n"
+        assert "KeePassXC database imported" in capsys.readouterr().out
+
+    def test_admin_import_without_database_if_declined(
+        self, fake_qubes: dict[str, Path], mocker: Any, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        _start_vault_is_skipped(mocker)
+        _with_sd_admin_vault(mocker)
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+        (fake_qubes["usb_persistent"] / "Passwords.kdbx").write_text("secrets\n")
+        # Ready to proceed: yes; import the KeePassXC database: no
+        mocker.patch("builtins.input", side_effect=["y", "n"])
+
+        tails_import.import_admin_config()
+
+        assert (fake_qubes["sd_admin"] / "site-specific").exists()
+        assert not fake_qubes["vault_kdbx"].exists()
+        out = capsys.readouterr().out
+        assert "Not importing a KeePassXC database" in out
+        assert "KeePassXC database imported" not in out
+        assert "Admin Workstation configuration imported" in out
+
+    def test_admin_import_survives_database_failure(
+        self, fake_qubes: dict[str, Path], mocker: Any, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        _start_vault_is_skipped(mocker)
+        _with_sd_admin_vault(mocker)
+        (fake_qubes["usb"] / "site-specific").write_text("app_hostname: app\n")
+        mocker.patch("builtins.input", return_value="y")
+        mocker.patch.object(
+            tails_import, "find_keepassxc_databases", side_effect=manage.ManageException("boom")
+        )
+
+        tails_import.import_admin_config()
+
+        assert (fake_qubes["sd_admin"] / "site-specific").exists()
+        out = capsys.readouterr().out
+        assert "KeePassXC database was not imported" in out
+        assert "Admin Workstation configuration imported" in out
 
 
 @pytest.mark.parametrize(
