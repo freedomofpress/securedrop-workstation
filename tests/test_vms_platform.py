@@ -6,17 +6,14 @@ import pytest
 from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
-from securedrop_manage.config_types import Dom0Config
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
     DEBIAN_CODENAME,
+    SD_ADMIN_TEMPLATE,
     SD_INBOX_TEMPLATE,
     SD_VIEWER_TEMPLATE,
-    SD_VMS,
 )
 from tests.markers import needs_journalist
-
-pytestmark = needs_journalist
 
 IS_CI = os.environ.get("CI") == "true"
 
@@ -69,23 +66,25 @@ def _check_packages_up_to_date(vm: QubesVM, fedora: bool = False) -> bool:
 
 @pytest.mark.configuration
 @pytest.mark.packages
-@pytest.mark.parametrize("vm_name", SD_VMS)
+@pytest.mark.parametrize(
+    ("vm_name", "needs"),
+    [
+        (SD_INBOX_TEMPLATE, "needs_journalist"),
+        (SD_VIEWER_TEMPLATE, "needs_journalist"),
+        (SD_ADMIN_TEMPLATE, "needs_admin"),
+    ],
+)
 @pytest.mark.skipif(IS_CI, reason="Skipping on CI")
-def test_all_sd_vms_uptodate(vm_name: str, all_vms: VMCollection) -> None:
+def test_all_sd_templates_uptodate(
+    vm_name: str, needs: str, request: pytest.FixtureRequest, all_vms: VMCollection
+) -> None:
     """
     Asserts that all VMs have all available apt packages at the latest
     versions, with no updates pending.
     """
+    request.getfixturevalue(needs)
     vm = all_vms[vm_name]
-    # We can't perform a live update check via package manager without a NetVM,
-    # e.g. for `sd-viewer`
-    if not vm.netvm and vm.klass != "TemplateVM":
-        pytest.skip(f"skipping package freshness check on net-less VM: '{vm.name}'")
-
-    # Create custom error message, so failing test cases display
-    # which VM caused the looped check to fail.
-    fail_msg = f"Unapplied updates for VM '{vm}'"
-    assert _check_packages_up_to_date(vm), fail_msg
+    assert _check_packages_up_to_date(vm), f"Unapplied updates for VM '{vm}'"
 
 
 @pytest.mark.skipif(IS_CI, reason="Skipping on CI")
@@ -137,18 +136,22 @@ def test_qubes_vm_update_ran_on_fedora_template(all_vms: VMCollection) -> None:
 
 @pytest.mark.provisioning
 @pytest.mark.parametrize(
-    "vm_name",
+    ("vm_name", "needs"),
     [
-        CURRENT_FEDORA_TEMPLATE,
-        SD_VIEWER_TEMPLATE,
-        SD_INBOX_TEMPLATE,
+        (CURRENT_FEDORA_TEMPLATE, "needs_dom0"),
+        (SD_VIEWER_TEMPLATE, "needs_journalist"),
+        (SD_INBOX_TEMPLATE, "needs_journalist"),
+        (SD_ADMIN_TEMPLATE, "needs_admin"),
     ],
 )
-def test_os_eol(vm_name: str, all_vms: VMCollection) -> None:
+def test_os_eol(
+    vm_name: str, needs: str, request: pytest.FixtureRequest, all_vms: VMCollection
+) -> None:
     """
     Ensures the VM's OS is not approaching end-of-life.
     The os-eol qvm feature should contain a date in YYYY-MM-DD format.
     """
+    request.getfixturevalue(needs)
     # number of days prior to EOL date that constitutes a test failure
     OS_EOL_BUFFER_DAYS = 30
     qube = all_vms[vm_name]
@@ -172,6 +175,7 @@ def test_os_eol(vm_name: str, all_vms: VMCollection) -> None:
     )
 
 
+@needs_journalist
 @pytest.mark.provisioning
 def test_dispvm_default_platform() -> None:
     """
@@ -184,45 +188,56 @@ def test_dispvm_default_platform() -> None:
     assert result == "sd-viewer"
 
 
+@pytest.mark.parametrize(
+    ("vm_name", "needs"),
+    [
+        (SD_INBOX_TEMPLATE, "needs_journalist"),
+        (SD_VIEWER_TEMPLATE, "needs_journalist"),
+        (SD_ADMIN_TEMPLATE, "needs_admin"),
+    ],
+)
 @pytest.mark.configuration
 @pytest.mark.packages
-def test_sd_vm_apt_sources(dom0_config: Dom0Config, all_vms: VMCollection) -> None:
+def test_sd_vm_apt_sources(
+    vm_name: str,
+    needs: str,
+    request: pytest.FixtureRequest,
+    dom0_config_environment: str,
+    all_vms: VMCollection,
+) -> None:
     """
     Test that the three templates we install our apt sources into are correct
     """
-    for vm_name in [
-        SD_INBOX_TEMPLATE,
-        SD_VIEWER_TEMPLATE,
-    ]:
-        vm = all_vms[vm_name]
+    request.getfixturevalue(needs)
+    vm = all_vms[vm_name]
 
-        # First, check the prod apt repo is configured, which happens unconditionally
-        # via securedrop-keyring deb package
-        assert_apt_source(
-            vm,
-            "main",
-            "https://apt.freedom.press",
-            "/etc/apt/sources.list.d/apt_freedom_press.sources",
-        )
+    # First, check the prod apt repo is configured, which happens unconditionally
+    # via securedrop-keyring deb package
+    assert_apt_source(
+        vm,
+        "main",
+        "https://apt.freedom.press",
+        "/etc/apt/sources.list.d/apt_freedom_press.sources",
+    )
 
-        if dom0_config.environment == "prod":
-            # No test sources should be present
-            stdout, stderr = vm.run("ls /etc/apt/sources.list.d/")
-            sources_list = stdout.decode("utf-8").rstrip("\n")
-            assert "apt-test_freedom_press.sources" not in sources_list
-            continue
+    if dom0_config_environment == "prod":
+        # No test sources should be present
+        stdout, stderr = vm.run("ls /etc/apt/sources.list.d/")
+        sources_list = stdout.decode("utf-8").rstrip("\n")
+        assert "apt-test_freedom_press.sources" not in sources_list
+        return
 
-        # we're in staging or dev, so check for that file
-        components = ["main"]
-        if dom0_config.environment == "dev":
-            components.append("nightlies")
+    # we're in staging or dev, so check for that file
+    components = ["main"]
+    if dom0_config_environment == "dev":
+        components.append("nightlies")
 
-        assert_apt_source(
-            vm,
-            " ".join(components),
-            "https://apt-test.freedom.press",
-            "/etc/apt/sources.list.d/apt-test_freedom_press.sources",
-        )
+    assert_apt_source(
+        vm,
+        " ".join(components),
+        "https://apt-test.freedom.press",
+        "/etc/apt/sources.list.d/apt-test_freedom_press.sources",
+    )
 
 
 @pytest.mark.configuration
