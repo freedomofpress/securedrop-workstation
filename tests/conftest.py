@@ -25,6 +25,7 @@ from securedrop_manage.config_types import Dom0Config
 from securedrop_manage.products import PRODUCTS_PATH
 from tests.base import (
     CURRENT_FEDORA_TEMPLATE,
+    SD_ADMIN_TEMPLATE,
     SD_INBOX_TEMPLATE,
     SD_TEMPLATE_BASE,
     SD_VIEWER_TEMPLATE,
@@ -239,6 +240,17 @@ def dom0_config(needs_journalist: None, proj_root: os.PathLike) -> Dom0Config:
     return Dom0Config.parse(config)
 
 
+@pytest.fixture(scope="session")
+def dom0_config_environment(needs_dom0: None, proj_root: os.PathLike) -> str:
+    """Make the dom0 "config.json" environment available to tests.
+
+    This works on both journalist or admin workstations.
+    """
+    with open(os.path.join(proj_root, "config.json")) as c:
+        config = json.load(c)
+    return config.get("environment", "prod")
+
+
 @pytest.fixture
 def all_vms(needs_dom0: None) -> VMCollection:
     """Obtain all qubes present in the system"""
@@ -247,13 +259,16 @@ def all_vms(needs_dom0: None) -> VMCollection:
 
 @pytest.fixture
 def sdw_tagged_vms(needs_journalist: None, all_vms: VMCollection) -> list[QubesVM]:
-    """Obtain all SecureDrop Workstation-exclusive qubes"""
+    """Obtain all SecureDrop Workstation-exclusive qubes that are provisioned
+
+    TODO: this should depend on both needs_journalist+needs_admin or neither
+    """
     return list(filter(is_workstation_qube, all_vms))
 
 
 @pytest.fixture
 def journalist_tagged_vms(needs_journalist: None, all_vms: VMCollection) -> list[QubesVM]:
-    """Obtain all SecureDrop Workstation-exclusive qubes"""
+    """Obtain all SecureDrop Workstation-exclusive qubes that are provisioned"""
     return list(filter(is_journalist_qube, all_vms))
 
 
@@ -275,6 +290,7 @@ def cleanup(request: pytest.FixtureRequest) -> Iterator[None]:
         SD_TEMPLATE_BASE,
         SD_VIEWER_TEMPLATE,
         SD_INBOX_TEMPLATE,
+        SD_ADMIN_TEMPLATE,
         CURRENT_FEDORA_TEMPLATE,
     ]:
         try:
