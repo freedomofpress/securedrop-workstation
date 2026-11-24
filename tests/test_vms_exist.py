@@ -3,13 +3,11 @@ from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
 from tests.base import (
-    SD_DVM_TEMPLATES,
     SD_INBOX_TEMPLATE,
+    SD_JOURNALIST_VMS,
     SD_TAG,
-    SD_TEMPLATES,
     SD_UNTAGGED_DEPRECATED_VMS,
     SD_VIEWER_TEMPLATE,
-    SD_VMS,
 )
 from tests.markers import needs_journalist
 
@@ -26,7 +24,7 @@ def test_all_journalist_vms_present(
     failing to be created. Compares to a hardcoded list in fixtures.
     """
     sdw_tagged_vm_names = {vm.name for vm in journalist_tagged_vms}
-    expected_vm_names = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
+    expected_vm_names = set(SD_JOURNALIST_VMS)
 
     assert sdw_tagged_vm_names == expected_vm_names
 

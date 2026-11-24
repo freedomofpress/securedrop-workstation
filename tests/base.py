@@ -23,6 +23,7 @@ SD_ADMIN_TEMPLATE = f"sd-admin-debian-{DEBIAN_VERSION}"
 
 SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
 JOURNALIST_TAG = "sd-journalist"
+ADMIN_TAG = "sd-admin"
 
 # Expectations regarding VMs' existence and versions
 SD_VMS = [
@@ -37,12 +38,20 @@ SD_VMS = [
 ]
 SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
 SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_VIEWER_TEMPLATE, SD_INBOX_TEMPLATE]
+SD_JOURNALIST_VMS = SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES
 SD_UNTAGGED_DEPRECATED_VMS = ["sd-retain-logvm"]
 
 CURRENT_FEDORA_VERSION = "44"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"
 CURRENT_FEDORA_DVM = "fedora-" + CURRENT_FEDORA_VERSION + "-dvm"
+CURRENT_SD_FEDORA_DVM = f"sd-{CURRENT_FEDORA_DVM}"
 CURRENT_WHONIX_VERSION = "17"
+
+# Admin Workstation: Expetected VMs and versions
+SD_ADMIN_VMS = ["sd-admin", "sd-admin-vault"]
+SD_ADMIN_DVM_TEMPLATES: list[str] = []
+SD_ADMIN_TEMPLATES = [f"sd-admin-debian-{DEBIAN_VERSION}"]
+SD_ADMIN_VMS = SD_ADMIN_VMS + SD_ADMIN_DVM_TEMPLATES + SD_ADMIN_TEMPLATES
 
 
 # Lifted from sdw_util/Util.py
