@@ -41,6 +41,15 @@ def test_policy_files_exist() -> None:
 
 
 @pytest.mark.provisioning
+@needs_admin
+def test_admin_policy_files_exist() -> None:
+    """verify the admin policies are installed"""
+    assert os.path.exists("/etc/qubes/policy.d/31-securedrop-admin.policy")
+    assert os.path.exists("/etc/qubes/policy.d/32-securedrop-admin.policy")
+    assert os.path.exists("/etc/qubes/policy.d/36-securedrop-admin.policy")
+
+
+@pytest.mark.provisioning
 @pytest.mark.parametrize(("first", "second"), ADMIN_CLIPBOARD_PAIRS)
 @needs_admin
 def test_admin_clipboard_allowed(all_vms: VMCollection, first: str, second: str) -> None:

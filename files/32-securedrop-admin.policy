@@ -22,7 +22,6 @@ qubes.USBAttach         *           @anyvm @tag:sd-admin deny
 qubes.USBAttach         *           @tag:sd-admin @anyvm deny
 
 qubes.USB               *           @anyvm @tag:sd-admin deny
-qubes.USB               *           @tag:sd-admin @anyvm deny
 
 qubes.PdfConvert        *           @anyvm @tag:sd-admin deny
 qubes.PdfConvert        *           @tag:sd-admin @anyvm deny
