@@ -23,9 +23,10 @@ SD_ADMIN_TEMPLATE = f"sd-admin-debian-{DEBIAN_VERSION}"
 
 SD_TAG = "sd-workstation"  # Tag identifying SecureDrop Workstation-managed VMs
 JOURNALIST_TAG = "sd-journalist"
+ADMIN_TAG = "sd-admin"
 
 # Expectations regarding VMs' existence and versions
-SD_VMS = [
+JOURNALIST_VMS = [
     "sd-gpg",
     "sd-log",
     "sd-proxy",
@@ -35,9 +36,12 @@ SD_VMS = [
     "sd-printers",
     "sd-journalist-vault",
 ]
-SD_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
-SD_TEMPLATES = [SD_TEMPLATE_BASE, SD_VIEWER_TEMPLATE, SD_INBOX_TEMPLATE]
+JOURNALIST_DVM_TEMPLATES = ["sd-devices-dvm", "sd-proxy-dvm"]
+JOURNALIST_TEMPLATES = [SD_TEMPLATE_BASE, SD_VIEWER_TEMPLATE, SD_INBOX_TEMPLATE]
 SD_UNTAGGED_DEPRECATED_VMS = ["sd-retain-logvm"]
+
+ADMIN_VMS = ["sd-admin", "sd-admin-usb", "sd-admin-vault"]
+ADMIN_DVM_TEMPLATES = ["sd-admin-usb-dvm"]
 
 CURRENT_FEDORA_VERSION = "44"
 CURRENT_FEDORA_TEMPLATE = "fedora-" + CURRENT_FEDORA_VERSION + "-xfce"
@@ -112,6 +116,10 @@ def is_workstation_qube(qube: QubesVM) -> bool:
 
 def is_journalist_qube(qube: QubesVM) -> bool:
     return is_workstation_qube(qube) and JOURNALIST_TAG in qube.tags
+
+
+def is_admin_qube(qube: QubesVM) -> bool:
+    return is_workstation_qube(qube) and ADMIN_TAG in qube.tags
 
 
 class QubeWrapper:

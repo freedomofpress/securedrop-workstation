@@ -29,6 +29,7 @@ from tests.base import (
     SD_INBOX_TEMPLATE,
     SD_TEMPLATE_BASE,
     SD_VIEWER_TEMPLATE,
+    is_admin_qube,
     is_journalist_qube,
     is_workstation_qube,
 )
@@ -268,8 +269,14 @@ def sdw_tagged_vms(needs_journalist: None, all_vms: VMCollection) -> list[QubesV
 
 @pytest.fixture
 def journalist_tagged_vms(needs_journalist: None, all_vms: VMCollection) -> list[QubesVM]:
-    """Obtain all SecureDrop Workstation-exclusive qubes that are provisioned"""
+    """Obtain all Journalist qubes that are provisioned"""
     return list(filter(is_journalist_qube, all_vms))
+
+
+@pytest.fixture
+def admin_tagged_vms(needs_admin: None, all_vms: VMCollection) -> list[QubesVM]:
+    """Obtain all Admin qubes that are provisioned"""
+    return list(filter(is_admin_qube, all_vms))
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -3,32 +3,46 @@ from qubesadmin.app import VMCollection
 from qubesadmin.vm import QubesVM
 
 from tests.base import (
-    SD_DVM_TEMPLATES,
+    ADMIN_DVM_TEMPLATES,
+    ADMIN_VMS,
+    JOURNALIST_DVM_TEMPLATES,
+    JOURNALIST_TEMPLATES,
+    JOURNALIST_VMS,
+    SD_ADMIN_TEMPLATE,
     SD_INBOX_TEMPLATE,
     SD_TAG,
-    SD_TEMPLATES,
     SD_UNTAGGED_DEPRECATED_VMS,
     SD_VIEWER_TEMPLATE,
-    SD_VMS,
 )
 from tests.markers import needs_journalist
 
-pytestmark = needs_journalist
 
-
+@pytest.mark.parametrize(
+    ("tagged_vms_fixture", "expected_vm_names"),
+    [
+        (
+            "journalist_tagged_vms",
+            set(JOURNALIST_VMS + JOURNALIST_DVM_TEMPLATES + JOURNALIST_TEMPLATES),
+        ),
+        ("admin_tagged_vms", set(ADMIN_VMS + ADMIN_DVM_TEMPLATES + [SD_ADMIN_TEMPLATE])),
+    ],
+)
 @pytest.mark.provisioning
-def test_all_journalist_vms_present(
-    all_vms: VMCollection, journalist_tagged_vms: list[QubesVM]
+def test_all_vms_present(
+    tagged_vms_fixture: str,
+    expected_vm_names: set[str],
+    request: pytest.FixtureRequest,
+    all_vms: VMCollection,
 ) -> None:
     """
     Confirm that all SDW-managed VMs are present on the system.
     Seeks to detect errors in provisioning that result in VMs
     failing to be created. Compares to a hardcoded list in fixtures.
     """
-    sdw_tagged_vm_names = {vm.name for vm in journalist_tagged_vms}
-    expected_vm_names = set(SD_VMS + SD_DVM_TEMPLATES + SD_TEMPLATES)
+    tagged_vms: list[QubesVM] = request.getfixturevalue(tagged_vms_fixture)
+    tagged_vm_names = {vm.name for vm in tagged_vms}
 
-    assert sdw_tagged_vm_names == expected_vm_names
+    assert tagged_vm_names == expected_vm_names
 
     # Check for untagged VMs
     for vm_name in SD_UNTAGGED_DEPRECATED_VMS:
@@ -74,6 +88,7 @@ def test_default_dispvm(sdw_tagged_vms: list[QubesVM]) -> None:
             assert vm.default_dispvm is None, f"{vm.name} has dispVM set"
 
 
+@needs_journalist
 @pytest.mark.provisioning
 def test_sd_inbox_template(all_vms: VMCollection) -> None:
     """
@@ -84,6 +99,7 @@ def test_sd_inbox_template(all_vms: VMCollection) -> None:
     assert SD_TAG in vm.tags
 
 
+@needs_journalist
 @pytest.mark.provisioning
 def test_sd_viewer_template(all_vms: VMCollection) -> None:
     """
