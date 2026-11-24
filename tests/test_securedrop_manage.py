@@ -672,7 +672,7 @@ class TestImportAdminConfig:
         assert not fake_qubes["staging"].exists()
 
 
-class TestApplyAdmin:
+class TestApply:
     @staticmethod
     def assert_call_matches_pattern(actual: list[str], expected: list[str | EllipsisType]) -> None:
         """
