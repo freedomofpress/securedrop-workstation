@@ -3,7 +3,6 @@ import subprocess
 import dnf  # Implicit dom0 dependency
 import pytest
 
-from securedrop_manage.config_types import Dom0Config
 from tests.markers import needs_dom0
 
 pytestmark = needs_dom0
@@ -50,17 +49,14 @@ def test_rpm_releasever_substitution() -> None:
 
 
 @pytest.fixture(scope="session")
-def repo_config(dom0_config: Dom0Config) -> dict[str, str]:
+def repo_config(dom0_config_environment: str) -> dict[str, str]:
     """
     Look up the appropriate Yum repo configuration, based on config.json.
-    Depends on the `dom0_config` fixture, for lookup on the environment,
-    which determines the rpm config.
     """
-    # The dom0 fixture defaults to "dev" for the environment key.
+    # The dom0 fixture defaults to "prod" for the environment key.
     # It's possible that we can fall back to inferring the env based on
     # which keyring RPM packages are installed in dom0.
-    env = dom0_config.environment
-    return REPO_CONFIG[env].copy()
+    return REPO_CONFIG[dom0_config_environment].copy()
 
 
 def test_rpm_repo_config(repo_config: dict[str, str]) -> None:
@@ -87,13 +83,12 @@ def test_rpm_repo_config(repo_config: dict[str, str]) -> None:
     assert found_lines == wanted_lines
 
 
-def test_dom0_has_keyring_package(dom0_config: Dom0Config) -> None:
+def test_dom0_has_keyring_package(dom0_config_environment: str) -> None:
     """
     Confirm that the "securedrop-workstation-keyring" package is installed in dom0,
     and that the variant of the package is appropriate for the configured env,
     e.g. dev vs prod.
     """
-    env = dom0_config.environment
     # Prod keyring is always installed
     assert _is_installed("securedrop-workstation-keyring")
 
@@ -101,7 +96,7 @@ def test_dom0_has_keyring_package(dom0_config: Dom0Config) -> None:
     # "environment" anymore.
     # Until then, the order matters; a dev setup may also have
     # a staging package, but not vice-versa.
-    if env == "dev":
+    if dom0_config_environment == "dev":
         assert _is_installed("securedrop-workstation-keyring-dev")
-    elif env == "staging":
+    elif dom0_config_environment == "staging":
         assert _is_installed("securedrop-workstation-keyring-staging")
