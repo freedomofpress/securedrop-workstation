@@ -3,6 +3,7 @@ import subprocess
 import pytest
 from qubesadmin.app import VMCollection
 
+from tests.base import ADMIN_TAG, JOURNALIST_TAG
 from tests.markers import needs_dom0
 
 # All tests marked with "uninstall" by default and should be skipped
@@ -18,8 +19,8 @@ def top_enabled() -> str:
 @pytest.mark.parametrize(
     ("salt_dir", "qubes_tag"),
     [
-        ("securedrop_salt", "sd-workstation"),
-        # ("admin_salt", "sd-admin"),  # FIXME disabled until (#1899 merged)
+        ("securedrop_salt", JOURNALIST_TAG),
+        ("admin_salt", ADMIN_TAG),
     ],
 )
 def test_uninstalled(
