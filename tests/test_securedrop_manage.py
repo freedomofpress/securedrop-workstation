@@ -15,7 +15,7 @@ from qubesadmin.tests.mock_app import MockQube, QubesTestWrapper
 
 from securedrop_manage import main as manage
 from securedrop_manage import tails_import
-from tests.base import SD_ADMIN_VMS, SD_JOURNALIST_VMS
+from tests.base import CURRENT_SD_FEDORA_DVM, SD_ADMIN_VMS, SD_JOURNALIST_VMS, SD_TEMPLATE_BASE
 from tests.markers import needs_dom0, needs_journalist
 
 if TYPE_CHECKING:
@@ -713,7 +713,7 @@ class TestApplyAdmin:
                 [
                     [..., "state.sls", "securedrop_shared.sd-sys-vms", ...],
                     [..., "state.sls", "securedrop_salt.sd-base-template", ...],
-                    [..., "--targets", "sd-base-debian-13", "state.highstate"],
+                    [..., "--targets", SD_TEMPLATE_BASE, "state.highstate"],
                     [..., "state.top", "top.sls", ...],
                     [
                         ...,
@@ -721,7 +721,7 @@ class TestApplyAdmin:
                         ",".join(sorted(SD_JOURNALIST_VMS + SD_ADMIN_VMS)),
                         "state.highstate",
                     ],
-                    [..., "--targets", "sd-fedora-43-dvm", "state.highstate"],
+                    [..., "--targets", CURRENT_SD_FEDORA_DVM, "state.highstate"],
                 ],
             ),
             (
@@ -730,7 +730,7 @@ class TestApplyAdmin:
                 [
                     [..., "state.sls", "securedrop_shared.sd-sys-vms", ...],
                     [..., "state.sls", "securedrop_salt.sd-base-template", ...],
-                    [..., "--targets", "sd-base-debian-13", "state.highstate"],
+                    [..., "--targets", SD_TEMPLATE_BASE, "state.highstate"],
                     ["state.top", "securedrop_salt/sd-workstation.top", ...],
                     [
                         ...,
@@ -738,7 +738,7 @@ class TestApplyAdmin:
                         ",".join(sorted(SD_JOURNALIST_VMS)),
                         "state.highstate",
                     ],
-                    [..., "--targets", "sd-fedora-43-dvm", "state.highstate"],
+                    [..., "--targets", CURRENT_SD_FEDORA_DVM, "state.highstate"],
                 ],
             ),
         ],
