@@ -7,8 +7,6 @@ import pytest
 
 from tests.markers import needs_journalist
 
-pytestmark = needs_journalist
-
 DESKTOP_FILE_NAME = "press.freedom.SecureDropUpdater.desktop"
 
 
@@ -16,18 +14,21 @@ def checksum(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_is_topfile_enabled() -> None:
-    cmd = ["sudo", "qubesctl", "top.enabled"]
-    wanted = "securedrop_salt.sd-workstation.top"
+@pytest.mark.parametrize(
+    ("wanted", "needs"),
+    [
+        ("securedrop_salt.sd-workstation.top", "needs_journalist"),
+        ("admin_salt.sd-admin", "needs_admin"),
+    ],
+)
+def test_is_topfile_enabled(wanted: str, needs: str, request: pytest.FixtureRequest) -> None:
+    request.getfixturevalue(needs)
 
-    try:
-        all_topfiles = subprocess.check_output(cmd).decode("utf-8")
-        assert wanted in all_topfiles
-
-    except subprocess.CalledProcessError:
-        pytest.fail("Error checking topfiles")
+    all_topfiles = subprocess.check_output(["sudo", "qubesctl", "top.enabled"]).decode("utf-8")
+    assert wanted in all_topfiles
 
 
+@needs_journalist
 @pytest.mark.provisioning
 def test_trust_desktop_launcher() -> None:
     desktop_file = Path.home() / "Desktop" / DESKTOP_FILE_NAME

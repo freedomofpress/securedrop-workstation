@@ -43,7 +43,7 @@ def test_sd_admin_usb_package_installed(qube: QubeWrapper) -> None:
     assert qube.package_is_installed("gnome-disk-utility")
 
 
-def test_sd_admin_usb_config(qube: QubeWrapper) -> None:
+def test_sd_admin_usb_config(qube: QubeWrapper, dom0_config_environment: str) -> None:
     """
     Confirm that qvm-prefs match expectations for sd-admin-usb VM.
     """
@@ -53,6 +53,9 @@ def test_sd_admin_usb_config(qube: QubeWrapper) -> None:
     vm_type = vm.klass
     assert vm_type == "DispVM"
     assert SD_TAG in vm.tags
+    # VM will be marked "internal" only in prod context.
+    if dom0_config_environment == "prod":
+        assert vm.features.get("internal") == "1"
 
 
 def test_sd_admin_usb_dvm_config() -> None:

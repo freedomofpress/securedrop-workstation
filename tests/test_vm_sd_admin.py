@@ -17,7 +17,7 @@ pytestmark = needs_admin
 
 @pytest.fixture(scope="module")
 def qube() -> QubeWrapper:
-    return QubeWrapper("sd-admin")
+    return QubeWrapper("sd-admin", enforced_apparmor_profiles={"system_tor", "torbrowser_firefox"})
 
 
 @pytest.mark.provisioning
@@ -39,6 +39,11 @@ def test_sd_admin_config(all_vms: VMCollection) -> None:
     assert "sd-admin" in vm.tags
 
 
+@pytest.mark.configuration
+def test_sd_admin_services(qube: QubeWrapper) -> None:
+    assert qube.service_is_active("tor")
+
+
 @pytest.mark.provisioning
 def test_sd_admin_template_config(all_vms: VMCollection) -> None:
     """
@@ -47,6 +52,7 @@ def test_sd_admin_template_config(all_vms: VMCollection) -> None:
     vm = all_vms[SD_ADMIN_TEMPLATE]
     assert vm.klass == "TemplateVM"
     assert vm.default_dispvm is None
+    assert vm.netvm is None
     assert SD_TAG in vm.tags
     assert "sd-admin" in vm.tags
     assert "sd-updater" in vm.tags
