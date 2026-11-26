@@ -15,7 +15,6 @@ from typing import Any
 
 import pytest
 
-from securedrop_manage.products import get_installed_product
 from tests.base import QubeWrapper
 
 IS_CI = os.environ.get("CI") == "true"
@@ -23,10 +22,6 @@ IS_CI = os.environ.get("CI") == "true"
 # Seconds to wait for a udisks2 call: LUKS formatting can take longer than
 # gdbus' default 25s, especially on slower CI hardware
 UDISKS_TIMEOUT = 300 if IS_CI else 45
-
-# dom0 user unit that auto-attaches USB storage to sd-devices (and printers to
-# sd-printers); only installed with the Journalist Workstation
-USB_ATTACH_UNIT = "securedrop-usb-attach"
 
 # qrexec-client-vm's exit code when the call is refused by policy
 QREXEC_REFUSED = 126
@@ -55,48 +50,6 @@ def udisks_call(qube: QubeWrapper, object_path: str, method: str, *args: str) ->
     # gdbus prints e.g. "(objectpath '/org/.../sda1',)", "('/media/...',)" or "()"
     match = re.search(r"'(.*)'", output)
     return match.group(1) if match else ""
-
-
-def user_systemctl(*args: str) -> subprocess.CompletedProcess[str]:
-    """
-    Run `systemctl --user` against the dom0 user's systemd instance, which
-    pytest may not be able to locate by default (e.g. when run over qvm-run)
-    """
-    runtime_dir = f"/run/user/{os.getuid()}"
-    env = {
-        **os.environ,
-        "XDG_RUNTIME_DIR": runtime_dir,
-        "DBUS_SESSION_BUS_ADDRESS": f"unix:path={runtime_dir}/bus",
-    }
-    return subprocess.run(
-        ["systemctl", "--user", *args],
-        env=env,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-
-@contextmanager
-def usb_autoattach_paused() -> Generator[None]:
-    """
-    Stop the USB auto-attach daemon for the duration of the context, so it
-    doesn't race to attach a mock USB device to sd-devices while a test
-    attaches it elsewhere. It's restarted afterwards.
-
-    No-op if the Journalist Workstation (which ships the daemon) isn't installed.
-    """
-    if not get_installed_product().contains_journalist:
-        yield
-        return
-
-    result = user_systemctl("stop", USB_ATTACH_UNIT)
-    assert result.returncode == 0, f"Failed to stop {USB_ATTACH_UNIT}: {result.stderr}"
-    try:
-        yield
-    finally:
-        result = user_systemctl("start", USB_ATTACH_UNIT)
-        assert result.returncode == 0, f"Failed to restart {USB_ATTACH_UNIT}: {result.stderr}"
 
 
 def assert_usb_qrexec_denied(qube: QubeWrapper) -> None:
